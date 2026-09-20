@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {{--
+      Pages carry a resolved SeoHead. Anything that does not — an authenticated
+      screen, an error page — is deliberately kept out of the index rather than
+      shipped with a guessed title.
+    --}}
+    @if(seo)
+      @include('partials/seo')
+    @else
+      <title>Umima.clean</title>
+      <meta name="robots" content="noindex, follow" />
+    @end
+
+    {{--
+      The starter assets shipped a "vector" favicon that was really a
+      1000x1000 PNG wrapped in SVG — 132 KB for a 16px icon. Dropped in
+      favour of the 1.7 KB PNG, with the .ico kept for older browsers.
+    --}}
+    <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png" />
+    <link rel="icon" href="/icons/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="theme-color" content="#111111" />
+
+    @viteReactRefresh()
+    @vite(['inertia/app.tsx'])
+    @stack('dumper')
+  </head>
+
+  <body>
+    @inertia()
+  </body>
+</html>

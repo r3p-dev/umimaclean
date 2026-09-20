@@ -1,0 +1,74 @@
+{
+  "source": "Badan Informasi Geospasial (BIG), RBI 1:10.000 Administrasi_AR_Kecamatan_10K",
+  "service": "https://geoservices.big.go.id/rbi/rest/services/BATASWILAYAH/Administrasi_AR_Kecamatan_10K/MapServer/0/query",
+  "retrieved": "2026-09-06",
+  "regencies": [
+    "Kota Bandung",
+    "Kota Cimahi",
+    "Bandung",
+    "Bandung Barat"
+  ],
+  "matched": {
+    "covered": [
+      "Andir",
+      "Antapani",
+      "Arcamanik",
+      "Astanaanyar",
+      "Babakan Ciparay",
+      "Baleendah",
+      "Bandung Kidul",
+      "Bandung Kulon",
+      "Bandung Wetan",
+      "Banjaran",
+      "Batununggal",
+      "Bojongloa Kaler",
+      "Bojongloa Kidul",
+      "Bojongsoang",
+      "Buahbatu",
+      "Cangkuang",
+      "Cibeunying Kaler",
+      "Cibeunying Kidul",
+      "Cibiru",
+      "Cicendo",
+      "Cidadap",
+      "Cimahi Selatan",
+      "Cimahi Tengah",
+      "Cimahi Utara",
+      "Cinambo",
+      "Coblong",
+      "Dayeuhkolot",
+      "Gedebage",
+      "Katapang",
+      "Kiaracondong",
+      "Lengkong",
+      "Mandalajati",
+      "Margaasih",
+      "Margahayu",
+      "Pameungpeuk",
+      "Panyileukan",
+      "Rancasari",
+      "Regol",
+      "Soreang",
+      "Sukajadi",
+      "Sukasari",
+      "Sumur Bandung",
+      "Ujungberung"
+    ],
+    "neighbours": [
+      "Batujajar",
+      "Cilengkrang",
+      "Cileunyi",
+      "Cimenyan",
+      "Lembang",
+      "Ngamprah",
+      "Padalarang",
+      "Rancaekek"
+    ]
+  },
+  "spellingDifferences": [
+    {
+      "big": "Astana Anyar",
+      "official": "Astanaanyar"
+    }
+  ]
+}

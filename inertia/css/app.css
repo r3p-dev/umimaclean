@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+/**
+ * Brand tokens, carried over from the previous build so the rewrite still
+ * looks like the same business: editorial, monochrome, ink on paper.
+ *
+ * Only ink, ink-body, and ink-muted are defined for text. A lighter grey was
+ * tempting but measured at 2.8:1 on the paper ground, below the 4.5:1 floor,
+ * so it is deliberately absent rather than available to be misused.
+ *
+ * The font stack is the system stack for now: zero requests, zero CLS. Phase 3
+ * decides whether a self-hosted, latin-subset woff2 earns its weight.
+ */
+@theme {
+  --color-ink: #111111;
+  --color-ink-body: #333333;
+  --color-ink-muted: #5f5f5f;
+  --color-paper: #e9e9e7;
+  --color-paper-tint: #f7f6f4;
+  --color-line: #d4d3cf;
+
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink-body);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /** A visible focus ring everywhere, never removed. */
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+}

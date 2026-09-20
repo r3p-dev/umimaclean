@@ -1,0 +1,75 @@
+{{--
+  The only place SEO head tags are written.
+
+  Everything here is decided in app/seo/head.ts and merely printed here, so
+  that the markup a crawler receives is present in the first HTML response and
+  does not depend on hydration, on the JS bundle arriving, or on React's Head
+  component behaving.
+
+  `seo` is a resolved SeoHead, produced by `withSeo()` in a controller.
+--}}
+
+<title>{{ seo.title }}</title>
+<meta name="description" content="{{ seo.description }}" />
+<meta name="author" content="{{ seo.siteName }}" />
+<meta name="robots" content="{{ seo.robots }}" />
+
+<link rel="canonical" href="{{ seo.canonical }}" />
+
+{{--
+  No hreflang. The site is Indonesian only, and a single-language site that
+  emits hreflang is either stating the obvious or contradicting itself. If a
+  second language is ever added, the alternate links plus x-default belong
+  here, and they must be omitted whenever `seo.robots` starts with noindex.
+--}}
+
+@if(seo.prev)
+  <link rel="prev" href="{{ seo.prev }}" />
+@end
+@if(seo.next)
+  <link rel="next" href="{{ seo.next }}" />
+@end
+
+{{-- Open Graph --}}
+<meta property="og:type" content="{{ seo.ogType }}" />
+<meta property="og:site_name" content="{{ seo.siteName }}" />
+<meta property="og:locale" content="{{ seo.locale.replace('-', '_') }}" />
+@each(alternate in seo.ogLocaleAlternates)
+  <meta property="og:locale:alternate" content="{{ alternate }}" />
+@end
+<meta property="og:url" content="{{ seo.canonical }}" />
+<meta property="og:title" content="{{ seo.title }}" />
+<meta property="og:description" content="{{ seo.description }}" />
+<meta property="og:image" content="{{ seo.image }}" />
+<meta property="og:image:alt" content="{{ seo.imageAlt }}" />
+@if(seo.imageWidth)
+  <meta property="og:image:width" content="{{ seo.imageWidth }}" />
+  <meta property="og:image:height" content="{{ seo.imageHeight }}" />
+  <meta property="og:image:type" content="{{ seo.imageType }}" />
+@end
+
+@if(seo.ogType === 'article')
+  @if(seo.published)
+    <meta property="article:published_time" content="{{ seo.published }}" />
+  @end
+  @if(seo.modified)
+    <meta property="article:modified_time" content="{{ seo.modified }}" />
+  @end
+  @each(tag in seo.tags)
+    <meta property="article:tag" content="{{ tag }}" />
+  @end
+@end
+
+{{-- Twitter --}}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ seo.title }}" />
+<meta name="twitter:description" content="{{ seo.description }}" />
+<meta name="twitter:image" content="{{ seo.image }}" />
+<meta name="twitter:image:alt" content="{{ seo.imageAlt }}" />
+
+{{--
+  One graph, printed raw because app/seo/head.ts has already escaped every
+  `<` to \u003c. Without that escaping a stray string could close this script
+  tag and turn the remainder of the JSON into live markup.
+--}}
+<script type="application/ld+json">{{{ seo.jsonLd }}}</script>

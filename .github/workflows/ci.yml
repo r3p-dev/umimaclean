@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: umimaclean
+          POSTGRES_PASSWORD: umimaclean
+          POSTGRES_DB: umimaclean_inertia
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      NODE_ENV: development
+      TZ: UTC
+      HOST: localhost
+      PORT: 3333
+      LOG_LEVEL: info
+      APP_URL: http://localhost:3333
+      SESSION_DRIVER: cookie
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: umimaclean
+      DB_PASSWORD: umimaclean
+      DB_DATABASE: umimaclean_inertia
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate an application key
+        run: |
+          echo "APP_KEY=$(node -e "console.log(require('node:crypto').randomBytes(24).toString('base64url'))")" >> "$GITHUB_ENV"
+
+      - run: npm run typecheck
+
+      - run: npm run lint
+
+      - run: node ace migration:run --force
+
+      # The sitemap reads rows, so the content table has to exist and be
+      # current before verify:seo asks for /sitemap.xml.
+      - run: node ace sitemap:sync
+
+      # .env.test points the suite at its own database so a test run can
+      # never truncate development data.
+      - name: Create the test database
+        env:
+          PGPASSWORD: umimaclean
+        run: psql -h localhost -U umimaclean -d umimaclean_inertia -c 'CREATE DATABASE umimaclean_inertia_test'
+
+      - run: npm test
+
+      - run: npm run build
+
+      # The SEO gate runs against a real production server, because the whole
+      # point is to prove the built artefact still server-renders. A green
+      # dev server proves nothing: the SSR bundle is only produced by `build`.
+      - name: Install production dependencies
+        working-directory: build
+        run: npm ci --omit=dev
+
+      - name: Start the production server
+        working-directory: build
+        run: |
+          NODE_ENV=production node bin/server.js &
+          echo $! > /tmp/server.pid
+          curl -sS --retry-connrefused --retry 30 --retry-delay 1 --retry-all-errors -o /dev/null http://localhost:3333/
+
+      - name: Verify public pages are crawlable
+        env:
+          BASE_URL: http://localhost:3333
+        run: npm run verify:seo
+
+      - name: Stop the production server
+        if: always()
+        run: kill "$(cat /tmp/server.pid)" || true
