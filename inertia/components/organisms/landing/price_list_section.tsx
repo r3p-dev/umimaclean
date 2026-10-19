@@ -1,8 +1,17 @@
-import { useState, type ComponentType } from 'react'
+import { useState } from 'react'
 import { IconBuildingStore, IconInfoCircle, IconMoped } from '@tabler/icons-react'
 import { Alert } from '~/components/ui/alert'
 import { Badge } from '~/components/ui/badge'
-import TabList from '~/components/molecules/tab_list'
+import { Card, CardTitle } from '~/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '~/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import {
   BAG_MATERIALS,
   BAG_PRICES,
@@ -56,23 +65,25 @@ function ShoePrices() {
       {SHOE_PRICES.map((entry) => (
         <PriceRow key={entry.name} entry={entry} />
       ))}
-      <li className="mt-3.5 flex flex-col gap-2 self-start rounded-md bg-background px-4 py-3.5">
-        <h3 className="text-md font-semibold">Biaya tambahan</h3>
+      <li className="mt-3.5 self-start">
+        <Card className="gap-2 border-0 bg-background px-4 py-3.5 shadow-none">
+          <CardTitle className="text-md font-semibold">Biaya tambahan</CardTitle>
 
-        <dl className="flex flex-col gap-2">
-          {SHOE_SURCHARGES.map((surcharge) => (
-            <div
-              key={surcharge.name}
-              className="flex justify-between gap-3 text-[14.5px] leading-[1.4]"
-            >
-              <dt>{surcharge.name}</dt>
+          <dl className="flex flex-col gap-2">
+            {SHOE_SURCHARGES.map((surcharge) => (
+              <div
+                key={surcharge.name}
+                className="flex justify-between gap-3 text-[14.5px] leading-[1.4]"
+              >
+                <dt>{surcharge.name}</dt>
 
-              <dd className="font-semibold whitespace-nowrap tabular-nums">
-                +{formatRupiah(surcharge.price)}
-              </dd>
-            </div>
-          ))}
-        </dl>
+                <dd className="font-semibold whitespace-nowrap tabular-nums">
+                  +{formatRupiah(surcharge.price)}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </Card>
       </li>
     </ul>
   )
@@ -80,53 +91,53 @@ function ShoePrices() {
 
 function BagAndHelmetPrices() {
   const head =
-    'px-3.5 py-2.5 text-right text-meta leading-[1.3] font-semibold text-foreground-secondary'
+    'px-3.5 py-2.5 text-right text-meta leading-[1.3] font-semibold text-foreground-secondary normal-case tracking-normal'
 
   return (
     <div className="grid items-start gap-x-10 gap-y-6 lg:grid-cols-2">
       <div className="flex flex-col gap-2.5">
         <h3 className="text-base leading-[1.3] font-semibold">Tas</h3>
 
-        <div className="overflow-x-auto rounded-md border border-border">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-background">
-                <th scope="col" className={cn(head, 'text-left')}>
+        <div className="overflow-hidden rounded-md border border-border">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-background">
+                <TableHead scope="col" className={cn(head, 'text-left')}>
                   Ukuran
-                </th>
+                </TableHead>
                 {BAG_MATERIALS.map((material) => (
-                  <th key={material} scope="col" className={head}>
+                  <TableHead key={material} scope="col" className={head}>
                     {material}
-                  </th>
+                  </TableHead>
                 ))}
-              </tr>
-            </thead>
+              </TableRow>
+            </TableHeader>
 
-            <tbody>
+            <TableBody>
               {BAG_PRICES.map((row) => (
-                <tr key={row.size} className="border-t border-border">
-                  <th
+                <TableRow key={row.size} className="border-t border-border">
+                  <TableHead
                     scope="row"
-                    className="px-3.5 py-3 text-left text-md leading-[1.3] font-semibold"
+                    className="px-3.5 py-3 text-left text-md leading-[1.3] font-semibold normal-case tracking-normal text-foreground"
                   >
                     {row.size}
                     <span className="mt-0.5 block text-meta leading-[1.3] font-normal text-muted-foreground">
                       {row.limit}
                     </span>
-                  </th>
+                  </TableHead>
 
                   {row.prices.map((price, index) => (
-                    <td
+                    <TableCell
                       key={BAG_MATERIALS[index]}
                       className="px-3.5 py-3 text-right text-md leading-[1.3] font-medium tabular-nums"
                     >
                       {formatRupiah(price)}
-                    </td>
+                    </TableCell>
                   ))}
-                </tr>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 
@@ -155,15 +166,8 @@ function ColorPrices() {
   )
 }
 
-const PANELS: Record<PriceTab, ComponentType> = {
-  sepatu: ShoePrices,
-  tas: BagAndHelmetPrices,
-  warna: ColorPrices,
-}
-
 export default function PriceListSection() {
   const [tab, setTab] = useState<PriceTab>('sepatu')
-  const Panel = PANELS[tab]
 
   return (
     <section
@@ -190,19 +194,37 @@ export default function PriceListSection() {
         </span>
       </Alert>
 
-      <TabList
-        label="Kategori layanan"
-        tabs={PRICE_TABS}
-        value={tab}
-        onChange={setTab}
-        idPrefix="harga-tab"
-        panelId="harga-panel"
-        tabClassName="px-3.5 text-md leading-none"
-      />
+      <Tabs
+        selectedKey={tab}
+        onSelectionChange={(key) => setTab(key as PriceTab)}
+        className="w-full gap-4"
+      >
+        <TabsList
+          variant="line"
+          aria-label="Kategori layanan"
+          className="flex justify-start scrollbar-none"
+        >
+          {PRICE_TABS.map((t) => (
+            <TabsTrigger
+              key={t.value}
+              id={t.value}
+              className="h-btn-desktop px-3.5 text-md leading-none"
+            >
+              {t.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      <div id="harga-panel" role="tabpanel" aria-labelledby={`harga-tab-${tab}`}>
-        <Panel />
-      </div>
+        <TabsContent id="sepatu">
+          <ShoePrices />
+        </TabsContent>
+        <TabsContent id="tas">
+          <BagAndHelmetPrices />
+        </TabsContent>
+        <TabsContent id="warna">
+          <ColorPrices />
+        </TabsContent>
+      </Tabs>
 
       <p className="flex items-start gap-2 text-note leading-normal text-muted-foreground">
         <IconMoped className="my-[0.9px] size-4.5 shrink-0" />

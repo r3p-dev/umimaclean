@@ -1,7 +1,12 @@
-import { useState } from 'react'
-import { IconArrowRight, IconChevronDown, IconChevronUp } from '@tabler/icons-react'
+import { IconArrowRight } from '@tabler/icons-react'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '~/components/ui/accordion'
+import { LinkButton } from '~/components/ui/button'
 import { customerContact, customerLinks } from '~/lib/navigation/customer_links'
-import { cn } from '~/lib/shared/utils'
 
 const QUESTIONS = [
   {
@@ -52,14 +57,15 @@ const QUESTIONS = [
     answer: (
       <>
         Workshop kami ada di {customerContact.address}.{' '}
-        <a
+        <LinkButton
+          variant="link"
           href={customerLinks.maps}
           target="_blank"
           rel="noreferrer"
-          className="font-semibold text-primary hover:text-primary-hover hover:underline"
+          className="inline h-auto min-h-0 p-0 font-semibold text-primary hover:text-primary-hover hover:underline"
         >
           Lihat lokasinya di Google Maps
-        </a>
+        </LinkButton>
         , atau hubungi kami via WhatsApp untuk info lebih lanjut.
       </>
     ),
@@ -67,8 +73,6 @@ const QUESTIONS = [
 ]
 
 export default function FaqSection() {
-  const [open, setOpen] = useState<number>(0)
-
   return (
     <section
       id="faq"
@@ -84,53 +88,26 @@ export default function FaqSection() {
           Masih ragu? Ini jawaban dari pertanyaan yang sering ditanyakan.
         </p>
 
-        <a
+        <LinkButton
+          variant="link"
           href={customerLinks.whatsapp}
           target="_blank"
           rel="noreferrer"
-          className="hit-area mt-1 inline-flex items-center gap-1 text-sm leading-[1.4] font-semibold text-primary hover:text-primary-hover hover:underline"
+          className="hit-area mt-1 inline-flex items-center gap-1 self-start text-sm leading-[1.4] font-semibold text-primary hover:text-primary-hover hover:underline"
         >
           Tanya lewat WhatsApp
           <IconArrowRight className="size-4.5 shrink-0" />
-        </a>
+        </LinkButton>
       </div>
 
-      <div className="w-full">
-        {QUESTIONS.map((item, index) => {
-          const expanded = open === index
-          const Icon = expanded ? IconChevronUp : IconChevronDown
-          return (
-            <div
-              key={item.question}
-              className={cn('border-t border-border', index === QUESTIONS.length - 1 && 'border-b')}
-            >
-              <h3>
-                <button
-                  type="button"
-                  id={`faq-q-${index}`}
-                  aria-expanded={expanded}
-                  aria-controls={`faq-a-${index}`}
-                  onClick={() => setOpen(expanded ? -1 : index)}
-                  className="flex min-h-14 w-full items-center justify-between gap-4 py-3.5 text-left text-base leading-[1.4] font-semibold text-foreground"
-                >
-                  {item.question}
-                  <Icon className="size-6 shrink-0 text-muted-foreground" />
-                </button>
-              </h3>
-
-              <p
-                id={`faq-a-${index}`}
-                role="region"
-                aria-labelledby={`faq-q-${index}`}
-                hidden={!expanded}
-                className="mb-4 pr-10 text-md leading-[1.6] text-pretty text-foreground-secondary"
-              >
-                {item.answer}
-              </p>
-            </div>
-          )
-        })}
-      </div>
+      <Accordion defaultExpandedKeys={['0']} className="w-full">
+        {QUESTIONS.map((item, index) => (
+          <AccordionItem key={item.question} id={String(index)}>
+            <AccordionTrigger>{item.question}</AccordionTrigger>
+            <AccordionContent>{item.answer}</AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </section>
   )
 }

@@ -1,5 +1,7 @@
 import { IconArrowDown, IconRosetteDiscountCheck } from '@tabler/icons-react'
 import { Alert } from '~/components/ui/alert'
+import { Badge } from '~/components/ui/badge'
+import { LinkButton } from '~/components/ui/button'
 
 const STEPS = [
   {
@@ -34,12 +36,13 @@ export default function HowItWorks() {
       <ol className="grid gap-x-6 gap-y-4.5 sm:grid-cols-2 lg:grid-cols-4">
         {STEPS.map((step, index) => (
           <li key={step.title} className="grid grid-cols-[32px_1fr] content-start gap-3.5">
-            <span
+            <Badge
+              variant="inverse"
               data-surface="inverse"
-              className="size-8 rounded-full bg-surface-inverse text-center text-sm leading-8 font-semibold text-surface-inverse-foreground"
+              className="size-8 justify-center rounded-full p-0 text-center text-sm leading-8 font-semibold"
             >
               {index + 1}
-            </span>
+            </Badge>
 
             <div className="flex flex-col gap-2.5">
               <div>
@@ -57,13 +60,14 @@ export default function HowItWorks() {
               )}
 
               {step.link && (
-                <a
+                <LinkButton
+                  variant="link"
                   href={step.link.href}
                   className="hit-area inline-flex items-center gap-1 self-start text-sm leading-[1.4] font-semibold text-primary hover:text-primary-hover hover:underline"
                 >
                   {step.link.label}
                   <IconArrowDown className="size-4.5 shrink-0" />
-                </a>
+                </LinkButton>
               )}
             </div>
           </li>

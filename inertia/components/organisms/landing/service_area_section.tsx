@@ -1,21 +1,25 @@
-import { Badge } from '~/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
-import { SERVICE_REGIONS } from '~/lib/location/service_area'
-import { LinkButton } from '~/components/ui/button'
-import { urlFor } from '~/client'
-import { Field, FieldLabel } from '~/components/ui/field'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/input-group'
-import { AREA_QUERY_MAX, checkServiceArea, type AreaTone } from '~/lib/location/service_area'
-import { cn } from '~/lib/shared/utils'
 import { useState } from 'react'
 import {
+  IconArrowRight,
   IconCircleCheckFilled,
   IconCircleXFilled,
   IconHelpCircleFilled,
   IconInfoCircle,
   IconSearch,
-  IconArrowRight,
 } from '@tabler/icons-react'
+import { urlFor } from '~/client'
+import { Badge } from '~/components/ui/badge'
+import { LinkButton } from '~/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
+import { Field, FieldDescription, FieldLabel } from '~/components/ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/input-group'
+import {
+  AREA_QUERY_MAX,
+  checkServiceArea,
+  SERVICE_REGIONS,
+  type AreaTone,
+} from '~/lib/location/service_area'
+import { cn } from '~/lib/shared/utils'
 
 const TONES: Record<AreaTone, { border: string; text: string; Icon: typeof IconInfoCircle }> = {
   idle: { border: 'border-input', text: 'text-muted-foreground', Icon: IconInfoCircle },
@@ -40,6 +44,7 @@ export default function ServiceAreaSection() {
   const [query, setQuery] = useState('')
   const result = checkServiceArea(query)
   const tone = TONES[result.tone]
+
   return (
     <section
       id="area-layanan"
@@ -77,7 +82,7 @@ export default function ServiceAreaSection() {
             </InputGroupAddon>
           </InputGroup>
 
-          <p
+          <FieldDescription
             id="area-result"
             role="status"
             aria-live="polite"
@@ -85,7 +90,7 @@ export default function ServiceAreaSection() {
           >
             <tone.Icon className="mt-px size-4.5 shrink-0" />
             <span>{result.message}</span>
-          </p>
+          </FieldDescription>
         </Field>
       </div>
 

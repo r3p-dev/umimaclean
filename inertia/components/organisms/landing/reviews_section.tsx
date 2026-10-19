@@ -5,7 +5,8 @@ import {
   IconStarFilled,
 } from '@tabler/icons-react'
 import InitialsAvatar from '~/components/atoms/initials_avatar'
-import { Button } from '~/components/ui/button'
+import { Button, LinkButton } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
 import { customerLinks } from '~/lib/navigation/customer_links'
 import { GOOGLE_RATING, GOOGLE_REVIEWS, initialsOf } from '~/lib/reviews/google_reviews'
 import { useSnapCarousel } from '~/lib/shared/carousel'
@@ -56,20 +57,21 @@ export default function ReviewsSection() {
           </p>
         </div>
 
-        <a
+        <LinkButton
+          variant="ghost"
           href={customerLinks.maps}
           target="_blank"
           rel="noreferrer"
-          className="group inline-flex min-h-icon-btn shrink-0 items-center gap-2 self-start sm:self-auto"
+          className="group inline-flex h-auto min-h-icon-btn shrink-0 items-center gap-2 self-start px-0 font-normal hover:bg-transparent sm:self-auto"
         >
-          <span className="text-lg leading-none font-bold">{rating}</span>
+          <span className="text-lg leading-none font-bold text-foreground">{rating}</span>
           <Stars rating={GOOGLE_RATING} />
 
           <span className="text-sm leading-none font-semibold text-primary group-hover:text-primary-hover group-hover:underline">
             Lihat di Google Maps
           </span>
           <IconExternalLink className="size-4 text-icon-muted" />
-        </a>
+        </LinkButton>
       </div>
 
       <ul
@@ -83,13 +85,13 @@ export default function ReviewsSection() {
             aria-label={`Ulasan ${index + 1} dari ${GOOGLE_REVIEWS.length}`}
             className="w-[84%] shrink-0 snap-start sm:mb-4 sm:w-auto sm:break-inside-avoid"
           >
-            <figure className="flex h-full flex-col gap-3 rounded-lg border border-border bg-card p-5">
+            <Card className="flex h-full flex-col gap-3 p-5">
               <Stars rating={review.rating} />
               <blockquote className="text-md leading-normal text-pretty text-foreground">
                 “{review.text}”
               </blockquote>
 
-              <figcaption className="mt-auto flex items-center gap-3">
+              <div className="mt-auto flex items-center gap-3">
                 <InitialsAvatar initials={initialsOf(review.name)} />
 
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -97,7 +99,9 @@ export default function ReviewsSection() {
                   <span className="text-caption text-muted-foreground">Ulasan Google Maps</span>
                 </span>
 
-                <a
+                <LinkButton
+                  variant="ghost"
+                  size="icon-compact"
                   href={review.url}
                   target="_blank"
                   rel="noreferrer"
@@ -105,9 +109,9 @@ export default function ReviewsSection() {
                   className="hit-area rounded-xs text-icon-muted hover:text-foreground"
                 >
                   <IconExternalLink className="size-4.5" />
-                </a>
-              </figcaption>
-            </figure>
+                </LinkButton>
+              </div>
+            </Card>
           </li>
         ))}
       </ul>

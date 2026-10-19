@@ -1,3 +1,5 @@
+import { Card, CardDescription, CardTitle } from '~/components/ui/card'
+
 const ITEMS = [
   {
     name: 'Sepatu',
@@ -25,17 +27,19 @@ export default function LaundryItems() {
       <h2 className="text-title">Yang kami cuci</h2>
       <ul className="grid grid-cols-3 gap-[clamp(10px,2vw,24px)]">
         {ITEMS.map((item) => (
-          <li key={item.name} className="flex flex-col gap-2">
-            <img
-              src={item.src}
-              alt={item.alt}
-              draggable={false}
-              className="aspect-square w-full rounded-md object-cover shadow-sm"
-            />
-            <span className="text-md leading-[1.2] font-semibold">{item.name}</span>
-            <span className="text-caption leading-[1.35] text-muted-foreground">
-              {item.description}
-            </span>
+          <li key={item.name}>
+            <Card className="gap-2 border-0 bg-transparent p-0 shadow-none">
+              <img
+                src={item.src}
+                alt={item.alt}
+                draggable={false}
+                className="aspect-square w-full rounded-md object-cover shadow-sm"
+              />
+              <CardTitle className="text-md leading-[1.2] font-semibold">{item.name}</CardTitle>
+              <CardDescription className="text-caption leading-[1.35] text-muted-foreground">
+                {item.description}
+              </CardDescription>
+            </Card>
           </li>
         ))}
       </ul>
