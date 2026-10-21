@@ -1,29 +1,26 @@
+import type { Data } from '@generated/data'
 import { formatRupiah } from '~/lib/shared/format'
 
-export type BillLine = {
-  name: string
-  kind: 'Sepatu' | 'Tas' | 'Helm'
-  services: [string, number][]
-}
+export type Bill = NonNullable<Data.Order['bill']>
 
-export type Bill = {
-  lines: BillLine[]
-  decidedAt: string
-  sentAt: string
-}
+export type BillLine = Bill['lines'][number]
 
 export function billTotal(bill: Bill) {
-  return bill.lines.reduce(
-    (sum, line) => sum + line.services.reduce((acc, [, price]) => acc + price, 0),
-    0
-  )
+  return bill.total
+}
+
+export function lineTotal(line: BillLine) {
+  return line.services.reduce((sum, service) => sum + service.price, 0)
 }
 
 export function billRows(bill: Bill) {
   return bill.lines.map((line) => ({
     name: line.name,
     meta: `${line.kind} · ${line.services.length} layanan`,
-    services: line.services.map(([name, price]) => ({ name, price: formatRupiah(price) })),
-    subtotal: formatRupiah(line.services.reduce((sum, [, price]) => sum + price, 0)),
+    services: line.services.map((service) => ({
+      name: service.name,
+      price: formatRupiah(service.price),
+    })),
+    subtotal: formatRupiah(lineTotal(line)),
   }))
 }

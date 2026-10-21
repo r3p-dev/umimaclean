@@ -21,7 +21,7 @@ const STEPS = [
   },
   {
     title: 'Kami antar kembali',
-    description: 'Pantau statusnya kapan saja lewat Lacak Pesanan.',
+    description: 'Pantau statusnya kapan saja dari akun Anda.',
   },
 ]
 

@@ -36,8 +36,8 @@ export default function ReviewsSection() {
     index: active,
     previous,
     next,
-    atStart,
-    atEnd,
+    isAtStart,
+    isAtEnd,
   } = useSnapCarousel<HTMLUListElement>(GOOGLE_REVIEWS.length)
 
   return (
@@ -135,7 +135,7 @@ export default function ReviewsSection() {
             size="icon"
             aria-label="Ulasan sebelumnya"
             aria-controls="ulasan-list"
-            isDisabled={atStart}
+            isDisabled={isAtStart}
             onPress={previous}
           >
             <IconArrowLeft className="size-5" />
@@ -146,7 +146,7 @@ export default function ReviewsSection() {
             size="icon"
             aria-label="Ulasan berikutnya"
             aria-controls="ulasan-list"
-            isDisabled={atEnd}
+            isDisabled={isAtEnd}
             onPress={next}
           >
             <IconArrowRight className="size-5" />

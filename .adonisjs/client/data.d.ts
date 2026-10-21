@@ -6,9 +6,69 @@
 /// <reference path="./manifest.d.ts" />
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
 import type { InferSharedProps, InferFlashData } from '@adonisjs/inertia/types'
+import type AddressTransformer from '#transformers/address_transformer'
+import type AdminOrderDetailTransformer from '#transformers/admin_order_detail_transformer'
+import type AdminOrderTransformer from '#transformers/admin_order_transformer'
+import type InspectionTransformer from '#transformers/inspection_transformer'
+import type OrderTransformer from '#transformers/order_transformer'
+import type ProcessRowTransformer from '#transformers/process_row_transformer'
+import type ReceiptTransformer from '#transformers/receipt_transformer'
+import type ServiceTransformer from '#transformers/service_transformer'
+import type StaffAccountTransformer from '#transformers/staff_account_transformer'
+import type TaskTransformer from '#transformers/task_transformer'
+import type UserTransformer from '#transformers/user_transformer'
+import type WashTransformer from '#transformers/wash_transformer'
 import type InertiaMiddleware from '#middleware/inertia_middleware'
 
 export namespace Data {
+  export type Address = InferData<AddressTransformer>
+  export namespace Address {
+    export type Variants = InferVariants<AddressTransformer>
+  }
+  export type AdminOrderDetail = InferData<AdminOrderDetailTransformer>
+  export namespace AdminOrderDetail {
+    export type Variants = InferVariants<AdminOrderDetailTransformer>
+  }
+  export type AdminOrder = InferData<AdminOrderTransformer>
+  export namespace AdminOrder {
+    export type Variants = InferVariants<AdminOrderTransformer>
+  }
+  export type Inspection = InferData<InspectionTransformer>
+  export namespace Inspection {
+    export type Variants = InferVariants<InspectionTransformer>
+  }
+  export type Order = InferData<OrderTransformer>
+  export namespace Order {
+    export type Variants = InferVariants<OrderTransformer>
+  }
+  export type ProcessRow = InferData<ProcessRowTransformer>
+  export namespace ProcessRow {
+    export type Variants = InferVariants<ProcessRowTransformer>
+  }
+  export type Receipt = InferData<ReceiptTransformer>
+  export namespace Receipt {
+    export type Variants = InferVariants<ReceiptTransformer>
+  }
+  export type Service = InferData<ServiceTransformer>
+  export namespace Service {
+    export type Variants = InferVariants<ServiceTransformer>
+  }
+  export type StaffAccount = InferData<StaffAccountTransformer>
+  export namespace StaffAccount {
+    export type Variants = InferVariants<StaffAccountTransformer>
+  }
+  export type Task = InferData<TaskTransformer>
+  export namespace Task {
+    export type Variants = InferVariants<TaskTransformer>
+  }
+  export type User = InferData<UserTransformer>
+  export namespace User {
+    export type Variants = InferVariants<UserTransformer>
+  }
+  export type Wash = InferData<WashTransformer>
+  export namespace Wash {
+    export type Variants = InferVariants<WashTransformer>
+  }
   export type SharedProps = InferSharedProps<InertiaMiddleware>
   export type FlashMessages = InferFlashData<InertiaMiddleware>
 }

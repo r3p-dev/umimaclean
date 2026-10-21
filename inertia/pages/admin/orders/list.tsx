@@ -1,7 +1,6 @@
-import { useState } from 'react'
-import { Head } from '@inertiajs/react'
+import { useMemo, useState } from 'react'
+import { Head, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
-import { toast } from 'sonner'
 import { IconArrowsExchange, IconBan } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { Button } from '~/components/ui/button'
@@ -38,18 +37,16 @@ import {
   PHASE_FILTERS,
   PHASE_LABEL,
   adminOrders,
-  applyStatus,
-  cancelOrders,
   cancelable,
-  orderChanges,
   phaseRank,
   statusEligible,
   type AdminOrder,
+  type AdminOrderRow,
 } from '~/lib/orders/admin_orders'
-import { useDataTable, type SortDir } from '~/lib/shared/data_table'
+import { useDataTable, type SortDirection } from '~/lib/shared/data_table'
 import { formatDayMonth } from '~/lib/shared/date'
 import { formatRupiah } from '~/lib/shared/format'
-import { clockTime } from '~/lib/staff/workday'
+import { useLiveReload } from '~/lib/shared/live'
 import type { StatusTone } from '~/lib/tracking/status'
 import { cn } from '~/lib/shared/utils'
 
@@ -65,9 +62,9 @@ const SORT_OPTIONS = [
   { value: 'ref:asc', label: 'No. pesanan · A–Z' },
 ]
 
-export default function AdminOrders() {
-  const changes = orderChanges.use()
-  const all = adminOrders(changes)
+export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
+  const all = useMemo(() => adminOrders(orders), [orders])
+  useLiveReload('admin/orders', ['orders'])
   const [phases, setPhases] = useState<StatusTone[]>([])
   const [origins, setOrigins] = useState<Origin[]>([])
   const [query, setQuery] = useState('')
@@ -76,7 +73,9 @@ export default function AdminOrders() {
 
   const matches = (order: AdminOrder, skip?: 'phase' | 'origin') =>
     (skip === 'phase' || !phases.length || phases.includes(order.phase)) &&
-    (skip === 'origin' || !origins.length || origins.includes(order.store ? 'toko' : 'online')) &&
+    (skip === 'origin' ||
+      !origins.length ||
+      origins.includes(order.isInStore ? 'toko' : 'online')) &&
     (!search ||
       `${order.number} ${order.customer} ${order.area} ${order.staff}`
         .toLowerCase()
@@ -89,16 +88,20 @@ export default function AdminOrders() {
       { key: 'name', value: (row) => row.customer },
       { key: 'area', value: (row) => row.area },
       { key: 'status', value: (row) => phaseRank(row.phase) },
-      { key: 'total', value: (row) => row.total, dir: 'desc' },
-      { key: 'date', value: (row) => row.date.getTime(), dir: 'desc' },
+      { key: 'total', value: (row) => row.total, direction: 'desc' },
+      { key: 'date', value: (row) => row.date.getTime(), direction: 'desc' },
     ],
-    { unit: 'pesanan', sortKey: 'date', sortDir: 'desc' }
+    { unit: 'pesanan', sortKey: 'date', sortDirection: 'desc' }
   )
   const selected = table.selectedRows
   const cancellable = cancelable(selected)
   const parts: string[] = []
-  if (search) parts.push(`kata kunci “${query.trim()}”`)
-  if (phases.length) parts.push(`status: ${phases.map((phase) => PHASE_LABEL[phase]).join(', ')}`)
+  if (search) {
+    parts.push(`kata kunci “${query.trim()}”`)
+  }
+  if (phases.length) {
+    parts.push(`status: ${phases.map((phase) => PHASE_LABEL[phase]).join(', ')}`)
+  }
   if (origins.length) {
     parts.push(
       `asal: ${origins.map((origin) => (origin === 'toko' ? 'Toko' : 'Online')).join(', ')}`
@@ -147,7 +150,7 @@ export default function AdminOrders() {
               rows: list.map((row) => [
                 row.number,
                 row.customer,
-                row.store ? 'Toko' : 'Online',
+                row.isInStore ? 'Toko' : 'Online',
                 row.area,
                 row.status,
                 row.total || null,
@@ -190,7 +193,8 @@ export default function AdminOrders() {
               value: origin,
               label: origin === 'toko' ? 'Toko' : 'Online',
               count: all.filter(
-                (order) => (order.store ? 'toko' : 'online') === origin && matches(order, 'origin')
+                (order) =>
+                  (order.isInStore ? 'toko' : 'online') === origin && matches(order, 'origin')
               ).length,
             }))}
           />
@@ -248,11 +252,11 @@ export default function AdminOrders() {
           </BulkBar>
         )}
         <MobileSort
-          value={`${table.sortKey}:${table.sortDir}`}
+          value={`${table.sortKey}:${table.sortDirection}`}
           options={SORT_OPTIONS}
           onChange={(value) => {
-            const [key, dir] = value.split(':')
-            table.setSort({ key, dir: dir as SortDir })
+            const [key, direction] = value.split(':')
+            table.setSort({ key, direction: direction as SortDirection })
           }}
         />
         {table.total > 0 && <SelectAllRow state={table.allState} onToggle={table.toggleAll} />}
@@ -325,7 +329,7 @@ export default function AdminOrders() {
                     <TableCell className="py-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-semibold">{row.customer}</span>
-                        <SourceTag store={row.store} />
+                        <SourceTag isInStore={row.isInStore} />
                       </div>
                     </TableCell>
                     <TableCell className="py-1 text-foreground-secondary max-lg:hidden">
@@ -375,7 +379,7 @@ export default function AdminOrders() {
                     <span className="font-mono text-meta leading-none font-semibold text-primary">
                       {row.number}
                     </span>
-                    <SourceTag store={row.store} />
+                    <SourceTag isInStore={row.isInStore} />
                     <span className="ml-auto text-[14.5px] leading-none font-semibold">
                       {row.total ? formatRupiah(row.total) : '—'}
                     </span>
@@ -411,31 +415,34 @@ export default function AdminOrders() {
       </div>
       <StatusDialog
         key={dialog === 'status' ? 'status-open' : 'status'}
-        open={dialog === 'status'}
-        onOpenChange={(open) => !open && setDialog(null)}
+        isOpen={dialog === 'status'}
+        onOpenChange={(isOpen) => !isOpen && setDialog(null)}
         selected={selected}
         onApply={(target) => {
           const eligible = statusEligible(selected, target)
-          if (!eligible.length) return 'Tidak ada pesanan terpilih yang bisa diubah ke status ini.'
-          const skipped = selected.length - eligible.length
-          applyStatus(
-            eligible.map((order) => order.number),
-            target
-          )
-          setDialog(null)
-          table.clear()
-          toast.success(
-            `${eligible.length} pesanan diubah ke “${PHASE_LABEL[target]}”${skipped ? `, ${skipped} dilewati` : ''}. Tercatat di Aktivitas Staf.`
+          if (!eligible.length) {
+            return 'Tidak ada pesanan terpilih yang bisa diubah ke status ini.'
+          }
+          router.post(
+            urlFor('admin.orders.move'),
+            { codes: eligible.map((order) => order.number), phase: target },
+            {
+              preserveScroll: true,
+              onSuccess: () => {
+                setDialog(null)
+                table.clear()
+              },
+            }
           )
           return null
         }}
       />
       <CancelDialog
         key={dialog === 'cancel' ? 'cancel-open' : 'cancel'}
-        open={dialog === 'cancel'}
-        onOpenChange={(open) => !open && setDialog(null)}
+        isOpen={dialog === 'cancel'}
+        onOpenChange={(isOpen) => !isOpen && setDialog(null)}
         title={`Batalkan ${cancellable.length} pesanan?`}
-        description="Pesanan tidak dihapus — statusnya menjadi Dibatalkan dan tetap ada di riwayat & laporan. Pelanggan menerima pemberitahuan via WhatsApp."
+        description="Pesanan tidak dihapus — statusnya menjadi Dibatalkan dan tetap ada di riwayat & laporan. Pelanggan dikirimi WhatsApp; hasil pengirimannya ditampilkan setelah disimpan."
         skipped={
           selected.length > cancellable.length
             ? `${selected.length - cancellable.length} pesanan terpilih dilewati karena sudah selesai atau dibatalkan.`
@@ -444,11 +451,16 @@ export default function AdminOrders() {
         reasons={CANCEL_REASONS}
         confirmLabel={`Batalkan ${cancellable.length} pesanan`}
         onConfirm={(reason) => {
-          cancelOrders(cancellable, reason, clockTime())
-          setDialog(null)
-          table.clear()
-          toast.success(
-            `${cancellable.length} pesanan dibatalkan (${reason.toLowerCase()}). Pelanggan diberi tahu via WhatsApp.`
+          router.post(
+            urlFor('admin.orders.cancel'),
+            { codes: cancellable.map((order) => order.number), reason },
+            {
+              preserveScroll: true,
+              onSuccess: () => {
+                setDialog(null)
+                table.clear()
+              },
+            }
           )
         }}
       />

@@ -50,17 +50,17 @@ export default function TablePagination({
           <IconChevronLeft />
         </Button>
         {pageNumbers.map((number) => {
-          const current = number === page
+          const isCurrent = number === page
           return (
             <button
               key={number}
               type="button"
               aria-label={`Halaman ${number}`}
-              aria-current={current ? 'page' : undefined}
+              aria-current={isCurrent ? 'page' : undefined}
               onClick={() => onPage(number)}
               className={cn(
                 'h-btn-compact min-w-10 rounded-md border px-1.5 text-sm leading-none tabular-nums',
-                current
+                isCurrent
                   ? 'border-foreground bg-surface-inverse font-semibold text-surface-inverse-foreground'
                   : 'border-transparent font-medium text-foreground hover:bg-accent'
               )}

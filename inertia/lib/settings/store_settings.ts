@@ -1,9 +1,11 @@
-import { createSharedStore } from '~/lib/shared/shared_store'
+import { router } from '@inertiajs/react'
+import { urlFor } from '~/client'
+import type { Coverage } from '~/lib/location/service_area'
 
 export type StorePayKey = 'qris' | 'cash' | 'edc'
 
 export const STORE_PAY_METHODS: { key: StorePayKey; label: string }[] = [
-  { key: 'qris', label: 'QRIS (offline)' },
+  { key: 'qris', label: 'QRIS (dari Midtrans)' },
   { key: 'cash', label: 'Tunai di toko' },
   { key: 'edc', label: 'EDC di toko' },
 ]
@@ -15,60 +17,36 @@ export type StoreSettings = {
   whatsapp: string
   address: string
   hours: string
-  areas: Record<string, string[]>
+  areas: Coverage
   slots: PickupSlotSetting[]
   payments: Record<StorePayKey, boolean>
   inactiveDays: number
 }
 
-export function defaultStoreSettings(): StoreSettings {
-  return {
-    name: 'Umima Clean',
-    whatsapp: '0811-2200-1100',
-    address: 'Jl. Margacinta No. 132, Margasari, Buahbatu, Kota Bandung 40286',
-    hours: 'Senin–Sabtu · 08.00–19.00',
-    areas: {
-      'Kota Bandung': [
-        'Coblong',
-        'Sukajadi',
-        'Cidadap',
-        'Bandung Wetan',
-        'Sumur Bandung',
-        'Lengkong',
-        'Antapani',
-        'Cicendo',
-      ],
-      'Kota Cimahi': ['Cimahi Utara', 'Cimahi Tengah'],
-      'Kab. Bandung': ['Dayeuhkolot', 'Bojongsoang'],
-      'Kab. Bandung Barat': ['Lembang', 'Parongpong'],
-    },
-    slots: [
-      { label: '09.00–12.00', capacity: 6, on: true },
-      { label: '12.00–15.00', capacity: 6, on: true },
-      { label: '15.00–18.00', capacity: 4, on: true },
-    ],
-    payments: { qris: true, cash: true, edc: true },
-    inactiveDays: 60,
-  }
-}
-
-export const storeSettings = createSharedStore<StoreSettings>(
-  'local',
-  'umima:store-settings',
-  defaultStoreSettings
-)
-
 export const SLOT_CAPACITY = { min: 1, max: 20 }
 
-export function areaCount(areas: Record<string, string[]>) {
-  return Object.values(areas).reduce((sum, list) => sum + list.length, 0)
+export function areaCount(areas: Coverage) {
+  return areas.reduce((sum, area) => sum + (area.districts?.length ?? 0), 0)
 }
 
-export function areaError(areas: Record<string, string[]>, city: string, name: string) {
+export function areaError(areas: Coverage, city: string, name: string) {
   const value = name.trim()
-  if (!value) return 'Tulis nama kecamatan.'
-  if ((areas[city] ?? []).some((item) => item.toLowerCase() === value.toLowerCase())) {
+  if (!value) {
+    return 'Tulis nama kecamatan.'
+  }
+  const area = areas.find((item) => item.city === city)
+  if (area && area.districts === null) {
+    return `Seluruh ${city} sudah termasuk area layanan.`
+  }
+  if ((area?.districts ?? []).some((item) => item.toLowerCase() === value.toLowerCase())) {
     return `Sudah ada di ${city}.`
   }
   return null
+}
+
+export function saveStoreSettings(
+  settings: StoreSettings,
+  callbacks: { onError?: (errors: Record<string, string>) => void; onFinish?: () => void } = {}
+) {
+  router.put(urlFor('admin.store.update'), settings, { preserveScroll: true, ...callbacks })
 }

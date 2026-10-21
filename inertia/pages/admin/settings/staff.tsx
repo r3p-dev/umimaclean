@@ -21,12 +21,14 @@ import {
   StaffFormDialog,
 } from '~/components/organisms/settings/staff_dialogs'
 import AdminLayout from '~/components/templates/admin_layout'
+import { Dialog, DialogClose, DialogDescription } from '~/components/ui/dialog'
+import DialogTitleBar from '~/components/molecules/dialog_title_bar'
 import {
   EMPTY_STAFF_FORM,
   initialsOf,
+  resetStaffPassword,
   saveStaff,
   setStaffActive,
-  staffAccounts,
   type StaffAccount,
   type StaffForm,
 } from '~/lib/settings/staff_accounts'
@@ -35,28 +37,38 @@ import { cn } from '~/lib/shared/utils'
 type DialogState =
   { kind: 'form'; id: string | null; initial: StaffForm } | { kind: 'off'; id: string } | null
 
-export default function AdminStaffSettings() {
-  const accounts = staffAccounts.use()
+type PasswordNotice = { name: string; password: string; notice: string }
+
+export default function AdminStaffSettings({
+  accounts,
+  password,
+}: {
+  accounts: StaffAccount[]
+  password: PasswordNotice | null
+}) {
   const [dialog, setDialog] = useState<DialogState>(null)
+  const [shownPassword, setShownPassword] = useState<PasswordNotice | null>(password)
+  const [seenPassword, setSeenPassword] = useState(password)
+  if (password !== seenPassword) {
+    setSeenPassword(password)
+    setShownPassword(password)
+  }
+  const onError = (errors: Record<string, string>) =>
+    toast.error(Object.values(errors)[0] ?? 'Periksa kembali isian.')
   const active = accounts.filter((account) => account.active).length
   const deactivating =
     dialog?.kind === 'off' ? accounts.find((item) => item.id === dialog.id) : null
 
   function toggle(account: StaffAccount) {
-    if (account.role === 'Owner') {
-      toast.success(`Tautan reset kata sandi dikirim ke WhatsApp ${account.name}.`)
-      return
-    }
     if (account.active) {
       setDialog({ kind: 'off', id: account.id })
       return
     }
     setStaffActive(account.id, true)
-    toast.success(`${account.name} diaktifkan lagi.`)
   }
 
   function actions(account: StaffAccount) {
-    const destructive = account.active && account.role !== 'Owner'
+    const isDestructive = account.active
     return (
       <div className="flex justify-end gap-1.5">
         <Button
@@ -78,14 +90,26 @@ export default function AdminStaffSettings() {
         >
           <IconPencil className="size-4.5" />
         </Button>
-        <Button
-          variant="outline"
-          size="compact"
-          onPress={() => toggle(account)}
-          className={cn('rounded-[9px] text-meta', destructive && 'text-destructive-text')}
-        >
-          {account.role === 'Owner' ? 'Reset sandi' : account.active ? 'Nonaktifkan' : 'Aktifkan'}
-        </Button>
+        {!account.isSelf && (
+          <>
+            <Button
+              variant="outline"
+              size="compact"
+              onPress={() => resetStaffPassword(account.id)}
+              className="rounded-[9px] text-meta"
+            >
+              Reset sandi
+            </Button>
+            <Button
+              variant="outline"
+              size="compact"
+              onPress={() => toggle(account)}
+              className={cn('rounded-[9px] text-meta', isDestructive && 'text-destructive-text')}
+            >
+              {account.active ? 'Nonaktifkan' : 'Aktifkan'}
+            </Button>
+          </>
+        )}
       </div>
     )
   }
@@ -184,31 +208,44 @@ export default function AdminStaffSettings() {
       </div>
       {dialog?.kind === 'form' && (
         <StaffFormDialog
-          open
-          onOpenChange={(open) => !open && setDialog(null)}
-          editing={dialog.id !== null}
+          isOpen
+          onOpenChange={(isOpen) => !isOpen && setDialog(null)}
+          isEditing={dialog.id !== null}
           initial={dialog.initial}
           onSave={(form) => {
-            saveStaff(form, dialog.id)
-            setDialog(null)
-            toast.success(
-              dialog.id
-                ? `Akun ${form.name.trim()} diperbarui.`
-                : `Undangan dikirim ke WhatsApp ${form.name.trim()}.`
-            )
+            saveStaff(form, dialog.id, { onSuccess: () => setDialog(null), onError })
           }}
         />
       )}
       <DeactivateStaffDialog
-        open={dialog?.kind === 'off'}
-        onOpenChange={(open) => !open && setDialog(null)}
+        isOpen={dialog?.kind === 'off'}
+        onOpenChange={(isOpen) => !isOpen && setDialog(null)}
         name={deactivating?.name ?? ''}
         onConfirm={() => {
-          if (deactivating) setStaffActive(deactivating.id, false)
-          setDialog(null)
-          toast.success(`${deactivating?.name ?? 'Akun'} dinonaktifkan.`)
+          if (deactivating) {
+            setStaffActive(deactivating.id, false, { onSuccess: () => setDialog(null) })
+          }
         }}
       />
+      <Dialog
+        isOpen={!!shownPassword}
+        onOpenChange={(isOpen) => !isOpen && setShownPassword(null)}
+        variant="panel"
+        role="alertdialog"
+      >
+        <DialogTitleBar>Kata sandi sementara</DialogTitleBar>
+        <DialogDescription className="text-note leading-normal">
+          Berikan kata sandi ini ke {shownPassword?.name}. Kata sandi hanya ditampilkan sekali;
+          minta staf menggantinya di Profil setelah masuk.
+        </DialogDescription>
+        <p className="rounded-md border border-border bg-background px-3 py-3 text-center font-mono text-xl font-semibold tracking-wider select-all">
+          {shownPassword?.password}
+        </p>
+        <p className="text-meta leading-[1.4] text-foreground-secondary">{shownPassword?.notice}</p>
+        <div className="flex justify-end">
+          <DialogClose size="desktop">Sudah dicatat</DialogClose>
+        </div>
+      </Dialog>
     </AdminLayout>
   )
 }

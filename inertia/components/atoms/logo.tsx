@@ -7,7 +7,7 @@ const iconSizes = { sm: 'size-6', md: 'size-8', lg: 'size-10' }
 
 type LogoProps = {
   tone?: 'default' | 'inverse'
-  decorative?: boolean
+  isDecorative?: boolean
   className?: string
 } & (
   | { variant?: 'full'; size?: keyof typeof fullSizes }
@@ -18,7 +18,7 @@ export default function Logo({
   variant = 'full',
   size = 'sm',
   tone = 'default',
-  decorative = false,
+  isDecorative = false,
   className,
 }: LogoProps) {
   const isIcon = variant === 'icon'
@@ -29,9 +29,9 @@ export default function Logo({
 
   return (
     <Svg
-      role={decorative ? undefined : 'img'}
-      aria-label={decorative ? undefined : 'Umima'}
-      aria-hidden={decorative ? true : undefined}
+      role={isDecorative ? undefined : 'img'}
+      aria-label={isDecorative ? undefined : 'Umima'}
+      aria-hidden={isDecorative ? true : undefined}
       className={cn(
         'block shrink-0 overflow-visible',
         !isIcon && 'aspect-[2.78672] w-auto',

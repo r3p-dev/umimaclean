@@ -11,8 +11,8 @@ import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import ChoiceRow from '~/components/molecules/choice_row'
 import LocationMap from '~/components/organisms/location_map'
-import type { PickupPoint } from '~/lib/order/draft'
-import type { ReturnMethod } from '~/lib/staff/workday'
+import type { PickupPoint } from '~/lib/location/point'
+import type { ReturnMethod } from '~/lib/store/walk_in'
 import { RETURN_OPTIONS } from '~/lib/store/walk_in'
 
 const ICONS: Record<ReturnMethod, ComponentType<SVGProps<SVGSVGElement>>> = {
@@ -24,7 +24,7 @@ export default function ReturnMethodCard({
   value,
   onChange,
   savedArea,
-  useSaved,
+  shouldUseSaved,
   onChoosePoint,
   point,
   address,
@@ -34,7 +34,7 @@ export default function ReturnMethodCard({
   value: ReturnMethod
   onChange: (value: ReturnMethod) => void
   savedArea: string | null
-  useSaved: boolean
+  shouldUseSaved: boolean
   onChoosePoint: () => void
   point: PickupPoint
   address: string
@@ -55,7 +55,7 @@ export default function ReturnMethodCard({
               role="radio"
               tone="subtle"
               markPosition="end"
-              checked={value === option.key}
+              isChecked={value === option.key}
               onChange={() => onChange(option.key)}
               className="min-h-16 gap-3 py-2.5"
             >
@@ -70,7 +70,7 @@ export default function ReturnMethodCard({
           )
         })}
       </div>
-      {value === 'antar' && useSaved && savedArea && (
+      {value === 'antar' && shouldUseSaved && savedArea && (
         <div className="flex flex-col gap-1 rounded-md bg-background px-3.5 py-3">
           <span className="text-caption leading-[1.3] font-medium text-muted-foreground">
             Tujuan antar · alamat tersimpan
@@ -92,7 +92,7 @@ export default function ReturnMethodCard({
           </Button>
         </div>
       )}
-      {value === 'antar' && !(useSaved && savedArea) && (
+      {value === 'antar' && !(shouldUseSaved && savedArea) && (
         <div className="overflow-hidden rounded-md border border-border">
           <LocationMap
             center={point}

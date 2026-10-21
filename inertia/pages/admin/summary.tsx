@@ -11,42 +11,60 @@ import PeriodTabs from '~/components/organisms/reports/period_tabs'
 import RevenueChart from '~/components/organisms/reports/revenue_chart'
 import TopServices from '~/components/organisms/reports/top_services'
 import AdminLayout from '~/components/templates/admin_layout'
-import { RECENT_ACTIVITY } from '~/lib/activity/log'
-import { inactiveCount } from '~/lib/customers/segments'
+import type { ActivityRow } from '~/lib/activity/log'
 import type { Sheet } from '~/lib/export/xlsx'
-import { costShare, costTotal, costs } from '~/lib/reports/costs'
+import { costShare, costTotal, costsForPeriod, type Cost } from '~/lib/reports/costs'
 import {
   delta,
   paymentMix,
   percentChange,
+  dataRange,
   reportPeriod,
   type PeriodKey,
+  type ReportData,
 } from '~/lib/reports/period'
-import { topServices, type ServiceRank, type ServiceRow } from '~/lib/reports/services'
-import { storeSettings } from '~/lib/settings/store_settings'
+import {
+  topServices,
+  type ServiceDayRow,
+  type ServiceRank,
+  type ServiceRow,
+} from '~/lib/reports/services'
 import { useDataTable } from '~/lib/shared/data_table'
 import { isWeekend } from '~/lib/shared/date'
 import { formatRupiah } from '~/lib/shared/format'
 
-export default function AdminSummary() {
+export default function AdminSummary({
+  report,
+  services: serviceDays,
+  costs,
+  inactiveDays,
+  inactiveCount,
+  recent,
+}: {
+  report: ReportData
+  services: ServiceDayRow[]
+  costs: Cost[]
+  inactiveDays: number
+  inactiveCount: number
+  recent: ActivityRow[]
+}) {
   const [periodKey, setPeriodKey] = useState<PeriodKey>('30')
   const [customFrom, setCustomFrom] = useState<string>()
   const [customTo, setCustomTo] = useState<string>()
   const [rank, setRank] = useState<ServiceRank>('items')
-  const costList = costs.use()
-  const { inactiveDays } = storeSettings.use()
-  const period = reportPeriod(periodKey, customFrom, customTo)
+  const period = reportPeriod(report, periodKey, customFrom, customTo)
+  const costList = costsForPeriod(costs, period.to)
   const current = period.current
   const previous = period.previous
   const mix = paymentMix(current)
-  const services = topServices(current, rank)
+  const services = topServices(serviceDays, period.from, period.to, rank)
   const table = useDataTable(
     services.rows,
     [
-      { key: 'items', value: (row) => row.items, dir: 'desc' },
-      { key: 'revenue', value: (row) => row.revenue, dir: 'desc' },
+      { key: 'items', value: (row) => row.items, direction: 'desc' },
+      { key: 'revenue', value: (row) => row.revenue, direction: 'desc' },
     ],
-    { unit: 'layanan', sortKey: rank, sortDir: 'desc' }
+    { unit: 'layanan', sortKey: rank, sortDirection: 'desc' }
   )
   const cost = costShare(costTotal(costList), period.length)
   const transactionsDelta = delta(current.transactions, previous.transactions)
@@ -167,6 +185,7 @@ export default function AdminSummary() {
         onFrom={setCustomFrom}
         onTo={setCustomTo}
         warning={period.warning}
+        range={dataRange(report)}
       />
       <div
         id="period-panel"
@@ -235,9 +254,7 @@ export default function AdminSummary() {
                 </span>
                 <IconChevronRight className="size-5 text-muted-foreground" />
               </span>
-              <span className="text-[26px] leading-[1.1] font-bold">
-                {inactiveCount(inactiveDays)}
-              </span>
+              <span className="text-[26px] leading-[1.1] font-bold">{inactiveCount}</span>
               <span className="text-meta leading-[1.45] text-foreground-secondary">
                 Tidak ada transaksi lunas ≥{' '}
                 <strong className="font-semibold text-foreground">{inactiveDays} hari</strong>.
@@ -256,13 +273,20 @@ export default function AdminSummary() {
                 </LinkButton>
               </div>
               <ul>
-                {RECENT_ACTIVITY.map((item) => (
+                {recent.length === 0 && (
+                  <li className="px-4.5 py-3 text-meta text-muted-foreground">
+                    Belum ada aktivitas tercatat.
+                  </li>
+                )}
+                {recent.map((item) => (
                   <li
-                    key={`${item.time}-${item.what}`}
+                    key={item.id}
                     className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-0.5 border-b border-border px-4.5 py-2.5 last:border-b-0"
                   >
                     <span className="text-[13.5px] leading-[1.35] font-medium">
-                      <strong className="font-semibold">{item.who}</strong> {item.what}
+                      <strong className="font-semibold">{item.staff.split(' ')[0]}</strong>{' '}
+                      {item.action.toLowerCase()}
+                      {item.detail ? ` · ${item.detail}` : ''}
                     </span>
                     <span className="font-mono text-xs leading-[1.35] font-medium text-muted-foreground">
                       {item.time}
@@ -279,11 +303,12 @@ export default function AdminSummary() {
         <TopServices
           table={table}
           rank={rank}
-          onRank={(next, toggle) => {
-            if (toggle) table.sortBy(next)
-            else {
+          onRank={(next, shouldToggle) => {
+            if (shouldToggle) {
+              table.sortBy(next)
+            } else {
               setRank(next)
-              table.setSort({ key: next, dir: 'desc' })
+              table.setSort({ key: next, direction: 'desc' })
             }
           }}
           footer={`${table.total} dari ${services.total} layanan · diurutkan menurut ${rank === 'revenue' ? 'omzet' : 'jumlah barang'} · ${period.range}`}

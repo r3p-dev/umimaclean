@@ -34,7 +34,9 @@ export default function TabList<T extends string>({
             : event.key === 'End'
               ? tabs.length - 1
               : -1
-    if (next < 0) return
+    if (next < 0) {
+      return
+    }
     event.preventDefault()
     onChange(tabs[next].value)
     list.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus()
@@ -52,20 +54,20 @@ export default function TabList<T extends string>({
       )}
     >
       {tabs.map((tab) => {
-        const active = tab.value === value
+        const isActive = tab.value === value
         return (
           <button
             key={tab.value}
             type="button"
             role="tab"
             id={`${idPrefix}-${tab.value}`}
-            aria-selected={active}
+            aria-selected={isActive}
             aria-controls={panelId}
-            tabIndex={active ? 0 : -1}
+            tabIndex={isActive ? 0 : -1}
             onClick={() => onChange(tab.value)}
             className={cn(
               '-mb-px h-btn-desktop shrink-0 rounded-t-md border-b-2 px-3 text-sm leading-none whitespace-nowrap hover:bg-accent',
-              active
+              isActive
                 ? 'border-primary font-semibold text-foreground'
                 : 'border-transparent font-medium text-foreground-secondary',
               tabClassName

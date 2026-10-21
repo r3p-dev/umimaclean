@@ -11,31 +11,31 @@ import { COST_CATEGORIES, type Cost, type CostCategory } from '~/lib/reports/cos
 const FOOTER = 'flex flex-col-reverse justify-end gap-2 sm:flex-row sm:items-center'
 
 export function CostFormDialog({
-  open,
+  isOpen,
   onOpenChange,
   initial,
-  editing,
+  isEditing,
   onSave,
 }: {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
   initial: Omit<Cost, 'id'>
-  editing: boolean
+  isEditing: boolean
   onSave: (cost: Omit<Cost, 'id'>) => void
 }) {
   const [category, setCategory] = useState<CostCategory>(initial.category)
   const [amount, setAmount] = useState(initial.amount ? String(initial.amount) : '')
   const [note, setNote] = useState(initial.note)
   const [date, setDate] = useState(initial.date)
-  const [error, setError] = useState(false)
+  const [hasError, setError] = useState(false)
   const categoryId = useId()
   const amountId = useId()
   const noteId = useId()
   const dateId = useId()
 
   return (
-    <Dialog isOpen={open} onOpenChange={onOpenChange} variant="panel">
-      <DialogTitleBar>{editing ? 'Ubah biaya' : 'Tambah biaya operasional'}</DialogTitleBar>
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
+      <DialogTitleBar>{isEditing ? 'Ubah biaya' : 'Tambah biaya operasional'}</DialogTitleBar>
       <div className="flex flex-col gap-1.5">
         <span id={categoryId} className="text-note leading-[1.2] font-semibold">
           Kategori
@@ -57,15 +57,15 @@ export function CostFormDialog({
           autoComplete="off"
           placeholder="2500000"
           value={amount}
-          aria-invalid={error || undefined}
-          aria-describedby={error ? `${amountId}-error` : undefined}
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? `${amountId}-error` : undefined}
           onChange={(event) => {
             setAmount(event.target.value.replace(/\D/g, '').slice(0, 10))
             setError(false)
           }}
           className="px-3"
         />
-        {error && (
+        {hasError && (
           <FieldError id={`${amountId}-error`} className="text-meta">
             Isi jumlah biaya.
           </FieldError>
@@ -90,8 +90,7 @@ export function CostFormDialog({
         </Label>
         <Input
           id={dateId}
-          autoComplete="off"
-          placeholder="1 Okt 2026"
+          type="date"
           value={date}
           onChange={(event) => setDate(event.target.value)}
           className="px-3"
@@ -112,11 +111,11 @@ export function CostFormDialog({
               category,
               amount: Number(amount),
               note: note.trim() || category,
-              date: date.trim() || '8 Okt',
+              date: date || initial.date,
             })
           }}
         >
-          {editing ? 'Simpan' : 'Tambah biaya'}
+          {isEditing ? 'Simpan' : 'Tambah biaya'}
         </Button>
       </div>
     </Dialog>
@@ -124,18 +123,18 @@ export function CostFormDialog({
 }
 
 export function DeleteCostDialog({
-  open,
+  isOpen,
   onOpenChange,
   name,
   onDelete,
 }: {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
   name: string
   onDelete: () => void
 }) {
   return (
-    <Dialog isOpen={open} onOpenChange={onOpenChange} variant="panel">
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
       <DialogTitleBar>Hapus biaya “{name}”?</DialogTitleBar>
       <DialogDescription className="text-note leading-normal">
         Laba bersih dihitung ulang setelah biaya dihapus. Perubahan tercatat di Aktivitas Staf.

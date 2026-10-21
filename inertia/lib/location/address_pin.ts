@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { searchFirst, searchTerms } from '~/lib/location/geocode'
 import type { AddressSuggestion } from '~/lib/location/suggest'
-import type { PickupPoint } from '~/lib/order/draft'
+import type { PickupPoint } from '~/lib/location/point'
 
 export function addressKey(text: string) {
   return searchTerms(text)[0]?.toLowerCase() ?? ''
@@ -28,12 +28,18 @@ export function useAddressPin(initialKey: string, move: (point: PickupPoint) => 
   const follow = useCallback(
     (text: string, best?: PickupPoint) => {
       const key = addressKey(text)
-      if (!key || key === placedFor.current) return pending.current ?? Promise.resolve(null)
+      if (!key || key === placedFor.current) {
+        return pending.current ?? Promise.resolve(null)
+      }
       placedFor.current = key
       const task = (best ? Promise.resolve(best) : searchFirst(text).catch(() => null)).then(
         (found) => {
-          if (pending.current === task) pending.current = null
-          if (!found || placedFor.current !== key) return null
+          if (pending.current === task) {
+            pending.current = null
+          }
+          if (!found || placedFor.current !== key) {
+            return null
+          }
           move(found)
           return found
         }

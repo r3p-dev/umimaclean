@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Head } from '@inertiajs/react'
-import { toast } from 'sonner'
 import {
   IconInfoCircle,
   IconPencil,
@@ -46,7 +45,6 @@ import {
   SERVICE_TYPES,
   deleteServices,
   saveService,
-  services,
   setServicesActive,
   type Service,
   type ServiceCategory,
@@ -71,8 +69,7 @@ function TypeBadge({ type }: { type: ServiceType }) {
   )
 }
 
-export default function AdminServices() {
-  const list = services.use()
+export default function AdminServices({ services: list }: { services: Service[] }) {
   const [types, setTypes] = useState<ServiceType[]>([])
   const [categories, setCategories] = useState<ServiceCategory[]>([])
   const [showInactive, setShowInactive] = useState(true)
@@ -93,7 +90,7 @@ export default function AdminServices() {
     [
       { key: 'name', value: (row) => row.name },
       { key: 'type', value: (row) => (row.type === 'utama' ? 0 : 1) },
-      { key: 'price', value: (row) => row.price, dir: 'desc' },
+      { key: 'price', value: (row) => row.price, direction: 'desc' },
       { key: 'days', value: (row) => row.days },
       { key: 'active', value: (row) => (row.active ? 0 : 1) },
     ],
@@ -101,14 +98,20 @@ export default function AdminServices() {
   )
   const selectedIds = table.selectedRows.map((row) => row.id)
   const parts: string[] = []
-  if (search) parts.push(`kata kunci “${query.trim()}”`)
+  if (search) {
+    parts.push(`kata kunci “${query.trim()}”`)
+  }
   if (types.length) {
     parts.push(
       `jenis: ${types.map((type) => (type === 'utama' ? 'Utama' : 'Tambahan')).join(', ')}`
     )
   }
-  if (categories.length) parts.push(`kategori: ${categories.join(', ')}`)
-  if (!showInactive) parts.push('nonaktif disembunyikan')
+  if (categories.length) {
+    parts.push(`kategori: ${categories.join(', ')}`)
+  }
+  if (!showInactive) {
+    parts.push('nonaktif disembunyikan')
+  }
 
   function changeFilter(change: () => void) {
     change()
@@ -126,7 +129,6 @@ export default function AdminServices() {
 
   function toggleActive(service: Service) {
     setServicesActive([service.id], !service.active)
-    toast.success(`${service.name} ${service.active ? 'dinonaktifkan.' : 'diaktifkan.'}`)
   }
 
   function edit(service: Service) {
@@ -262,7 +264,7 @@ export default function AdminServices() {
           />
           <Switch
             isSelected={showInactive}
-            onChange={(checked) => changeFilter(() => setShowInactive(checked))}
+            onChange={(isChecked) => changeFilter(() => setShowInactive(isChecked))}
             className="min-h-icon-btn cursor-pointer gap-2.5"
           >
             <span className="text-sm leading-tight font-medium">Tampilkan layanan nonaktif</span>
@@ -298,10 +300,7 @@ export default function AdminServices() {
               size="compact"
               isDisabled={table.selectedRows.every((row) => row.active)}
               onPress={() => {
-                const count = table.selectedRows.filter((row) => !row.active).length
-                setServicesActive(selectedIds, true)
-                table.clear()
-                toast.success(`${count} layanan diaktifkan.`)
+                setServicesActive(selectedIds, true, { onSuccess: () => table.clear() })
               }}
               className="text-[13.5px]"
             >
@@ -313,10 +312,7 @@ export default function AdminServices() {
               size="compact"
               isDisabled={table.selectedRows.every((row) => !row.active)}
               onPress={() => {
-                const count = table.selectedRows.filter((row) => row.active).length
-                setServicesActive(selectedIds, false)
-                table.clear()
-                toast.success(`${count} layanan dinonaktifkan. Tidak tampil di pilihan staf.`)
+                setServicesActive(selectedIds, false, { onSuccess: () => table.clear() })
               }}
               className="text-[13.5px]"
             >
@@ -377,12 +373,12 @@ export default function AdminServices() {
             </TableHeader>
             <TableBody>
               {table.rows.map((row) => {
-                const selected = table.isSelected(row.id)
+                const isSelected = table.isSelected(row.id)
                 return (
-                  <TableRow key={row.id} data-selected={selected}>
+                  <TableRow key={row.id} data-selected={isSelected}>
                     <TableCell className={CHECK_CELL}>
                       <Checkbox
-                        isSelected={selected}
+                        isSelected={isSelected}
                         onChange={() => table.toggle(row.id)}
                         aria-label={`Pilih ${row.label}`}
                       />
@@ -428,18 +424,18 @@ export default function AdminServices() {
         )}
         <ul className="sm:hidden">
           {table.rows.map((row) => {
-            const selected = table.isSelected(row.id)
+            const isSelected = table.isSelected(row.id)
             return (
               <li
                 key={row.id}
-                data-selected={selected}
+                data-selected={isSelected}
                 className={cn(
                   'flex items-start gap-0.5 border-t border-border pt-2 pr-4 pb-3 pl-1',
-                  selected && 'bg-row-selected'
+                  isSelected && 'bg-row-selected'
                 )}
               >
                 <Checkbox
-                  isSelected={selected}
+                  isSelected={isSelected}
                   onChange={() => table.toggle(row.id)}
                   aria-label={`Pilih ${row.label}`}
                 />
@@ -493,60 +489,65 @@ export default function AdminServices() {
       </div>
       {dialog?.kind === 'form' && (
         <ServiceFormDialog
-          open
-          onOpenChange={(open) => !open && setDialog(null)}
-          editing={dialog.id !== null}
+          isOpen
+          onOpenChange={(isOpen) => !isOpen && setDialog(null)}
+          isEditing={dialog.id !== null}
           initial={dialog.initial}
           onSave={(form) => {
-            saveService(form, dialog.id)
-            setDialog(null)
-            if (dialog.id)
-              toast.success('Perubahan disimpan. Berlaku untuk pemeriksaan berikutnya.')
-            else {
-              changeFilter(() => {
-                setQuery('')
-                setTypes([])
-                setCategories([])
-                setShowInactive(true)
-              })
-              toast.success(`${form.name.trim()} ditambahkan.`)
-            }
+            const isNew = dialog.id === null
+            saveService(form, dialog.id, {
+              onSuccess: () => {
+                setDialog(null)
+                if (isNew) {
+                  changeFilter(() => {
+                    setQuery('')
+                    setTypes([])
+                    setCategories([])
+                    setShowInactive(true)
+                  })
+                }
+              },
+            })
           }}
         />
       )}
       <DeleteServicesDialog
-        open={dialog?.kind === 'delete'}
-        onOpenChange={(open) => !open && setDialog(null)}
+        isOpen={dialog?.kind === 'delete'}
+        onOpenChange={(isOpen) => !isOpen && setDialog(null)}
         title={`Hapus “${deleting?.name ?? ''}”?`}
         confirmLabel="Hapus layanan"
         onDeactivate={() => {
-          if (deleting) setServicesActive([deleting.id], false)
-          setDialog(null)
-          toast.success(`${deleting?.name ?? 'Layanan'} dinonaktifkan.`)
+          if (deleting) {
+            setServicesActive([deleting.id], false, { onSuccess: () => setDialog(null) })
+          }
         }}
         onDelete={() => {
-          if (deleting) deleteServices([deleting.id])
-          setDialog(null)
-          toast.success(`${deleting?.name ?? 'Layanan'} dihapus.`)
+          if (deleting) {
+            deleteServices([deleting.id], { onSuccess: () => setDialog(null) })
+          }
         }}
       />
       <DeleteServicesDialog
-        open={dialog?.kind === 'bulk-delete'}
-        onOpenChange={(open) => !open && setDialog(null)}
+        isOpen={dialog?.kind === 'bulk-delete'}
+        onOpenChange={(isOpen) => !isOpen && setDialog(null)}
         title={`Hapus ${table.selectedCount} layanan?`}
         names={table.selectedRows.map((row) => row.name)}
         confirmLabel={`Hapus ${table.selectedCount} layanan`}
         onDeactivate={() => {
-          setServicesActive(selectedIds, false)
-          setDialog(null)
-          table.clear()
-          toast.success(`${selectedIds.length} layanan dinonaktifkan.`)
+          setServicesActive(selectedIds, false, {
+            onSuccess: () => {
+              setDialog(null)
+              table.clear()
+            },
+          })
         }}
         onDelete={() => {
-          deleteServices(selectedIds)
-          setDialog(null)
-          table.clear()
-          toast.success(`${selectedIds.length} layanan dihapus.`)
+          deleteServices(selectedIds, {
+            onSuccess: () => {
+              setDialog(null)
+              table.clear()
+            },
+          })
         }}
       />
     </AdminLayout>

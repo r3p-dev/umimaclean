@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { formatDayMonth } from '~/lib/shared/date'
-import { STAFF_PROFILE } from '~/lib/staff/profile'
-import { clockTime } from '~/lib/staff/workday'
+import { clockTime, formatDayMonth } from '~/lib/shared/date'
+import { shortName } from '~/lib/shared/format'
 
 export type CameraStatus = 'starting' | 'live' | 'denied' | 'unavailable'
 
@@ -15,16 +14,23 @@ function cameraSupported() {
   return typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia)
 }
 
-export function proofStamp(ref: string, withYear = false, date = new Date()) {
+export async function photoFile(photo: string, name = 'bukti.jpg') {
+  const blob = await fetch(photo).then((response) => response.blob())
+  return new File([blob], name, { type: blob.type || 'image/jpeg' })
+}
+
+export function proofStamp(ref: string, staff: string, withYear = false, date = new Date()) {
   const day = formatDayMonth(date, withYear)
   return withYear
-    ? `${day} · ${clockTime(date)} · ${STAFF_PROFILE.short} · ${ref}`
-    : `${day} ${clockTime(date)} · ${STAFF_PROFILE.short} · ${ref}`
+    ? `${day} · ${clockTime(date)} · ${shortName(staff)} · ${ref}`
+    : `${day} ${clockTime(date)} · ${shortName(staff)} · ${ref}`
 }
 
 function placeholderFrame(canvas: HTMLCanvasElement) {
   const context = canvas.getContext('2d')
-  if (!context) return
+  if (!context) {
+    return
+  }
   canvas.width = 960
   canvas.height = 720
   const styles = getComputedStyle(document.documentElement)
@@ -42,19 +48,21 @@ function placeholderFrame(canvas: HTMLCanvasElement) {
   }
 }
 
-export function useCamera(active: boolean) {
+export function useCamera(isActive: boolean) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const trackRef = useRef<MediaStreamTrack | null>(null)
   const [status, setStatus] = useState<CameraStatus>('starting')
   const [facing, setFacing] = useState<Facing>('environment')
   const [attempt, setAttempt] = useState(0)
-  const [torch, setTorch] = useState({ supported: false, on: false })
-  const supported = cameraSupported()
+  const [torch, setTorch] = useState({ isSupported: false, isOn: false })
+  const isSupported = cameraSupported()
 
   useEffect(() => {
-    if (!active || !supported) return
+    if (!isActive || !isSupported) {
+      return
+    }
     let stream: MediaStream | null = null
-    let cancelled = false
+    let isCancelled = false
 
     navigator.mediaDevices
       .getUserMedia({
@@ -62,15 +70,17 @@ export function useCamera(active: boolean) {
         audio: false,
       })
       .then(async (media) => {
-        if (cancelled) {
-          media.getTracks().forEach((track) => track.stop())
+        if (isCancelled) {
+          for (const track of media.getTracks()) {
+            track.stop()
+          }
           return
         }
         stream = media
         const track = media.getVideoTracks()[0] ?? null
         trackRef.current = track
         const capabilities = (track?.getCapabilities?.() ?? {}) as TorchCapabilities
-        setTorch({ supported: Boolean(capabilities.torch), on: false })
+        setTorch({ isSupported: Boolean(capabilities.torch), isOn: false })
         const video = videoRef.current
         if (video) {
           video.srcObject = media
@@ -79,18 +89,22 @@ export function useCamera(active: boolean) {
         setStatus('live')
       })
       .catch((error: unknown) => {
-        if (cancelled) return
+        if (isCancelled) {
+          return
+        }
         const name = error instanceof DOMException ? error.name : ''
         setStatus(name === 'NotAllowedError' || name === 'SecurityError' ? 'denied' : 'unavailable')
       })
 
     return () => {
-      cancelled = true
-      stream?.getTracks().forEach((track) => track.stop())
+      isCancelled = true
+      for (const track of stream?.getTracks() ?? []) {
+        track.stop()
+      }
       trackRef.current = null
       setStatus('starting')
     }
-  }, [active, supported, facing, attempt])
+  }, [isActive, isSupported, facing, attempt])
 
   async function capture() {
     const canvas = document.createElement('canvas')
@@ -110,18 +124,20 @@ export function useCamera(active: boolean) {
 
   async function toggleTorch() {
     const track = trackRef.current
-    if (!track || !torch.supported) return
-    const next = !torch.on
+    if (!track || !torch.isSupported) {
+      return
+    }
+    const isNextOn = !torch.isOn
     await track
-      .applyConstraints({ advanced: [{ torch: next } as MediaTrackConstraintSet] })
-      .then(() => setTorch({ supported: true, on: next }))
+      .applyConstraints({ advanced: [{ torch: isNextOn } as MediaTrackConstraintSet] })
+      .then(() => setTorch({ isSupported: true, isOn: isNextOn }))
       .catch(() => undefined)
   }
 
   return {
     videoRef,
-    status: supported ? status : ('unavailable' as CameraStatus),
-    canCapture: (supported && status === 'live') || import.meta.env.DEV,
+    status: isSupported ? status : ('unavailable' as CameraStatus),
+    canCapture: (isSupported && status === 'live') || import.meta.env.DEV,
     capture,
     retry() {
       setStatus('starting')

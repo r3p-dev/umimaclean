@@ -1,4 +1,6 @@
-import { createSharedStore } from '~/lib/shared/shared_store'
+import { router } from '@inertiajs/react'
+import type { Data } from '@generated/data'
+import { urlFor } from '~/client'
 
 export type ServiceType = 'utama' | 'tambahan'
 
@@ -11,43 +13,7 @@ export const SERVICE_TYPES: { value: ServiceType; label: string }[] = [
 
 export const SERVICE_CATEGORIES: ServiceCategory[] = ['Sepatu', 'Tas', 'Helm']
 
-export type Service = {
-  id: string
-  label: string
-  name: string
-  type: ServiceType
-  categories: ServiceCategory[]
-  price: number
-  days: number
-  description: string
-  active: boolean
-}
-
-const SEED: [string, ServiceType, ServiceCategory[], number, number, string][] = [
-  ['Deep Clean', 'utama', ['Sepatu'], 45000, 3, 'Cuci menyeluruh bagian luar, dalam, dan sol'],
-  ['Fast Clean', 'utama', ['Sepatu'], 30000, 1, 'Bagian luar dan sol, selesai 1 hari'],
-  ['Premium Clean', 'utama', ['Tas'], 60000, 4, 'Untuk bahan kanvas, nilon, dan kulit sintetis'],
-  ['Helmet Clean', 'utama', ['Helm'], 50000, 2, 'Busa dalam dilepas, dicuci, dan disterilkan'],
-  ['Whitening', 'tambahan', ['Sepatu'], 10000, 1, 'Mencerahkan midsole yang kusam'],
-  ['Unyellowing sol', 'tambahan', ['Sepatu'], 20000, 2, 'Mengurangi sol kuning'],
-  ['Leather care', 'tambahan', ['Sepatu', 'Tas'], 15000, 1, 'Kondisioner untuk bahan kulit'],
-  ['Anti-bau', 'tambahan', ['Sepatu', 'Tas', 'Helm'], 8000, 1, 'Deodorizer & antibakteri'],
-  ['Waterproof', 'tambahan', ['Sepatu', 'Tas'], 15000, 1, 'Lapisan anti-air'],
-]
-
-export const services = createSharedStore<Service[]>('local', 'umima:services', () =>
-  SEED.map(([name, type, categories, price, days, description], index) => ({
-    id: `s${index + 1}`,
-    label: name,
-    name,
-    type,
-    categories,
-    price,
-    days,
-    description,
-    active: name !== 'Waterproof',
-  }))
-)
+export type Service = Data.Service
 
 export type ServiceForm = {
   name: string
@@ -71,36 +37,51 @@ export const EMPTY_SERVICE_FORM: ServiceForm = {
 
 export function serviceFormErrors(form: ServiceForm) {
   const errors: { name?: string; price?: string } = {}
-  if (!form.name.trim()) errors.name = 'Nama layanan wajib diisi.'
-  else if (!form.categories.length) errors.name = 'Pilih minimal satu kategori.'
-  if (!(Number(form.price) > 0)) errors.price = 'Isi harga lebih dari 0.'
+  if (!form.name.trim()) {
+    errors.name = 'Nama layanan wajib diisi.'
+  } else if (!form.categories.length) {
+    errors.name = 'Pilih minimal satu kategori.'
+  }
+  if (!(Number(form.price) > 0)) {
+    errors.price = 'Isi harga lebih dari 0.'
+  }
   return errors
 }
 
-export function saveService(form: ServiceForm, id: string | null) {
-  const record = {
+type Callbacks = { onSuccess?: () => void; onFinish?: () => void }
+
+export function saveService(form: ServiceForm, id: string | null, callbacks: Callbacks = {}) {
+  const body = {
     name: form.name.trim(),
-    label: form.name.trim(),
     type: form.type,
     categories: form.categories,
     price: Number(form.price),
     days: Number(form.days) || 0,
-    description: form.description.trim() || '—',
+    description: form.description.trim(),
     active: form.active,
   }
-  services.set((list) =>
-    id
-      ? list.map((service) => (service.id === id ? { ...service, ...record } : service))
-      : [...list, { ...record, id: `s${Date.now()}` }]
+  if (id) {
+    router.put(urlFor('admin.services.update', { id }), body, {
+      preserveScroll: true,
+      ...callbacks,
+    })
+  } else {
+    router.post(urlFor('admin.services.store'), body, { preserveScroll: true, ...callbacks })
+  }
+}
+
+export function setServicesActive(ids: string[], isActive: boolean, callbacks: Callbacks = {}) {
+  router.post(
+    urlFor('admin.services.toggle'),
+    { ids: ids.map(Number), active: isActive },
+    { preserveScroll: true, ...callbacks }
   )
 }
 
-export function setServicesActive(ids: string[], active: boolean) {
-  services.set((list) =>
-    list.map((service) => (ids.includes(service.id) ? { ...service, active } : service))
+export function deleteServices(ids: string[], callbacks: Callbacks = {}) {
+  router.post(
+    urlFor('admin.services.destroy'),
+    { ids: ids.map(Number) },
+    { preserveScroll: true, ...callbacks }
   )
-}
-
-export function deleteServices(ids: string[]) {
-  services.set((list) => list.filter((service) => !ids.includes(service.id)))
 }

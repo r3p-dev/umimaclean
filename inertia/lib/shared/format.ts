@@ -6,3 +6,8 @@ export function formatDuration(totalSeconds: number) {
   const seconds = Math.max(0, totalSeconds)
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 }
+
+export function shortName(full: string) {
+  const [first, second] = full.trim().split(/\s+/)
+  return second ? `${first} ${second[0]}.` : (first ?? '')
+}

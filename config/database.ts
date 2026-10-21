@@ -1,18 +1,21 @@
+import env from '#start/env'
 import app from '@adonisjs/core/services/app'
 import { defineConfig } from '@adonisjs/lucid'
 
 const dbConfig = defineConfig({
-  connection: 'sqlite',
+  connection: env.get('DB_CONNECTION'),
 
   connections: {
-    sqlite: {
-      client: 'better-sqlite3',
+    pg: {
+      client: 'pg',
 
       connection: {
-        filename: app.tmpPath('db.sqlite3'),
+        host: env.get('DB_HOST'),
+        port: env.get('DB_PORT'),
+        user: env.get('DB_USER'),
+        password: env.get('DB_PASSWORD').release(),
+        database: env.get('DB_DATABASE'),
       },
-
-      useNullAsDefault: true,
 
       migrations: {
         naturalSort: true,
@@ -20,10 +23,18 @@ const dbConfig = defineConfig({
         paths: ['database/migrations'],
       },
 
+      seeders: {
+        paths: ['database/seeders'],
+
+        naturalSort: true,
+      },
+
       schemaGeneration: {
         enabled: true,
         rulesPaths: ['./database/schema_rules.js'],
       },
+
+      debug: app.inDev,
     },
   },
 })

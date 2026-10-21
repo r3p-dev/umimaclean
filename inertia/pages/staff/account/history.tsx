@@ -21,6 +21,7 @@ import {
   HISTORY_KINDS,
   HISTORY_PERIODS,
   staffHistory,
+  type HistoryEntry,
   type HistoryIcon,
   type HistoryKind,
   type HistoryPeriod,
@@ -44,10 +45,10 @@ function KindIcon({ kind }: { kind: HistoryIcon }) {
   )
 }
 
-export default function StaffHistory() {
+export default function StaffHistory({ entries }: { entries: HistoryEntry[] }) {
   const [period, setPeriod] = useState<HistoryPeriod>('today')
   const [kinds, setKinds] = useState<HistoryKind[]>([])
-  const history = staffHistory(period, kinds)
+  const history = staffHistory(entries, period, kinds)
 
   return (
     <StaffLayout active="lainnya">
@@ -106,7 +107,7 @@ export default function StaffHistory() {
               <ul className="overflow-hidden rounded-lg border border-border bg-card">
                 {group.entries.map((entry) => (
                   <li
-                    key={`${entry.ref}-${entry.time}`}
+                    key={entry.id}
                     className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-t border-border px-4 py-3 first:border-t-0"
                   >
                     <KindIcon kind={entry.icon} />
@@ -134,7 +135,7 @@ export default function StaffHistory() {
                       <span className="font-mono text-caption leading-none font-medium text-muted-foreground">
                         {entry.time}
                       </span>
-                      <SourceTag store={entry.store} />
+                      <SourceTag isInStore={entry.isInStore} />
                     </span>
                   </li>
                 ))}

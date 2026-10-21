@@ -1,4 +1,3 @@
-import { DAY_ROWS } from '~/lib/reports/data'
 import { addDays, dayDiff, formatDayMonth, fromIso, toIso } from '~/lib/shared/date'
 import { formatRupiah } from '~/lib/shared/format'
 
@@ -23,14 +22,21 @@ export const PERIOD_TABS: { key: PeriodKey; label: string }[] = [
   { key: 'custom', label: 'Pilih tanggal' },
 ]
 
-export const DATA_START = fromIso('2026-09-09')
-export const DATA_END = fromIso('2026-10-08')
-export const DATA_RANGE_TEXT = 'Data tersedia 9 Sep – 8 Okt 2026'
-export const DATA_MIN_ISO = toIso(DATA_START)
-export const DATA_MAX_ISO = toIso(DATA_END)
+export type DayRow = [
+  date: string,
+  revenue: number,
+  transactions: number,
+  items: number,
+  online: number,
+  storeQris: number,
+  cash: number,
+  edc: number,
+]
 
-const DAYS: Day[] = DAY_ROWS.map(
-  ([date, revenue, transactions, items, online, storeQris, cash, edc]) => ({
+export type ReportData = { start: string; end: string; days: DayRow[] }
+
+export function reportDays(data: ReportData): Day[] {
+  return data.days.map(([date, revenue, transactions, items, online, storeQris, cash, edc]) => ({
     date: fromIso(date),
     revenue,
     transactions,
@@ -40,8 +46,20 @@ const DAYS: Day[] = DAY_ROWS.map(
     cash,
     edc,
     store: storeQris + cash + edc,
-  })
-)
+  }))
+}
+
+export function dataRange(data: ReportData) {
+  const start = fromIso(data.start)
+  const end = fromIso(data.end)
+  return {
+    start,
+    end,
+    minIso: data.start,
+    maxIso: data.end,
+    text: `Data tersedia ${formatDayMonth(start, true)} – ${formatDayMonth(end, true)}`,
+  }
+}
 
 export type Totals = Omit<Day, 'date'> & { average: number }
 
@@ -62,19 +80,24 @@ function totals(days: Day[]): Totals {
   }
 }
 
-function clampDate(date: Date) {
-  if (date < DATA_START) return DATA_START
-  if (date > DATA_END) return DATA_END
-  return date
-}
-
-export function reportPeriod(key: PeriodKey, customFrom?: string, customTo?: string) {
-  let from = DATA_START
+export function reportPeriod(
+  data: ReportData,
+  key: PeriodKey,
+  customFrom?: string,
+  customTo?: string
+) {
+  const DAYS = reportDays(data)
+  const { start: DATA_START, end: DATA_END } = dataRange(data)
+  const clampDate = (date: Date) =>
+    date < DATA_START ? DATA_START : date > DATA_END ? DATA_END : date
+  let from = clampDate(addDays(DATA_END, -29))
   let to = DATA_END
   let warning = ''
-  if (key === '7') from = addDays(DATA_END, -6)
-  else if (key === 'bulan') from = fromIso('2026-10-01')
-  else if (key === 'custom') {
+  if (key === '7') {
+    from = clampDate(addDays(DATA_END, -6))
+  } else if (key === 'bulan') {
+    from = new Date(DATA_END.getFullYear(), DATA_END.getMonth(), 1)
+  } else if (key === 'custom') {
     from = clampDate(customFrom ? fromIso(customFrom) : addDays(DATA_END, -13))
     to = clampDate(customTo ? fromIso(customTo) : DATA_END)
     if (from > to) {
@@ -86,8 +109,8 @@ export function reportPeriod(key: PeriodKey, customFrom?: string, customTo?: str
   let compareFrom: Date
   let compareTo: Date
   if (key === 'bulan') {
-    compareFrom = fromIso('2026-09-01')
-    compareTo = fromIso('2026-09-08')
+    compareFrom = new Date(from.getFullYear(), from.getMonth() - 1, 1)
+    compareTo = addDays(compareFrom, length - 1)
   } else {
     compareTo = addDays(from, -1)
     compareFrom = addDays(compareTo, -(length - 1))
@@ -95,7 +118,7 @@ export function reportPeriod(key: PeriodKey, customFrom?: string, customTo?: str
   const within = (date: Date, start: Date, end: Date) => date >= start && date <= end
   const days = DAYS.filter((day) => within(day.date, from, to))
   const previous = DAYS.filter((day) => within(day.date, compareFrom, compareTo))
-  const sameYear = from.getFullYear() === to.getFullYear()
+  const isSameYear = from.getFullYear() === to.getFullYear()
 
   return {
     key,
@@ -106,7 +129,7 @@ export function reportPeriod(key: PeriodKey, customFrom?: string, customTo?: str
     current: totals(days),
     previous: totals(previous),
     warning,
-    label: `${formatDayMonth(from, !sameYear)} – ${formatDayMonth(to, true)} · dibanding ${formatDayMonth(compareFrom)} – ${formatDayMonth(compareTo, compareTo.getFullYear() !== to.getFullYear())}`,
+    label: `${formatDayMonth(from, !isSameYear)} – ${formatDayMonth(to, true)} · dibanding ${formatDayMonth(compareFrom)} – ${formatDayMonth(compareTo, compareTo.getFullYear() !== to.getFullYear())}`,
     range: `${formatDayMonth(from, true)} – ${formatDayMonth(to, true)}`,
     compareRange: `${formatDayMonth(compareFrom, true)} – ${formatDayMonth(compareTo, true)}`,
     fromIso: toIso(from),
@@ -118,14 +141,16 @@ export type ReportPeriod = ReturnType<typeof reportPeriod>
 
 export type Delta = { trend: 'up' | 'down' | 'none'; text: string; sub: string }
 
-export function delta(current: number, previous: number, money = false): Delta {
-  if (!previous) return { trend: 'none', text: '—', sub: 'tidak ada data pembanding' }
+export function delta(current: number, previous: number, isMoney = false): Delta {
+  if (!previous) {
+    return { trend: 'none', text: '—', sub: 'tidak ada data pembanding' }
+  }
   const change = ((current - previous) / previous) * 100
-  const up = change >= 0
+  const isUp = change >= 0
   return {
-    trend: up ? 'up' : 'down',
-    text: `${up ? '+' : '−'}${Math.abs(change).toFixed(1).replace('.', ',')}%`,
-    sub: `dari ${money ? formatRupiah(previous) : previous.toLocaleString('id-ID')}`,
+    trend: isUp ? 'up' : 'down',
+    text: `${isUp ? '+' : '−'}${Math.abs(change).toFixed(1).replace('.', ',')}%`,
+    sub: `dari ${isMoney ? formatRupiah(previous) : previous.toLocaleString('id-ID')}`,
   }
 }
 
@@ -142,14 +167,14 @@ export function paymentMix(current: Totals) {
       ['Tunai di toko', 'OFFLINE · TOKO', current.cash, true],
       ['EDC di toko', 'OFFLINE · TOKO', current.edc, true],
     ] as const
-  ).map(([label, tag, amount, store]) => {
+  ).map(([label, tag, amount, isInStore]) => {
     const share = Math.round((amount / base) * 100)
     return {
       label,
       tag,
       amount,
       share,
-      store,
+      store: isInStore,
       valueText: `${formatRupiah(amount)} · ${share}%`,
     }
   })
@@ -186,11 +211,16 @@ export function revenueAxis(days: Day[]) {
 }
 
 export function detailRows(days: Day[]) {
-  const daily = days.length <= 13
+  const isDaily = days.length <= 13
   const chunks: Day[][] = []
-  if (daily) days.forEach((day) => chunks.push([day]))
-  else {
-    for (let index = 0; index < days.length; index += 7) chunks.push(days.slice(index, index + 7))
+  if (isDaily) {
+    for (const day of days) {
+      chunks.push([day])
+    }
+  } else {
+    for (let index = 0; index < days.length; index += 7) {
+      chunks.push(days.slice(index, index + 7))
+    }
     const last = chunks[chunks.length - 1]
     if (chunks.length > 1 && last.length <= 2) {
       chunks.pop()
@@ -205,7 +235,7 @@ export function detailRows(days: Day[]) {
     return {
       id: `r${index}`,
       index,
-      label: daily
+      label: isDaily
         ? formatDayMonth(first)
         : first.getMonth() === last.getMonth()
           ? `${first.getDate()}–${formatDayMonth(last)}`
@@ -219,13 +249,17 @@ export function detailRows(days: Day[]) {
       change: null as number | null,
     }
   })
-  rows.forEach((row, index) => {
-    if (index > 0) row.change = percentChange(row.revenue, rows[index - 1].revenue)
-  })
-  return { daily, rows }
+  for (const [index, row] of rows.entries()) {
+    if (index > 0) {
+      row.change = percentChange(row.revenue, rows[index - 1].revenue)
+    }
+  }
+  return { isDaily, rows }
 }
 
 export function changeText(change: number | null) {
-  if (change === null) return '—'
+  if (change === null) {
+    return '—'
+  }
   return `${change >= 0 ? '▲' : '▼'} ${Math.abs(Math.round(change))}%`
 }

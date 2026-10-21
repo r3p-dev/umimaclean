@@ -1,7 +1,6 @@
-import { CUSTOMER_ROWS } from '~/lib/customers/data'
-import { DATA_END } from '~/lib/reports/period'
-import { dayDiff, fromIso } from '~/lib/shared/date'
-import { createSharedStore } from '~/lib/shared/shared_store'
+import { router } from '@inertiajs/react'
+import { urlFor } from '~/client'
+import { fromIso } from '~/lib/shared/date'
 
 export type Segment = 'inactive' | 'active' | 'new'
 
@@ -16,57 +15,53 @@ export const THRESHOLDS = [30, 60, 90, 180]
 export const DEFAULT_REMINDER =
   'Halo {nama}, sudah lama sepatu, tas, atau helmnya tidak dirawat di Umima. Mau dijemput minggu ini? Balas “JEMPUT” untuk pesan. 🙏'
 
-export type Customer = {
+export type CustomerRow = {
   id: string
   label: string
   name: string
   phone: string
   area: string
-  last: Date
-  first: Date
+  last: string
+  first: string
   orders: number
   spend: number
   days: number
   isNew: boolean
+  hasPaid: boolean
+  isReminded: boolean
 }
 
-export const CUSTOMERS: Customer[] = CUSTOMER_ROWS.map(
-  ([name, phone, area, lastPaid, firstPaid, orders, spend], index) => {
-    const last = fromIso(lastPaid)
-    const first = fromIso(firstPaid)
-    return {
-      id: `c${index}`,
-      label: name,
-      name,
-      phone,
-      area,
-      last,
-      first,
-      orders,
-      spend,
-      days: dayDiff(last, DATA_END),
-      isNew: dayDiff(first, DATA_END) <= 30,
-    }
-  }
-)
+export type Customer = Omit<CustomerRow, 'last' | 'first'> & { last: Date; first: Date }
+
+export function customersOf(rows: CustomerRow[]): Customer[] {
+  return rows.map((row) => ({ ...row, last: fromIso(row.last), first: fromIso(row.first) }))
+}
 
 export function inSegment(customer: Customer, segment: Segment, threshold: number) {
-  if (segment === 'inactive') return customer.days >= threshold
-  if (segment === 'active') return customer.days < threshold
+  if (segment === 'inactive') {
+    return customer.hasPaid && customer.days >= threshold
+  }
+  if (segment === 'active') {
+    return customer.hasPaid && customer.days < threshold
+  }
   return customer.isNew
 }
 
 export function segmentLabel(customer: Customer, threshold: number) {
-  if (customer.days >= threshold) return `Tidak aktif (≥ ${threshold} hari)`
+  if (customer.days >= threshold) {
+    return `Tidak aktif (≥ ${threshold} hari)`
+  }
   return customer.isNew ? 'Baru' : 'Aktif'
 }
 
-export function inactiveCount(threshold: number) {
-  return CUSTOMERS.filter((customer) => customer.days >= threshold).length
-}
-
-export const reminders = createSharedStore<string[]>('local', 'umima:customer-reminders', () => [])
-
-export function markReminded(ids: string[]) {
-  reminders.set((list) => Array.from(new Set([...list, ...ids])))
+export function sendReminder(
+  ids: string[],
+  message: string,
+  callbacks: { onSuccess?: () => void; onFinish?: () => void } = {}
+) {
+  router.post(
+    urlFor('admin.customers.remind'),
+    { ids: ids.map(Number), message },
+    { preserveScroll: true, ...callbacks }
+  )
 }

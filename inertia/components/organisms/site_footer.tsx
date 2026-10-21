@@ -115,30 +115,35 @@ export default function SiteFooter() {
           </FooterColumn>
           <FooterColumn id="footer-pelanggan" title="Pelanggan">
             <li>
-              <Link route="order.details" className={LINK}>
+              <Link route="customer.order.create" className={LINK}>
                 Pesan Penjemputan
               </Link>
             </li>
             <li>
-              <Link route="tracking.sign_in" className={LINK}>
-                Lacak Pesanan
+              <Link route="customer.orders.index" className={LINK}>
+                Riwayat Pesanan
               </Link>
             </li>
             <li>
-              <Link route="tracking.orders" className={LINK}>
-                Riwayat Pesanan
+              <Link route="auth.register" className={LINK}>
+                Daftar Akun
+              </Link>
+            </li>
+            <li>
+              <Link route="legal.terms" className={LINK}>
+                Syarat Layanan
+              </Link>
+            </li>
+            <li>
+              <Link route="legal.privacy" className={LINK}>
+                Kebijakan Privasi
               </Link>
             </li>
           </FooterColumn>
           <FooterColumn id="footer-tim" title="Tim Umima">
             <li>
-              <Link route="staff.home" className={LINK}>
-                Masuk Staf
-              </Link>
-            </li>
-            <li>
-              <Link route="admin.summary" className={LINK}>
-                Masuk Owner
+              <Link route="auth.staff_login" className={LINK}>
+                Masuk Staf & Owner
               </Link>
             </li>
           </FooterColumn>

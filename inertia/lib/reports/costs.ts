@@ -1,4 +1,6 @@
-import { createSharedStore } from '~/lib/shared/shared_store'
+import { router } from '@inertiajs/react'
+import { urlFor } from '~/client'
+import { addDays, toIso } from '~/lib/shared/date'
 
 export type CostCategory = 'Sewa' | 'Gaji' | 'Bahan' | 'Listrik & air' | 'Lainnya'
 
@@ -12,14 +14,14 @@ export type Cost = {
   date: string
 }
 
-export const costs = createSharedStore<Cost[]>('local', 'umima:operating-costs', () => [
-  { id: 'c1', category: 'Sewa', note: 'Sewa ruko Oktober', amount: 3000000, date: '1 Okt' },
-  { id: 'c2', category: 'Gaji', note: 'Gaji 3 staf (porsi Okt)', amount: 3500000, date: '1 Okt' },
-  { id: 'c3', category: 'Bahan', note: 'Sabun, sikat, deodorizer', amount: 700000, date: '3 Okt' },
-])
-
 export function costTotal(list: Cost[]) {
   return list.reduce((sum, cost) => sum + cost.amount, 0)
+}
+
+export function costsForPeriod(list: Cost[], to: Date) {
+  const start = toIso(addDays(to, -29))
+  const end = toIso(to)
+  return list.filter((cost) => cost.date >= start && cost.date <= end)
 }
 
 export function costShare(total: number, periodDays: number) {
@@ -27,14 +29,16 @@ export function costShare(total: number, periodDays: number) {
   return { share, amount: Math.round((total * share) / 30) }
 }
 
-export function saveCost(cost: Omit<Cost, 'id'>, id: string | null) {
-  costs.set((list) =>
-    id
-      ? list.map((item) => (item.id === id ? { ...item, ...cost } : item))
-      : [...list, { ...cost, id: `c${Date.now()}` }]
-  )
+type Callbacks = { onSuccess?: () => void; onError?: (errors: Record<string, string>) => void }
+
+export function saveCost(cost: Omit<Cost, 'id'>, id: string | null, callbacks: Callbacks = {}) {
+  if (id) {
+    router.put(urlFor('admin.costs.update', { id }), cost, { preserveScroll: true, ...callbacks })
+  } else {
+    router.post(urlFor('admin.costs.store'), cost, { preserveScroll: true, ...callbacks })
+  }
 }
 
-export function deleteCost(id: string) {
-  costs.set((list) => list.filter((item) => item.id !== id))
+export function deleteCost(id: string, callbacks: Callbacks = {}) {
+  router.delete(urlFor('admin.costs.destroy', { id }), { preserveScroll: true, ...callbacks })
 }

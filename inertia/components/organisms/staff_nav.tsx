@@ -24,7 +24,9 @@ const ICONS: Record<StaffSection, [Icon, Icon]> = {
 }
 
 function countFor(key: StaffSection, counts: StaffCounts) {
-  if (key === 'jemput' || key === 'proses' || key === 'antar') return counts[key] || null
+  if (key === 'jemput' || key === 'proses' || key === 'antar') {
+    return counts[key] || null
+  }
   return null
 }
 
@@ -44,19 +46,19 @@ export function StaffSidebar({ active, counts }: { active: StaffSection; counts:
       </div>
       <nav aria-label="Navigasi staf" className="flex flex-col gap-1">
         {STAFF_NAV.map((item) => {
-          const on = item.key === active
+          const isActive = item.key === active
           const [Outline, Filled] = ICONS[item.key]
-          const Icon = on ? Filled : Outline
+          const Icon = isActive ? Filled : Outline
           const count = countFor(item.key, counts)
           return (
             <Link
               key={item.key}
               route={item.route}
               aria-label={item.label}
-              aria-current={on ? 'page' : undefined}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'flex h-11 items-center gap-2.5 rounded-md text-sm leading-none no-underline hover:no-underline max-lg:justify-center lg:px-2.5',
-                on
+                isActive
                   ? 'bg-accent font-semibold text-accent-foreground hover:text-accent-foreground'
                   : 'font-medium text-foreground hover:bg-accent hover:text-foreground'
               )}
@@ -83,22 +85,24 @@ export function StaffTabBar({ active }: { active: StaffSection }) {
       className="sticky bottom-0 z-30 grid h-tab-bar grid-cols-5 border-t border-border bg-card sm:hidden"
     >
       {STAFF_NAV.map((item) => {
-        const on = item.key === active
+        const isActive = item.key === active
         const [Outline, Filled] = ICONS[item.key]
-        const Icon = on ? Filled : Outline
+        const Icon = isActive ? Filled : Outline
         return (
           <Link
             key={item.key}
             route={item.route}
-            aria-current={on ? 'page' : undefined}
+            aria-current={isActive ? 'page' : undefined}
             className={cn(
               'flex flex-col items-center justify-center gap-1 text-[11.5px] leading-none no-underline hover:no-underline',
-              on
+              isActive
                 ? 'font-bold text-info-foreground hover:text-info-foreground'
                 : 'font-medium text-foreground-secondary hover:text-foreground-secondary'
             )}
           >
-            <span className={cn('flex h-6.5 items-center rounded-pill px-3.5', on && 'bg-accent')}>
+            <span
+              className={cn('flex h-6.5 items-center rounded-pill px-3.5', isActive && 'bg-accent')}
+            >
               <Icon className="size-5.5" />
             </span>
             {item.label}

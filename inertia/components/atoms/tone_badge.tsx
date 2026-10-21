@@ -20,12 +20,12 @@ const TONES: Record<BadgeTone, string> = {
 
 export default function ToneBadge({
   tone,
-  dot = false,
+  hasDot = false,
   className,
   children,
 }: {
   tone: BadgeTone
-  dot?: boolean
+  hasDot?: boolean
   className?: string
   children: ReactNode
 }) {
@@ -37,7 +37,7 @@ export default function ToneBadge({
         className
       )}
     >
-      {dot && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-current" />}
+      {hasDot && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-current" />}
       {children}
     </span>
   )

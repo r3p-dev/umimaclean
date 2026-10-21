@@ -9,20 +9,20 @@ import { formatDayMonth } from '~/lib/shared/date'
 import { formatRupiah } from '~/lib/shared/format'
 
 export default function CustomerHistoryDialog({
-  open,
+  isOpen,
   onOpenChange,
   customer,
   summary,
   orders,
 }: {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
   customer: string
   summary: string
   orders: AdminOrder[]
 }) {
   return (
-    <Dialog isOpen={open} onOpenChange={onOpenChange} variant="panel">
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
       <DialogTitleBar>Riwayat {customer}</DialogTitleBar>
       <DialogDescription className="text-note leading-normal">{summary}</DialogDescription>
       <ul className="flex flex-col overflow-hidden rounded-md border border-border">

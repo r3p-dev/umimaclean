@@ -18,7 +18,9 @@ function triggerLabel<T extends string | number>(
   options: FilterOption<T>[],
   values: T[]
 ) {
-  if (!values.length) return `${word}: semua`
+  if (!values.length) {
+    return `${word}: semua`
+  }
   if (values.length === 1) {
     return `${word}: ${options.find((option) => option.value === values[0])?.label ?? values[0]}`
   }
@@ -38,10 +40,10 @@ export function FilterMenu<T extends string | number>({
   values: T[]
   onChange: (values: T[]) => void
 }) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setOpen] = useState(false)
 
   return (
-    <PopoverTrigger isOpen={open} onOpenChange={setOpen}>
+    <PopoverTrigger isOpen={isOpen} onOpenChange={setOpen}>
       <Button
         variant="outline"
         data-active={values.length > 0}
@@ -53,23 +55,23 @@ export function FilterMenu<T extends string | number>({
       <Popover aria-label={label}>
         <div role="group" aria-label={label} className="flex flex-col">
           {options.map((option) => {
-            const checked = values.includes(option.value)
+            const isChecked = values.includes(option.value)
             return (
               <button
                 key={String(option.value)}
                 type="button"
                 role="checkbox"
-                aria-checked={checked}
+                aria-checked={isChecked}
                 onClick={() =>
                   onChange(
-                    checked
+                    isChecked
                       ? values.filter((value) => value !== option.value)
                       : [...values, option.value]
                   )
                 }
                 className={cn(ITEM, 'group/check')}
               >
-                <CheckboxMark checked={checked} />
+                <CheckboxMark checked={isChecked} />
                 <span className="flex-1">{option.label}</span>
                 {option.count !== undefined && (
                   <span className="text-caption leading-none font-medium text-muted-foreground">
@@ -106,10 +108,10 @@ export function SelectMenu<T extends string | number>({
   value: T
   onChange: (value: T) => void
 }) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setOpen] = useState(false)
 
   return (
-    <PopoverTrigger isOpen={open} onOpenChange={setOpen}>
+    <PopoverTrigger isOpen={isOpen} onOpenChange={setOpen}>
       <Button variant="outline" className={cn(TRIGGER, 'hover:border-input')}>
         {`${word}: ${options.find((option) => option.value === value)?.label ?? value}`}
         <IconChevronDown className="size-4.5" />
@@ -117,13 +119,13 @@ export function SelectMenu<T extends string | number>({
       <Popover aria-label={label}>
         <div role="radiogroup" aria-label={label} className="flex flex-col">
           {options.map((option) => {
-            const checked = option.value === value
+            const isChecked = option.value === value
             return (
               <button
                 key={String(option.value)}
                 type="button"
                 role="radio"
-                aria-checked={checked}
+                aria-checked={isChecked}
                 onClick={() => {
                   onChange(option.value)
                   setOpen(false)
@@ -131,7 +133,7 @@ export function SelectMenu<T extends string | number>({
                 className={ITEM}
               >
                 <span aria-hidden="true" className="flex w-5 text-primary">
-                  {checked && <IconCheck className="size-4.5" />}
+                  {isChecked && <IconCheck className="size-4.5" />}
                 </span>
                 <span className="flex-1">{option.label}</span>
               </button>

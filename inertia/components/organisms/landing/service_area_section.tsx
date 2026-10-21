@@ -12,12 +12,12 @@ import { Badge } from '~/components/ui/badge'
 import { LinkButton } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Field, FieldDescription, FieldLabel } from '~/components/ui/field'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/input_group'
 import {
   AREA_QUERY_MAX,
   checkServiceArea,
-  SERVICE_REGIONS,
   type AreaTone,
+  type Coverage,
 } from '~/lib/location/service_area'
 import { cn } from '~/lib/shared/utils'
 
@@ -40,9 +40,9 @@ const TONES: Record<AreaTone, { border: string; text: string; Icon: typeof IconI
   },
 }
 
-export default function ServiceAreaSection() {
+export default function ServiceAreaSection({ coverage }: { coverage: Coverage }) {
   const [query, setQuery] = useState('')
-  const result = checkServiceArea(query)
+  const result = checkServiceArea(query, coverage)
   const tone = TONES[result.tone]
 
   return (
@@ -53,10 +53,10 @@ export default function ServiceAreaSection() {
       <div className="flex flex-col gap-3.5">
         <h2 className="text-title">Area layanan</h2>
         <ul className="flex flex-wrap gap-2">
-          {SERVICE_REGIONS.map((region) => (
-            <li key={region}>
+          {coverage.map((region) => (
+            <li key={region.city}>
               <Badge variant="outline" size="chip">
-                {region}
+                {region.districts ? `${region.city} (sebagian)` : region.city}
               </Badge>
             </li>
           ))}
@@ -103,7 +103,7 @@ export default function ServiceAreaSection() {
           <LinkButton
             size="cta"
             className="sm:w-auto sm:min-w-74 sm:px-7"
-            href={urlFor('order.details')}
+            href={urlFor('customer.order.create')}
           >
             Pesan Penjemputan
             <IconArrowRight />

@@ -14,7 +14,9 @@ function printable(text: string) {
   return Array.from(text)
     .filter((char) => {
       const code = char.charCodeAt(0)
-      if (code === 9 || code === 10 || code === 13) return true
+      if (code === 9 || code === 10 || code === 13) {
+        return true
+      }
       return code >= 32 && code !== 0xfffe && code !== 0xffff
     })
     .join('')
@@ -77,7 +79,9 @@ function sheetXml(sheet: Sheet) {
         .map((column, index) => {
           const value = row[index]
           const ref = columnName(index) + number
-          if (value === null || value === undefined || value === '') return ''
+          if (value === null || value === undefined || value === '') {
+            return ''
+          }
           if (column.type === 'date' && value instanceof Date) {
             return `<c r="${ref}" s="${STYLE.date}"><v>${dateSerial(value)}</v></c>`
           }
@@ -111,15 +115,19 @@ let crcTable: Uint32Array | null = null
 function crc32(bytes: Uint8Array) {
   if (!crcTable) {
     crcTable = new Uint32Array(256)
-    for (let n = 0; n < 256; n++) {
-      let c = n
-      for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
-      crcTable[n] = c >>> 0
+    for (let value = 0; value < 256; value++) {
+      let entry = value
+      for (let bit = 0; bit < 8; bit++) {
+        entry = entry & 1 ? 0xedb88320 ^ (entry >>> 1) : entry >>> 1
+      }
+      crcTable[value] = entry >>> 0
     }
   }
-  let c = 0xffffffff
-  for (const byte of bytes) c = crcTable[(c ^ byte) & 0xff] ^ (c >>> 8)
-  return (c ^ 0xffffffff) >>> 0
+  let crc = 0xffffffff
+  for (const byte of bytes) {
+    crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8)
+  }
+  return (crc ^ 0xffffffff) >>> 0
 }
 
 function zip(parts: [string, string][]) {
@@ -131,7 +139,9 @@ function zip(parts: [string, string][]) {
     data: encoder.encode(text),
   }))
   let size = 22
-  for (const file of files) size += 30 + file.name.length + file.data.length + 46 + file.name.length
+  for (const file of files) {
+    size += 30 + file.name.length + file.data.length + 46 + file.name.length
+  }
   const out = new Uint8Array(size)
   const view = new DataView(out.buffer)
   const directory: { name: Uint8Array; length: number; crc: number; offset: number }[] = []

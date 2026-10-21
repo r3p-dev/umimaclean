@@ -19,29 +19,29 @@ const TONES = {
 
 export default function ChoiceRow({
   role,
-  checked,
+  isChecked,
   onChange,
   tone = 'primary',
   markPosition = 'start',
-  disabled = false,
+  isDisabled = false,
   className,
   children,
 }: {
   role: 'radio' | 'checkbox'
-  checked: boolean
+  isChecked: boolean
   onChange?: () => void
   tone?: keyof typeof TONES
   markPosition?: 'start' | 'end'
-  disabled?: boolean
+  isDisabled?: boolean
   className?: string
   children: ReactNode
 }) {
   const Mark =
     role === 'radio'
-      ? checked
+      ? isChecked
         ? IconCircleDot
         : IconCircle
-      : checked
+      : isChecked
         ? IconSquareCheckFilled
         : IconSquare
   const mark = (
@@ -49,7 +49,7 @@ export default function ChoiceRow({
       className={cn(
         'shrink-0',
         markPosition === 'end' ? 'size-5.5' : 'size-5',
-        checked ? TONES[tone].mark : 'text-icon-muted'
+        isChecked ? TONES[tone].mark : 'text-icon-muted'
       )}
     />
   )
@@ -58,13 +58,13 @@ export default function ChoiceRow({
     <button
       type="button"
       role={role}
-      aria-checked={checked}
-      aria-disabled={disabled || undefined}
-      onClick={disabled ? undefined : onChange}
+      aria-checked={isChecked}
+      aria-disabled={isDisabled || undefined}
+      onClick={isDisabled ? undefined : onChange}
       className={cn(
         'flex w-full items-center gap-2.5 rounded-md border px-3.5 text-left text-[14.5px] leading-[1.3] font-medium transition-[background-color,border-color,box-shadow] duration-120',
-        checked ? TONES[tone].on : 'border-border-strong bg-card text-foreground',
-        disabled ? 'cursor-default' : !checked && 'hover:border-primary hover:bg-accent',
+        isChecked ? TONES[tone].on : 'border-border-strong bg-card text-foreground',
+        isDisabled ? 'cursor-default' : !isChecked && 'hover:border-primary hover:bg-accent',
         className
       )}
     >

@@ -1,30 +1,30 @@
 import { useState } from 'react'
 
-export type SortDir = 'asc' | 'desc'
+export type SortDirection = 'asc' | 'desc'
 
-export type SortState = { key: string; dir: SortDir }
+export type SortState = { key: string; direction: SortDirection }
 
 export type TableColumn<T> = {
   key: string
   value: (row: T) => string | number
-  dir?: SortDir
+  direction?: SortDirection
 }
 
 export type TableRow = { id: string; label?: string }
 
 export const PAGE_SIZES = [10, 25, 50]
 
-function compare(a: string | number, b: string | number) {
-  if (typeof a === 'string' || typeof b === 'string') {
-    return String(a).localeCompare(String(b), 'id', { numeric: true, sensitivity: 'base' })
+function compare(left: string | number, right: string | number) {
+  if (typeof left === 'string' || typeof right === 'string') {
+    return String(left).localeCompare(String(right), 'id', { numeric: true, sensitivity: 'base' })
   }
-  return a - b
+  return left - right
 }
 
 export function useDataTable<T extends TableRow>(
   rows: T[],
   columns: TableColumn<T>[],
-  options: { unit: string; sortKey?: string; sortDir?: SortDir; size?: number }
+  options: { unit: string; sortKey?: string; sortDirection?: SortDirection; size?: number }
 ) {
   const [selected, setSelected] = useState<string[]>([])
   const [sort, setSort] = useState<SortState | null>(null)
@@ -32,19 +32,21 @@ export function useDataTable<T extends TableRow>(
   const [size, setSizeState] = useState(options.size ?? 10)
 
   const sortKey = sort?.key ?? options.sortKey
-  const sortDir = sort?.dir ?? options.sortDir ?? 'asc'
+  const sortDirection = sort?.direction ?? options.sortDirection ?? 'asc'
   const column = columns.find((item) => item.key === sortKey)
   const sorted = rows.slice()
   if (column) {
-    sorted.sort((a, b) => {
-      const result = compare(column.value(a), column.value(b))
-      return sortDir === 'asc' ? result : -result
+    sorted.sort((left, right) => {
+      const result = compare(column.value(left), column.value(right))
+      return sortDirection === 'asc' ? result : -result
     })
   }
 
   const ids = new Set(sorted.map((row) => row.id))
   const valid = selected.filter((id) => ids.has(id))
-  if (valid.length !== selected.length) setSelected(valid)
+  if (valid.length !== selected.length) {
+    setSelected(valid)
+  }
   const selectedSet = new Set(valid)
 
   const pages = Math.max(1, Math.ceil(sorted.length / size))
@@ -58,7 +60,9 @@ export function useDataTable<T extends TableRow>(
   const low = Math.max(1, Math.min(page - 2, pages - 4))
   const high = Math.min(pages, low + 4)
   const pageNumbers: number[] = []
-  for (let number = low; number <= high; number++) pageNumbers.push(number)
+  for (let number = low; number <= high; number++) {
+    pageNumbers.push(number)
+  }
 
   return {
     rows: pageRows,
@@ -88,11 +92,18 @@ export function useDataTable<T extends TableRow>(
       setSelected([])
     },
     sortKey,
-    sortDir,
+    sortDirection,
     sortBy(key: string) {
       const target = columns.find((item) => item.key === key)
-      const active = key === sortKey
-      setSort({ key, dir: active ? (sortDir === 'asc' ? 'desc' : 'asc') : (target?.dir ?? 'asc') })
+      const isActive = key === sortKey
+      setSort({
+        key,
+        direction: isActive
+          ? sortDirection === 'asc'
+            ? 'desc'
+            : 'asc'
+          : (target?.direction ?? 'asc'),
+      })
       setPage(1)
     },
     setSort(next: SortState) {
@@ -100,7 +111,7 @@ export function useDataTable<T extends TableRow>(
       setPage(1)
     },
     ariaSort(key: string): 'ascending' | 'descending' | 'none' {
-      return key === sortKey ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+      return key === sortKey ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'
     },
     page,
     pages,

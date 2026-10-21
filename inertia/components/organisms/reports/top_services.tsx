@@ -29,7 +29,7 @@ export default function TopServices({
 }: {
   table: DataTable<ServiceRow>
   rank: ServiceRank
-  onRank: (rank: ServiceRank, toggle: boolean) => void
+  onRank: (rank: ServiceRank, shouldToggle: boolean) => void
   footer: string
   exportButton: ReactNode
 }) {
@@ -94,12 +94,12 @@ export default function TopServices({
         </TableHeader>
         <TableBody>
           {table.rows.map((row) => {
-            const selected = table.isSelected(row.id)
+            const isSelected = table.isSelected(row.id)
             return (
-              <TableRow key={row.id} data-selected={selected}>
+              <TableRow key={row.id} data-selected={isSelected}>
                 <TableCell className={CHECK_CELL}>
                   <Checkbox
-                    isSelected={selected}
+                    isSelected={isSelected}
                     onChange={() => table.toggle(row.id)}
                     aria-label={`Pilih ${row.label}`}
                   />
@@ -132,18 +132,18 @@ export default function TopServices({
       </Table>
       <ul className="sm:hidden">
         {table.rows.map((row) => {
-          const selected = table.isSelected(row.id)
+          const isSelected = table.isSelected(row.id)
           return (
             <li
               key={row.id}
-              data-selected={selected}
+              data-selected={isSelected}
               className={cn(
                 'flex items-center gap-0.5 border-t border-border py-1 pr-4 pl-1',
-                selected && 'bg-row-selected'
+                isSelected && 'bg-row-selected'
               )}
             >
               <Checkbox
-                isSelected={selected}
+                isSelected={isSelected}
                 onChange={() => table.toggle(row.id)}
                 aria-label={`Pilih ${row.label}`}
               />

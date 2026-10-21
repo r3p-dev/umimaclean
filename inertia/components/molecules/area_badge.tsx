@@ -25,9 +25,15 @@ const BADGES = {
   },
 }
 
-export default function AreaBadge({ tone, loading }: { tone: AreaTone | null; loading: boolean }) {
+export default function AreaBadge({
+  tone,
+  isLoading,
+}: {
+  tone: AreaTone | null
+  isLoading: boolean
+}) {
   const badge =
-    BADGES[loading ? 'loading' : tone === 'covered' || tone === 'outside' ? tone : 'unknown']
+    BADGES[isLoading ? 'loading' : tone === 'covered' || tone === 'outside' ? tone : 'unknown']
 
   return (
     <span
@@ -36,7 +42,7 @@ export default function AreaBadge({ tone, loading }: { tone: AreaTone | null; lo
         badge.className
       )}
     >
-      <badge.Icon className={cn('size-3.75', loading && 'animate-spin')} />
+      <badge.Icon className={cn('size-3.75', isLoading && 'animate-spin')} />
       {badge.text}
     </span>
   )

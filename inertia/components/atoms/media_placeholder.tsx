@@ -9,7 +9,7 @@ export default function MediaPlaceholder({
   size?: 'default' | 'sm'
   className?: string
 }) {
-  const small = size === 'sm'
+  const isSmall = size === 'sm'
 
   return (
     <div
@@ -17,7 +17,7 @@ export default function MediaPlaceholder({
       aria-label={label}
       className={cn(
         'stripes box-content flex items-end',
-        small ? 'rounded-md p-1.5 [--stripe:8px]' : 'rounded-lg p-3',
+        isSmall ? 'rounded-md p-1.5 [--stripe:8px]' : 'rounded-lg p-3',
         className
       )}
     >
@@ -25,7 +25,9 @@ export default function MediaPlaceholder({
         aria-hidden="true"
         className={cn(
           'font-mono font-medium text-foreground-secondary',
-          small ? 'text-[9.5px] leading-[1.2]' : 'rounded-xs bg-surface-glass px-1.75 py-1 text-2xs'
+          isSmall
+            ? 'text-[9.5px] leading-[1.2]'
+            : 'rounded-xs bg-surface-glass px-1.75 py-1 text-2xs'
         )}
       >
         {label}

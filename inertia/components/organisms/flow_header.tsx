@@ -1,12 +1,12 @@
 import { type ReactNode } from 'react'
 import { Link } from '@adonisjs/inertia/react'
 import Logo from '~/components/atoms/logo'
-import { ORDER_STEPS } from '~/lib/order/draft'
 import { cn } from '~/lib/shared/utils'
 
 export default function FlowHeader({
   title,
   step,
+  stepCount,
   showLogo = true,
   titleClassName,
   actions,
@@ -15,6 +15,7 @@ export default function FlowHeader({
 }: {
   title: string
   step?: number
+  stepCount?: number
   showLogo?: boolean
   titleClassName?: string
   actions?: ReactNode
@@ -32,10 +33,10 @@ export default function FlowHeader({
           </span>
         )}
         <p className={cn('flex-1 text-base leading-none font-semibold', titleClassName)}>{title}</p>
-        {step && (
+        {step && stepCount && (
           <span className="font-mono text-meta leading-none font-medium text-muted-foreground">
             <span className="sr-only">Langkah </span>
-            {`${step}/${ORDER_STEPS.length}`}
+            {`${step}/${stepCount}`}
           </span>
         )}
         {actions}

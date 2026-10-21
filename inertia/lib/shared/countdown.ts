@@ -4,7 +4,9 @@ export function useCountdown(endsAt: number | null) {
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
-    if (endsAt === null) return
+    if (endsAt === null) {
+      return
+    }
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(timer)
   }, [endsAt])

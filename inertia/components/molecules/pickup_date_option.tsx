@@ -3,23 +3,23 @@ import { cn } from '~/lib/shared/utils'
 
 export default function PickupDateOption({
   day,
-  checked,
+  isChecked,
   onPick,
 }: {
   day: PickupDay
-  checked: boolean
+  isChecked: boolean
   onPick: () => void
 }) {
-  const off = !day.available
-  const muted = !checked && !off && 'text-muted-foreground'
+  const isUnavailable = !day.isAvailable
+  const muted = !isChecked && !isUnavailable && 'text-muted-foreground'
 
   return (
     <label
       className={cn(
         'flex h-17 flex-col items-center justify-center gap-0.75 rounded-md has-focus-visible:focus-ring',
-        checked
+        isChecked
           ? 'border-2 border-primary bg-accent text-info-foreground'
-          : off
+          : isUnavailable
             ? 'cursor-not-allowed border border-border bg-disabled text-disabled-foreground'
             : 'cursor-pointer border border-border-strong bg-card text-foreground hover:bg-accent'
       )}
@@ -28,28 +28,28 @@ export default function PickupDateOption({
         type="radio"
         name="pickup-date"
         value={day.iso}
-        checked={checked}
-        disabled={off}
+        checked={isChecked}
+        disabled={isUnavailable}
         onChange={onPick}
-        aria-label={`${day.dayLong}, ${day.dayNumber} ${day.month}${off ? ', penuh' : ''}`}
+        aria-label={`${day.dayLong}, ${day.dayNumber} ${day.month}${isUnavailable ? ', penuh' : ''}`}
         className="sr-only"
       />
       <span
-        className={cn('text-xs leading-none', checked ? 'font-semibold' : 'font-medium', muted)}
+        className={cn('text-xs leading-none', isChecked ? 'font-semibold' : 'font-medium', muted)}
       >
         {day.dayShort}
       </span>
-      <span className={cn('text-lg leading-none', checked ? 'font-bold' : 'font-semibold')}>
+      <span className={cn('text-lg leading-none', isChecked ? 'font-bold' : 'font-semibold')}>
         {day.dayNumber}
       </span>
       <span
         className={cn(
           'text-[10.5px] leading-none',
-          checked ? 'font-semibold' : 'font-medium',
+          isChecked ? 'font-semibold' : 'font-medium',
           muted
         )}
       >
-        {off ? 'Penuh' : day.isTomorrow ? 'Besok' : day.month}
+        {isUnavailable ? 'Penuh' : day.isTomorrow ? 'Besok' : day.month}
       </span>
     </label>
   )

@@ -18,31 +18,31 @@ export default function StaffTopBar({
   actions?: ReactNode
   variant?: 'section' | 'detail'
 }) {
-  const detail = variant === 'detail'
+  const isDetail = variant === 'detail'
 
   return (
     <header
       className={cn(
         'box-content flex min-h-15 items-center border-b border-border bg-card pr-4',
-        detail ? 'gap-1.5 pl-2' : back ? 'gap-1 pl-5' : 'gap-2 pl-5'
+        isDetail ? 'gap-1.5 pl-2' : back ? 'gap-1 pl-5' : 'gap-2 pl-5'
       )}
     >
       {back && (
         <LinkButton
           variant="ghost"
           size="icon"
-          className={cn('shrink-0', !detail && '-ml-2.5')}
+          className={cn('shrink-0', !isDetail && '-ml-2.5')}
           href={back.href}
           aria-label={back.label}
         >
           <IconArrowLeft className="size-6" />
         </LinkButton>
       )}
-      <div className={cn('min-w-0', (detail || !back) && 'flex-1')}>
+      <div className={cn('min-w-0', (isDetail || !back) && 'flex-1')}>
         <h1
           className={cn(
             'font-bold',
-            detail ? 'text-[17px] leading-[1.2]' : 'text-[19px] leading-none'
+            isDetail ? 'text-[17px] leading-[1.2]' : 'text-[19px] leading-none'
           )}
         >
           {title}

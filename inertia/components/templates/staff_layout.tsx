@@ -2,8 +2,7 @@ import { type ReactNode } from 'react'
 import FlashToasts from '~/components/organisms/flash_toasts'
 import { StaffSidebar, StaffTabBar } from '~/components/organisms/staff_nav'
 import type { StaffSection } from '~/lib/navigation/staff_links'
-import { staffCounts } from '~/lib/staff/summary'
-import { useWorkday } from '~/lib/staff/workday'
+import { useStaffCounts } from '~/lib/staff/summary'
 
 export default function StaffLayout({
   active,
@@ -12,7 +11,7 @@ export default function StaffLayout({
   active: StaffSection
   children: ReactNode
 }) {
-  const counts = staffCounts(useWorkday())
+  const counts = useStaffCounts()
 
   return (
     <div className="flex min-h-dvh flex-col bg-background sm:grid sm:grid-cols-[72px_minmax(0,1fr)] lg:grid-cols-[232px_minmax(0,1fr)]">

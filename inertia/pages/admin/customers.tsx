@@ -1,6 +1,5 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Head } from '@inertiajs/react'
-import { toast } from 'sonner'
 import { IconCheck, IconListCheck, IconMessage } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
@@ -31,18 +30,17 @@ import {
 } from '~/components/organisms/data_table/table_parts'
 import AdminLayout from '~/components/templates/admin_layout'
 import {
-  CUSTOMERS,
+  customersOf,
   SEGMENT_TABS,
   THRESHOLDS,
   inSegment,
-  markReminded,
-  reminders,
+  sendReminder,
+  type CustomerRow,
   segmentLabel,
   type Customer,
   type Segment,
 } from '~/lib/customers/segments'
-import { storeSettings } from '~/lib/settings/store_settings'
-import { useDataTable, type SortDir } from '~/lib/shared/data_table'
+import { useDataTable, type SortDirection } from '~/lib/shared/data_table'
 import { formatDayMonth } from '~/lib/shared/date'
 import { formatRupiah } from '~/lib/shared/format'
 import { cn } from '~/lib/shared/utils'
@@ -64,14 +62,19 @@ function RemindedBadge() {
   )
 }
 
-export default function AdminCustomers() {
-  const settings = storeSettings.use()
-  const reminded = reminders.use()
+export default function AdminCustomers({
+  customers,
+  inactiveDays,
+}: {
+  customers: CustomerRow[]
+  inactiveDays: number
+}) {
+  const CUSTOMERS = useMemo(() => customersOf(customers), [customers])
   const [segment, setSegment] = useState<Segment>('inactive')
   const [threshold, setThreshold] = useState<number | null>(null)
   const [query, setQuery] = useState('')
   const [remindIds, setRemindIds] = useState<string[] | null>(null)
-  const days = threshold ?? settings.inactiveDays
+  const days = threshold ?? inactiveDays
   const search = query.trim().toLowerCase()
   const rows = CUSTOMERS.filter(
     (customer) =>
@@ -84,12 +87,12 @@ export default function AdminCustomers() {
     [
       { key: 'name', value: (row) => row.name },
       { key: 'area', value: (row) => row.area },
-      { key: 'last', value: (row) => row.last.getTime(), dir: 'desc' },
-      { key: 'days', value: (row) => row.days, dir: 'desc' },
-      { key: 'orders', value: (row) => row.orders, dir: 'desc' },
-      { key: 'spend', value: (row) => row.spend, dir: 'desc' },
+      { key: 'last', value: (row) => row.last.getTime(), direction: 'desc' },
+      { key: 'days', value: (row) => row.days, direction: 'desc' },
+      { key: 'orders', value: (row) => row.orders, direction: 'desc' },
+      { key: 'spend', value: (row) => row.spend, direction: 'desc' },
     ],
-    { unit: 'pelanggan', sortKey: 'spend', sortDir: 'desc' }
+    { unit: 'pelanggan', sortKey: 'spend', sortDirection: 'desc' }
   )
   const tabName = SEGMENT_TABS.find((tab) => tab.key === segment)?.label ?? ''
 
@@ -228,11 +231,11 @@ export default function AdminCustomers() {
           </BulkBar>
         )}
         <MobileSort
-          value={`${table.sortKey}:${table.sortDir}`}
+          value={`${table.sortKey}:${table.sortDirection}`}
           options={SORT_OPTIONS}
           onChange={(value) => {
-            const [key, dir] = value.split(':')
-            table.setSort({ key, dir: dir as SortDir })
+            const [key, direction] = value.split(':')
+            table.setSort({ key, direction: direction as SortDirection })
           }}
         />
         {table.total > 0 && <SelectAllRow state={table.allState} onToggle={table.toggleAll} />}
@@ -264,12 +267,12 @@ export default function AdminCustomers() {
             </TableHeader>
             <TableBody>
               {table.rows.map((row) => {
-                const selected = table.isSelected(row.id)
+                const isSelected = table.isSelected(row.id)
                 return (
-                  <TableRow key={row.id} data-selected={selected}>
+                  <TableRow key={row.id} data-selected={isSelected}>
                     <TableCell className={CHECK_CELL}>
                       <Checkbox
-                        isSelected={selected}
+                        isSelected={isSelected}
                         onChange={() => table.toggle(row.id)}
                         aria-label={`Pilih ${row.label}`}
                       />
@@ -277,7 +280,7 @@ export default function AdminCustomers() {
                     <TableCell className="py-2">
                       <div className="font-semibold">
                         {row.name}
-                        {reminded.includes(row.id) && <RemindedBadge />}
+                        {row.isReminded && <RemindedBadge />}
                       </div>
                       <div className="font-mono text-caption leading-[1.3] text-muted-foreground">
                         {row.phone}
@@ -316,25 +319,25 @@ export default function AdminCustomers() {
         )}
         <ul className="sm:hidden">
           {table.rows.map((row) => {
-            const selected = table.isSelected(row.id)
+            const isSelected = table.isSelected(row.id)
             return (
               <li
                 key={row.id}
-                data-selected={selected}
+                data-selected={isSelected}
                 className={cn(
                   'flex items-center gap-0.5 border-t border-border py-1.5 pr-4 pl-1',
-                  selected && 'bg-row-selected'
+                  isSelected && 'bg-row-selected'
                 )}
               >
                 <Checkbox
-                  isSelected={selected}
+                  isSelected={isSelected}
                   onChange={() => table.toggle(row.id)}
                   aria-label={`Pilih ${row.label}`}
                 />
                 <div className="min-w-0 flex-1 py-2">
                   <p className="text-[15px] leading-[1.3] font-semibold">
                     {row.name}
-                    {reminded.includes(row.id) && <RemindedBadge />}
+                    {row.isReminded && <RemindedBadge />}
                   </p>
                   <p className="text-meta leading-[1.4] text-muted-foreground">
                     {row.days} hari tidak aktif · terakhir {formatDayMonth(row.last, true)}
@@ -385,14 +388,18 @@ export default function AdminCustomers() {
       <ReminderDialog
         key={remindIds?.join(',') ?? 'closed'}
         count={remindIds?.length ?? 0}
-        open={remindIds !== null}
-        onOpenChange={(open) => !open && setRemindIds(null)}
-        onSend={() => {
+        isOpen={remindIds !== null}
+        onOpenChange={(isOpen) => !isOpen && setRemindIds(null)}
+        onSend={(message) => {
           const ids = remindIds ?? []
-          markReminded(ids)
-          setRemindIds(null)
-          if (ids.length > 1) table.clear()
-          toast.success(`Pengingat WhatsApp dijadwalkan untuk ${ids.length} pelanggan.`)
+          sendReminder(ids, message, {
+            onSuccess: () => {
+              setRemindIds(null)
+              if (ids.length > 1) {
+                table.clear()
+              }
+            },
+          })
         }}
       />
     </AdminLayout>

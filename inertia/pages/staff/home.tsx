@@ -12,22 +12,25 @@ import { urlFor } from '~/client'
 import { LinkButton } from '~/components/ui/button'
 import Overline from '~/components/atoms/overline'
 import HomeTile from '~/components/molecules/home_tile'
-import DemoSwitcher from '~/components/organisms/demo_switcher'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
 import QueueMap from '~/components/organisms/tasks/queue_map'
 import StaffLayout from '~/components/templates/staff_layout'
 import { DAY_SHORT, formatDayMonth } from '~/lib/shared/date'
-import { STAFF_PROFILE, greeting } from '~/lib/staff/profile'
-import { nextFieldTask, staffCounts } from '~/lib/staff/summary'
-import { resetWorkday, useWorkday } from '~/lib/staff/workday'
+import { greeting } from '~/lib/staff/profile'
+import { useAccount } from '~/lib/shared/auth'
+import { useLiveReload } from '~/lib/shared/live'
+import { useStaffCounts } from '~/lib/staff/summary'
+import type { Task, TaskKind } from '~/lib/tasks/queue'
 import { useDeviceLocation } from '~/lib/tasks/location'
 import { cn } from '~/lib/shared/utils'
 
-export default function StaffHome() {
-  const day = useWorkday()
+type NextTask = { kind: TaskKind; isActive: boolean; task: Task; tasks: Task[] }
+
+export default function StaffHome({ next }: { next: NextTask | null }) {
+  const account = useAccount()
   const me = useDeviceLocation()
-  const counts = staffCounts(day)
-  const next = nextFieldTask(day)
+  const counts = useStaffCounts()
+  useLiveReload('staff/queues', ['next', 'staffCounts'])
   const today = new Date()
 
   return (
@@ -40,7 +43,7 @@ export default function StaffHome() {
       <div className="mx-auto flex w-full max-w-220 flex-col gap-5 px-4 pt-5 pb-6">
         <div className="px-1">
           <h2 className="text-[clamp(22px,calc(18px+1vw),28px)] leading-[1.2] font-bold tracking-[-0.015em]">
-            {greeting(today)}, {STAFF_PROFILE.first}
+            {greeting(today)}, {account.firstName}
           </h2>
           <p className="mt-1 text-[14.5px] leading-normal text-foreground-secondary">
             Ini yang perlu dikerjakan hari ini.
@@ -85,11 +88,11 @@ export default function StaffHome() {
             <div className="overflow-hidden rounded-lg border-[1.5px] border-primary bg-card">
               <div className="grid grid-cols-1 sm:grid-cols-2">
                 <QueueMap
-                  tasks={next.queue.tasks}
-                  done={next.queue.progress.done}
+                  tasks={next.tasks}
+                  done={0}
                   me={me.point}
                   label={`Peta antrean ${next.kind === 'jemput' ? 'jemput' : 'antar'}`}
-                  legend={false}
+                  showLegend={false}
                   className="min-h-37.5 min-w-0"
                 />
                 <div className="flex min-w-0 flex-col gap-2.5 p-4">
@@ -110,7 +113,7 @@ export default function StaffHome() {
                       {next.kind === 'jemput' ? 'Jemput' : 'Antar'}
                     </span>
                     <span className="text-caption leading-none font-medium text-muted-foreground">
-                      Urutan #{next.queue.progress.done + 1} dari sistem
+                      {next.isActive ? 'Sedang Anda kerjakan' : 'Urutan #1 dari sistem'}
                     </span>
                   </div>
                   <div className="flex items-start justify-between gap-3">
@@ -122,9 +125,7 @@ export default function StaffHome() {
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="text-xl leading-none font-bold">{next.task.km}</p>
-                      <p className="text-caption leading-[1.4] text-muted-foreground">
-                        dari lokasi Anda
-                      </p>
+                      <p className="text-caption leading-[1.4] text-muted-foreground">dari toko</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-x-3.5 gap-y-1.5 text-note leading-[1.4] text-foreground-secondary">
@@ -140,11 +141,15 @@ export default function StaffHome() {
                   <LinkButton
                     size="cta"
                     className="mt-1"
-                    href={urlFor(
-                      next.kind === 'jemput' ? 'staff.pickup_task' : 'staff.delivery_task'
-                    )}
+                    href={
+                      next.isActive
+                        ? urlFor(
+                            next.kind === 'jemput' ? 'staff.pickup_task' : 'staff.delivery_task'
+                          )
+                        : urlFor(next.kind === 'jemput' ? 'staff.pickups' : 'staff.deliveries')
+                    }
                   >
-                    Lanjutkan Tugas
+                    {next.isActive ? 'Lanjutkan Tugas' : 'Buka Antrean'}
                     <IconArrowRight />
                   </LinkButton>
                 </div>
@@ -157,7 +162,7 @@ export default function StaffHome() {
               </span>
               <div>
                 <p className="text-base leading-[1.3] font-semibold">
-                  Tugas lapangan hari ini selesai
+                  Tidak ada tugas lapangan saat ini
                 </p>
                 <p className="text-note leading-[1.45] text-foreground-secondary">
                   Cek antrean Proses untuk pekerjaan di toko.
@@ -167,18 +172,6 @@ export default function StaffHome() {
           )}
         </section>
       </div>
-      <DemoSwitcher
-        className="max-sm:bottom-19 sm:right-3 sm:left-auto"
-        label="Data contoh staf"
-        options={[
-          { value: 'keep', label: 'Data saat ini' },
-          { value: 'reset', label: 'Mulai ulang hari' },
-        ]}
-        value="keep"
-        onChange={(value) => {
-          if (value === 'reset') resetWorkday()
-        }}
-      />
     </StaffLayout>
   )
 }

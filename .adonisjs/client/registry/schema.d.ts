@@ -7,19 +7,187 @@ import type { InferInput, SimpleError } from '@vinejs/vine/types'
 export type ParamValue = string | number | bigint | boolean
 
 export interface Registry {
-  'home': {
+  'auth.login': {
     methods: ["GET","HEAD"]
-    pattern: '/'
+    pattern: '/masuk'
     types: {
       body: {}
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/session_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/session_controller').default['create']>>>
     }
   }
-  'order.details': {
+  'auth.login.store': {
+    methods: ["POST"]
+    pattern: '/masuk'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth/session').loginValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth/session').loginValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/session_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/session_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'auth.register': {
+    methods: ["GET","HEAD"]
+    pattern: '/daftar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/register_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/register_controller').default['create']>>>
+    }
+  }
+  'auth.register.store': {
+    methods: ["POST"]
+    pattern: '/daftar'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth/register').registerValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth/register').registerValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/register_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/register_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'auth.password.forgot': {
+    methods: ["GET","HEAD"]
+    pattern: '/lupa-kata-sandi'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/password_reset_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/password_reset_controller').default['create']>>>
+    }
+  }
+  'auth.password.forgot.store': {
+    methods: ["POST"]
+    pattern: '/lupa-kata-sandi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth/password').forgotPasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth/password').forgotPasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/password_reset_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/password_reset_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'auth.password.reset': {
+    methods: ["GET","HEAD"]
+    pattern: '/kata-sandi-baru'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/password_reset_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/password_reset_controller').default['edit']>>>
+    }
+  }
+  'auth.password.reset.update': {
+    methods: ["PUT"]
+    pattern: '/kata-sandi-baru'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth/password').resetPasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth/password').resetPasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/password_reset_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/password_reset_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'auth.staff_login': {
+    methods: ["GET","HEAD"]
+    pattern: '/staf/masuk'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/staff_session_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/staff_session_controller').default['create']>>>
+    }
+  }
+  'auth.staff_login.store': {
+    methods: ["POST"]
+    pattern: '/staf/masuk'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth/session').loginValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth/session').loginValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/staff_session_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/staff_session_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'auth.otp': {
+    methods: ["GET","HEAD"]
+    pattern: '/verifikasi'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/otp_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/otp_controller').default['show']>>>
+    }
+  }
+  'auth.otp.verify': {
+    methods: ["POST"]
+    pattern: '/verifikasi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth/otp').verifyOtpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth/otp').verifyOtpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/otp_controller').default['verify']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/otp_controller').default['verify']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'auth.otp.resend': {
+    methods: ["POST"]
+    pattern: '/verifikasi/kirim-ulang'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/otp_controller').default['resend']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/otp_controller').default['resend']>>>
+    }
+  }
+  'auth.logout': {
+    methods: ["POST"]
+    pattern: '/keluar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/session_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/session_controller').default['destroy']>>>
+    }
+  }
+  'customer.home': {
+    methods: ["GET","HEAD"]
+    pattern: '/beranda'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/home_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/home_controller').default['show']>>>
+    }
+  }
+  'customer.order.create': {
     methods: ["GET","HEAD"]
     pattern: '/pesan'
     types: {
@@ -27,23 +195,23 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/checkout_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/checkout_controller').default['create']>>>
     }
   }
-  'order.items': {
-    methods: ["GET","HEAD"]
-    pattern: '/pesan/barang'
+  'customer.order.review': {
+    methods: ["POST"]
+    pattern: '/pesan/tinjau'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/customer/order').createOrderValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/customer/order').createOrderValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/checkout_controller').default['review']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/checkout_controller').default['review']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'order.confirm': {
+  'customer.order.confirm': {
     methods: ["GET","HEAD"]
     pattern: '/pesan/konfirmasi'
     types: {
@@ -51,35 +219,23 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/checkout_controller').default['confirm']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/checkout_controller').default['confirm']>>>
     }
   }
-  'order.created': {
-    methods: ["GET","HEAD"]
-    pattern: '/pesan/dibuat'
+  'customer.order.store': {
+    methods: ["POST"]
+    pattern: '/pesan'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/customer/order').createOrderValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/customer/order').createOrderValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/checkout_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/checkout_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'tracking.sign_in': {
-    methods: ["GET","HEAD"]
-    pattern: '/lacak'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
-    }
-  }
-  'tracking.orders': {
+  'customer.orders.index': {
     methods: ["GET","HEAD"]
     pattern: '/pesanan'
     types: {
@@ -87,44 +243,260 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['index']>>>
     }
   }
-  'tracking.status': {
+  'customer.orders.show': {
     methods: ["GET","HEAD"]
-    pattern: '/pesanan/:number'
+    pattern: '/pesanan/:code'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { code: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['show']>>>
     }
   }
-  'payment.bill': {
+  'customer.orders.bill': {
     methods: ["GET","HEAD"]
-    pattern: '/pesanan/:number/tagihan'
+    pattern: '/pesanan/:code/tagihan'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { code: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['bill']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['bill']>>>
     }
   }
-  'payment.qris': {
+  'customer.orders.cancel': {
+    methods: ["POST"]
+    pattern: '/pesanan/:code/batal'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/customer/cancel').cancelOrderValidator)>>
+      paramsTuple: [ParamValue]
+      params: { code: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/customer/cancel').cancelOrderValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['cancel']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.orders.receipt': {
     methods: ["GET","HEAD"]
-    pattern: '/pesanan/:number/bayar'
+    pattern: '/pesanan/:code/struk'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { code: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['receipt']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['receipt']>>>
+    }
+  }
+  'customer.orders.pay': {
+    methods: ["GET","HEAD"]
+    pattern: '/pesanan/:code/bayar'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { code: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['pay']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['pay']>>>
+    }
+  }
+  'customer.orders.pay.start': {
+    methods: ["POST"]
+    pattern: '/pesanan/:code/bayar'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { code: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['startPayment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['startPayment']>>>
+    }
+  }
+  'customer.orders.pay.check': {
+    methods: ["POST"]
+    pattern: '/pesanan/:code/bayar/cek'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { code: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['checkPayment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['checkPayment']>>>
+    }
+  }
+  'customer.profile.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/profile_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/profile_controller').default['show']>>>
+    }
+  }
+  'customer.profile.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil/ubah'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/profile_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/profile_controller').default['edit']>>>
+    }
+  }
+  'customer.profile.update': {
+    methods: ["PUT"]
+    pattern: '/profil'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/customer/profile').updateProfileValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/customer/profile').updateProfileValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/profile_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.password.update': {
+    methods: ["PUT"]
+    pattern: '/profil/kata-sandi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/shared/account').changePasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/shared/account').changePasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['updatePassword']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['updatePassword']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.profile.sign_out_others': {
+    methods: ["POST"]
+    pattern: '/profil/keluar-perangkat-lain'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['signOutOthers']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['signOutOthers']>>>
+    }
+  }
+  'customer.phone.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil/nomor'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/phone_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/phone_controller').default['edit']>>>
+    }
+  }
+  'customer.phone.store': {
+    methods: ["POST"]
+    pattern: '/profil/nomor'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/customer/profile').changePhoneValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/customer/profile').changePhoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/phone_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/phone_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.addresses.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil/alamat'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['index']>>>
+    }
+  }
+  'customer.addresses.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil/alamat/baru'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['create']>>>
+    }
+  }
+  'customer.addresses.store': {
+    methods: ["POST"]
+    pattern: '/profil/alamat'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/customer/address').saveAddressValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/customer/address').saveAddressValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.addresses.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil/alamat/:id/ubah'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['edit']>>>
+    }
+  }
+  'customer.addresses.update': {
+    methods: ["PUT"]
+    pattern: '/profil/alamat/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/customer/address').saveAddressValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/customer/address').saveAddressValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.addresses.primary': {
+    methods: ["POST"]
+    pattern: '/profil/alamat/:id/utama'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['makePrimary']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['makePrimary']>>>
+    }
+  }
+  'customer.addresses.destroy': {
+    methods: ["DELETE"]
+    pattern: '/profil/alamat/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['destroy']>>>
     }
   }
   'staff.home': {
@@ -135,8 +507,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/dashboard_controller').default['home']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/dashboard_controller').default['home']>>>
     }
   }
   'staff.pickups': {
@@ -147,8 +519,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['pickups']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['pickups']>>>
     }
   }
   'staff.pickup_task': {
@@ -159,8 +531,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['pickupTask']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['pickupTask']>>>
     }
   }
   'staff.deliveries': {
@@ -171,8 +543,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['deliveries']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['deliveries']>>>
     }
   }
   'staff.delivery_task': {
@@ -183,8 +555,68 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['deliveryTask']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['deliveryTask']>>>
+    }
+  }
+  'staff.task.start': {
+    methods: ["POST"]
+    pattern: '/staf/:kind/:code/mulai'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { kind: ParamValue; code: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['start']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['start']>>>
+    }
+  }
+  'staff.task.arrive': {
+    methods: ["POST"]
+    pattern: '/staf/:kind/:code/tiba'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { kind: ParamValue; code: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['arrive']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['arrive']>>>
+    }
+  }
+  'staff.task.release': {
+    methods: ["POST"]
+    pattern: '/staf/:kind/:code/lepas'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { kind: ParamValue; code: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['release']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['release']>>>
+    }
+  }
+  'staff.task.complete': {
+    methods: ["POST"]
+    pattern: '/staf/:kind/:code/selesai'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/staff/task').completeTaskValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { kind: ParamValue; code: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/staff/task').completeTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['complete']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['complete']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.task.skip': {
+    methods: ["POST"]
+    pattern: '/staf/:kind/:code/lewati'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/staff/task').skipTaskValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { kind: ParamValue; code: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/staff/task').skipTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['skip']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['skip']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'staff.process': {
@@ -195,8 +627,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['queue']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['queue']>>>
     }
   }
   'staff.inspection': {
@@ -207,8 +639,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { number: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['inspection']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['inspection']>>>
     }
   }
   'staff.washing': {
@@ -219,8 +651,56 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { number: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['washing']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['washing']>>>
+    }
+  }
+  'staff.inspection.start': {
+    methods: ["POST"]
+    pattern: '/staf/proses/:number/periksa/mulai'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['startInspection']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['startInspection']>>>
+    }
+  }
+  'staff.inspection.save': {
+    methods: ["POST"]
+    pattern: '/staf/proses/:number/periksa'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/staff/process').saveInspectionValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/staff/process').saveInspectionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['saveInspection']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['saveInspection']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.washing.complete': {
+    methods: ["POST"]
+    pattern: '/staf/proses/:number/cuci'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/staff/process').washValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/staff/process').washValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['completeWash']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['completeWash']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.collect': {
+    methods: ["POST"]
+    pattern: '/staf/proses/:number/serahkan'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['collect']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['collect']>>>
     }
   }
   'staff.more': {
@@ -231,8 +711,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/dashboard_controller').default['more']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/dashboard_controller').default['more']>>>
     }
   }
   'staff.walk_in': {
@@ -243,8 +723,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['walkIn']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['walkIn']>>>
+    }
+  }
+  'staff.walk_in.store': {
+    methods: ["POST"]
+    pattern: '/staf/transaksi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/staff/store').walkInValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/staff/store').walkInValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'staff.store_payment': {
@@ -255,8 +747,68 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { number: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['payment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['payment']>>>
+    }
+  }
+  'staff.store_payment.record': {
+    methods: ["POST"]
+    pattern: '/staf/transaksi/:number/bayar'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/staff/store').counterPaymentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/staff/store').counterPaymentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['recordPayment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['recordPayment']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.store_payment.qris': {
+    methods: ["POST"]
+    pattern: '/staf/transaksi/:number/qris'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['startQris']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['startQris']>>>
+    }
+  }
+  'staff.store_payment.qris_check': {
+    methods: ["POST"]
+    pattern: '/staf/transaksi/:number/qris/cek'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['checkQris']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['checkQris']>>>
+    }
+  }
+  'staff.store_payment.receipt': {
+    methods: ["POST"]
+    pattern: '/staf/transaksi/:number/struk'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['sendReceipt']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['sendReceipt']>>>
+    }
+  }
+  'staff.walk_in.photos': {
+    methods: ["POST"]
+    pattern: '/staf/transaksi/:number/foto'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/staff/store').intakePhotosValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/staff/store').intakePhotosValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['storePhotos']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['storePhotos']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'staff.photo': {
@@ -267,8 +819,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['photo']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['photo']>>>
     }
   }
   'staff.history': {
@@ -279,8 +831,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/account_controller').default['history']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/account_controller').default['history']>>>
     }
   }
   'staff.profile': {
@@ -291,8 +843,32 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/account_controller').default['profile']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/account_controller').default['profile']>>>
+    }
+  }
+  'staff.password.update': {
+    methods: ["PUT"]
+    pattern: '/staf/profil/kata-sandi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/shared/account').changePasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/shared/account').changePasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['updatePassword']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['updatePassword']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.sign_out_others': {
+    methods: ["POST"]
+    pattern: '/staf/profil/keluar-perangkat-lain'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['signOutOthers']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['signOutOthers']>>>
     }
   }
   'admin.summary': {
@@ -303,8 +879,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['summary']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['summary']>>>
     }
   }
   'admin.customers': {
@@ -315,8 +891,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['customers']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['customers']>>>
+    }
+  }
+  'admin.customers.remind': {
+    methods: ["POST"]
+    pattern: '/admin/pelanggan/pengingat'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/customer').remindCustomersValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/customer').remindCustomersValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['remind']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['remind']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.activity': {
@@ -327,8 +915,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['activityLog']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['activityLog']>>>
     }
   }
   'admin.orders': {
@@ -339,8 +927,32 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['index']>>>
+    }
+  }
+  'admin.orders.move': {
+    methods: ["POST"]
+    pattern: '/admin/pesanan/status'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/order').moveOrdersValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/order').moveOrdersValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['move']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['move']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.orders.cancel': {
+    methods: ["POST"]
+    pattern: '/admin/pesanan/batal'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/order').cancelOrdersValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/order').cancelOrdersValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['cancel']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.order': {
@@ -351,8 +963,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { number: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['show']>>>
+    }
+  }
+  'admin.order.payment': {
+    methods: ["POST"]
+    pattern: '/admin/pesanan/:number/pembayaran'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/order').correctPaymentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/order').correctPaymentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['correctPayment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['correctPayment']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.services': {
@@ -363,8 +987,80 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/catalog_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/catalog_controller').default['index']>>>
+    }
+  }
+  'admin.services.store': {
+    methods: ["POST"]
+    pattern: '/admin/layanan'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/service').saveServiceValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/service').saveServiceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/catalog_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/catalog_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.services.toggle': {
+    methods: ["POST"]
+    pattern: '/admin/layanan/aktif'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/service').toggleServicesValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/service').toggleServicesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/catalog_controller').default['toggle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/catalog_controller').default['toggle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.services.destroy': {
+    methods: ["POST"]
+    pattern: '/admin/layanan/hapus'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/service').deleteServicesValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/service').deleteServicesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/catalog_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/catalog_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.services.update': {
+    methods: ["PUT"]
+    pattern: '/admin/layanan/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/service').saveServiceValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/service').saveServiceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/catalog_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/catalog_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.reconciliation': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/rekonsiliasi'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['index']>>>
+    }
+  }
+  'admin.reconciliation.refresh': {
+    methods: ["POST"]
+    pattern: '/admin/rekonsiliasi/:id/cek'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['refresh']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['refresh']>>>
     }
   }
   'admin.reports': {
@@ -375,8 +1071,44 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['reportsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['reportsPage']>>>
+    }
+  }
+  'admin.costs.store': {
+    methods: ["POST"]
+    pattern: '/admin/laporan/biaya'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/cost').saveCostValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/cost').saveCostValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['storeCost']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['storeCost']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.costs.update': {
+    methods: ["PUT"]
+    pattern: '/admin/laporan/biaya/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/cost').saveCostValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/cost').saveCostValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['updateCost']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['updateCost']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.costs.destroy': {
+    methods: ["DELETE"]
+    pattern: '/admin/laporan/biaya/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['destroyCost']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['destroyCost']>>>
     }
   }
   'admin.staff': {
@@ -387,13 +1119,229 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['staff']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['staff']>>>
+    }
+  }
+  'admin.staff.store': {
+    methods: ["POST"]
+    pattern: '/admin/pengaturan'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/staff').saveStaffValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/staff').saveStaffValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['storeStaff']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['storeStaff']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.staff.update': {
+    methods: ["PUT"]
+    pattern: '/admin/pengaturan/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/staff').saveStaffValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/staff').saveStaffValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['updateStaff']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['updateStaff']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.staff.reset': {
+    methods: ["POST"]
+    pattern: '/admin/pengaturan/:id/reset'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['resetStaff']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['resetStaff']>>>
+    }
+  }
+  'admin.staff.toggle': {
+    methods: ["POST"]
+    pattern: '/admin/pengaturan/:id/aktif'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/staff').staffActiveValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/staff').staffActiveValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['toggleStaff']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['toggleStaff']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.store': {
     methods: ["GET","HEAD"]
     pattern: '/admin/pengaturan/toko'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['store']>>>
+    }
+  }
+  'admin.store.update': {
+    methods: ["PUT"]
+    pattern: '/admin/pengaturan/toko'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/settings').saveStoreSettingsValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/settings').saveStoreSettingsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['saveStore']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['saveStore']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.profile': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/profil'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/profile_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/profile_controller').default['show']>>>
+    }
+  }
+  'admin.password.update': {
+    methods: ["PUT"]
+    pattern: '/admin/profil/kata-sandi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/shared/account').changePasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/shared/account').changePasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['updatePassword']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['updatePassword']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.sign_out_others': {
+    methods: ["POST"]
+    pattern: '/admin/profil/keluar-perangkat-lain'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['signOutOthers']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/account_security_controller').default['signOutOthers']>>>
+    }
+  }
+  'home': {
+    methods: ["GET","HEAD"]
+    pattern: '/'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['show']>>>
+    }
+  }
+  'legal.terms': {
+    methods: ["GET","HEAD"]
+    pattern: '/syarat'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/legal_controller').default['terms']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/legal_controller').default['terms']>>>
+    }
+  }
+  'legal.privacy': {
+    methods: ["GET","HEAD"]
+    pattern: '/privasi'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/legal_controller').default['privacy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/legal_controller').default['privacy']>>>
+    }
+  }
+  'seo.sitemap': {
+    methods: ["GET","HEAD"]
+    pattern: '/sitemap.xml'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['sitemap']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['sitemap']>>>
+    }
+  }
+  'seo.robots': {
+    methods: ["GET","HEAD"]
+    pattern: '/robots.txt'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['robots']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['robots']>>>
+    }
+  }
+  'webhooks.midtrans': {
+    methods: ["POST"]
+    pattern: '/webhooks/midtrans'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/payment_notifications_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/payment_notifications_controller').default['store']>>>
+    }
+  }
+  'photos.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/foto-bukti/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/proof_photos_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/proof_photos_controller').default['show']>>>
+    }
+  }
+  'event_stream': {
+    methods: ["GET","HEAD"]
+    pattern: '/__transmit/events'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'subscribe': {
+    methods: ["POST"]
+    pattern: '/__transmit/subscribe'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'unsubscribe': {
+    methods: ["POST"]
+    pattern: '/__transmit/unsubscribe'
     types: {
       body: {}
       paramsTuple: []

@@ -21,14 +21,14 @@ function TextField({
   value,
   onChange,
   placeholder,
-  numeric,
+  isNumeric,
   error,
 }: {
   label: string
   value: string
   onChange: (value: string) => void
   placeholder: string
-  numeric?: boolean
+  isNumeric?: boolean
   error?: string
 }) {
   const id = useId()
@@ -40,13 +40,15 @@ function TextField({
       <Input
         id={id}
         autoComplete="off"
-        inputMode={numeric ? 'numeric' : undefined}
+        inputMode={isNumeric ? 'numeric' : undefined}
         placeholder={placeholder}
         value={value}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : undefined}
         onChange={(event) =>
-          onChange(numeric ? event.target.value.replace(/\D/g, '').slice(0, 9) : event.target.value)
+          onChange(
+            isNumeric ? event.target.value.replace(/\D/g, '').slice(0, 9) : event.target.value
+          )
         }
         className="px-3"
       />
@@ -60,15 +62,15 @@ function TextField({
 }
 
 export function ServiceFormDialog({
-  open,
+  isOpen,
   onOpenChange,
-  editing,
+  isEditing,
   initial,
   onSave,
 }: {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
-  editing: boolean
+  isEditing: boolean
   initial: ServiceForm
   onSave: (form: ServiceForm) => void
 }) {
@@ -79,8 +81,8 @@ export function ServiceFormDialog({
   const update = (patch: Partial<ServiceForm>) => setForm((current) => ({ ...current, ...patch }))
 
   return (
-    <Dialog isOpen={open} onOpenChange={onOpenChange} variant="panel">
-      <DialogTitleBar>{editing ? 'Ubah layanan' : 'Tambah layanan'}</DialogTitleBar>
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
+      <DialogTitleBar>{isEditing ? 'Ubah layanan' : 'Tambah layanan'}</DialogTitleBar>
       <TextField
         label="Nama layanan"
         placeholder="mis. Deep Clean"
@@ -108,7 +110,7 @@ export function ServiceFormDialog({
         </span>
         <ChoicePills
           labelledBy={categoryId}
-          multiple
+          isMultiple
           value={form.categories}
           onChange={(category) =>
             update({
@@ -124,7 +126,7 @@ export function ServiceFormDialog({
         <TextField
           label="Harga (Rp)"
           placeholder="45000"
-          numeric
+          isNumeric
           value={form.price}
           onChange={(price) => update({ price })}
           error={errors.price}
@@ -132,7 +134,7 @@ export function ServiceFormDialog({
         <TextField
           label="Estimasi (hari)"
           placeholder="3"
-          numeric
+          isNumeric
           value={form.days}
           onChange={(days) => update({ days })}
         />
@@ -145,7 +147,7 @@ export function ServiceFormDialog({
       />
       <Switch
         isSelected={form.active}
-        onChange={(active) => update({ active })}
+        onChange={(isActive) => update({ active: isActive })}
         className="flex gap-2.5"
       >
         <span className="text-sm leading-[1.3] font-medium">Aktif — tampil di pilihan staf</span>
@@ -159,10 +161,12 @@ export function ServiceFormDialog({
           onPress={() => {
             const found = serviceFormErrors(form)
             setErrors(found)
-            if (!Object.keys(found).length) onSave(form)
+            if (!Object.keys(found).length) {
+              onSave(form)
+            }
           }}
         >
-          {editing ? 'Simpan perubahan' : 'Tambah layanan'}
+          {isEditing ? 'Simpan perubahan' : 'Tambah layanan'}
         </Button>
       </div>
     </Dialog>
@@ -170,7 +174,7 @@ export function ServiceFormDialog({
 }
 
 export function DeleteServicesDialog({
-  open,
+  isOpen,
   onOpenChange,
   title,
   names,
@@ -178,7 +182,7 @@ export function DeleteServicesDialog({
   onDeactivate,
   onDelete,
 }: {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
   title: ReactNode
   names?: string[]
@@ -187,7 +191,7 @@ export function DeleteServicesDialog({
   onDelete: () => void
 }) {
   return (
-    <Dialog isOpen={open} onOpenChange={onOpenChange} variant="panel">
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
       <DialogTitleBar>{title}</DialogTitleBar>
       <DialogDescription className="text-note leading-normal">
         Layanan yang pernah dipakai di pesanan tetap tampil di riwayat dan laporan. Bila hanya ingin

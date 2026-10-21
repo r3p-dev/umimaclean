@@ -1,10 +1,14 @@
 import { Link } from '@adonisjs/inertia/react'
+import { usePage } from '@inertiajs/react'
 import { urlFor } from '~/client'
-import { IconPackage } from '@tabler/icons-react'
+import { IconLogin, IconUserCircle } from '@tabler/icons-react'
 import Logo from '~/components/atoms/logo'
 import { LinkButton } from '~/components/ui/button'
 
 export default function SiteHeader() {
+  const account = usePage().props.account
+  const isStaff = account ? account.role !== 'customer' : false
+
   return (
     <header className="border-b border-border">
       <div className="mx-auto box-content flex h-16 max-w-page items-center gap-1.5 px-5">
@@ -42,15 +46,15 @@ export default function SiteHeader() {
             variant="ghost"
             size="desktop"
             className="gap-1.5 px-3"
-            href={urlFor('tracking.sign_in')}
+            href={account ? urlFor(isStaff ? 'staff.home' : 'customer.home') : urlFor('auth.login')}
           >
-            <IconPackage />
-            Lacak Pesanan
+            {account ? <IconUserCircle /> : <IconLogin />}
+            {account ? (isStaff ? 'Aplikasi Staf' : 'Akun Saya') : 'Masuk'}
           </LinkButton>
           <LinkButton
             size="desktop"
             className="ml-1 hidden px-4 lg:inline-flex"
-            href={urlFor('order.details')}
+            href={urlFor('customer.order.create')}
           >
             Pesan Penjemputan
           </LinkButton>

@@ -1,12 +1,21 @@
 export type AdminSection =
-  'ringkasan' | 'pesanan' | 'layanan' | 'pelanggan' | 'laporan' | 'aktivitas' | 'pengaturan'
+  | 'ringkasan'
+  | 'pesanan'
+  | 'rekonsiliasi'
+  | 'layanan'
+  | 'pelanggan'
+  | 'laporan'
+  | 'aktivitas'
+  | 'pengaturan'
+  | 'profil'
 
 export const ADMIN_NAV: {
-  key: AdminSection
+  key: Exclude<AdminSection, 'profil'>
   label: string
   route:
     | 'admin.summary'
     | 'admin.orders'
+    | 'admin.reconciliation'
     | 'admin.services'
     | 'admin.customers'
     | 'admin.reports'
@@ -15,6 +24,7 @@ export const ADMIN_NAV: {
 }[] = [
   { key: 'ringkasan', label: 'Ringkasan', route: 'admin.summary' },
   { key: 'pesanan', label: 'Pesanan', route: 'admin.orders' },
+  { key: 'rekonsiliasi', label: 'Rekonsiliasi', route: 'admin.reconciliation' },
   { key: 'layanan', label: 'Layanan & Harga', route: 'admin.services' },
   { key: 'pelanggan', label: 'Pelanggan', route: 'admin.customers' },
   { key: 'laporan', label: 'Laporan', route: 'admin.reports' },

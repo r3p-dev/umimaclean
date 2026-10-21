@@ -1,6 +1,6 @@
 import { IconMapPinFilled } from '@tabler/icons-react'
 import RouteMap from '~/components/organisms/route_map'
-import type { PickupPoint } from '~/lib/order/draft'
+import type { PickupPoint } from '~/lib/location/point'
 import type { Task } from '~/lib/tasks/queue'
 import { cn } from '~/lib/shared/utils'
 
@@ -42,21 +42,21 @@ export default function QueueMap({
   done,
   me,
   label,
-  legend = true,
+  showLegend = true,
   className,
 }: {
   tasks: Task[]
   done: number
   me: PickupPoint
   label: string
-  legend?: boolean
+  showLegend?: boolean
   className?: string
 }) {
   return (
     <RouteMap
       me={me}
       label={label}
-      interactive={false}
+      isInteractive={false}
       className={className}
       pins={tasks.map((task, index) => ({
         point: task.point,
@@ -64,7 +64,7 @@ export default function QueueMap({
         state: index < done ? 'done' : index === done ? 'current' : 'upcoming',
       }))}
     >
-      {legend && <MapLegend target="task" className="bottom-2.5 left-2.5" />}
+      {showLegend && <MapLegend target="task" className="bottom-2.5 left-2.5" />}
     </RouteMap>
   )
 }

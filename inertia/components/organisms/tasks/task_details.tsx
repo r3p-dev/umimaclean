@@ -36,7 +36,7 @@ export default function TaskDetails({ task, kind }: { task: Task; kind: TaskKind
         <div className="flex min-w-0 flex-col gap-1">
           <span className="flex flex-wrap items-center gap-2">
             <span className="text-base leading-[1.3] font-bold">{task.full}</span>
-            <SourceTag store={task.source === 'toko'} />
+            <SourceTag isInStore={task.source === 'toko'} />
           </span>
           <span className="font-mono text-xs leading-[1.4] font-medium text-muted-foreground">
             {task.ref}
@@ -65,7 +65,7 @@ export default function TaskDetails({ task, kind }: { task: Task; kind: TaskKind
         <div className="flex flex-col gap-1 border-t border-border pt-3">
           <div className="flex gap-2 text-[14.5px] leading-[1.45]">
             <IconMapPinFilled className="mt-0.5 size-5 shrink-0 text-destructive" />
-            <span>{task.addr}</span>
+            <span>{task.address}</span>
           </div>
           <p className="pl-7 text-note leading-[1.4] text-foreground-secondary">
             Patokan: {task.note}

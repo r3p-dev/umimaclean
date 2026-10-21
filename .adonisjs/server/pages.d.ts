@@ -16,23 +16,38 @@ declare module '@adonisjs/inertia/types' {
     'admin/customers': ExtractProps<(typeof import('../../inertia/pages/admin/customers.tsx'))['default']>
     'admin/orders/detail': ExtractProps<(typeof import('../../inertia/pages/admin/orders/detail.tsx'))['default']>
     'admin/orders/list': ExtractProps<(typeof import('../../inertia/pages/admin/orders/list.tsx'))['default']>
+    'admin/profile': ExtractProps<(typeof import('../../inertia/pages/admin/profile.tsx'))['default']>
+    'admin/reconciliation': ExtractProps<(typeof import('../../inertia/pages/admin/reconciliation.tsx'))['default']>
     'admin/reports': ExtractProps<(typeof import('../../inertia/pages/admin/reports.tsx'))['default']>
     'admin/services': ExtractProps<(typeof import('../../inertia/pages/admin/services.tsx'))['default']>
     'admin/settings/staff': ExtractProps<(typeof import('../../inertia/pages/admin/settings/staff.tsx'))['default']>
     'admin/settings/store': ExtractProps<(typeof import('../../inertia/pages/admin/settings/store.tsx'))['default']>
     'admin/summary': ExtractProps<(typeof import('../../inertia/pages/admin/summary.tsx'))['default']>
+    'auth/forgot_password': ExtractProps<(typeof import('../../inertia/pages/auth/forgot_password.tsx'))['default']>
+    'auth/login': ExtractProps<(typeof import('../../inertia/pages/auth/login.tsx'))['default']>
+    'auth/otp': ExtractProps<(typeof import('../../inertia/pages/auth/otp.tsx'))['default']>
+    'auth/register': ExtractProps<(typeof import('../../inertia/pages/auth/register.tsx'))['default']>
+    'auth/reset_password': ExtractProps<(typeof import('../../inertia/pages/auth/reset_password.tsx'))['default']>
+    'auth/staff_login': ExtractProps<(typeof import('../../inertia/pages/auth/staff_login.tsx'))['default']>
+    'customer/addresses/form': ExtractProps<(typeof import('../../inertia/pages/customer/addresses/form.tsx'))['default']>
+    'customer/addresses/index': ExtractProps<(typeof import('../../inertia/pages/customer/addresses/index.tsx'))['default']>
+    'customer/home/index': ExtractProps<(typeof import('../../inertia/pages/customer/home/index.tsx'))['default']>
+    'customer/home/welcome': ExtractProps<(typeof import('../../inertia/pages/customer/home/welcome.tsx'))['default']>
     'customer/order/confirm': ExtractProps<(typeof import('../../inertia/pages/customer/order/confirm.tsx'))['default']>
-    'customer/order/created': ExtractProps<(typeof import('../../inertia/pages/customer/order/created.tsx'))['default']>
-    'customer/order/details': ExtractProps<(typeof import('../../inertia/pages/customer/order/details.tsx'))['default']>
-    'customer/order/items': ExtractProps<(typeof import('../../inertia/pages/customer/order/items.tsx'))['default']>
+    'customer/order/create': ExtractProps<(typeof import('../../inertia/pages/customer/order/create.tsx'))['default']>
+    'customer/orders/index': ExtractProps<(typeof import('../../inertia/pages/customer/orders/index.tsx'))['default']>
+    'customer/orders/receipt': ExtractProps<(typeof import('../../inertia/pages/customer/orders/receipt.tsx'))['default']>
+    'customer/orders/show': ExtractProps<(typeof import('../../inertia/pages/customer/orders/show.tsx'))['default']>
     'customer/payment/bill': ExtractProps<(typeof import('../../inertia/pages/customer/payment/bill.tsx'))['default']>
     'customer/payment/qris': ExtractProps<(typeof import('../../inertia/pages/customer/payment/qris.tsx'))['default']>
-    'customer/tracking/orders': ExtractProps<(typeof import('../../inertia/pages/customer/tracking/orders.tsx'))['default']>
-    'customer/tracking/sign_in': ExtractProps<(typeof import('../../inertia/pages/customer/tracking/sign_in.tsx'))['default']>
-    'customer/tracking/status': ExtractProps<(typeof import('../../inertia/pages/customer/tracking/status.tsx'))['default']>
+    'customer/profile/edit': ExtractProps<(typeof import('../../inertia/pages/customer/profile/edit.tsx'))['default']>
+    'customer/profile/phone': ExtractProps<(typeof import('../../inertia/pages/customer/profile/phone.tsx'))['default']>
+    'customer/profile/show': ExtractProps<(typeof import('../../inertia/pages/customer/profile/show.tsx'))['default']>
     'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>
+    'legal/privacy': ExtractProps<(typeof import('../../inertia/pages/legal/privacy.tsx'))['default']>
+    'legal/terms': ExtractProps<(typeof import('../../inertia/pages/legal/terms.tsx'))['default']>
     'staff/account/history': ExtractProps<(typeof import('../../inertia/pages/staff/account/history.tsx'))['default']>
     'staff/account/profile': ExtractProps<(typeof import('../../inertia/pages/staff/account/profile.tsx'))['default']>
     'staff/home': ExtractProps<(typeof import('../../inertia/pages/staff/home.tsx'))['default']>

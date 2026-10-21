@@ -6,28 +6,30 @@ import { Button } from '~/components/ui/button'
 import { Field, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import type { AreaTone } from '~/lib/location/service_area'
-import type { PickupPoint, PointLabel } from '~/lib/order/draft'
+import type { PickupPoint, PointLabel } from '~/lib/location/point'
 import { cn } from '~/lib/shared/utils'
 
 export default function PickupPointPicker({
+  title = 'Titik penjemputan',
   mapRef,
   start,
   label,
   tone,
-  loading,
-  locating,
+  isLoading,
+  isLocating,
   landmark,
   onLocate,
   onMoveEnd,
   onLandmarkChange,
   className,
 }: {
+  title?: string
   mapRef: Ref<LocationMapHandle>
   start: PickupPoint
   label: PointLabel | null
   tone: AreaTone | null
-  loading: boolean
-  locating: boolean
+  isLoading: boolean
+  isLocating: boolean
   landmark: string
   onLocate: () => void
   onMoveEnd: (point: PickupPoint) => void
@@ -41,7 +43,7 @@ export default function PickupPointPicker({
     >
       <div className="flex flex-col gap-1">
         <h2 id="pickup-point-title" className="text-[17px] leading-[1.3] font-semibold">
-          Titik penjemputan
+          {title}
         </h2>
         <p className="text-meta leading-[1.45] text-muted-foreground">
           Penanda mengikuti alamat yang Anda isi. Geser peta bila belum tepat di rumah Anda.
@@ -65,28 +67,28 @@ export default function PickupPointPicker({
           type="button"
           variant="outline"
           aria-label="Gunakan lokasi saya"
-          aria-busy={locating}
+          aria-busy={isLocating}
           onPress={onLocate}
           className="absolute right-3 bottom-6 z-10 size-12.5 border-border p-0 text-primary shadow-1"
         >
-          <IconCurrentLocation className={cn('size-6', locating && 'animate-pulse')} />
+          <IconCurrentLocation className={cn('size-6', isLocating && 'animate-pulse')} />
         </Button>
       </LocationMap>
       <div className="flex items-start gap-3" aria-live="polite">
         <IconMapPinFilled className="size-6 shrink-0 text-primary" />
         <div className="flex flex-1 flex-col gap-1.5">
           <p className="text-base leading-[1.3] font-semibold">
-            {label?.street ?? (loading ? 'Membaca alamat…' : 'Alamat belum terbaca')}
+            {label?.street ?? (isLoading ? 'Membaca alamat…' : 'Alamat belum terbaca')}
           </p>
           <p className="text-sm leading-[1.4] text-foreground-secondary">
             {label?.area ?? 'Pastikan penanda tepat di rumah Anda.'}
           </p>
-          <AreaBadge tone={tone} loading={loading} />
+          <AreaBadge tone={tone} isLoading={isLoading} />
         </div>
       </div>
       {tone === 'outside' && (
         <p role="alert" className="text-note leading-[1.4] font-medium text-destructive-text">
-          Titik ini di luar Bandung Raya. Geser peta ke alamat di area layanan.
+          Titik ini di luar area antar-jemput gratis. Geser peta ke alamat di area layanan.
         </p>
       )}
       <Field className="pt-2">

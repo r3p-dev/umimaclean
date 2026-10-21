@@ -31,8 +31,12 @@ export function fromIso(iso: string) {
 export function formatDate(iso: string, style: 'short' | 'long' | 'full') {
   const date = fromIso(iso)
   const dayMonth = `${date.getDate()} ${MONTH_SHORT[date.getMonth()]}`
-  if (style === 'short') return `${DAY_SHORT[date.getDay()]}, ${dayMonth}`
-  if (style === 'long') return `${DAY_LONG[date.getDay()]}, ${dayMonth}`
+  if (style === 'short') {
+    return `${DAY_SHORT[date.getDay()]}, ${dayMonth}`
+  }
+  if (style === 'long') {
+    return `${DAY_LONG[date.getDay()]}, ${dayMonth}`
+  }
   return `${dayMonth} ${date.getFullYear()}`
 }
 
@@ -67,4 +71,41 @@ export function dayDiff(from: Date, to: Date) {
 
 export function isWeekend(date: Date) {
   return date.getDay() === 0 || date.getDay() === 6
+}
+
+export function greetingFor(date = new Date()) {
+  const hour = date.getHours()
+  if (hour < 11) {
+    return 'Selamat pagi'
+  }
+  if (hour < 15) {
+    return 'Selamat siang'
+  }
+  if (hour < 18) {
+    return 'Selamat sore'
+  }
+  return 'Selamat malam'
+}
+
+export function formatMonthYear(iso: string) {
+  const date = fromIso(iso)
+  return `${MONTH_SHORT[date.getMonth()]} ${date.getFullYear()}`
+}
+
+export function timeAgo(iso: string, today = new Date()) {
+  const days = -daysFromToday(iso, today)
+  if (days <= 0) {
+    return 'hari ini'
+  }
+  if (days < 30) {
+    return `${days} hari lalu`
+  }
+  if (days < 365) {
+    return `${Math.floor(days / 30)} bulan lalu`
+  }
+  return `${Math.floor(days / 365)} tahun lalu`
+}
+
+export function clockTime(date = new Date()) {
+  return `${String(date.getHours()).padStart(2, '0')}.${String(date.getMinutes()).padStart(2, '0')}`
 }

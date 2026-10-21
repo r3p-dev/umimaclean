@@ -5,15 +5,15 @@ export default function OtpInput({
   value,
   onChange,
   length = 6,
-  invalid,
-  disabled,
+  isInvalid,
+  isDisabled,
   describedBy,
 }: {
   value: string
   onChange: (value: string) => void
   length?: number
-  invalid?: boolean
-  disabled?: boolean
+  isInvalid?: boolean
+  isDisabled?: boolean
   describedBy?: string
 }) {
   const boxes = useRef<(HTMLInputElement | null)[]>([])
@@ -65,15 +65,15 @@ export default function OtpInput({
           inputMode="numeric"
           autoComplete={index === 0 ? 'one-time-code' : 'off'}
           aria-label={`Digit ${index + 1} dari ${length}`}
-          aria-invalid={invalid ? true : undefined}
-          disabled={disabled}
+          aria-invalid={isInvalid ? true : undefined}
+          disabled={isDisabled}
           value={value[index] ?? ''}
           onChange={(event) => change(index, event.target.value)}
           onKeyDown={(event) => keyDown(index, event)}
           onFocus={(event) => event.target.select()}
           className={cn(
             'h-otp w-full min-w-0 rounded-md border border-input bg-card p-0 text-center font-mono text-[22px] leading-none font-semibold text-foreground transition-[border-color,box-shadow] focus-visible:field-focus disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground',
-            invalid && 'field-invalid bg-destructive-surface'
+            isInvalid && 'field-invalid bg-destructive-surface'
           )}
         />
       ))}

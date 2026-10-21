@@ -8,22 +8,30 @@ import { cn } from '~/lib/shared/utils'
 export type AddressSuggestions = {
   mode: SuggestionMode | null
   items: AddressSuggestion[]
-  loading: boolean
-  failed: boolean
+  isLoading: boolean
+  hasFailed: boolean
   origin: OriginState
 }
 
-function statusText({ mode, items, loading, failed, origin }: AddressSuggestions) {
+function statusText({ mode, items, isLoading, hasFailed, origin }: AddressSuggestions) {
   if (mode === null) {
-    if (origin === 'locating') return 'Membaca lokasi Anda…'
-    if (origin === 'denied')
+    if (origin === 'locating') {
+      return 'Membaca lokasi Anda…'
+    }
+    if (origin === 'denied') {
       return 'Lokasi tidak bisa dibaca. Ketik nama jalan untuk melihat saran alamat.'
+    }
     return null
   }
-  if (loading && !items.length)
+  if (isLoading && !items.length) {
     return mode === 'nearby' ? 'Mencari alamat di sekitar Anda…' : 'Mencari alamat…'
-  if (failed) return 'Saran alamat tidak bisa dimuat. Ketik alamat lengkap Anda.'
-  if (!items.length) return 'Tidak ada saran. Lanjutkan mengetik alamat lengkap Anda.'
+  }
+  if (hasFailed) {
+    return 'Saran alamat tidak bisa dimuat. Ketik alamat lengkap Anda.'
+  }
+  if (!items.length) {
+    return 'Tidak ada saran. Lanjutkan mengetik alamat lengkap Anda.'
+  }
   return null
 }
 
@@ -32,7 +40,7 @@ export default function AddressCombobox({
   inputRef,
   value,
   suggestions,
-  invalid,
+  isInvalid,
   describedBy,
   onChange,
   onPick,
@@ -43,7 +51,7 @@ export default function AddressCombobox({
   inputRef?: Ref<HTMLTextAreaElement>
   value: string
   suggestions: AddressSuggestions
-  invalid?: boolean
+  isInvalid?: boolean
   describedBy?: string
   onChange: (value: string) => void
   onPick: (suggestion: AddressSuggestion) => void
@@ -51,12 +59,12 @@ export default function AddressCombobox({
   onBlur?: () => void
 }) {
   const listId = useId()
-  const [open, setOpen] = useState(false)
+  const [isOpen, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
-  const { mode, items, loading } = suggestions
+  const { mode, items, isLoading } = suggestions
   const status = statusText(suggestions)
-  const expanded = open && (items.length > 0 || !!status)
-  const activeItem = expanded ? items[active] : undefined
+  const isExpanded = isOpen && (items.length > 0 || !!status)
+  const activeItem = isExpanded ? items[active] : undefined
   const Icon = mode === 'nearby' ? IconNavigation : IconMapPin
 
   function pick(suggestion: AddressSuggestion) {
@@ -68,11 +76,13 @@ export default function AddressCombobox({
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault()
-      if (!open) {
+      if (!isOpen) {
         setOpen(true)
         return
       }
-      if (!items.length) return
+      if (!items.length) {
+        return
+      }
       const last = items.length - 1
       setActive((current) =>
         event.key === 'ArrowDown'
@@ -87,11 +97,14 @@ export default function AddressCombobox({
     }
     if (event.key === 'Enter') {
       event.preventDefault()
-      if (activeItem) pick(activeItem)
-      else event.currentTarget.form?.requestSubmit()
+      if (activeItem) {
+        pick(activeItem)
+      } else {
+        event.currentTarget.form?.requestSubmit()
+      }
       return
     }
-    if (event.key === 'Escape' && open) {
+    if (event.key === 'Escape' && isOpen) {
       event.preventDefault()
       setOpen(false)
       setActive(-1)
@@ -107,10 +120,10 @@ export default function AddressCombobox({
         role="combobox"
         autoComplete="off"
         aria-autocomplete="list"
-        aria-expanded={expanded}
+        aria-expanded={isExpanded}
         aria-controls={listId}
         aria-activedescendant={activeItem ? `${listId}-${active}` : undefined}
-        aria-invalid={invalid ? true : undefined}
+        aria-invalid={isInvalid ? true : undefined}
         aria-describedby={describedBy}
         value={value}
         onChange={(event) => {
@@ -133,13 +146,13 @@ export default function AddressCombobox({
       <div
         className={cn(
           'absolute inset-x-0 top-full z-30 mt-1.5 rounded-lg border border-border bg-card p-1.5 shadow-1',
-          !expanded && 'hidden'
+          !isExpanded && 'hidden'
         )}
       >
         {items.length > 0 && (
           <Overline as="p" className="flex items-center gap-2 px-2.5 pt-2 pb-1.5 text-xs">
             {mode === 'nearby' ? 'Di sekitar Anda' : 'Saran alamat'}
-            {loading && <IconLoader2 className="size-3.5 animate-spin" />}
+            {isLoading && <IconLoader2 className="size-3.5 animate-spin" />}
           </Overline>
         )}
         <ul id={listId} role="listbox" aria-label="Saran alamat">
@@ -168,7 +181,7 @@ export default function AddressCombobox({
         </ul>
         {status && (
           <p className="flex items-start gap-2 px-2.5 py-2.5 text-meta leading-[1.45] text-muted-foreground">
-            {(loading || suggestions.origin === 'locating') && (
+            {(isLoading || suggestions.origin === 'locating') && (
               <IconLoader2 className="my-px size-4 shrink-0 animate-spin" />
             )}
             {status}
@@ -176,7 +189,7 @@ export default function AddressCombobox({
         )}
       </div>
       <p role="status" className="sr-only">
-        {expanded && items.length
+        {isExpanded && items.length
           ? `${items.length} saran alamat${mode === 'nearby' ? ' di sekitar Anda' : ''}`
           : ''}
       </p>

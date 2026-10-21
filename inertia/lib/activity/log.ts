@@ -1,4 +1,4 @@
-import { ACTIVITY_ROWS } from '~/lib/activity/data'
+import { addDays, daysFromToday } from '~/lib/shared/date'
 
 export type ActivityCategory =
   'status' | 'foto' | 'layanan' | 'bayar' | 'barang' | 'batal' | 'harga' | 'masuk'
@@ -14,53 +14,59 @@ export const ACTIVITY_CATEGORIES: { value: ActivityCategory; label: string }[] =
   { value: 'masuk', label: 'Masuk' },
 ]
 
-export const ACTIVITY_STAFF = ['Sari Rahayu', 'Dedi Supriadi', 'Agus Firmansyah', 'Wulan Sari']
-
-export const ACTIVITY_FIRST_DAY = 2
-export const ACTIVITY_LAST_DAY = 8
+export const ACTIVITY_FIRST_DAY = -89
+export const ACTIVITY_LAST_DAY = 0
 
 export type ActivityIcon =
   'fact_check' | 'flag' | 'inventory_2' | 'login' | 'payments' | 'photo_camera' | 'sync_alt'
 
-export type Activity = {
+const ICON_OF: Record<ActivityCategory, ActivityIcon> = {
+  status: 'sync_alt',
+  foto: 'photo_camera',
+  layanan: 'fact_check',
+  bayar: 'payments',
+  barang: 'inventory_2',
+  batal: 'flag',
+  harga: 'sync_alt',
+  masuk: 'login',
+}
+
+export type ActivityRow = {
   id: string
-  label: string
+  date: string
   time: string
   staff: string
-  icon: ActivityIcon
   action: string
   category: ActivityCategory
   ref: string
   detail: string
-  sensitive: boolean
-  day: number
+  isSensitive: boolean
 }
 
-export const ACTIVITIES: Activity[] = ACTIVITY_ROWS.map(
-  ([time, staff, icon, action, category, ref, detail, sensitive, day], index) => ({
-    id: `a${index}`,
-    label: `${time} · ${staff} · ${action}`,
-    time,
-    staff,
-    icon: icon as ActivityIcon,
-    action,
-    category: category as ActivityCategory,
-    ref,
-    detail,
-    sensitive: sensitive === 1,
-    day,
-  })
-)
+export type Activity = ActivityRow & { label: string; icon: ActivityIcon; day: number }
+
+export function activitiesOf(rows: ActivityRow[]): Activity[] {
+  return rows.map((row) => ({
+    ...row,
+    label: `${row.time} · ${row.staff} · ${row.action}`,
+    icon: ICON_OF[row.category],
+    day: daysFromToday(row.date),
+  }))
+}
+
+export function activityStaff(list: Activity[]) {
+  return [...new Set(list.map((activity) => activity.staff))].sort()
+}
 
 export function activityDate(day: number) {
-  return new Date(2026, 9, day)
+  return addDays(new Date(), day)
 }
 
 export type ActivityFilters = {
   day: number
   staff: string[]
   categories: ActivityCategory[]
-  sensitiveOnly: boolean
+  isSensitiveOnly: boolean
   query: string
 }
 
@@ -76,7 +82,7 @@ export function activityMatches(
     (skip === 'categories' ||
       !filters.categories.length ||
       filters.categories.includes(activity.category)) &&
-    (!filters.sensitiveOnly || activity.sensitive) &&
+    (!filters.isSensitiveOnly || activity.isSensitive) &&
     (!query ||
       `${activity.ref} ${activity.staff} ${activity.action} ${activity.detail}`
         .toLowerCase()
@@ -96,13 +102,11 @@ export function activitySummary(filters: ActivityFilters) {
         .join(', ')}`
     )
   }
-  if (filters.sensitiveOnly) parts.push('hanya sensitif')
-  if (filters.query.trim()) parts.push(`kata kunci “${filters.query.trim()}”`)
+  if (filters.isSensitiveOnly) {
+    parts.push('hanya sensitif')
+  }
+  if (filters.query.trim()) {
+    parts.push(`kata kunci “${filters.query.trim()}”`)
+  }
   return parts
 }
-
-export const RECENT_ACTIVITY = [
-  { who: 'Dedi', what: 'mencatat pembayaran tunai', time: '15.10', ref: 'UMC-8F3K2Q · Rp195.000' },
-  { who: 'Sari', what: 'menentukan layanan (3 barang)', time: '13.40', ref: 'UMC-8F3K2Q' },
-  { who: 'Agus', what: 'mengunggah bukti antar', time: '12.58', ref: 'UMC-B1V6TS · 2 foto' },
-]

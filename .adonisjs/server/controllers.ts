@@ -3,4 +3,43 @@
  * DO NOT EDIT manually
  */
 
-export const controllers = {}
+export const controllers = {
+  admin: {
+    Catalog: () => import('#controllers/admin/catalog_controller'),
+    Dashboard: () => import('#controllers/admin/dashboard_controller'),
+    Orders: () => import('#controllers/admin/orders_controller'),
+    Profile: () => import('#controllers/admin/profile_controller'),
+    Reconciliation: () => import('#controllers/admin/reconciliation_controller'),
+    Settings: () => import('#controllers/admin/settings_controller'),
+  },
+  auth: {
+    Otp: () => import('#controllers/auth/otp_controller'),
+    PasswordReset: () => import('#controllers/auth/password_reset_controller'),
+    Register: () => import('#controllers/auth/register_controller'),
+    Session: () => import('#controllers/auth/session_controller'),
+    StaffSession: () => import('#controllers/auth/staff_session_controller'),
+  },
+  customer: {
+    Addresses: () => import('#controllers/customer/addresses_controller'),
+    Checkout: () => import('#controllers/customer/checkout_controller'),
+    Home: () => import('#controllers/customer/home_controller'),
+    Orders: () => import('#controllers/customer/orders_controller'),
+    Phone: () => import('#controllers/customer/phone_controller'),
+    Profile: () => import('#controllers/customer/profile_controller'),
+  },
+  Home: () => import('#controllers/home_controller'),
+  Legal: () => import('#controllers/legal_controller'),
+  Seo: () => import('#controllers/seo_controller'),
+  shared: {
+    AccountSecurity: () => import('#controllers/shared/account_security_controller'),
+    PaymentNotifications: () => import('#controllers/shared/payment_notifications_controller'),
+    ProofPhotos: () => import('#controllers/shared/proof_photos_controller'),
+  },
+  staff: {
+    Account: () => import('#controllers/staff/account_controller'),
+    Dashboard: () => import('#controllers/staff/dashboard_controller'),
+    Process: () => import('#controllers/staff/process_controller'),
+    Store: () => import('#controllers/staff/store_controller'),
+    Tasks: () => import('#controllers/staff/tasks_controller'),
+  },
+}

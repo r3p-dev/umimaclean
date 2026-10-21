@@ -1,6 +1,6 @@
-import { useState, type ReactNode } from 'react'
-import { Head } from '@inertiajs/react'
-import { toast } from 'sonner'
+import { useMemo, useState, type ReactNode } from 'react'
+import { Head, router } from '@inertiajs/react'
+import type { Data } from '@generated/data'
 import {
   IconArrowLeft,
   IconBan,
@@ -21,17 +21,16 @@ import { CancelDialog } from '~/components/organisms/orders/bulk_order_dialogs'
 import CustomerHistoryDialog from '~/components/organisms/orders/customer_history_dialog'
 import PaymentFixDialog from '~/components/organisms/orders/payment_fix_dialog'
 import AdminLayout from '~/components/templates/admin_layout'
-import {
-  DETAIL_CANCEL_REASONS,
-  adminOrders,
-  cancelOrders,
-  fixPayment,
-  orderChanges,
-  orderDetail,
-} from '~/lib/orders/admin_orders'
+import { DETAIL_CANCEL_REASONS, adminOrders, type AdminOrderRow } from '~/lib/orders/admin_orders'
+import { MONTH_SHORT } from '~/lib/shared/date'
 import { formatRupiah } from '~/lib/shared/format'
-import { clockTime } from '~/lib/staff/workday'
+import { useLiveReload } from '~/lib/shared/live'
 import { cn } from '~/lib/shared/utils'
+
+type DetailOrder = AdminOrderRow & {
+  detail: Data.AdminOrderDetail
+  history: AdminOrderRow[]
+}
 
 function Panel({
   title,
@@ -53,11 +52,17 @@ function Panel({
   )
 }
 
-export default function AdminOrderDetail({ number }: { number: string }) {
-  const changes = orderChanges.use()
-  const all = adminOrders(changes)
-  const order = all.find((item) => item.number === number)
+export default function AdminOrderDetail({
+  number,
+  order,
+}: {
+  number: string
+  order: DetailOrder | null
+}) {
   const [dialog, setDialog] = useState<'fix' | 'cancel' | 'history' | null>(null)
+  const [isBusy, setBusy] = useState(false)
+  const history = useMemo(() => adminOrders(order?.history ?? []), [order])
+  useLiveReload(`orders/${number}`, ['order'])
   const backLink = (
     <LinkButton
       variant="link"
@@ -86,12 +91,21 @@ export default function AdminOrderDetail({ number }: { number: string }) {
     )
   }
 
-  const detail = orderDetail(order, all)
-  const cancelled = order.phase === 'batal'
+  const detail = order.detail
+  const isCancelled = order.phase === 'batal'
   const itemsTotal = detail.items.reduce(
-    (sum, item) => sum + item.services.reduce((total, [, price]) => total + price, 0),
+    (sum, item) => sum + item.services.reduce((total, service) => total + service.price, 0),
     0
   )
+  const since = history.at(-1)?.date
+  const historySummary = `${since ? `Pelanggan sejak ${MONTH_SHORT[since.getMonth()]} ${since.getFullYear()} · ` : ''}${history.length} pesanan · ${formatRupiah(history.reduce((sum, item) => sum + item.total, 0))} total tagihan.`
+  const paymentTone = isCancelled ? 'batal' : detail.isPaid ? 'ok' : order.total ? 'bayar' : 'off'
+  const busy = {
+    preserveScroll: true,
+    onStart: () => setBusy(true),
+    onFinish: () => setBusy(false),
+    onSuccess: () => setDialog(null),
+  }
 
   return (
     <AdminLayout active="pesanan" title="Detail pesanan">
@@ -101,17 +115,22 @@ export default function AdminOrderDetail({ number }: { number: string }) {
         {backLink}
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="font-mono text-[22px] leading-[1.2] font-bold">{order.number}</span>
-          <ToneBadge tone={order.phase} dot>
+          <ToneBadge tone={order.phase} hasDot>
             {order.status}
           </ToneBadge>
-          <SourceTag store={order.store} />
+          <SourceTag isInStore={order.isInStore} />
         </div>
         <p className="text-sm leading-[1.45] text-foreground-secondary">{detail.createdText}</p>
+        {detail.cancelReason && (
+          <p className="text-sm leading-[1.45] text-destructive-text">
+            Alasan pembatalan: {detail.cancelReason}
+          </p>
+        )}
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="desktop"
-            isDisabled={cancelled}
+            isDisabled={!detail.canFixPayment}
             onPress={() => setDialog('fix')}
           >
             <IconPencil className="size-4.5" />
@@ -120,7 +139,7 @@ export default function AdminOrderDetail({ number }: { number: string }) {
           <Button
             variant="destructive-outline"
             size="desktop"
-            isDisabled={cancelled}
+            isDisabled={!detail.canCancel}
             onPress={() => setDialog('cancel')}
             className="border-destructive-border-soft"
           >
@@ -141,9 +160,9 @@ export default function AdminOrderDetail({ number }: { number: string }) {
           >
             {detail.items.length ? (
               <>
-                {detail.items.map((item) => (
+                {detail.items.map((item, index) => (
                   <div
-                    key={item.name}
+                    key={`${item.name}-${index}`}
                     className="flex flex-col gap-1.5 border-t border-border pt-2.5"
                   >
                     <div className="flex items-baseline gap-2">
@@ -154,19 +173,21 @@ export default function AdminOrderDetail({ number }: { number: string }) {
                         {item.category}
                       </span>
                     </div>
-                    {item.services.map(([name, price]) => (
+                    {item.services.map((service) => (
                       <div
-                        key={name}
+                        key={service.name}
                         className="flex justify-between text-sm leading-[1.4] text-foreground-secondary"
                       >
-                        <span>{name}</span>
-                        <span className="tabular-nums">{formatRupiah(price)}</span>
+                        <span>{service.name}</span>
+                        <span className="tabular-nums">{formatRupiah(service.price)}</span>
                       </div>
                     ))}
                     <div className="flex justify-between text-sm leading-[1.4] font-semibold">
                       <span>Subtotal</span>
                       <span>
-                        {formatRupiah(item.services.reduce((sum, [, price]) => sum + price, 0))}
+                        {formatRupiah(
+                          item.services.reduce((sum, service) => sum + service.price, 0)
+                        )}
                       </span>
                     </div>
                   </div>
@@ -179,7 +200,7 @@ export default function AdminOrderDetail({ number }: { number: string }) {
             ) : (
               <p className="border-t border-border pt-2.5 text-sm leading-[1.45] text-foreground-secondary">
                 {order.total
-                  ? `Total tagihan ${formatRupiah(order.total)}. Rincian per barang tidak tersedia untuk pesanan ini.`
+                  ? `Total tagihan ${formatRupiah(order.total)}.`
                   : 'Layanan dan harga ditentukan saat pemeriksaan barang.'}
               </p>
             )}
@@ -187,7 +208,7 @@ export default function AdminOrderDetail({ number }: { number: string }) {
           <Panel
             title="Pembayaran"
             aside={
-              <ToneBadge tone={detail.paymentTone} dot>
+              <ToneBadge tone={paymentTone} hasDot>
                 {order.payment}
               </ToneBadge>
             }
@@ -213,7 +234,7 @@ export default function AdminOrderDetail({ number }: { number: string }) {
               {detail.audit.map((entry, index) => (
                 <li
                   key={`${entry.time}-${index}`}
-                  className="grid grid-cols-[52px_minmax(0,1fr)] gap-2.5 text-note leading-[1.4]"
+                  className="grid grid-cols-[84px_minmax(0,1fr)] gap-2.5 text-note leading-[1.4]"
                 >
                   <span className="font-mono text-caption leading-[1.4] font-medium text-muted-foreground">
                     {entry.time}
@@ -267,23 +288,37 @@ export default function AdminOrderDetail({ number }: { number: string }) {
             <ul className="grid grid-cols-3 gap-2">
               {detail.proofs.map((proof) => (
                 <li key={proof.label} className="flex flex-col gap-1">
-                  <div
-                    className={cn(
-                      'flex aspect-square items-center justify-center rounded-md text-muted-foreground',
-                      proof.time
-                        ? 'stripes [--stripe:8px]'
-                        : 'border border-dashed border-input bg-background'
-                    )}
-                  >
-                    {proof.time ? (
-                      <IconPhoto className="size-5.5" />
-                    ) : (
-                      <IconClock className="size-5.5" />
-                    )}
-                  </div>
+                  {proof.url ? (
+                    <a href={proof.url} target="_blank" rel="noreferrer" className="block">
+                      <img
+                        src={proof.url}
+                        alt={`Bukti ${proof.label.toLowerCase()}`}
+                        className="aspect-square w-full rounded-md object-cover"
+                      />
+                    </a>
+                  ) : (
+                    <div
+                      className={cn(
+                        'flex aspect-square items-center justify-center rounded-md text-muted-foreground',
+                        proof.time
+                          ? 'stripes [--stripe:8px]'
+                          : 'border border-dashed border-input bg-background'
+                      )}
+                    >
+                      {proof.time ? (
+                        <IconPhoto className="size-5.5" />
+                      ) : (
+                        <IconClock className="size-5.5" />
+                      )}
+                    </div>
+                  )}
                   <span className="text-caption leading-[1.2] font-semibold">{proof.label}</span>
                   <span className="text-[11.5px] leading-[1.2] text-muted-foreground">
-                    {proof.time ?? 'belum ada'}
+                    {proof.time
+                      ? proof.url
+                        ? proof.time
+                        : `${proof.time} · dihapus (90 hari)`
+                      : 'belum ada'}
                   </span>
                 </li>
               ))}
@@ -293,35 +328,32 @@ export default function AdminOrderDetail({ number }: { number: string }) {
       </div>
       <PaymentFixDialog
         key={dialog === 'fix' ? 'fix-open' : 'fix'}
-        open={dialog === 'fix'}
-        onOpenChange={(open) => !open && setDialog(null)}
-        defaultAmount={order.total}
+        isOpen={dialog === 'fix'}
+        onOpenChange={(isOpen) => !isOpen && setDialog(null)}
+        defaultAmount={detail.paidAmount}
+        isSaving={isBusy}
         onSave={(fix) => {
-          fixPayment(order, fix, clockTime())
-          setDialog(null)
-          toast.success('Koreksi pembayaran disimpan dan tercatat di log aktivitas.')
+          router.post(urlFor('admin.order.payment', { number: order.number }), fix, busy)
         }}
       />
       <CancelDialog
         key={dialog === 'cancel' ? 'cancel-open' : 'cancel'}
-        open={dialog === 'cancel'}
-        onOpenChange={(open) => !open && setDialog(null)}
+        isOpen={dialog === 'cancel'}
+        onOpenChange={(isOpen) => !isOpen && setDialog(null)}
         title={`Batalkan pesanan ${order.number}?`}
-        description="Pelanggan menerima pemberitahuan via WhatsApp. Pesanan tidak dihapus — statusnya menjadi Dibatalkan dan tetap ada di riwayat & laporan."
+        description="Pesanan tidak dihapus — statusnya menjadi Dibatalkan dan tetap ada di riwayat & laporan. Pelanggan dikirimi WhatsApp; hasilnya ditampilkan setelah disimpan."
         reasons={DETAIL_CANCEL_REASONS}
         confirmLabel="Batalkan Pesanan"
         onConfirm={(reason) => {
-          cancelOrders([order], reason, clockTime())
-          setDialog(null)
-          toast.success('Pesanan dibatalkan. Pelanggan diberi tahu via WhatsApp.')
+          router.post(urlFor('admin.orders.cancel'), { codes: [order.number], reason }, busy)
         }}
       />
       <CustomerHistoryDialog
-        open={dialog === 'history'}
-        onOpenChange={(open) => !open && setDialog(null)}
+        isOpen={dialog === 'history'}
+        onOpenChange={(isOpen) => !isOpen && setDialog(null)}
         customer={order.customer}
-        summary={detail.historySummary}
-        orders={detail.history}
+        summary={historySummary}
+        orders={history}
       />
     </AdminLayout>
   )

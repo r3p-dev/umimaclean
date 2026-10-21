@@ -3,22 +3,22 @@ import { cn } from '~/lib/shared/utils'
 
 export default function PickupSlotOption({
   label,
-  checked,
-  full,
+  isChecked,
+  isFull,
   onPick,
 }: {
   label: string
-  checked: boolean
-  full: boolean
+  isChecked: boolean
+  isFull: boolean
   onPick: () => void
 }) {
   return (
     <label
       className={cn(
         'flex h-13 w-full items-center justify-between rounded-md text-[15px] leading-none has-focus-visible:focus-ring',
-        checked
+        isChecked
           ? 'border-2 border-primary bg-accent px-3.5 font-semibold text-accent-foreground'
-          : full
+          : isFull
             ? 'cursor-not-allowed border border-border bg-disabled px-3.75 font-medium text-disabled-foreground'
             : 'cursor-pointer border border-border-strong bg-card px-3.75 font-medium hover:bg-accent'
       )}
@@ -27,16 +27,16 @@ export default function PickupSlotOption({
         type="radio"
         name="pickup-slot"
         value={label}
-        checked={checked}
-        disabled={full}
+        checked={isChecked}
+        disabled={isFull}
         onChange={onPick}
-        aria-label={`${label}${full ? ', penuh' : ''}`}
+        aria-label={`${label}${isFull ? ', penuh' : ''}`}
         className="sr-only"
       />
       {label.replace('–', ' – ')}
-      {full ? (
+      {isFull ? (
         <span className="text-caption leading-none font-medium">Penuh</span>
-      ) : checked ? (
+      ) : isChecked ? (
         <IconCircleDot className="size-5 text-primary" />
       ) : (
         <IconCircle className="size-5 text-icon-muted" />

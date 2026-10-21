@@ -3,6 +3,8 @@ export const customerLinks = {
   instagram: 'https://www.instagram.com/umima.clean',
   creator: 'https://r3p.dev',
   maps: 'https://maps.app.goo.gl/uRvrkrqYF3Eu8UXS6',
+  terms: '/syarat',
+  privacy: '/privasi',
 }
 
 export const customerContact = {

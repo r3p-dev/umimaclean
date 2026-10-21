@@ -16,15 +16,15 @@ import {
 const FOOTER = 'flex flex-col-reverse justify-end gap-2 sm:flex-row sm:items-center'
 
 export function StaffFormDialog({
-  open,
+  isOpen,
   onOpenChange,
-  editing,
+  isEditing,
   initial,
   onSave,
 }: {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
-  editing: boolean
+  isEditing: boolean
   initial: StaffForm
   onSave: (form: StaffForm) => void
 }) {
@@ -36,8 +36,8 @@ export function StaffFormDialog({
   const shiftId = useId()
 
   return (
-    <Dialog isOpen={open} onOpenChange={onOpenChange} variant="panel">
-      <DialogTitleBar>{editing ? 'Ubah akun staf' : 'Tambah staf'}</DialogTitleBar>
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
+      <DialogTitleBar>{isEditing ? 'Ubah akun staf' : 'Tambah staf'}</DialogTitleBar>
       <div className="flex min-w-0 flex-col gap-1.5">
         <Label htmlFor={nameId} className="text-note leading-[1.2]">
           Nama lengkap
@@ -82,7 +82,8 @@ export function StaffFormDialog({
           </FieldError>
         ) : (
           <FieldDescription id={`${phoneId}-note`} className="text-caption leading-[1.4]">
-            Undangan &amp; reset kata sandi dikirim ke nomor ini.
+            Setelah disimpan, kata sandi sementara ditampilkan sekali dan dikirim ke WhatsApp nomor
+            ini.
           </FieldDescription>
         )}
       </div>
@@ -120,10 +121,12 @@ export function StaffFormDialog({
           onPress={() => {
             const found = staffFormErrors(form)
             setErrors(found)
-            if (!Object.keys(found).length) onSave(form)
+            if (!Object.keys(found).length) {
+              onSave(form)
+            }
           }}
         >
-          {editing ? 'Simpan perubahan' : 'Tambah & kirim undangan'}
+          {isEditing ? 'Simpan perubahan' : 'Tambah & kirim undangan'}
         </Button>
       </div>
     </Dialog>
@@ -131,18 +134,18 @@ export function StaffFormDialog({
 }
 
 export function DeactivateStaffDialog({
-  open,
+  isOpen,
   onOpenChange,
   name,
   onConfirm,
 }: {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
   name: string
   onConfirm: () => void
 }) {
   return (
-    <Dialog isOpen={open} onOpenChange={onOpenChange} variant="panel">
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
       <DialogTitleBar>Nonaktifkan {name}?</DialogTitleBar>
       <DialogDescription className="text-note leading-normal">
         Akses masuk dicabut segera dan tugas aktif dikembalikan ke antrean. Riwayat tugas dan log

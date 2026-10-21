@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Head } from '@inertiajs/react'
 import { toast } from 'sonner'
+import { formatDate, toIso } from '~/lib/shared/date'
 import { IconPencil, IconPlus, IconTrash } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
@@ -27,14 +28,23 @@ import PaymentMixCard from '~/components/organisms/reports/payment_mix_card'
 import PeriodTabs from '~/components/organisms/reports/period_tabs'
 import AdminLayout from '~/components/templates/admin_layout'
 import type { Sheet } from '~/lib/export/xlsx'
-import { costShare, costTotal, costs, deleteCost, saveCost, type Cost } from '~/lib/reports/costs'
+import {
+  costShare,
+  costTotal,
+  costsForPeriod,
+  deleteCost,
+  saveCost,
+  type Cost,
+} from '~/lib/reports/costs'
 import {
   changeText,
   delta,
   detailRows,
+  dataRange,
   paymentMix,
   reportPeriod,
   type PeriodKey,
+  type ReportData,
 } from '~/lib/reports/period'
 import { useDataTable } from '~/lib/shared/data_table'
 import { formatRupiah } from '~/lib/shared/format'
@@ -47,18 +57,18 @@ type DialogState =
   | { kind: 'delete'; id: string }
   | null
 
-export default function AdminReports() {
+export default function AdminReports({ report, costs }: { report: ReportData; costs: Cost[] }) {
   const [periodKey, setPeriodKey] = useState<PeriodKey>('30')
   const [customFrom, setCustomFrom] = useState<string>()
   const [customTo, setCustomTo] = useState<string>()
   const [dialog, setDialog] = useState<DialogState>(null)
-  const costList = costs.use()
-  const period = reportPeriod(periodKey, customFrom, customTo)
+  const period = reportPeriod(report, periodKey, customFrom, customTo)
+  const costList = costsForPeriod(costs, period.to)
   const current = period.current
   const previous = period.previous
   const mix = paymentMix(current)
   const detail = detailRows(period.days)
-  const unit = detail.daily ? 'hari' : 'minggu'
+  const unit = detail.isDaily ? 'hari' : 'minggu'
   const table = useDataTable<DetailRow>(
     detail.rows,
     [{ key: 'index', value: (row) => row.index }],
@@ -68,12 +78,12 @@ export default function AdminReports() {
   const cost = costShare(total, period.length)
   const hasCost = costList.length > 0
   const transactionsDelta = delta(current.transactions, previous.transactions)
-  const detailTitle = detail.daily ? 'Rincian per hari' : 'Rincian per minggu'
+  const detailTitle = detail.isDaily ? 'Rincian per hari' : 'Rincian per minggu'
 
   const detailSheet = (rows: DetailRow[]): Sheet => ({
     name: detailTitle,
     columns: [
-      { label: detail.daily ? 'Tanggal' : 'Minggu', width: 18 },
+      { label: detail.isDaily ? 'Tanggal' : 'Minggu', width: 18 },
       { label: 'Dari', type: 'date', width: 12 },
       { label: 'Sampai', type: 'date', width: 12 },
       { label: 'Transaksi', type: 'int', width: 11 },
@@ -173,7 +183,7 @@ export default function AdminReports() {
                   rows: costList.map((item) => [
                     item.category,
                     item.note,
-                    `${item.date} 2026`,
+                    formatDate(item.date, 'full'),
                     item.amount,
                   ]),
                 },
@@ -193,6 +203,7 @@ export default function AdminReports() {
         onFrom={setCustomFrom}
         onTo={setCustomTo}
         warning={period.warning}
+        range={dataRange(report)}
       />
       <div
         id="period-panel"
@@ -271,7 +282,7 @@ export default function AdminReports() {
                         aria-label="Pilih semua baris di halaman ini"
                       />
                     </TableHead>
-                    <TableHead>{detail.daily ? 'Tanggal' : 'Minggu'}</TableHead>
+                    <TableHead>{detail.isDaily ? 'Tanggal' : 'Minggu'}</TableHead>
                     <TableHead className="text-right">Transaksi</TableHead>
                     <TableHead className="text-right">Online</TableHead>
                     <TableHead className="text-right">Toko</TableHead>
@@ -281,12 +292,12 @@ export default function AdminReports() {
                 </TableHeader>
                 <TableBody>
                   {table.rows.map((row) => {
-                    const selected = table.isSelected(row.id)
+                    const isSelected = table.isSelected(row.id)
                     return (
-                      <TableRow key={row.id} data-selected={selected}>
+                      <TableRow key={row.id} data-selected={isSelected}>
                         <TableCell className={CHECK_CELL}>
                           <Checkbox
-                            isSelected={selected}
+                            isSelected={isSelected}
                             onChange={() => table.toggle(row.id)}
                             aria-label={`Pilih ${row.label}`}
                           />
@@ -316,18 +327,18 @@ export default function AdminReports() {
               </Table>
               <ul className="sm:hidden">
                 {table.rows.map((row) => {
-                  const selected = table.isSelected(row.id)
+                  const isSelected = table.isSelected(row.id)
                   return (
                     <li
                       key={row.id}
-                      data-selected={selected}
+                      data-selected={isSelected}
                       className={cn(
                         'flex items-center gap-0.5 border-t border-border py-1 pr-4 pl-1',
-                        selected && 'bg-row-selected'
+                        isSelected && 'bg-row-selected'
                       )}
                     >
                       <Checkbox
-                        isSelected={selected}
+                        isSelected={isSelected}
                         onChange={() => table.toggle(row.id)}
                         aria-label={`Pilih ${row.label}`}
                       />
@@ -368,7 +379,12 @@ export default function AdminReports() {
                   setDialog({
                     kind: 'form',
                     id: null,
-                    initial: { category: 'Listrik & air', amount: 0, note: '', date: '8 Okt' },
+                    initial: {
+                      category: 'Listrik & air',
+                      amount: 0,
+                      note: '',
+                      date: toIso(new Date()),
+                    },
                   })
                 }
               >
@@ -386,7 +402,7 @@ export default function AdminReports() {
                     <div className="min-w-0">
                       <p className="text-[14.5px] leading-[1.3] font-semibold">{item.category}</p>
                       <p className="text-caption leading-[1.35] text-muted-foreground">
-                        {item.note} · {item.date}
+                        {item.note} · {formatDate(item.date, 'full')}
                       </p>
                     </div>
                     <span className="text-[14.5px] leading-none font-semibold tabular-nums">
@@ -440,29 +456,27 @@ export default function AdminReports() {
       </div>
       {dialog?.kind === 'form' && (
         <CostFormDialog
-          open
-          onOpenChange={(open) => !open && setDialog(null)}
+          isOpen
+          onOpenChange={(isOpen) => !isOpen && setDialog(null)}
           initial={dialog.initial}
-          editing={dialog.id !== null}
+          isEditing={dialog.id !== null}
           onSave={(item) => {
-            saveCost(item, dialog.id)
-            setDialog(null)
-            toast.success(
-              dialog.id
-                ? 'Biaya diperbarui. Laba dihitung ulang.'
-                : 'Biaya ditambahkan. Laba dihitung ulang.'
-            )
+            saveCost(item, dialog.id, {
+              onSuccess: () => setDialog(null),
+              onError: (errors) =>
+                toast.error(Object.values(errors)[0] ?? 'Periksa kembali isian biaya.'),
+            })
           }}
         />
       )}
       <DeleteCostDialog
-        open={dialog?.kind === 'delete'}
-        onOpenChange={(open) => !open && setDialog(null)}
+        isOpen={dialog?.kind === 'delete'}
+        onOpenChange={(isOpen) => !isOpen && setDialog(null)}
         name={deleting?.note ?? ''}
         onDelete={() => {
-          if (deleting) deleteCost(deleting.id)
-          setDialog(null)
-          toast.success(`Biaya “${deleting?.note ?? ''}” dihapus. Laba dihitung ulang.`)
+          if (deleting) {
+            deleteCost(deleting.id, { onSuccess: () => setDialog(null) })
+          }
         }}
       />
     </AdminLayout>

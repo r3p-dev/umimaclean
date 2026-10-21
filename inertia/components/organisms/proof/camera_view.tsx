@@ -6,11 +6,11 @@ import { cn } from '~/lib/shared/utils'
 
 export function Shutter({
   onShoot,
-  disabled,
+  isDisabled,
   className,
 }: {
   onShoot: () => void
-  disabled?: boolean
+  isDisabled?: boolean
   className?: string
 }) {
   return (
@@ -18,7 +18,7 @@ export function Shutter({
       type="button"
       aria-label="Ambil foto"
       onClick={onShoot}
-      disabled={disabled}
+      disabled={isDisabled}
       className={cn(
         'size-18 rounded-full border-4 border-card bg-surface-glass shadow-[inset_0_0_0_3px_var(--surface-inverse)] disabled:cursor-not-allowed disabled:opacity-60',
         className
@@ -55,7 +55,7 @@ export function CameraFeed({
   frameClassName: string
 }) {
   const problem = cameraProblem(status)
-  const live = status === 'live'
+  const isLive = status === 'live'
 
   return (
     <>
@@ -64,7 +64,7 @@ export function CameraFeed({
         muted
         playsInline
         aria-hidden="true"
-        className={cn('absolute inset-0 size-full object-cover', !live && 'hidden')}
+        className={cn('absolute inset-0 size-full object-cover', !isLive && 'hidden')}
       />
       <div
         className={cn(
@@ -91,7 +91,7 @@ export function CameraFeed({
             </Button>
           </>
         ) : (
-          !live && (
+          !isLive && (
             <span className="font-mono text-2xs leading-normal font-medium text-surface-inverse-muted">
               {guide}
             </span>
@@ -105,13 +105,13 @@ export function CameraFeed({
 export function PhotoPreview({
   photo,
   stamp,
-  label = true,
+  showLabel = true,
   stampClassName,
   className,
 }: {
   photo: string
   stamp: string
-  label?: boolean
+  showLabel?: boolean
   stampClassName?: string
   className?: string
 }) {
@@ -122,7 +122,7 @@ export function PhotoPreview({
         alt="Pratinjau foto bukti"
         className="absolute inset-0 size-full object-cover"
       />
-      {label && (
+      {showLabel && (
         <span className="absolute top-3.5 left-3.5 rounded-xs bg-surface-glass px-1.75 py-1 font-mono text-2xs leading-[1.3] font-medium text-foreground-secondary">
           pratinjau hasil foto
         </span>

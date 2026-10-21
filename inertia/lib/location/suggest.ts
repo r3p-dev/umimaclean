@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { locateDevice } from '~/lib/location/point_lookup'
 import { SERVICE_CENTER } from '~/lib/location/service_area'
-import type { PickupPoint } from '~/lib/order/draft'
+import type { PickupPoint } from '~/lib/location/point'
 
 const PHOTON = 'https://photon.komoot.io'
 const BANDUNG_RAYA_BBOX = '107.35,-7.20,107.95,-6.70'
@@ -35,7 +35,9 @@ type PhotonFeature = {
 function unique(parts: (string | undefined | null)[], exclude: string[]) {
   const seen = new Set(exclude.map((part) => part.toLowerCase()))
   return parts.filter((part): part is string => {
-    if (!part || seen.has(part.toLowerCase())) return false
+    if (!part || seen.has(part.toLowerCase())) {
+      return false
+    }
     seen.add(part.toLowerCase())
     return true
   })
@@ -44,7 +46,9 @@ function unique(parts: (string | undefined | null)[], exclude: string[]) {
 function toSuggestion({ geometry, properties: p }: PhotonFeature): AddressSuggestion | null {
   const street = p.street && (p.housenumber ? `${p.street} No. ${p.housenumber}` : p.street)
   const title = p.name ?? street
-  if (!title) return null
+  if (!title) {
+    return null
+  }
   const kecamatan = p.county && !/^(kota|kabupaten|kab\.)\s/i.test(p.county) ? p.county : null
   const city = p.city ?? p.state
   const detail = unique(
@@ -66,19 +70,25 @@ const cache = new Map<string, AddressSuggestion[]>()
 
 async function fetchSuggestions(url: string, signal?: AbortSignal) {
   const cached = cache.get(url)
-  if (cached) return cached
+  if (cached) {
+    return cached
+  }
   const timeout = AbortSignal.timeout(REQUEST_TIMEOUT)
   const response = await fetch(url, {
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   })
-  if (!response.ok) throw new Error('suggest failed')
+  if (!response.ok) {
+    throw new Error('suggest failed')
+  }
   const body = (await response.json()) as { features?: PhotonFeature[] }
   const seen = new Set<string>()
   const suggestions: AddressSuggestion[] = []
   for (const feature of body.features ?? []) {
     const suggestion = toSuggestion(feature)
     const key = suggestion && `${suggestion.title}|${suggestion.detail}`.toLowerCase()
-    if (!suggestion || !key || seen.has(key)) continue
+    if (!suggestion || !key || seen.has(key)) {
+      continue
+    }
     seen.add(key)
     suggestions.push(suggestion)
   }
@@ -118,7 +128,7 @@ export type OriginState = 'idle' | 'locating' | 'denied' | 'ready'
 
 type Origin = { state: Exclude<OriginState, 'ready'> } | { state: 'ready'; point: PickupPoint }
 
-type Result = { url: string; mode: SuggestionMode; items: AddressSuggestion[]; failed: boolean }
+type Result = { url: string; mode: SuggestionMode; items: AddressSuggestion[]; hasFailed: boolean }
 
 export function useAddressSuggestions(query: string) {
   const [origin, setOrigin] = useState<Origin>({ state: 'idle' })
@@ -133,15 +143,19 @@ export function useAddressSuggestions(query: string) {
   const cached = url ? cache.get(url) : undefined
 
   useEffect(() => {
-    if (!url || !mode || cache.has(url)) return
+    if (!url || !mode || cache.has(url)) {
+      return
+    }
     const controller = new AbortController()
     const timer = window.setTimeout(
       async () => {
         try {
           const items = await fetchSuggestions(url, controller.signal)
-          setResult({ url, mode, items, failed: false })
+          setResult({ url, mode, items, hasFailed: false })
         } catch {
-          if (!controller.signal.aborted) setResult({ url, mode, items: [], failed: true })
+          if (!controller.signal.aborted) {
+            setResult({ url, mode, items: [], hasFailed: true })
+          }
         }
       },
       mode === 'search' ? 350 : 0
@@ -153,7 +167,9 @@ export function useAddressSuggestions(query: string) {
   }, [url, mode])
 
   const locate = useCallback(() => {
-    if (requested.current) return
+    if (requested.current) {
+      return
+    }
     requested.current = true
     setOrigin({ state: 'locating' })
     locateDevice().then(
@@ -166,23 +182,25 @@ export function useAddressSuggestions(query: string) {
     navigator.permissions
       ?.query({ name: 'geolocation' })
       .then((status) => {
-        if (status.state === 'granted') locate()
+        if (status.state === 'granted') {
+          locate()
+        }
       })
       .catch(() => null)
   }, [locate])
 
   const current = cached
-    ? { items: cached, failed: false }
+    ? { items: cached, hasFailed: false }
     : result?.url === url
       ? result
       : result?.mode === mode
-        ? { items: result.items, failed: false }
+        ? { items: result.items, hasFailed: false }
         : null
   return {
     mode,
     items: current?.items ?? [],
-    loading: !!url && !cached && result?.url !== url,
-    failed: current?.failed ?? false,
+    isLoading: !!url && !cached && result?.url !== url,
+    hasFailed: current?.hasFailed ?? false,
     origin: origin.state,
     locate,
   }

@@ -1,4 +1,4 @@
-import type { PickupPoint } from '~/lib/order/draft'
+import type { PickupPoint } from '~/lib/location/point'
 
 const NOMINATIM = 'https://nominatim.openstreetmap.org'
 const BANDUNG_RAYA_VIEWBOX = '107.35,-6.70,107.95,-7.20'
@@ -28,7 +28,9 @@ export async function searchAddress(query: string, signal?: AbortSignal) {
     'accept-language': 'id',
   })
   const response = await fetch(`${NOMINATIM}/search?${params}`, { signal })
-  if (!response.ok) throw new Error('search failed')
+  if (!response.ok) {
+    throw new Error('search failed')
+  }
   const [first] = (await response.json()) as { lat: string; lon: string }[]
   return first ? { lat: Number(first.lat), lng: Number(first.lon) } : null
 }
@@ -56,27 +58,37 @@ export function searchTerms(text: string) {
 export async function searchFirst(text: string, signal?: AbortSignal) {
   const terms = searchTerms(text)
   for (const [index, term] of terms.entries()) {
-    if (index > 0) await new Promise((resolve) => window.setTimeout(resolve, 1100))
-    if (signal?.aborted) return null
+    if (index > 0) {
+      await new Promise((resolve) => window.setTimeout(resolve, 1100))
+    }
+    if (signal?.aborted) {
+      return null
+    }
     const found = await searchAddress(term, signal)
-    if (found) return found
+    if (found) {
+      return found
+    }
   }
   return null
 }
 
-export async function reverseGeocode(point: PickupPoint, signal?: AbortSignal) {
+export async function reverseGeocode(point: PickupPoint, signal?: AbortSignal, zoom = 18) {
   const params = new URLSearchParams({
     'lat': String(point.lat),
     'lon': String(point.lng),
     'format': 'jsonv2',
-    'zoom': '18',
+    'zoom': String(zoom),
     'addressdetails': '1',
     'accept-language': 'id',
   })
   const response = await fetch(`${NOMINATIM}/reverse?${params}`, { signal })
-  if (!response.ok) throw new Error('reverse failed')
+  if (!response.ok) {
+    throw new Error('reverse failed')
+  }
   const body = (await response.json()) as { address?: GeocodedAddress; error?: string }
-  if (body.error || !body.address) return null
+  if (body.error || !body.address) {
+    return null
+  }
   return body.address
 }
 

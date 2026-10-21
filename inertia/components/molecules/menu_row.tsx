@@ -8,13 +8,13 @@ export default function MenuRow({
   icon: Icon,
   title,
   description,
-  highlight = false,
+  isHighlighted = false,
 }: {
   href: string
   icon: ComponentType<SVGProps<SVGSVGElement>>
   title: string
   description: string
-  highlight?: boolean
+  isHighlighted?: boolean
 }) {
   return (
     <Link
@@ -24,7 +24,7 @@ export default function MenuRow({
       <span
         className={cn(
           'flex size-10 items-center justify-center rounded-md',
-          highlight ? 'bg-accent text-info-foreground' : 'bg-muted text-foreground-secondary'
+          isHighlighted ? 'bg-accent text-info-foreground' : 'bg-muted text-foreground-secondary'
         )}
       >
         <Icon className="size-5.5" />

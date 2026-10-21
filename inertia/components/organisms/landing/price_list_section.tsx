@@ -1,30 +1,18 @@
 import { useState } from 'react'
-import { IconBuildingStore, IconInfoCircle, IconMoped } from '@tabler/icons-react'
+import { IconInfoCircle } from '@tabler/icons-react'
 import { Alert } from '~/components/ui/alert'
-import { Badge } from '~/components/ui/badge'
 import { Card, CardTitle } from '~/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '~/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
-import {
-  BAG_MATERIALS,
-  BAG_PRICES,
-  COLOR_PRICES,
-  HELMET_PRICES,
-  PRICE_TABS,
-  SHOE_PRICES,
-  SHOE_SURCHARGES,
-  type PriceEntry,
-  type PriceTab,
-} from '~/lib/catalog/price_list'
 import { formatRupiah } from '~/lib/shared/format'
-import { cn } from '~/lib/shared/utils'
+
+export type PriceEntry = {
+  name: string
+  price: number
+  isStartingPrice: boolean
+  description: string
+}
+
+export type PriceGroup = { label: string; main: PriceEntry[]; addons: PriceEntry[] }
 
 function PriceRow({ entry }: { entry: PriceEntry }) {
   return (
@@ -32,7 +20,7 @@ function PriceRow({ entry }: { entry: PriceEntry }) {
       <span className="text-base leading-[1.3] font-semibold">{entry.name}</span>
 
       <span className="text-right text-base leading-[1.3] font-semibold whitespace-nowrap tabular-nums">
-        {entry.from && (
+        {entry.isStartingPrice && (
           <span className="text-caption leading-none font-medium text-muted-foreground">
             mulai{' '}
           </span>
@@ -45,129 +33,44 @@ function PriceRow({ entry }: { entry: PriceEntry }) {
           {entry.description}
         </p>
       )}
-
-      {entry.dropOff && (
-        <Badge
-          variant="attention"
-          className="col-span-full h-6.5 gap-1.25 justify-self-start px-2.25"
-        >
-          <IconBuildingStore />
-          Antar langsung ke workshop
-        </Badge>
-      )}
     </li>
   )
 }
 
-function ShoePrices() {
+function GroupPrices({ group }: { group: PriceGroup }) {
   return (
     <ul className="grid gap-x-10 lg:grid-cols-2">
-      {SHOE_PRICES.map((entry) => (
+      {group.main.map((entry) => (
         <PriceRow key={entry.name} entry={entry} />
       ))}
-      <li className="mt-3.5 self-start">
-        <Card className="gap-2 border-0 bg-background px-4 py-3.5 shadow-none">
-          <CardTitle className="text-md font-semibold">Biaya tambahan</CardTitle>
-
-          <dl className="flex flex-col gap-2">
-            {SHOE_SURCHARGES.map((surcharge) => (
-              <div
-                key={surcharge.name}
-                className="flex justify-between gap-3 text-[14.5px] leading-[1.4]"
-              >
-                <dt>{surcharge.name}</dt>
-
-                <dd className="font-semibold whitespace-nowrap tabular-nums">
-                  +{formatRupiah(surcharge.price)}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </Card>
-      </li>
-    </ul>
-  )
-}
-
-function BagAndHelmetPrices() {
-  const head =
-    'px-3.5 py-2.5 text-right text-meta leading-[1.3] font-semibold text-foreground-secondary normal-case tracking-normal'
-
-  return (
-    <div className="grid items-start gap-x-10 gap-y-6 lg:grid-cols-2">
-      <div className="flex flex-col gap-2.5">
-        <h3 className="text-base leading-[1.3] font-semibold">Tas</h3>
-
-        <div className="overflow-hidden rounded-md border border-border">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-background">
-                <TableHead scope="col" className={cn(head, 'text-left')}>
-                  Ukuran
-                </TableHead>
-                {BAG_MATERIALS.map((material) => (
-                  <TableHead key={material} scope="col" className={head}>
-                    {material}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {BAG_PRICES.map((row) => (
-                <TableRow key={row.size} className="border-t border-border">
-                  <TableHead
-                    scope="row"
-                    className="px-3.5 py-3 text-left text-md leading-[1.3] font-semibold normal-case tracking-normal text-foreground"
-                  >
-                    {row.size}
-                    <span className="mt-0.5 block text-meta leading-[1.3] font-normal text-muted-foreground">
-                      {row.limit}
-                    </span>
-                  </TableHead>
-
-                  {row.prices.map((price, index) => (
-                    <TableCell
-                      key={BAG_MATERIALS[index]}
-                      className="px-3.5 py-3 text-right text-md leading-[1.3] font-medium tabular-nums"
-                    >
-                      {formatRupiah(price)}
-                    </TableCell>
-                  ))}
-                </TableRow>
+      {group.addons.length > 0 && (
+        <li className="mt-3.5 self-start">
+          <Card className="gap-2 border-0 bg-background px-4 py-3.5 shadow-none">
+            <CardTitle className="text-md font-semibold">Biaya tambahan</CardTitle>
+            <dl className="flex flex-col gap-2">
+              {group.addons.map((addon) => (
+                <div
+                  key={addon.name}
+                  className="flex justify-between gap-3 text-[14.5px] leading-[1.4]"
+                >
+                  <dt>{addon.name}</dt>
+                  <dd className="font-semibold whitespace-nowrap tabular-nums">
+                    +{addon.isStartingPrice ? 'mulai ' : ''}
+                    {formatRupiah(addon.price)}
+                  </dd>
+                </div>
               ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-
-      <div className="flex flex-col">
-        <h3 className="border-b border-border pb-2.5 text-base leading-[1.3] font-semibold">
-          Helm
-        </h3>
-
-        <ul>
-          {HELMET_PRICES.map((entry) => (
-            <PriceRow key={entry.name} entry={entry} />
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
-}
-
-function ColorPrices() {
-  return (
-    <ul className="grid gap-x-10 lg:grid-cols-2">
-      {COLOR_PRICES.map((entry) => (
-        <PriceRow key={entry.name} entry={entry} />
-      ))}
+            </dl>
+          </Card>
+        </li>
+      )}
     </ul>
   )
 }
 
-export default function PriceListSection() {
-  const [tab, setTab] = useState<PriceTab>('sepatu')
+export default function PriceListSection({ groups }: { groups: PriceGroup[] }) {
+  const visible = groups.filter((group) => group.main.length > 0)
+  const [tab, setTab] = useState(visible[0]?.label ?? '')
 
   return (
     <section
@@ -194,45 +97,39 @@ export default function PriceListSection() {
         </span>
       </Alert>
 
-      <Tabs
-        selectedKey={tab}
-        onSelectionChange={(key) => setTab(key as PriceTab)}
-        className="w-full gap-4"
-      >
-        <TabsList
-          variant="line"
-          aria-label="Kategori layanan"
-          className="flex justify-start scrollbar-none"
+      {visible.length ? (
+        <Tabs
+          selectedKey={tab}
+          onSelectionChange={(key) => setTab(String(key))}
+          className="w-full gap-4"
         >
-          {PRICE_TABS.map((t) => (
-            <TabsTrigger
-              key={t.value}
-              id={t.value}
-              className="h-btn-desktop px-3.5 text-md leading-none"
-            >
-              {t.label}
-            </TabsTrigger>
+          <TabsList
+            variant="line"
+            aria-label="Kategori layanan"
+            className="flex justify-start scrollbar-none"
+          >
+            {visible.map((group) => (
+              <TabsTrigger
+                key={group.label}
+                id={group.label}
+                className="h-btn-desktop px-3.5 text-md leading-none"
+              >
+                {group.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {visible.map((group) => (
+            <TabsContent key={group.label} id={group.label}>
+              <GroupPrices group={group} />
+            </TabsContent>
           ))}
-        </TabsList>
-
-        <TabsContent id="sepatu">
-          <ShoePrices />
-        </TabsContent>
-        <TabsContent id="tas">
-          <BagAndHelmetPrices />
-        </TabsContent>
-        <TabsContent id="warna">
-          <ColorPrices />
-        </TabsContent>
-      </Tabs>
-
-      <p className="flex items-start gap-2 text-note leading-normal text-muted-foreground">
-        <IconMoped className="my-[0.9px] size-4.5 shrink-0" />
-        <span>
-          Semua layanan bisa dengan antar-jemput, kecuali Helmet Spa yang perlu diantar langsung ke
-          workshop.
-        </span>
-      </p>
+        </Tabs>
+      ) : (
+        <p className="text-sm leading-normal text-foreground-secondary">
+          Daftar harga sedang diperbarui. Hubungi kami via WhatsApp untuk harga terbaru.
+        </p>
+      )}
     </section>
   )
 }

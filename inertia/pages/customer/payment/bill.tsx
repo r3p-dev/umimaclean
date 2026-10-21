@@ -7,18 +7,27 @@ import PaymentMethodPanel from '~/components/organisms/payment/payment_method_pa
 import FlowLayout from '~/components/templates/flow_layout'
 import { billTotal } from '~/lib/payment/bill'
 import { formatRupiah } from '~/lib/shared/format'
-import { useOrderAccess } from '~/lib/tracking/access'
+import type { OrderRecord } from '~/lib/tracking/orders'
 import { ORDER_STATUSES, isPaid } from '~/lib/tracking/status'
 
-export default function PaymentBill({ number }: { number: string }) {
-  const { order, allowed } = useOrderAccess(number)
-  const missingBill = !order || !order.bill
+export default function PaymentBill({
+  number,
+  order,
+}: {
+  number: string
+  order: OrderRecord | null
+}) {
+  const isMissingBill = !order || !order.bill
 
   useEffect(() => {
-    if (missingBill) router.visit(urlFor('tracking.status', { number }), { replace: true })
-  }, [missingBill, number])
+    if (isMissingBill) {
+      router.visit(urlFor('customer.orders.show', { code: number }), { replace: true })
+    }
+  }, [isMissingBill, number])
 
-  if (!order || !order.bill || !allowed) return null
+  if (!order || !order.bill) {
+    return null
+  }
 
   return (
     <div className="min-h-screen bg-card">

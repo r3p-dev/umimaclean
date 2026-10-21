@@ -26,7 +26,7 @@ export default function Hero() {
           <LinkButton
             size="cta"
             className="sm:w-auto sm:min-w-74 sm:px-7"
-            href={urlFor('order.details')}
+            href={urlFor('customer.order.create')}
           >
             Pesan Penjemputan
             <IconArrowRight />

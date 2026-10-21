@@ -1,4 +1,4 @@
-import { useState, type ComponentType, type SVGProps } from 'react'
+import { useMemo, useState, type ComponentType, type SVGProps } from 'react'
 import { Head } from '@inertiajs/react'
 import {
   IconArchive,
@@ -38,12 +38,13 @@ import {
 } from '~/components/organisms/data_table/table_parts'
 import AdminLayout from '~/components/templates/admin_layout'
 import {
-  ACTIVITIES,
   ACTIVITY_CATEGORIES,
   ACTIVITY_FIRST_DAY,
   ACTIVITY_LAST_DAY,
-  ACTIVITY_STAFF,
+  activitiesOf,
   activityDate,
+  activityStaff,
+  type ActivityRow,
   activityMatches,
   activitySummary,
   type Activity,
@@ -52,7 +53,7 @@ import {
   type ActivityIcon,
 } from '~/lib/activity/log'
 import { useDataTable } from '~/lib/shared/data_table'
-import { fromIso, toIso } from '~/lib/shared/date'
+import { daysFromToday, fromIso, toIso } from '~/lib/shared/date'
 import { cn } from '~/lib/shared/utils'
 
 const ICONS: Record<ActivityIcon, ComponentType<SVGProps<SVGSVGElement>>> = {
@@ -79,29 +80,31 @@ function ActionIcon({ activity }: { activity: Activity }) {
     <Icon
       className={cn(
         'size-4.5 shrink-0',
-        activity.sensitive ? 'text-destructive-text' : 'text-foreground-secondary'
+        activity.isSensitive ? 'text-destructive-text' : 'text-foreground-secondary'
       )}
     />
   )
 }
 
-export default function AdminActivity() {
+export default function AdminActivity({ activities }: { activities: ActivityRow[] }) {
+  const ACTIVITIES = useMemo(() => activitiesOf(activities), [activities])
+  const ACTIVITY_STAFF = activityStaff(ACTIVITIES)
   const [filters, setFilters] = useState<ActivityFilters>({
     day: ACTIVITY_LAST_DAY,
     staff: [],
     categories: [],
-    sensitiveOnly: false,
+    isSensitiveOnly: false,
     query: '',
   })
   const rows = ACTIVITIES.filter((activity) => activityMatches(activity, filters))
   const table = useDataTable<Activity>(
     rows,
     [
-      { key: 'time', value: (row) => row.time, dir: 'desc' },
+      { key: 'time', value: (row) => row.time, direction: 'desc' },
       { key: 'staff', value: (row) => row.staff },
       { key: 'action', value: (row) => row.action },
     ],
-    { unit: 'aktivitas', sortKey: 'time', sortDir: 'desc' }
+    { unit: 'aktivitas', sortKey: 'time', sortDirection: 'desc' }
   )
   const date = activityDate(filters.day)
   const parts = activitySummary(filters)
@@ -137,13 +140,13 @@ export default function AdminActivity() {
                 { label: 'Sensitif', width: 9 },
               ],
               rows: list.map((row) => [
-                date,
+                fromIso(row.date),
                 row.time,
                 row.staff,
                 row.action,
                 row.ref,
                 row.detail,
-                row.sensitive ? 'Ya' : 'Tidak',
+                row.isSensitive ? 'Ya' : 'Tidak',
               ]),
             },
           ],
@@ -175,14 +178,12 @@ export default function AdminActivity() {
               max={toIso(activityDate(ACTIVITY_LAST_DAY))}
               value={toIso(date)}
               onChange={(event) => {
-                if (!event.target.value) return
-                const picked = fromIso(event.target.value)
-                if (
-                  picked.getMonth() === 9 &&
-                  picked.getDate() >= ACTIVITY_FIRST_DAY &&
-                  picked.getDate() <= ACTIVITY_LAST_DAY
-                ) {
-                  update({ day: picked.getDate() })
+                if (!event.target.value) {
+                  return
+                }
+                const day = daysFromToday(event.target.value)
+                if (day >= ACTIVITY_FIRST_DAY && day <= ACTIVITY_LAST_DAY) {
+                  update({ day })
                 }
               }}
               className="h-btn-desktop rounded-md border border-input bg-card px-2.5 text-base leading-none text-foreground"
@@ -225,8 +226,8 @@ export default function AdminActivity() {
             }))}
           />
           <Switch
-            isSelected={filters.sensitiveOnly}
-            onChange={(sensitiveOnly) => update({ sensitiveOnly })}
+            isSelected={filters.isSensitiveOnly}
+            onChange={(isSensitiveOnly) => update({ isSensitiveOnly })}
             className="min-h-icon-btn cursor-pointer gap-2.5"
           >
             <span className="text-sm leading-[1.25] font-medium">Hanya aksi sensitif</span>
@@ -243,7 +244,7 @@ export default function AdminActivity() {
         {parts.length > 0 && (
           <FilterSummary
             text={`${table.total} dari ${dayTotal} aktivitas · ${parts.join(' · ')}`}
-            onReset={() => update({ query: '', staff: [], categories: [], sensitiveOnly: false })}
+            onReset={() => update({ query: '', staff: [], categories: [], isSensitiveOnly: false })}
           />
         )}
       </div>
@@ -288,16 +289,16 @@ export default function AdminActivity() {
             </TableHeader>
             <TableBody>
               {table.rows.map((row) => {
-                const selected = table.isSelected(row.id)
+                const isSelected = table.isSelected(row.id)
                 return (
                   <TableRow
                     key={row.id}
-                    data-selected={selected}
-                    className={cn(row.sensitive && !selected && 'bg-destructive-surface')}
+                    data-selected={isSelected}
+                    className={cn(row.isSensitive && !isSelected && 'bg-destructive-surface')}
                   >
                     <TableCell className={CHECK_CELL}>
                       <Checkbox
-                        isSelected={selected}
+                        isSelected={isSelected}
                         onChange={() => table.toggle(row.id)}
                         aria-label={`Pilih ${row.label}`}
                       />
@@ -312,7 +313,7 @@ export default function AdminActivity() {
                         <div>
                           <div>
                             {row.action}
-                            {row.sensitive && <SensitiveTag />}
+                            {row.isSensitive && <SensitiveTag />}
                           </div>
                           <div className="mt-0.5 text-caption text-muted-foreground lg:hidden">
                             {row.detail}
@@ -334,18 +335,18 @@ export default function AdminActivity() {
         )}
         <ul className="sm:hidden">
           {table.rows.map((row) => {
-            const selected = table.isSelected(row.id)
+            const isSelected = table.isSelected(row.id)
             return (
               <li
                 key={row.id}
-                data-selected={selected}
+                data-selected={isSelected}
                 className={cn(
                   'flex items-start gap-0.5 border-t border-border py-1 pr-4 pl-1',
-                  selected ? 'bg-row-selected' : row.sensitive && 'bg-destructive-surface'
+                  isSelected ? 'bg-row-selected' : row.isSensitive && 'bg-destructive-surface'
                 )}
               >
                 <Checkbox
-                  isSelected={selected}
+                  isSelected={isSelected}
                   onChange={() => table.toggle(row.id)}
                   aria-label={`Pilih ${row.label}`}
                 />
@@ -354,7 +355,7 @@ export default function AdminActivity() {
                   <div className="flex justify-between gap-2">
                     <span className="text-sm leading-[1.35] font-semibold">
                       {row.action}
-                      {row.sensitive && <SensitiveTag />}
+                      {row.isSensitive && <SensitiveTag />}
                     </span>
                     <span className="font-mono text-caption leading-[1.35] font-medium text-muted-foreground">
                       {row.time}
@@ -377,7 +378,7 @@ export default function AdminActivity() {
           <TableEmpty
             title="Tidak ada aktivitas yang cocok"
             description="Ubah tanggal, filter staf/aksi, atau kata kunci."
-            onReset={() => update({ query: '', staff: [], categories: [], sensitiveOnly: false })}
+            onReset={() => update({ query: '', staff: [], categories: [], isSensitiveOnly: false })}
           />
         )}
         <TablePagination

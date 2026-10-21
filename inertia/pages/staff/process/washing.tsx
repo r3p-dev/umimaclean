@@ -1,5 +1,6 @@
 import { useState, type ComponentType, type SVGProps } from 'react'
-import { Head } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
+import type { Data } from '@generated/data'
 import {
   IconArrowDownLeft,
   IconBackpack,
@@ -14,7 +15,6 @@ import { urlFor } from '~/client'
 import { Button, LinkButton } from '~/components/ui/button'
 import SourceTag from '~/components/atoms/source_tag'
 import ProofResult from '~/components/molecules/proof_result'
-import DemoSwitcher from '~/components/organisms/demo_switcher'
 import {
   CameraFeed,
   CloseCameraButton,
@@ -25,16 +25,8 @@ import StaffMissingOrder from '~/components/organisms/staff_missing_order'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
 import StaffLayout from '~/components/templates/staff_layout'
 import type { ItemCategory } from '~/lib/processing/catalog'
-import {
-  completeWash,
-  findWashOrder,
-  resetWash,
-  setWashShot,
-  washState,
-} from '~/lib/processing/washing'
-import { proofStamp, useCamera } from '~/lib/proof/camera'
-import { useWorkday } from '~/lib/staff/workday'
-import { tasksFor } from '~/lib/tasks/progress'
+import { photoFile, proofStamp, useCamera } from '~/lib/proof/camera'
+import { useAccount } from '~/lib/shared/auth'
 import { cn } from '~/lib/shared/utils'
 
 const ICONS: Record<ItemCategory, ComponentType<SVGProps<SVGSVGElement>>> = {
@@ -45,11 +37,12 @@ const ICONS: Record<ItemCategory, ComponentType<SVGProps<SVGSVGElement>>> = {
 
 type CameraPhase = 'off' | 'live' | 'preview'
 
-export default function Washing({ number }: { number: string }) {
-  const day = useWorkday()
-  const order = findWashOrder(day, number)
+export default function Washing({ number, order }: { number: string; order: Data.Wash | null }) {
+  const account = useAccount()
   const [cameraPhase, setCameraPhase] = useState<CameraPhase>('off')
   const [pending, setPending] = useState<{ photo: string; stamp: string } | null>(null)
+  const [localShot, setLocalShot] = useState<{ photo: string; stamp: string } | null>(null)
+  const [isBusy, setBusy] = useState(false)
   const camera = useCamera(cameraPhase === 'live')
   const back = { href: urlFor('staff.process'), label: 'Kembali ke Proses' }
 
@@ -63,14 +56,29 @@ export default function Washing({ number }: { number: string }) {
     )
   }
 
-  const state = washState(day, order.number)
-  const done = Boolean(state.doneAt)
-  const queuePosition = tasksFor(day, 'antar').findIndex((task) => task.ref === order.number)
+  const isDone = order.isDone
+  const shot =
+    isDone && order.shot ? { photo: order.shot.url ?? '', stamp: order.shot.stamp } : localShot
+
+  async function complete() {
+    if (!localShot || isBusy) {
+      return
+    }
+    setBusy(true)
+    const photo = await photoFile(localShot.photo)
+    router.post(
+      urlFor('staff.washing.complete', { number }),
+      { photo },
+      { forceFormData: true, onSuccess: () => setLocalShot(null), onFinish: () => setBusy(false) }
+    )
+  }
 
   async function shoot() {
     const photo = await camera.capture()
-    if (!photo || !order) return
-    setPending({ photo, stamp: proofStamp(order.number) })
+    if (!photo || !order) {
+      return
+    }
+    setPending({ photo, stamp: proofStamp(order.number, account.name) })
     setCameraPhase('preview')
   }
 
@@ -82,7 +90,7 @@ export default function Washing({ number }: { number: string }) {
         subtitle={`${order.number} · ${order.customer}`}
         back={back}
         variant="detail"
-        actions={<SourceTag store={order.source === 'toko'} shape="pill" />}
+        actions={<SourceTag isInStore={order.source === 'toko'} shape="pill" />}
       />
       <div className="mx-auto flex w-full max-w-180 flex-col gap-3.5 p-4">
         <section className="flex flex-col gap-1.5 rounded-lg border border-border bg-card px-4 py-3.5">
@@ -94,22 +102,28 @@ export default function Washing({ number }: { number: string }) {
               aria-hidden="true"
               className={cn(
                 'size-2.5 shrink-0 rounded-full',
-                done
+                isDone
                   ? 'bg-success-dot shadow-[0_0_0_4px_var(--success)]'
                   : 'bg-status-cuci-dot shadow-[0_0_0_4px_var(--status-cuci-bg)]'
               )}
             />
-            {done ? 'Selesai dicuci' : 'Dalam Pencucian'}
+            {order.isCollected
+              ? 'Sudah diambil pelanggan'
+              : order.isWaitingCollection
+                ? 'Siap diambil di toko'
+                : isDone
+                  ? 'Selesai dicuci'
+                  : 'Dalam Pencucian'}
           </span>
           <span className="text-note leading-[1.45] text-foreground-secondary">
-            {done && state.shot ? `Foto bukti tersimpan · ${state.shot.stamp}` : order.statusSub}
+            {isDone && shot ? `Foto bukti tersimpan · ${shot.stamp}` : order.statusSub}
           </span>
         </section>
 
         <section className="rounded-lg border border-border bg-card px-4 py-1">
           <h2 className="mt-3 mb-1 text-base leading-[1.3] font-semibold">Barang &amp; layanan</h2>
           {order.items.map((item) => {
-            const Icon = ICONS[item.category]
+            const Icon = ICONS[item.category as ItemCategory]
             return (
               <div key={item.name} className="flex flex-col gap-1.5 border-t border-border py-3">
                 <span className="flex items-center gap-2 text-[15px] leading-[1.3] font-semibold">
@@ -146,7 +160,7 @@ export default function Washing({ number }: { number: string }) {
                 <CloseCameraButton onClose={() => setCameraPhase('off')} />
               </div>
               <div className="absolute inset-x-0 bottom-4 flex justify-center">
-                <Shutter onShoot={shoot} disabled={!camera.canCapture} className="size-17" />
+                <Shutter onShoot={shoot} isDisabled={!camera.canCapture} className="size-17" />
               </div>
             </div>
           )}
@@ -156,7 +170,7 @@ export default function Washing({ number }: { number: string }) {
               <PhotoPreview
                 photo={pending.photo}
                 stamp={pending.stamp}
-                label={false}
+                showLabel={false}
                 className="mt-3 aspect-4/3"
               />
               <div className="grid grid-cols-2 gap-2.5 px-4 pt-3.5 pb-4">
@@ -172,7 +186,7 @@ export default function Washing({ number }: { number: string }) {
                 <Button
                   size="cta"
                   onPress={() => {
-                    setWashShot(order.number, pending)
+                    setLocalShot(pending)
                     setPending(null)
                     setCameraPhase('off')
                   }}
@@ -185,7 +199,7 @@ export default function Washing({ number }: { number: string }) {
             </>
           )}
 
-          {cameraPhase === 'off' && !state.shot && (
+          {cameraPhase === 'off' && !shot && !isDone && (
             <div className="flex flex-col gap-2.5 px-4 pt-2.5 pb-4">
               <p className="text-sm leading-[1.45] text-foreground-secondary">
                 Wajib sebelum pencucian ditandai selesai. Foto semua barang setelah dicuci, sebelum
@@ -201,22 +215,22 @@ export default function Washing({ number }: { number: string }) {
             </div>
           )}
 
-          {cameraPhase === 'off' && state.shot && !done && (
+          {cameraPhase === 'off' && localShot && !isDone && (
             <div className="flex flex-col gap-2.5 px-4 pt-3 pb-4">
               <ProofResult
                 title="Foto bukti pencucian"
-                photo={state.shot.photo}
-                stamp={state.shot.stamp}
+                photo={localShot.photo}
+                stamp={localShot.stamp}
                 onRetake={() => setCameraPhase('live')}
               />
-              <Button variant="success" size="cta" onPress={() => completeWash(order)}>
+              <Button variant="success" size="cta" onPress={complete} isPending={isBusy}>
                 <IconCircleCheck />
-                Selesaikan Pencucian
+                {isBusy ? 'Menyimpan…' : 'Selesaikan Pencucian'}
               </Button>
             </div>
           )}
 
-          {cameraPhase === 'off' && done && (
+          {cameraPhase === 'off' && isDone && (
             <div className="flex flex-col gap-2.5 px-4 pt-3 pb-4.5">
               <div
                 role="status"
@@ -226,46 +240,57 @@ export default function Washing({ number }: { number: string }) {
                   <IconCircleCheck className="size-5.5" />
                   Pencucian selesai
                 </span>
-                {order.returnMethod === 'antar' ? (
+                {order.returnMethod === 'delivery' ? (
                   <span className="text-sm leading-[1.45]">
-                    Pesanan otomatis dipindah ke{' '}
+                    Pesanan dipindah ke{' '}
                     <strong className="font-bold tracking-[0.03em]">ANTAR</strong>.
-                    {queuePosition >= 0 &&
-                      ` Antrean #${queuePosition + 1}, diurutkan sistem berdasarkan jarak${order.delivery ? ` (${order.delivery.km})` : ''}.`}
                   </span>
                 ) : (
                   <span className="text-sm leading-[1.45]">
-                    Pesanan siap diambil di toko. Pelanggan dikabari otomatis via WhatsApp.
+                    {order.isCollected
+                      ? 'Barang sudah diserahkan ke pelanggan.'
+                      : 'Pesanan siap diambil di toko.'}
                   </span>
                 )}
               </div>
+              {shot && shot.photo && (
+                <img
+                  src={shot.photo}
+                  alt="Foto bukti pencucian"
+                  className="aspect-4/3 w-full rounded-md object-cover"
+                />
+              )}
+              {order.isWaitingCollection && (
+                <Button
+                  size="cta"
+                  isPending={isBusy}
+                  onPress={() =>
+                    router.post(
+                      urlFor('staff.collect', { number }),
+                      {},
+                      {
+                        onStart: () => setBusy(true),
+                        onFinish: () => setBusy(false),
+                      }
+                    )
+                  }
+                >
+                  <IconCircleCheck />
+                  Serahkan ke Pelanggan
+                </Button>
+              )}
               <LinkButton
                 variant="ghost"
                 className="border-[1.5px] border-input text-[15px] text-info-foreground hover:text-info-foreground"
-                href={order.returnMethod === 'antar' ? urlFor('staff.deliveries') : back.href}
+                href={order.returnMethod === 'delivery' ? urlFor('staff.deliveries') : back.href}
               >
-                {order.returnMethod === 'antar' && <IconArrowDownLeft />}
-                {order.returnMethod === 'antar' ? 'Lihat antrean Antar' : 'Kembali ke Proses'}
+                {order.returnMethod === 'delivery' && <IconArrowDownLeft />}
+                {order.returnMethod === 'delivery' ? 'Lihat antrean Antar' : 'Kembali ke Proses'}
               </LinkButton>
             </div>
           )}
         </section>
       </div>
-      <DemoSwitcher
-        className="max-sm:bottom-19 sm:right-3 sm:left-auto"
-        label="Data contoh pencucian"
-        options={[
-          { value: 'keep', label: done ? 'Sudah selesai' : 'Data saat ini' },
-          { value: 'reset', label: 'Ulangi pencucian' },
-        ]}
-        value="keep"
-        onChange={(value) => {
-          if (value === 'reset') {
-            setCameraPhase('off')
-            resetWash(order.number)
-          }
-        }}
-      />
     </StaffLayout>
   )
 }

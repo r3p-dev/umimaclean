@@ -1,11 +1,5 @@
 import TabList from '~/components/molecules/tab_list'
-import {
-  DATA_MAX_ISO,
-  DATA_MIN_ISO,
-  DATA_RANGE_TEXT,
-  PERIOD_TABS,
-  type PeriodKey,
-} from '~/lib/reports/period'
+import { PERIOD_TABS, type PeriodKey } from '~/lib/reports/period'
 
 export default function PeriodTabs({
   value,
@@ -15,6 +9,7 @@ export default function PeriodTabs({
   onFrom,
   onTo,
   warning,
+  range,
 }: {
   value: PeriodKey
   onChange: (value: PeriodKey) => void
@@ -23,6 +18,7 @@ export default function PeriodTabs({
   onFrom: (value: string) => void
   onTo: (value: string) => void
   warning: string
+  range: { minIso: string; maxIso: string; text: string }
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-3">
@@ -53,17 +49,15 @@ export default function PeriodTabs({
               {label}
               <input
                 type="date"
-                min={DATA_MIN_ISO}
-                max={DATA_MAX_ISO}
+                min={range.minIso}
+                max={range.maxIso}
                 value={date}
                 onChange={(event) => onDate(event.target.value)}
                 className="h-btn-desktop rounded-md border border-input bg-card px-2 text-base leading-none text-foreground"
               />
             </label>
           ))}
-          <span className="text-caption leading-[1.3] text-muted-foreground">
-            {DATA_RANGE_TEXT}
-          </span>
+          <span className="text-caption leading-[1.3] text-muted-foreground">{range.text}</span>
         </div>
       )}
       {warning && (

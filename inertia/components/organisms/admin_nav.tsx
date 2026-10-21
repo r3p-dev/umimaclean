@@ -1,13 +1,16 @@
 import { useState, type ComponentType, type SVGProps } from 'react'
 import { Link } from '@adonisjs/inertia/react'
 import {
+  IconArrowsExchange,
   IconChartBar,
   IconChartLine,
   IconHistoryToggle,
+  IconLogout,
   IconMenu2,
   IconReceipt,
   IconSettings,
   IconTag,
+  IconUserCircle,
   IconUsers,
   IconX,
 } from '@tabler/icons-react'
@@ -15,11 +18,14 @@ import Logo from '~/components/atoms/logo'
 import { Button } from '~/components/ui/button'
 import { Sheet, SheetClose, SheetTitle } from '~/components/ui/sheet'
 import { ADMIN_NAV, type AdminSection } from '~/lib/navigation/admin_links'
+import { signOut } from '~/lib/shared/auth'
 import { cn } from '~/lib/shared/utils'
 
 const ICONS: Record<AdminSection, ComponentType<SVGProps<SVGSVGElement>>> = {
   ringkasan: IconChartLine,
+  profil: IconUserCircle,
   pesanan: IconReceipt,
+  rekonsiliasi: IconArrowsExchange,
   layanan: IconTag,
   pelanggan: IconUsers,
   laporan: IconChartBar,
@@ -29,36 +35,84 @@ const ICONS: Record<AdminSection, ComponentType<SVGProps<SVGSVGElement>>> = {
 
 function NavItems({
   active,
-  compact,
+  isCompact,
   onNavigate,
 }: {
   active: AdminSection
-  compact: boolean
+  isCompact: boolean
   onNavigate?: () => void
 }) {
   return ADMIN_NAV.map((item) => {
-    const on = item.key === active
+    const isActive = item.key === active
     const Icon = ICONS[item.key]
     return (
       <Link
         key={item.key}
         route={item.route}
         aria-label={item.label}
-        aria-current={on ? 'page' : undefined}
+        aria-current={isActive ? 'page' : undefined}
         onClick={onNavigate}
         className={cn(
           'flex h-btn-desktop items-center gap-2.5 rounded-md text-sm leading-none no-underline hover:no-underline',
-          compact ? 'max-lg:justify-center lg:px-2.5' : 'px-2.5',
-          on
+          isCompact ? 'max-lg:justify-center lg:px-2.5' : 'px-2.5',
+          isActive
             ? 'bg-sidebar-accent font-semibold text-sidebar-accent-foreground hover:text-sidebar-accent-foreground'
             : 'font-medium text-sidebar-foreground hover:bg-sidebar-accent-hover hover:text-sidebar-accent-foreground'
         )}
       >
         <Icon className="size-5 shrink-0" />
-        <span className={cn(compact && 'hidden lg:inline')}>{item.label}</span>
+        <span className={cn(isCompact && 'hidden lg:inline')}>{item.label}</span>
       </Link>
     )
   })
+}
+
+const ITEM =
+  'flex h-btn-desktop items-center gap-2.5 rounded-md text-sm leading-none no-underline hover:no-underline'
+
+function AccountItems({
+  active,
+  isCompact,
+  onNavigate,
+}: {
+  active: AdminSection
+  isCompact: boolean
+  onNavigate?: () => void
+}) {
+  const isActive = active === 'profil'
+  return (
+    <div className="mt-auto flex flex-col gap-1 border-t border-sidebar-border pt-3">
+      <Link
+        route="admin.profile"
+        aria-label="Profil"
+        aria-current={isActive ? 'page' : undefined}
+        onClick={onNavigate}
+        className={cn(
+          ITEM,
+          isCompact ? 'max-lg:justify-center lg:px-2.5' : 'px-2.5',
+          isActive
+            ? 'bg-sidebar-accent font-semibold text-sidebar-accent-foreground hover:text-sidebar-accent-foreground'
+            : 'font-medium text-sidebar-foreground hover:bg-sidebar-accent-hover hover:text-sidebar-accent-foreground'
+        )}
+      >
+        <IconUserCircle className="size-5 shrink-0" />
+        <span className={cn(isCompact && 'hidden lg:inline')}>Profil</span>
+      </Link>
+      <button
+        type="button"
+        aria-label="Keluar"
+        onClick={signOut}
+        className={cn(
+          ITEM,
+          'w-full font-medium text-sidebar-foreground hover:bg-sidebar-accent-hover hover:text-sidebar-accent-foreground',
+          isCompact ? 'max-lg:justify-center lg:px-2.5' : 'px-2.5'
+        )}
+      >
+        <IconLogout className="size-5 shrink-0" />
+        <span className={cn(isCompact && 'hidden lg:inline')}>Keluar</span>
+      </button>
+    </div>
+  )
 }
 
 export function AdminSidebar({ active }: { active: AdminSection }) {
@@ -85,13 +139,14 @@ export function AdminSidebar({ active }: { active: AdminSection }) {
       >
         <Logo variant="icon" size="md" tone="inverse" />
       </Link>
-      <NavItems active={active} compact />
+      <NavItems active={active} isCompact />
+      <AccountItems active={active} isCompact />
     </aside>
   )
 }
 
 export function AdminTopBar({ active, title }: { active: AdminSection; title: string }) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setOpen] = useState(false)
 
   return (
     <div
@@ -102,14 +157,14 @@ export function AdminTopBar({ active, title }: { active: AdminSection; title: st
         variant="ghost"
         size="icon"
         aria-label="Buka menu navigasi"
-        aria-expanded={open}
+        aria-expanded={isOpen}
         onPress={() => setOpen(true)}
         className="text-surface-inverse-foreground hover:bg-sidebar-accent-hover data-pressed:bg-sidebar-accent"
       >
         <IconMenu2 className="size-6" />
       </Button>
       <Sheet
-        isOpen={open}
+        isOpen={isOpen}
         onOpenChange={setOpen}
         data-surface="inverse sidebar"
         className="gap-1 bg-sidebar px-3 pt-3.5 pb-5"
@@ -131,10 +186,11 @@ export function AdminTopBar({ active, title }: { active: AdminSection; title: st
           </SheetClose>
         </div>
         <nav aria-label="Navigasi utama" className="flex flex-col gap-1">
-          <NavItems active={active} compact={false} onNavigate={() => setOpen(false)} />
+          <NavItems active={active} isCompact={false} onNavigate={() => setOpen(false)} />
         </nav>
+        <AccountItems active={active} isCompact={false} onNavigate={() => setOpen(false)} />
       </Sheet>
-      <Logo variant="icon" size="sm" tone="inverse" decorative />
+      <Logo variant="icon" size="sm" tone="inverse" isDecorative />
       <p className="min-w-0 flex-1 truncate text-base leading-[1.2] font-semibold">{title}</p>
     </div>
   )

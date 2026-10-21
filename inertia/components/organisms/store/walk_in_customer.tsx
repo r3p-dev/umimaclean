@@ -15,9 +15,9 @@ import type { KnownCustomer } from '~/lib/store/walk_in'
 export default function WalkInCustomer({
   phone,
   name,
-  complete,
+  isComplete,
   match,
-  picked,
+  isPicked,
   onPhone,
   onName,
   onPick,
@@ -25,9 +25,9 @@ export default function WalkInCustomer({
 }: {
   phone: string
   name: string
-  complete: boolean
+  isComplete: boolean
   match: KnownCustomer | null
-  picked: boolean
+  isPicked: boolean
   onPhone: (value: string) => void
   onName: (value: string) => void
   onPick: () => void
@@ -35,8 +35,8 @@ export default function WalkInCustomer({
 }) {
   const phoneId = useId()
   const nameId = useId()
-  const notFound = complete && !match
-  const StatusIcon = !complete ? IconListSearch : match ? IconUserCheck : IconUserPlus
+  const isNotFound = isComplete && !match
+  const StatusIcon = !isComplete ? IconListSearch : match ? IconUserCheck : IconUserPlus
 
   return (
     <section className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
@@ -60,14 +60,14 @@ export default function WalkInCustomer({
           className="flex items-center gap-1.5 text-caption leading-[1.4] text-muted-foreground"
         >
           <StatusIcon className="size-3.75 shrink-0" />
-          {!complete
+          {!isComplete
             ? 'Sistem mengecek otomatis setelah nomor lengkap.'
             : match
               ? 'Nomor terdaftar.'
               : 'Nomor belum terdaftar.'}
         </span>
       </div>
-      {match && !picked && (
+      {match && !isPicked && (
         <button
           type="button"
           onClick={onPick}
@@ -91,7 +91,7 @@ export default function WalkInCustomer({
           </span>
         </button>
       )}
-      {notFound && (
+      {isNotFound && (
         <p className="-mt-1 flex gap-1.5 text-note leading-[1.4] font-medium text-foreground-secondary">
           <IconInfoCircle className="mt-px size-4.25 shrink-0 text-muted-foreground" />
           Tidak ada pelanggan dengan nomor ini. Isi nama untuk melanjutkan.
@@ -99,7 +99,7 @@ export default function WalkInCustomer({
       )}
       <div className="flex flex-col gap-2">
         <Label htmlFor={nameId}>Nama</Label>
-        {picked && match ? (
+        {isPicked && match ? (
           <>
             <div className="flex h-12.5 items-center gap-2 rounded-md border border-success-border-soft bg-success-subtle pr-1.5 pl-3.5 text-base leading-none font-medium">
               <IconCircleCheck className="size-4.75 text-success-foreground" />
@@ -129,10 +129,10 @@ export default function WalkInCustomer({
               value={name}
               onChange={(event) => onName(event.target.value)}
             />
-            {notFound && (
+            {isNotFound && (
               <FieldDescription className="text-caption leading-[1.45]">
-                Disimpan sebagai pelanggan saat transaksi dibuat. Pelanggan bisa melacak pesanan
-                dengan OTP WhatsApp, tanpa akun.
+                Disimpan sebagai pelanggan saat transaksi dibuat. Pelanggan bisa daftar akun dengan
+                nomor ini untuk melacak pesanan.
               </FieldDescription>
             )}
           </>

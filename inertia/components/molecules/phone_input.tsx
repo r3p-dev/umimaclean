@@ -1,5 +1,5 @@
 import { type Ref } from 'react'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/input_group'
 import { formatPhone, phoneDigits } from '~/lib/shared/phone'
 
 export default function PhoneInput({
@@ -7,14 +7,14 @@ export default function PhoneInput({
   id,
   value,
   onChange,
-  invalid,
+  isInvalid,
   describedBy,
 }: {
   ref?: Ref<HTMLInputElement>
   id: string
   value: string
   onChange: (digits: string) => void
-  invalid?: boolean
+  isInvalid?: boolean
   describedBy?: string
 }) {
   return (
@@ -35,7 +35,7 @@ export default function PhoneInput({
         className="pl-3!"
         value={formatPhone(value)}
         onChange={(event) => onChange(phoneDigits(event.target.value))}
-        aria-invalid={invalid ? true : undefined}
+        aria-invalid={isInvalid ? true : undefined}
         aria-describedby={[`${id}-prefix`, describedBy].filter(Boolean).join(' ')}
       />
     </InputGroup>

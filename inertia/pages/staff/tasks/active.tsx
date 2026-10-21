@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { Head } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
 import {
   IconCamera,
   IconCheck,
@@ -15,7 +15,6 @@ import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import ProofResult from '~/components/molecules/proof_result'
 import TaskSteps from '~/components/molecules/task_steps'
-import DemoSwitcher from '~/components/organisms/demo_switcher'
 import {
   CameraFeed,
   CloseCameraButton,
@@ -27,19 +26,11 @@ import TaskDetails from '~/components/organisms/tasks/task_details'
 import { TaskFinish, TasksCleared } from '~/components/organisms/tasks/task_finish'
 import TaskMapPanel from '~/components/organisms/tasks/task_map_panel'
 import FlowLayout from '~/components/templates/flow_layout'
-import { proofStamp, useCamera } from '~/lib/proof/camera'
+import { photoFile, proofStamp, useCamera } from '~/lib/proof/camera'
+import { useAccount } from '~/lib/shared/auth'
 import { navigationLink, preferences } from '~/lib/staff/preferences'
-import { resetTasks, useWorkday } from '~/lib/staff/workday'
 import { useDeviceLocation } from '~/lib/tasks/location'
-import {
-  arriveAtTask,
-  completeTask,
-  continueTasks,
-  keepTaskShot,
-  skipTask,
-  taskQueue,
-} from '~/lib/tasks/progress'
-import { SKIP_REASONS, TASK_COPY, TASK_STEPS, type TaskKind } from '~/lib/tasks/queue'
+import { TASK_COPY, TASK_STEPS, type Task, type TaskKind } from '~/lib/tasks/queue'
 import { useDrivingRoute } from '~/lib/tasks/route'
 
 type CameraPhase = 'off' | 'live' | 'preview'
@@ -50,70 +41,85 @@ const HINTS = {
   preview: ['Periksa foto', 'Foto sudah jelas? Pakai foto ini atau ulangi.'],
 } as const
 
-export default function ActiveTask({ kind: rawKind }: { kind: string }) {
-  const kind: TaskKind = rawKind === 'antar' ? 'antar' : 'jemput'
+type TaskResult = {
+  kind: TaskKind
+  code: string
+  isSkipped: boolean
+  reason: string | null
+  task: Task
+  receiver: string | null
+  time: string
+}
+
+export default function ActiveTask({
+  kind,
+  task,
+  phase: serverPhase,
+  next,
+  skipReasons,
+  result,
+}: {
+  kind: TaskKind
+  task: Task | null
+  phase: 'nav' | 'arrived'
+  next: Task | null
+  skipReasons: string[]
+  result: TaskResult | null
+}) {
+  const account = useAccount()
   const copy = TASK_COPY[kind]
   const noun = copy.noun
-  const day = useWorkday()
   const { mapApp } = preferences.use()
-  const queue = taskQueue(day, kind)
-  const task = queue.current
-  const progress = queue.progress
   const [cameraPhase, setCameraPhase] = useState<CameraPhase>('off')
   const [pending, setPending] = useState<{ photo: string; stamp: string } | null>(null)
-  const [skipOpen, setSkipOpen] = useState(false)
+  const [shot, setShot] = useState<{ photo: string; stamp: string } | null>(null)
+  const [isSkipOpen, setSkipOpen] = useState(false)
+  const [isBusy, setBusy] = useState(false)
   const [receiver, setReceiver] = useState<string | null>(null)
-  const [receiverError, setReceiverError] = useState(false)
+  const [receiverError, setReceiverError] = useState<string | null>(null)
   const receiverId = useId()
   const camera = useCamera(cameraPhase === 'live')
   const me = useDeviceLocation(true)
 
-  const finished = (progress.phase === 'done' || progress.phase === 'skipped') && progress.done > 0
   const phase =
-    cameraPhase === 'live' ? 'cam' : cameraPhase === 'preview' ? 'preview' : progress.phase
-  const showMap = Boolean(task) && !finished && phase !== 'cam' && phase !== 'preview'
+    cameraPhase === 'live'
+      ? 'cam'
+      : cameraPhase === 'preview'
+        ? 'preview'
+        : shot
+          ? 'shot'
+          : serverPhase
+  const showMap = Boolean(task) && !result && phase !== 'cam' && phase !== 'preview'
   const driving = useDrivingRoute(me.point, task?.point ?? null, showMap)
   const queueHref = urlFor(kind === 'jemput' ? 'staff.pickups' : 'staff.deliveries')
 
-  const demo = (
-    <DemoSwitcher
-      className="sm:right-3 sm:left-auto"
-      label={`Data contoh ${copy.short.toLowerCase()}`}
-      options={[
-        { value: 'keep', label: 'Data saat ini' },
-        { value: 'reset', label: 'Ulangi antrean' },
-      ]}
-      value="keep"
-      onChange={(value) => {
-        if (value === 'reset') {
-          setCameraPhase('off')
-          resetTasks(kind)
-        }
-      }}
-    />
-  )
+  const busy = { onStart: () => setBusy(true), onFinish: () => setBusy(false) }
 
-  if (finished) {
-    const index = progress.done - 1
-    const previous = queue.tasks[index]
-    const ok = progress.phase === 'done'
-    const time = progress.finishedAt[index] ?? previous.doneAt
+  function post(action: 'arrive' | 'release', onSuccess?: () => void) {
+    if (!task) {
+      return
+    }
+    const route = action === 'arrive' ? 'staff.task.arrive' : 'staff.task.release'
+    router.post(urlFor(route, { kind, code: task.ref }), {}, { ...busy, onSuccess })
+  }
+
+  if (result) {
+    const isSuccessful = !result.isSkipped
     return (
       <FlowLayout>
-        <Head title={`${noun} ${ok ? 'selesai' : 'dilewati'}`} />
+        <Head title={`${noun} ${isSuccessful ? 'selesai' : 'dilewati'}`} />
         <main className="min-h-dvh bg-card">
           <TaskFinish
             noun={noun}
-            ok={ok}
-            name={`${previous.full} · ${previous.ref}`}
-            meta={`${kind === 'antar' ? `Diterima ${progress.receivers[index] ?? previous.receiver}` : `${previous.count} barang dijemput`} · ${time} · foto bukti tersimpan`}
-            reason={ok ? null : SKIP_REASONS[progress.skips[index]]}
-            next={task}
-            nextNumber={progress.done + 1}
-            onContinue={() => continueTasks(kind)}
+            isSuccessful={isSuccessful}
+            name={`${result.task.full} · ${result.task.ref}`}
+            meta={`${kind === 'antar' ? `Diterima ${result.receiver ?? ''}` : `${result.task.count} barang dijemput`} · ${result.time} · foto bukti tersimpan`}
+            reason={result.reason}
+            next={task ?? next}
+            nextNumber={1}
+            onContinue={() => router.visit(queueHref)}
           />
         </main>
-        {demo}
       </FlowLayout>
     )
   }
@@ -123,9 +129,21 @@ export default function ActiveTask({ kind: rawKind }: { kind: string }) {
       <FlowLayout>
         <Head title={copy.title} />
         <main className="min-h-dvh bg-card">
-          <TasksCleared noun={noun} />
+          {next ? (
+            <TaskFinish
+              noun={noun}
+              isSuccessful
+              name="Belum ada tugas yang Anda mulai"
+              meta="Mulai tugas dari antrean."
+              reason={null}
+              next={next}
+              nextNumber={1}
+              onContinue={() => router.visit(queueHref)}
+            />
+          ) : (
+            <TasksCleared noun={noun} />
+          )}
         </main>
-        {demo}
       </FlowLayout>
     )
   }
@@ -145,6 +163,7 @@ export default function ActiveTask({ kind: rawKind }: { kind: string }) {
   const externalHref = navigationLink(task.point, mapApp)
   const externalLabel = `Buka di ${mapApp}`
   const receiverValue = receiver ?? task.receiver ?? ''
+  const current = task
   const eta = driving.route?.durationText ?? task.eta
   const distance = driving.route?.distanceText ?? task.km
   const arrival = driving.route?.arrivalText ?? task.at
@@ -152,29 +171,44 @@ export default function ActiveTask({ kind: rawKind }: { kind: string }) {
 
   async function shoot() {
     const photo = await camera.capture()
-    if (!photo || !task) return
-    setPending({ photo, stamp: proofStamp(task.ref) })
+    if (!photo) {
+      return
+    }
+    setPending({ photo, stamp: proofStamp(current.ref, account.name) })
     setCameraPhase('preview')
   }
 
   function acceptPhoto() {
-    keepTaskShot(kind, pending)
+    setShot(pending)
     setPending(null)
     setCameraPhase('off')
   }
 
-  function complete() {
-    if (kind === 'antar' && !receiverValue.trim()) {
-      setReceiverError(true)
+  async function complete() {
+    if (kind === 'antar' && receiverValue.trim().length < 2) {
+      setReceiverError('Isi nama penerima barang.')
       return
     }
-    setReceiver(null)
-    completeTask(kind, kind === 'antar' ? receiverValue.trim() : undefined)
+    if (!shot || isBusy) {
+      return
+    }
+    setBusy(true)
+    const photo = await photoFile(shot.photo)
+    router.post(
+      urlFor('staff.task.complete', { kind, code: current.ref }),
+      { photo, ...(kind === 'antar' ? { receiver: receiverValue.trim() } : {}) },
+      {
+        forceFormData: true,
+        onSuccess: () => setShot(null),
+        onError: (errors) => setReceiverError(errors.receiver ?? null),
+        onFinish: () => setBusy(false),
+      }
+    )
   }
 
   return (
     <FlowLayout>
-      <Head title={`${copy.short} #${progress.done + 1}`} />
+      <Head title={`${copy.short} · ${task.ref}`} />
       <main className="min-h-dvh bg-card lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
         <div
           data-surface="inverse"
@@ -185,9 +219,9 @@ export default function ActiveTask({ kind: rawKind }: { kind: string }) {
               me={me.point}
               destination={task.point}
               route={driving.route?.path ?? null}
-              routeFailed={driving.failed}
+              hasRouteFailed={driving.failed}
               backHref={queueHref}
-              chip={`${copy.short} #${progress.done + 1} dari ${queue.tasks.length}`}
+              chip={`${copy.short} · ${task.ref}`}
               externalHref={externalHref}
               externalLabel={externalLabel}
               skipLabel={`Lewati ${noun}`}
@@ -217,7 +251,7 @@ export default function ActiveTask({ kind: rawKind }: { kind: string }) {
                 <span className="w-11" />
               </div>
               <div className="absolute inset-x-0 bottom-8.5 flex justify-center">
-                <Shutter onShoot={shoot} disabled={!camera.canCapture} />
+                <Shutter onShoot={shoot} isDisabled={!camera.canCapture} />
               </div>
             </div>
           )}
@@ -262,22 +296,20 @@ export default function ActiveTask({ kind: rawKind }: { kind: string }) {
               <Input
                 id={receiverId}
                 value={receiverValue}
-                aria-invalid={receiverError || undefined}
+                aria-invalid={receiverError ? true : undefined}
                 aria-describedby={receiverError ? `${receiverId}-error` : undefined}
                 onChange={(event) => {
-                  setReceiver(event.target.value)
-                  setReceiverError(false)
+                  setReceiver(event.target.value.slice(0, 80))
+                  setReceiverError(null)
                 }}
               />
-              {receiverError && (
-                <FieldError id={`${receiverId}-error`}>Isi nama penerima barang.</FieldError>
-              )}
+              {receiverError && <FieldError id={`${receiverId}-error`}>{receiverError}</FieldError>}
             </div>
           )}
 
           {phase === 'nav' && (
             <div className="flex flex-col gap-1">
-              <Button size="cta" onPress={() => arriveAtTask(kind)}>
+              <Button size="cta" onPress={() => post('arrive')} isPending={isBusy}>
                 <IconMapPinCheck />
                 Saya Sudah Sampai
               </Button>
@@ -294,6 +326,15 @@ export default function ActiveTask({ kind: rawKind }: { kind: string }) {
                   <IconExternalLink className="size-4.25" />
                 </LinkButton>
               )}
+              <Button
+                variant="ghost"
+                size="desktop"
+                className="text-[14.5px] text-foreground-secondary"
+                onPress={() => post('release')}
+                isDisabled={isBusy}
+              >
+                Lepaskan Tugas
+              </Button>
             </div>
           )}
 
@@ -342,33 +383,37 @@ export default function ActiveTask({ kind: rawKind }: { kind: string }) {
             </div>
           )}
 
-          {phase === 'shot' && progress.shot && (
+          {phase === 'shot' && shot && (
             <div className="flex flex-col gap-2.5">
               <ProofResult
                 title={photoTitle}
-                photo={progress.shot.photo}
-                stamp={progress.shot.stamp}
+                photo={shot.photo}
+                stamp={shot.stamp}
                 onRetake={() => setCameraPhase('live')}
               />
-              <Button variant="success" size="cta" onPress={complete}>
+              <Button variant="success" size="cta" onPress={complete} isPending={isBusy}>
                 <IconCircleCheck />
-                Selesaikan {noun}
+                {isBusy ? 'Menyimpan…' : `Selesaikan ${noun}`}
               </Button>
             </div>
           )}
         </div>
       </main>
       <SkipTaskDialog
-        open={skipOpen}
+        isOpen={isSkipOpen}
         onOpenChange={setSkipOpen}
         noun={noun}
-        onSkip={(reason) => {
-          setSkipOpen(false)
+        reasons={skipReasons}
+        isPending={isBusy}
+        onSkip={(reason, note) => {
           setCameraPhase('off')
-          skipTask(kind, reason)
+          router.post(
+            urlFor('staff.task.skip', { kind, code: current.ref }),
+            { reason, ...(note.trim() ? { note: note.trim() } : {}) },
+            { ...busy, onSuccess: () => setSkipOpen(false) }
+          )
         }}
       />
-      {demo}
     </FlowLayout>
   )
 }

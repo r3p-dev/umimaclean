@@ -10,12 +10,12 @@ import type { StatusTone } from '~/lib/tracking/status'
 const FOOTER = 'flex flex-col-reverse justify-end gap-2 sm:flex-row sm:items-center'
 
 export function StatusDialog({
-  open,
+  isOpen,
   onOpenChange,
   selected,
   onApply,
 }: {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
   selected: AdminOrder[]
   onApply: (target: StatusTone) => string | null
@@ -26,7 +26,7 @@ export function StatusDialog({
 
   return (
     <Dialog
-      isOpen={open}
+      isOpen={isOpen}
       onOpenChange={onOpenChange}
       variant="panel"
       aria-describedby={`${labelId}-note`}
@@ -79,7 +79,7 @@ export function StatusDialog({
 }
 
 export function CancelDialog({
-  open,
+  isOpen,
   onOpenChange,
   title,
   description,
@@ -89,7 +89,7 @@ export function CancelDialog({
   backLabel = 'Kembali',
   onConfirm,
 }: {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
   title: string
   description: string
@@ -100,11 +100,11 @@ export function CancelDialog({
   onConfirm: (reason: string) => void
 }) {
   const [reason, setReason] = useState<string | null>(null)
-  const [error, setError] = useState(false)
+  const [hasError, setError] = useState(false)
   const labelId = useId()
 
   return (
-    <Dialog isOpen={open} onOpenChange={onOpenChange} variant="panel">
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
       <DialogTitleBar>{title}</DialogTitleBar>
       <DialogDescription className="text-note leading-normal">{description}</DialogDescription>
       {skipped && (
@@ -126,7 +126,7 @@ export function CancelDialog({
           options={reasons.map((item) => ({ value: item, label: item }))}
         />
       </div>
-      {error && <FieldError className="text-meta">Pilih alasan pembatalan.</FieldError>}
+      {hasError && <FieldError className="text-meta">Pilih alasan pembatalan.</FieldError>}
       <div className={FOOTER}>
         <DialogClose variant="outline" size="desktop">
           {backLabel}

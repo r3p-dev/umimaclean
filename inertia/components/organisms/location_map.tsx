@@ -1,7 +1,7 @@
 import { useEffect, useImperativeHandle, useRef, type ReactNode, type Ref } from 'react'
 import L from 'leaflet'
 import { IconMapPinFilled } from '@tabler/icons-react'
-import type { PickupPoint } from '~/lib/order/draft'
+import type { PickupPoint } from '~/lib/location/point'
 import { cn } from '~/lib/shared/utils'
 
 const TILES =
@@ -15,7 +15,7 @@ export default function LocationMap({
   ref,
   center,
   zoom = 16,
-  interactive = true,
+  isInteractive = true,
   label,
   onMoveEnd,
   className,
@@ -24,7 +24,7 @@ export default function LocationMap({
   ref?: Ref<LocationMapHandle>
   center: PickupPoint
   zoom?: number
-  interactive?: boolean
+  isInteractive?: boolean
   label?: string
   onMoveEnd?: (point: PickupPoint) => void
   className?: string
@@ -40,7 +40,9 @@ export default function LocationMap({
   }, [onMoveEnd])
 
   useEffect(() => {
-    if (!element.current) return
+    if (!element.current) {
+      return
+    }
     const start = initial.current
     const instance = L.map(element.current, {
       center: [start.center.lat, start.center.lng],
@@ -50,11 +52,11 @@ export default function LocationMap({
       zoomControl: false,
       attributionControl: false,
       boxZoom: false,
-      dragging: interactive,
-      keyboard: interactive,
-      touchZoom: interactive ? 'center' : false,
-      scrollWheelZoom: interactive ? 'center' : false,
-      doubleClickZoom: interactive ? 'center' : false,
+      dragging: isInteractive,
+      keyboard: isInteractive,
+      touchZoom: isInteractive ? 'center' : false,
+      scrollWheelZoom: isInteractive ? 'center' : false,
+      doubleClickZoom: isInteractive ? 'center' : false,
     })
     L.tileLayer(TILES, { maxNativeZoom: 16, maxZoom: 18 }).addTo(instance)
     instance.on('moveend', () => {
@@ -68,11 +70,13 @@ export default function LocationMap({
       instance.remove()
       map.current = null
     }
-  }, [interactive])
+  }, [isInteractive])
 
   useEffect(() => {
-    if (!interactive) map.current?.setView([center.lat, center.lng])
-  }, [interactive, center.lat, center.lng])
+    if (!isInteractive) {
+      map.current?.setView([center.lat, center.lng])
+    }
+  }, [isInteractive, center.lat, center.lng])
 
   useImperativeHandle(
     ref,
@@ -93,9 +97,9 @@ export default function LocationMap({
     <div className={cn('relative isolate overflow-hidden bg-map-land', className)}>
       <div
         ref={element}
-        role={interactive ? 'application' : undefined}
-        aria-label={interactive ? label : undefined}
-        aria-hidden={interactive ? undefined : true}
+        role={isInteractive ? 'application' : undefined}
+        aria-label={isInteractive ? label : undefined}
+        aria-hidden={isInteractive ? undefined : true}
         className="absolute inset-0 z-0"
       />
       <span

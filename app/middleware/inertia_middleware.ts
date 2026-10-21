@@ -1,15 +1,40 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
+import { STAFF_ROLES } from '#enums/role_enum'
+import StaffSummaryService from '#services/order/staff_summary_service'
+import env from '#start/env'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
-  share(ctx: HttpContext) {
+  async share(ctx: HttpContext) {
+    const { auth } = ctx as Partial<HttpContext>
+    const { inertia, request } = ctx
+    const user = auth?.user
+    const isStaffPage =
+      !!user && STAFF_ROLES.includes(user.role) && request.url().startsWith('/staf')
+
     return {
-      errors: ctx.inertia.always(this.getValidationErrors(ctx)),
+      errors: inertia.always(this.getValidationErrors(ctx)),
+      isSignedIn: !!user,
+      account: user
+        ? {
+            name: user.name,
+            firstName: user.firstName(),
+            role: user.role,
+            roleLabel: user.roleLabel(),
+          }
+        : null,
+      turnstileSiteKey: env.get('TURNSTILE_SITE_KEY'),
+      staffCounts:
+        isStaffPage && user
+          ? await ctx.containerResolver
+              .make(StaffSummaryService)
+              .then((summary) => summary.counts(user))
+          : null,
     }
   }
 
-  flash(ctx: HttpContext) {
+  override flash(ctx: HttpContext) {
     const { session } = ctx as Partial<HttpContext>
 
     const success: string | undefined = session?.flashMessages.get('success')

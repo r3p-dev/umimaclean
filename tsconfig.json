@@ -4,6 +4,7 @@
     "rootDir": "./",
     "jsx": "react",
     "outDir": "./build",
+    "noImplicitOverride": true,
     "paths": {
       "~/*": ["./inertia/*"]
     }

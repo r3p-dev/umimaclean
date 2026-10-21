@@ -1,29 +1,31 @@
+import { useEffect, useState } from 'react'
 import { Head, router } from '@inertiajs/react'
 import {
   IconArrowRight,
   IconBackpack,
   IconBuildingStore,
-  IconCamera,
   IconHelmet,
   IconShoe,
 } from '@tabler/icons-react'
 import { urlFor } from '~/client'
-import { Button, LinkButton } from '~/components/ui/button'
+import { Button } from '~/components/ui/button'
 import QuantityStepper from '~/components/molecules/quantity_stepper'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
 import ReturnMethodCard from '~/components/organisms/store/return_method_card'
 import WalkInCustomer from '~/components/organisms/store/walk_in_customer'
 import StaffLayout from '~/components/templates/staff_layout'
 import { usePointLookup } from '~/lib/location/point_lookup'
+import type { Coverage } from '~/lib/location/service_area'
 import { itemsSummary } from '~/lib/order/items'
 import {
   WALK_IN_STEPS,
-  createWalkIn,
   lookupCustomer,
   sanitizePhone,
   updateWalkInForm,
   walkInBlocker,
   walkInForm,
+  walkInPayload,
+  type CustomerLookup,
 } from '~/lib/store/walk_in'
 import { cn } from '~/lib/shared/utils'
 
@@ -33,51 +35,58 @@ const COUNTERS = [
   { key: 'helm', label: 'Helm', icon: IconHelmet },
 ] as const
 
-export default function WalkIn() {
+export default function WalkIn({
+  lookup: found,
+  coverage,
+}: {
+  lookup: CustomerLookup
+  coverage: Coverage
+}) {
   const form = walkInForm.use()
-  const { phone, name, picked, items, returnMethod, useSaved, point, typedAddress } = form
-  const lookup = lookupCustomer(phone)
-  const customer = picked ? lookup.match : null
-  const pointLookup = usePointLookup(point)
+  const { phone, name, isPicked, items, returnMethod, shouldUseSaved, point, typedAddress } = form
+  const [isBusy, setBusy] = useState(false)
+  const lookup = lookupCustomer(phone, found)
+  const customer = isPicked ? lookup.match : null
+
+  useEffect(() => {
+    if (!lookup.key || lookup.isChecked) {
+      return
+    }
+    const timer = window.setTimeout(() => {
+      router.reload({ data: { nomor: lookup.key }, only: ['lookup'] })
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [lookup.key, lookup.isChecked])
+  const pointLookup = usePointLookup(point, coverage)
   const pointAddress = pointLookup.label
     ? [pointLookup.label.street, pointLookup.label.area].filter(Boolean).join(', ')
     : ''
   const address = typedAddress ?? pointAddress
-  const delivery = returnMethod === 'antar'
-  const blocker = walkInBlocker({
-    phone,
-    name,
-    customer,
-    items,
-    returnMethod,
-    address,
-    point: customer && useSaved ? null : point,
-  })
+  const isDelivery = returnMethod === 'antar'
+  const useSaved = !!customer?.address && shouldUseSaved
+  const draft = { phone, name, customer, items, returnMethod, useSaved, address, point }
+  const blocker = walkInBlocker(draft, found)
 
   const customerText = customer
     ? `${customer.name} · terdaftar`
     : lookup.complete && !lookup.match && name.trim()
       ? `${name.trim()} · disimpan baru`
       : '—'
-  const returnText = !delivery
+  const returnText = !isDelivery
     ? 'Diambil di toko'
-    : customer && useSaved
-      ? `Diantar · ${customer.area}`
+    : useSaved
+      ? `Diantar · ${customer?.area ?? 'alamat utama'}`
       : `Diantar · ${address.split(',')[0] || 'pilih titik di peta'}`
 
   function submit() {
-    if (blocker) return
-    const number = createWalkIn({
-      phone,
-      name,
-      customer,
-      items,
-      returnMethod,
-      address,
-      point: customer && useSaved ? null : point,
+    if (blocker || isBusy) {
+      return
+    }
+    router.post(urlFor('staff.walk_in.store'), walkInPayload(draft), {
+      onStart: () => setBusy(true),
+      onSuccess: () => walkInForm.reset(),
+      onFinish: () => setBusy(false),
     })
-    walkInForm.reset()
-    router.visit(urlFor('staff.inspection', { number }))
   }
 
   return (
@@ -124,13 +133,15 @@ export default function WalkIn() {
             <WalkInCustomer
               phone={phone}
               name={name}
-              complete={lookup.complete}
+              isComplete={lookup.complete}
               match={lookup.match}
-              picked={picked}
-              onPhone={(value) => updateWalkInForm({ phone: sanitizePhone(value), picked: false })}
+              isPicked={isPicked}
+              onPhone={(value) =>
+                updateWalkInForm({ phone: sanitizePhone(value), isPicked: false })
+              }
               onName={(value) => updateWalkInForm({ name: value })}
-              onPick={() => updateWalkInForm({ picked: true, useSaved: true })}
-              onUnpick={() => updateWalkInForm({ picked: false })}
+              onPick={() => updateWalkInForm({ isPicked: true, shouldUseSaved: true })}
+              onUnpick={() => updateWalkInForm({ isPicked: false })}
             />
             <section className="flex flex-col gap-1.5 rounded-lg border border-border bg-card p-4">
               <h2 className="mb-1 text-base leading-[1.3] font-semibold">
@@ -149,16 +160,8 @@ export default function WalkIn() {
                   labelClassName="gap-2.5 text-[15.5px] [&_svg]:size-5.5"
                 />
               ))}
-              <LinkButton
-                variant="ghost"
-                className="mt-2 h-12.5 border-[1.5px] border-input text-[15px] text-info-foreground hover:text-info-foreground"
-                href={`${urlFor('staff.photo')}?untuk=intake`}
-              >
-                <IconCamera />
-                {form.photos ? `Foto Barang · ${form.photos} tersimpan` : 'Foto Barang (Kamera)'}
-              </LinkButton>
-              <p className="text-caption leading-[1.45] text-muted-foreground">
-                Foto kondisi barang saat diterima di toko. Kamera saja, tanpa galeri.
+              <p className="mt-2 text-caption leading-[1.45] text-muted-foreground">
+                Setelah transaksi dibuat, kamera terbuka untuk memotret kondisi barang.
               </p>
             </section>
           </div>
@@ -166,9 +169,9 @@ export default function WalkIn() {
             <ReturnMethodCard
               value={returnMethod}
               onChange={(value) => updateWalkInForm({ returnMethod: value })}
-              savedArea={customer?.area ?? null}
-              useSaved={useSaved}
-              onChoosePoint={() => updateWalkInForm({ useSaved: false })}
+              savedArea={customer?.address ? (customer.area ?? 'Alamat utama') : null}
+              shouldUseSaved={shouldUseSaved}
+              onChoosePoint={() => updateWalkInForm({ shouldUseSaved: false })}
               point={point}
               address={address}
               onPoint={(next) => updateWalkInForm({ point: next, typedAddress: null })}
@@ -194,11 +197,12 @@ export default function WalkIn() {
               <Button
                 size="cta"
                 isDisabled={Boolean(blocker)}
+                isPending={isBusy}
                 onPress={submit}
                 aria-describedby={blocker ? 'walk-in-blocker' : undefined}
                 className={cn('text-[15.5px]', blocker && 'h-13')}
               >
-                Buat Transaksi &amp; Periksa Barang
+                Buat Transaksi &amp; Foto Barang
                 {!blocker && <IconArrowRight />}
               </Button>
               {blocker && (

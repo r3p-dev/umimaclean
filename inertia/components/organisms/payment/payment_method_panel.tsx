@@ -45,13 +45,17 @@ export default function PaymentMethodPanel({
             <AlertDescription>Tagihan sudah dibayar · {paidAt}</AlertDescription>
           </Alert>
         ) : (
-          <LinkButton size="cta" className="w-full" href={urlFor('payment.qris', { number })}>
+          <LinkButton
+            size="cta"
+            className="w-full"
+            href={urlFor('customer.orders.pay', { code: number })}
+          >
             <IconQrcode />
             Bayar dengan QRIS · {total}
           </LinkButton>
         )}
         <BackLink
-          href={urlFor('tracking.status', { number })}
+          href={urlFor('customer.orders.show', { code: number })}
           label="Kembali ke Status Pesanan"
           className="ml-0 self-stretch"
         />

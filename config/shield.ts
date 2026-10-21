@@ -12,11 +12,11 @@ const shieldConfig = defineConfig({
   csrf: {
     enabled: true,
 
-    exceptRoutes: [],
-
     enableXsrfCookie: true,
 
     methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+
+    exceptRoutes: ['/webhooks/midtrans'],
   },
 
   xFrame: {

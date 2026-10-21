@@ -26,13 +26,13 @@ export default function PaymentSuccess({
         rows={[
           { label: 'Metode', value: 'QRIS' },
           { label: 'Waktu', value: paidOn },
-          { label: 'No. pesanan', value: number, mono: true },
+          { label: 'No. pesanan', value: number, isMono: true },
         ]}
       />
       <LinkButton
         size="cta"
         className="mt-2 self-stretch"
-        href={urlFor('tracking.status', { number })}
+        href={urlFor('customer.orders.show', { code: number })}
       >
         Lihat Status Pesanan
       </LinkButton>

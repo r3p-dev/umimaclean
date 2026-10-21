@@ -11,7 +11,7 @@ import { cn } from '~/lib/shared/utils'
 
 export function TaskFinish({
   noun,
-  ok,
+  isSuccessful,
   name,
   meta,
   reason,
@@ -20,7 +20,7 @@ export function TaskFinish({
   onContinue,
 }: {
   noun: string
-  ok: boolean
+  isSuccessful: boolean
   name: string
   meta: string
   reason: string | null
@@ -28,23 +28,25 @@ export function TaskFinish({
   nextNumber: number
   onContinue: () => void
 }) {
-  const Icon = ok ? IconCheck : IconPlayerSkipForward
+  const Icon = isSuccessful ? IconCheck : IconPlayerSkipForward
 
   return (
     <div className="mx-auto flex max-w-120 flex-col items-center gap-2.5 px-5 pt-11 pb-7 text-center">
       <span
         className={cn(
           'flex size-16 items-center justify-center rounded-full',
-          ok ? 'bg-success text-success-foreground' : 'bg-attention text-attention-foreground'
+          isSuccessful
+            ? 'bg-success text-success-foreground'
+            : 'bg-attention text-attention-foreground'
         )}
       >
         <Icon className="size-8.5" />
       </span>
       <h1 role="status" className="mt-1.5 text-[22px] leading-[1.25] font-bold">
-        {noun} {ok ? 'selesai' : 'dilewati'}
+        {noun} {isSuccessful ? 'selesai' : 'dilewati'}
       </h1>
       <p className="text-sm leading-[1.4] font-medium text-foreground-secondary">{name}</p>
-      {ok ? (
+      {isSuccessful ? (
         <p className="text-sm leading-[1.45] text-foreground-secondary">{meta}</p>
       ) : (
         <div className="flex flex-col gap-1 self-stretch rounded-md bg-attention px-3.5 py-3 text-left text-sm leading-[1.45] text-attention-foreground">

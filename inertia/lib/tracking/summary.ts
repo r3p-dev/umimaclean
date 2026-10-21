@@ -16,18 +16,18 @@ import {
 export type OrderSummary = ReturnType<typeof orderSummary>
 
 export function orderSummary(order: OrderRecord) {
-  const paid = isPaid(order)
+  const hasPaid = isPaid(order)
   return {
     number: order.number,
     status: ORDER_STATUSES[order.status],
     items: itemsSummary(order.items),
     date: formatDate(order.createdOn, 'full'),
-    payment: paid ? `${paymentLabel(order)} · QRIS` : paymentLabel(order),
-    paid,
+    payment: hasPaid ? `${paymentLabel(order)} · QRIS` : paymentLabel(order),
+    paid: hasPaid,
     total: order.bill ? formatRupiah(billTotal(order.bill)) : null,
     needsAction: order.status === AWAITING_PAYMENT,
     finished: order.status === COMPLETED || order.status === CANCELLED,
     cancelled: order.status === CANCELLED,
-    href: urlFor('tracking.status', { number: order.number }),
+    href: urlFor('customer.orders.show', { code: order.number }),
   }
 }

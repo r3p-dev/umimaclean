@@ -3,16 +3,19 @@
   "compilerOptions": {
     "module": "ESNext",
     "jsx": "react-jsx",
+    "noImplicitOverride": true,
     "types": ["vite/client", "vite-plugin-svgr/client"],
     "paths": {
       "~/*": ["./*"],
       "cn": ["./lib/shared/utils.ts"],
-      "@generated/*": ["../.adonisjs/client/*"]
+      "@generated/*": ["../.adonisjs/client/*"],
+      "@enums/*": ["../app/enums/*"]
     }
   },
   "include": [
     "./**/*.ts",
     "./**/*.tsx",
+    "../app/enums/**/*.ts",
     "../.adonisjs/client/**/*.ts",
     "../.adonisjs/server/**/*.ts"
   ]

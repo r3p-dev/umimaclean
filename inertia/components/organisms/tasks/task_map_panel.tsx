@@ -8,10 +8,10 @@ import {
   IconPlayerSkipForward,
 } from '@tabler/icons-react'
 import { Button, LinkButton } from '~/components/ui/button'
-import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '~/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '~/components/ui/dropdown_menu'
 import RouteMap, { type RouteMapHandle } from '~/components/organisms/route_map'
 import { MapLegend } from '~/components/organisms/tasks/queue_map'
-import type { PickupPoint } from '~/lib/order/draft'
+import type { PickupPoint } from '~/lib/location/point'
 
 const FLOATING = 'bg-card text-foreground shadow-1 hover:bg-card hover:text-foreground'
 
@@ -19,7 +19,7 @@ export default function TaskMapPanel({
   me,
   destination,
   route,
-  routeFailed,
+  hasRouteFailed,
   backHref,
   chip,
   externalHref,
@@ -30,7 +30,7 @@ export default function TaskMapPanel({
   me: PickupPoint
   destination: PickupPoint
   route: PickupPoint[] | null
-  routeFailed: boolean
+  hasRouteFailed: boolean
   backHref: string
   chip: string
   externalHref: string
@@ -95,7 +95,7 @@ export default function TaskMapPanel({
           </DropdownMenu>
         </DropdownMenuTrigger>
       </div>
-      {routeFailed && (
+      {hasRouteFailed && (
         <div
           data-surface="light"
           role="alert"

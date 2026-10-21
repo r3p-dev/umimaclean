@@ -2,7 +2,7 @@ import { useEffect, useImperativeHandle, useRef, type ReactNode, type Ref } from
 import L from 'leaflet'
 import locationSvg from '@tabler/icons/filled/map-pin.svg?raw'
 import navigationSvg from '@tabler/icons/filled/navigation.svg?raw'
-import type { PickupPoint } from '~/lib/order/draft'
+import type { PickupPoint } from '~/lib/location/point'
 import { cn } from '~/lib/shared/utils'
 
 const TILES =
@@ -33,12 +33,12 @@ function icon(svg: string, size: number, className: string) {
 }
 
 function pinIcon(pin: QueuePin) {
-  const current = pin.state === 'current'
-  const size = current ? 34 : 28
+  const isCurrent = pin.state === 'current'
+  const size = isCurrent ? 34 : 28
   const tone =
     pin.state === 'done'
       ? 'bg-input text-surface-inverse-foreground text-[12.5px]'
-      : current
+      : isCurrent
         ? 'bg-primary text-surface-inverse-foreground text-sm'
         : 'bg-card text-foreground text-[12.5px]'
   return L.divIcon({
@@ -71,7 +71,7 @@ export default function RouteMap({
   route,
   label,
   inset,
-  interactive = true,
+  isInteractive = true,
   className,
   children,
 }: {
@@ -82,7 +82,7 @@ export default function RouteMap({
   route?: PickupPoint[] | null
   label: string
   inset?: MapInset
-  interactive?: boolean
+  isInteractive?: boolean
   className?: string
   children?: ReactNode
 }) {
@@ -93,7 +93,9 @@ export default function RouteMap({
   const fitInset = useRef<MapInset | undefined>(undefined)
 
   useEffect(() => {
-    if (!element.current) return
+    if (!element.current) {
+      return
+    }
     const instance = L.map(element.current, {
       center: [-6.885, 107.61],
       zoom: 14,
@@ -102,11 +104,11 @@ export default function RouteMap({
       zoomControl: false,
       attributionControl: false,
       boxZoom: false,
-      dragging: interactive,
-      keyboard: interactive,
-      touchZoom: interactive,
-      scrollWheelZoom: interactive,
-      doubleClickZoom: interactive,
+      dragging: isInteractive,
+      keyboard: isInteractive,
+      touchZoom: isInteractive,
+      scrollWheelZoom: isInteractive,
+      doubleClickZoom: isInteractive,
     })
     L.tileLayer(TILES, { maxNativeZoom: 16, maxZoom: 18 }).addTo(instance)
     layers.current = L.layerGroup().addTo(instance)
@@ -125,14 +127,16 @@ export default function RouteMap({
       map.current = null
       layers.current = null
     }
-  }, [interactive])
+  }, [isInteractive])
 
   const signature = JSON.stringify({ me, pins, destination, route, inset })
 
   useEffect(() => {
     const instance = map.current
     const group = layers.current
-    if (!instance || !group) return
+    if (!instance || !group) {
+      return
+    }
     const data = JSON.parse(signature) as {
       me?: PickupPoint
       pins: QueuePin[]
@@ -146,7 +150,7 @@ export default function RouteMap({
 
     const open = data.pins.filter((pin) => pin.state !== 'done')
     const queuePath = [...(data.me ? [data.me] : []), ...open.map((pin) => pin.point)]
-    queuePath.slice(1).forEach((point, index) => {
+    for (const [index, point] of queuePath.slice(1).entries()) {
       const from = queuePath[index]
       L.polyline(
         [
@@ -160,7 +164,7 @@ export default function RouteMap({
           className: index === 0 ? 'stroke-primary' : 'stroke-map-route-muted',
         }
       ).addTo(group)
-    })
+    }
 
     if (data.route?.length) {
       const line = data.route.map((point) => [point.lat, point.lng] as L.LatLngTuple)
@@ -179,7 +183,7 @@ export default function RouteMap({
       points.push(...line)
     }
 
-    data.pins.forEach((pin) => {
+    for (const pin of data.pins) {
       L.marker([pin.point.lat, pin.point.lng], {
         icon: pinIcon(pin),
         interactive: false,
@@ -187,7 +191,7 @@ export default function RouteMap({
         zIndexOffset: pin.state === 'current' ? 200 : 0,
       }).addTo(group)
       points.push([pin.point.lat, pin.point.lng])
-    })
+    }
 
     if (data.destination) {
       L.marker([data.destination.lat, data.destination.lng], {
@@ -220,7 +224,9 @@ export default function RouteMap({
     () => ({
       recenter() {
         const instance = map.current
-        if (instance && me) instance.setView([me.lat, me.lng], 16)
+        if (instance && me) {
+          instance.setView([me.lat, me.lng], 16)
+        }
       },
     }),
     [me]
@@ -230,7 +236,7 @@ export default function RouteMap({
     <div className={cn('relative isolate overflow-hidden bg-map-land', className)}>
       <div
         ref={element}
-        role={interactive ? 'application' : 'img'}
+        role={isInteractive ? 'application' : 'img'}
         aria-label={label}
         className="absolute inset-0 z-0"
       />

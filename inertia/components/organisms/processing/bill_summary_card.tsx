@@ -8,17 +8,19 @@ export default function BillSummaryCard({
   rows,
   total,
   missing,
-  saved,
+  isSaved,
   savedText,
   next,
+  isSaving = false,
   onSave,
 }: {
   rows: { key: string; title: string; subtotal: number; services: string }[]
   total: number
   missing: number
-  saved: boolean
+  isSaved: boolean
   savedText: string
   next: { href: string; label: string }
+  isSaving?: boolean
   onSave: () => void
 }) {
   return (
@@ -45,7 +47,7 @@ export default function BillSummaryCard({
             {formatRupiah(total)}
           </span>
         </div>
-        {saved ? (
+        {isSaved ? (
           <div
             role="status"
             className="flex flex-col gap-2.5 rounded-md bg-success p-3 text-sm leading-[1.45] font-medium text-success-foreground"
@@ -63,22 +65,23 @@ export default function BillSummaryCard({
             <Button
               size="cta"
               isDisabled={missing > 0}
+              isPending={isSaving}
               onPress={onSave}
               className={cn('text-[15.5px]', missing > 0 && 'h-13')}
             >
               {missing === 0 && <IconDeviceFloppy />}
-              Simpan Pemeriksaan
+              {isSaving ? 'Menyimpan…' : 'Simpan Pemeriksaan'}
             </Button>
             {missing > 0 && (
               <span className="text-meta leading-[1.4] font-medium text-destructive-text">
-                {missing} barang belum punya layanan utama
+                {missing} barang belum diberi nama atau layanan utama
               </span>
             )}
           </>
         )}
         <p className="text-caption leading-normal text-muted-foreground">
-          Pesanan online: sistem mengirim tagihan QRIS dan pengingat otomatis, lalu memindahkan
-          pesanan ke Dalam Pencucian setelah lunas. Pesanan toko: lanjut ke pembayaran di kasir.
+          Pesanan online: tagihan dikirim ke WhatsApp pelanggan untuk dibayar dengan QRIS, lalu
+          pesanan masuk Dalam Pencucian setelah lunas. Pesanan toko: lanjut ke pembayaran di kasir.
         </p>
       </section>
     </div>

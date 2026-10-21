@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Head } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
 import {
   IconBolt,
   IconCamera,
@@ -22,15 +22,16 @@ import {
   Shutter,
 } from '~/components/organisms/proof/camera_view'
 import FlowLayout from '~/components/templates/flow_layout'
-import { proofStamp, useCamera } from '~/lib/proof/camera'
+import { photoFile, proofStamp, useCamera } from '~/lib/proof/camera'
+import { useAccount } from '~/lib/shared/auth'
 import { MAX_PROOF_PHOTOS, PROOF_KINDS, PROOF_STEPS, isProofKind } from '~/lib/proof/kinds'
-import { updateWalkInForm } from '~/lib/store/walk_in'
 
 type Phase = 'idle' | 'camera' | 'preview' | 'ready' | 'sending' | 'done'
 
 type Shot = { photo: string; stamp: string }
 
 export default function ProofPhoto({ kind: rawKind, number }: { kind: string; number: string }) {
+  const account = useAccount()
   const kind = isProofKind(rawKind) ? rawKind : 'intake'
   const copy = PROOF_KINDS[kind]
   const name = copy.name.toLowerCase()
@@ -38,30 +39,57 @@ export default function ProofPhoto({ kind: rawKind, number }: { kind: string; nu
   const [phase, setPhase] = useState<Phase>('idle')
   const [shots, setShots] = useState<Shot[]>([])
   const [pending, setPending] = useState<Shot | null>(null)
-  const [failed, setFailed] = useState(false)
+  const [hasFailed, setFailed] = useState(false)
   const camera = useCamera(phase === 'camera')
   const position = { idle: 0, camera: 0, preview: 1, ready: 2, sending: 2, done: 3 }[phase]
-  const backHref = kind === 'intake' ? urlFor('staff.walk_in') : urlFor('staff.home')
-  const backLabel = kind === 'intake' ? 'Kembali ke Transaksi' : 'Kembali ke Beranda'
+  const backHref = number
+    ? urlFor('staff.inspection', { number })
+    : kind === 'intake'
+      ? urlFor('staff.walk_in')
+      : urlFor('staff.home')
+  const backLabel = number
+    ? 'Lanjut ke Pemeriksaan'
+    : kind === 'intake'
+      ? 'Kembali ke Transaksi'
+      : 'Kembali ke Beranda'
 
   async function shoot() {
     const photo = await camera.capture()
-    if (!photo) return
-    setPending({ photo, stamp: proofStamp(reference, true) })
+    if (!photo) {
+      return
+    }
+    setPending({ photo, stamp: proofStamp(reference, account.name, true) })
     setPhase('preview')
   }
 
   async function send() {
-    setPhase('sending')
-    await new Promise((resolve) => window.setTimeout(resolve, 700))
-    if (!navigator.onLine) {
+    if (!number) {
       setFailed(true)
-      setPhase('ready')
       return
     }
-    setFailed(false)
-    if (kind === 'intake') updateWalkInForm({ photos: shots.length })
-    setPhase('done')
+    setPhase('sending')
+    const photos = await Promise.all(
+      shots.map((shot, index) => photoFile(shot.photo, `barang-${index + 1}.jpg`))
+    )
+    let isSent = false
+    router.post(
+      urlFor('staff.walk_in.photos', { number }),
+      { photos },
+      {
+        forceFormData: true,
+        onSuccess: () => {
+          isSent = true
+          setFailed(false)
+          setPhase('done')
+        },
+        onFinish: () => {
+          if (!isSent) {
+            setFailed(true)
+            setPhase('ready')
+          }
+        },
+      }
+    )
   }
 
   return (
@@ -131,8 +159,8 @@ export default function ProofPhoto({ kind: rawKind, number }: { kind: string; nu
                     variant="ghost"
                     size="icon"
                     aria-label="Lampu kilat"
-                    aria-pressed={camera.torch.on}
-                    isDisabled={!camera.torch.supported}
+                    aria-pressed={camera.torch.isOn}
+                    isDisabled={!camera.torch.isSupported}
                     onPress={camera.toggleTorch}
                     className="rounded-full text-surface-inverse-foreground hover:bg-camera-control disabled:bg-transparent disabled:text-surface-inverse-muted"
                   >
@@ -143,7 +171,7 @@ export default function ProofPhoto({ kind: rawKind, number }: { kind: string; nu
                   <span className="text-caption leading-[1.3] font-medium text-surface-inverse-foreground">
                     Foto {shots.length + 1} dari maks. {MAX_PROOF_PHOTOS}
                   </span>
-                  <Shutter onShoot={shoot} disabled={!camera.canCapture} />
+                  <Shutter onShoot={shoot} isDisabled={!camera.canCapture} />
                   <Button
                     variant="ghost"
                     size="icon"
@@ -212,7 +240,9 @@ export default function ProofPhoto({ kind: rawKind, number }: { kind: string; nu
                         onPress={() => {
                           const next = shots.filter((item) => item !== shot)
                           setShots(next)
-                          if (!next.length) setPhase('idle')
+                          if (!next.length) {
+                            setPhase('idle')
+                          }
                         }}
                         className="absolute top-1 right-1 rounded-full bg-scrim text-surface-inverse-foreground hover:bg-scrim"
                       >
@@ -264,7 +294,7 @@ export default function ProofPhoto({ kind: rawKind, number }: { kind: string; nu
                 <p className="text-note leading-normal text-pretty text-foreground-secondary">
                   {shots.length} foto bukti {name} tersimpan ·{' '}
                   {shots[shots.length - 1]?.stamp.split(' · ').slice(0, 2).join(' · ')}. Pelanggan
-                  bisa melihatnya di halaman lacak.
+                  bisa melihatnya di detail pesanan.
                 </p>
                 <LinkButton variant="ghost" size="desktop" className="text-primary" href={backHref}>
                   {backLabel}
@@ -273,7 +303,7 @@ export default function ProofPhoto({ kind: rawKind, number }: { kind: string; nu
             )}
           </section>
 
-          {failed && (
+          {hasFailed && (
             <div
               role="alert"
               className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 rounded-md border border-destructive-border-soft bg-destructive-surface px-3 py-2.5"
@@ -283,10 +313,12 @@ export default function ProofPhoto({ kind: rawKind, number }: { kind: string; nu
               </span>
               <div>
                 <p className="text-note leading-[1.3] font-semibold">
-                  Gagal mengirim · sinyal lemah
+                  {number ? 'Gagal mengirim foto' : 'Pesanan belum dipilih'}
                 </p>
                 <p className="text-meta leading-[1.4] text-foreground-secondary">
-                  Foto tetap tersimpan di aplikasi. Kirim ulang saat sinyal kembali.
+                  {number
+                    ? 'Foto masih ada di layar ini. Periksa sinyal, lalu kirim ulang.'
+                    : 'Buka kamera dari Transaksi Offline agar foto tersimpan ke pesanan.'}
                 </p>
               </div>
               <Button

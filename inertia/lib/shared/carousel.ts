@@ -14,44 +14,61 @@ export function useSnapCarousel<T extends HTMLElement>(count: number) {
 
   useEffect(() => {
     const track = ref.current
-    if (!track) return
+    if (!track) {
+      return
+    }
     let frame = 0
 
     function update() {
       frame = 0
-      if (!track) return
+      if (!track) {
+        return
+      }
       const slides = slidesOf(track)
-      if (!slides.length) return
+      if (!slides.length) {
+        return
+      }
       if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 2) {
         setIndex(slides.length - 1)
         return
       }
       let nearest = 0
-      slides.forEach((_, slide) => {
+      for (const slide of slides.keys()) {
         const distance = Math.abs(offsetOf(slides, slide) - track.scrollLeft)
-        if (distance < Math.abs(offsetOf(slides, nearest) - track.scrollLeft)) nearest = slide
-      })
+        if (distance < Math.abs(offsetOf(slides, nearest) - track.scrollLeft)) {
+          nearest = slide
+        }
+      }
       setIndex(nearest)
     }
 
     function onScroll() {
-      if (!frame) frame = requestAnimationFrame(update)
+      if (!frame) {
+        frame = requestAnimationFrame(update)
+      }
     }
 
     track.addEventListener('scroll', onScroll, { passive: true })
     return () => {
       track.removeEventListener('scroll', onScroll)
-      if (frame) cancelAnimationFrame(frame)
+      if (frame) {
+        cancelAnimationFrame(frame)
+      }
     }
   }, [count])
 
   const scrollTo = useCallback((target: number) => {
     const track = ref.current
-    if (!track) return
+    if (!track) {
+      return
+    }
     const slides = slidesOf(track)
     const next = Math.max(0, Math.min(slides.length - 1, target))
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    track.scrollTo({ left: offsetOf(slides, next), behavior: reduce ? 'auto' : 'smooth' })
+    const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    track.scrollTo({
+      left: offsetOf(slides, next),
+      behavior: shouldReduceMotion ? 'auto' : 'smooth',
+    })
   }, [])
 
   return {
@@ -60,7 +77,7 @@ export function useSnapCarousel<T extends HTMLElement>(count: number) {
     scrollTo,
     previous: () => scrollTo(index - 1),
     next: () => scrollTo(index + 1),
-    atStart: index <= 0,
-    atEnd: index >= count - 1,
+    isAtStart: index <= 0,
+    isAtEnd: index >= count - 1,
   }
 }

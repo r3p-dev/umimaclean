@@ -2,6 +2,7 @@ import { indexPages } from '@adonisjs/inertia'
 import { indexEntities } from '@adonisjs/core/generators'
 import { defineConfig } from '@adonisjs/core/app'
 import { generateRegistry } from '@tuyau/core/hooks'
+import { indexPolicies } from '@adonisjs/bouncer'
 
 export default defineConfig({
   experimental: {},
@@ -11,6 +12,7 @@ export default defineConfig({
     () => import('@adonisjs/lucid/commands'),
     () => import('@adonisjs/session/commands'),
     () => import('@adonisjs/inertia/commands'),
+    () => import('@adonisjs/bouncer/commands'),
   ],
 
   providers: [
@@ -29,12 +31,19 @@ export default defineConfig({
     () => import('@adonisjs/lucid/database_provider'),
     () => import('@adonisjs/cors/cors_provider'),
     () => import('@adonisjs/inertia/inertia_provider'),
+    () => import('@adonisjs/auth/auth_provider'),
+    () => import('@adonisjs/limiter/limiter_provider'),
+    () => import('#providers/geocoder_provider'),
+    () => import('#providers/payment_provider'),
+    () => import('@adonisjs/bouncer/bouncer_provider'),
+    () => import('@adonisjs/transmit/transmit_provider'),
   ],
 
   preloads: [
     () => import('#start/routes'),
     () => import('#start/kernel'),
     () => import('#start/validator'),
+    () => import('#start/transmit'),
   ],
 
   tests: {
@@ -76,6 +85,7 @@ export default defineConfig({
       }),
       indexPages({ framework: 'react' }),
       generateRegistry(),
+      indexPolicies(),
     ],
     buildStarting: [() => import('@adonisjs/vite/build_hook')],
   },

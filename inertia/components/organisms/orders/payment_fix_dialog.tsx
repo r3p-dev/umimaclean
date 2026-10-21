@@ -6,20 +6,22 @@ import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import ChoicePills from '~/components/molecules/choice_pills'
 import DialogTitleBar from '~/components/molecules/dialog_title_bar'
-import { FIX_METHODS, type PaymentFix } from '~/lib/orders/admin_orders'
+import { FIX_METHODS, type FixMethod, type PaymentFix } from '~/lib/orders/admin_orders'
 
 export default function PaymentFixDialog({
-  open,
+  isOpen,
   onOpenChange,
   defaultAmount,
+  isSaving = false,
   onSave,
 }: {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
   defaultAmount: number
+  isSaving?: boolean
   onSave: (fix: PaymentFix) => void
 }) {
-  const [method, setMethod] = useState('Tunai di toko')
+  const [method, setMethod] = useState<FixMethod>('cash')
   const [amount, setAmount] = useState(defaultAmount ? String(defaultAmount) : '')
   const [reason, setReason] = useState('')
   const [errors, setErrors] = useState<{ amount?: string; reason?: string }>({})
@@ -29,15 +31,21 @@ export default function PaymentFixDialog({
 
   function save() {
     const found: typeof errors = {}
-    if (!(Number(amount) > 0)) found.amount = 'Isi jumlah yang diterima.'
-    if (!reason.trim()) found.reason = 'Alasan wajib diisi.'
+    if (!(Number(amount) > 0)) {
+      found.amount = 'Isi jumlah yang diterima.'
+    }
+    if (!reason.trim()) {
+      found.reason = 'Alasan wajib diisi.'
+    }
     setErrors(found)
-    if (Object.keys(found).length) return
+    if (Object.keys(found).length) {
+      return
+    }
     onSave({ method, amount: Number(amount), reason: reason.trim() })
   }
 
   return (
-    <Dialog isOpen={open} onOpenChange={onOpenChange} variant="panel">
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
       <DialogTitleBar>Koreksi pembayaran</DialogTitleBar>
       <DialogDescription className="text-note leading-normal">
         Dipakai bila pembayaran tercatat salah (mis. dibayar di toko tapi belum tercatat). Koreksi
@@ -51,7 +59,7 @@ export default function PaymentFixDialog({
           labelledBy={methodId}
           value={method}
           onChange={setMethod}
-          options={FIX_METHODS.map((item) => ({ value: item, label: item }))}
+          options={FIX_METHODS}
         />
       </div>
       <div className="flex min-w-0 flex-col gap-1.5">
@@ -99,7 +107,7 @@ export default function PaymentFixDialog({
         <DialogClose variant="outline" size="desktop">
           Batal
         </DialogClose>
-        <Button size="desktop" onPress={save}>
+        <Button size="desktop" onPress={save} isPending={isSaving}>
           Simpan koreksi
         </Button>
       </div>

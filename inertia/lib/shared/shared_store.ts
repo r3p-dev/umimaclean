@@ -28,7 +28,9 @@ export function createSharedStore<T>(area: Area, key: string, initial: () => T) 
   function set(update: T | ((current: T) => T)) {
     cache = typeof update === 'function' ? (update as (current: T) => T)(get()) : update
     writeStore(area, key, cache)
-    listeners.forEach((listener) => listener())
+    for (const listener of listeners) {
+      listener()
+    }
   }
 
   function reset() {

@@ -25,7 +25,7 @@ import {
   STORE_PAY_METHODS,
   areaCount,
   areaError,
-  storeSettings,
+  saveStoreSettings,
   type StorePayKey,
   type StoreSettings,
 } from '~/lib/settings/store_settings'
@@ -93,13 +93,19 @@ function TextField({
   )
 }
 
-export default function AdminStoreSettings() {
-  const saved = storeSettings.use()
+export default function AdminStoreSettings({
+  settings: saved,
+  isQrisAvailable,
+}: {
+  settings: StoreSettings
+  isQrisAvailable: boolean
+}) {
   const [draft, setDraft] = useState<StoreSettings>(saved)
-  const [city, setCity] = useState(Object.keys(saved.areas)[0] ?? 'Kota Bandung')
+  const [isSaving, setSaving] = useState(false)
+  const [city, setCity] = useState(saved.areas[0]?.city ?? 'Kota Bandung')
   const [newArea, setNewArea] = useState('')
   const [areaProblem, setAreaProblem] = useState<string | null>(null)
-  const [payWarning, setPayWarning] = useState(false)
+  const [showPayWarning, setPayWarning] = useState(false)
   const areaId = useId()
   const cityId = useId()
   const update = (patch: Partial<StoreSettings>) =>
@@ -108,11 +114,16 @@ export default function AdminStoreSettings() {
   function addArea() {
     const problem = areaError(draft.areas, city, newArea)
     setAreaProblem(problem)
-    if (problem) return
+    if (problem) {
+      return
+    }
     const name = newArea.trim()
-    update({ areas: { ...draft.areas, [city]: [...(draft.areas[city] ?? []), name] } })
+    update({
+      areas: draft.areas.map((area) =>
+        area.city === city ? { ...area, districts: [...(area.districts ?? []), name] } : area
+      ),
+    })
     setNewArea('')
-    toast.success(`Kec. ${name} ditambahkan ke ${city}.`)
   }
 
   function togglePay(key: StorePayKey) {
@@ -134,13 +145,18 @@ export default function AdminStoreSettings() {
           <Button
             size="desktop"
             className="gap-1.5"
+            isPending={isSaving}
             onPress={() => {
-              storeSettings.set(draft)
-              toast.success('Pengaturan disimpan · tercatat di Aktivitas Staf.')
+              setSaving(true)
+              saveStoreSettings(draft, {
+                onError: (errors) =>
+                  toast.error(Object.values(errors)[0] ?? 'Periksa kembali isian.'),
+                onFinish: () => setSaving(false),
+              })
             }}
           >
             <IconDeviceFloppy className="size-4.5" />
-            Simpan perubahan
+            {isSaving ? 'Menyimpan…' : 'Simpan perubahan'}
           </Button>
         }
       />
@@ -177,15 +193,40 @@ export default function AdminStoreSettings() {
             title="Area layanan"
             aside={
               <span className="text-caption leading-none text-muted-foreground">
+                {draft.areas.filter((area) => area.districts === null).length} kota penuh ·{' '}
                 {areaCount(draft.areas)} kecamatan
               </span>
             }
           >
-            {Object.entries(draft.areas).map(([name, list]) => (
+            {draft.areas.map(({ city: name, districts }) => (
               <div key={name} className="flex flex-col gap-2 border-t border-border pt-2.5">
                 <h3 className="text-sm leading-[1.2] font-semibold">{name}</h3>
                 <ul className="flex flex-wrap gap-1.5">
-                  {list.map((area) => (
+                  {districts === null && (
+                    <li className="box-content inline-flex h-8 items-center gap-0.5 rounded-pill border border-input bg-background pr-1 pl-2.75 text-meta leading-none font-medium">
+                      Seluruh kota
+                      <button
+                        type="button"
+                        aria-label={`Hapus seluruh ${name}`}
+                        onClick={() =>
+                          update({
+                            areas: draft.areas.map((area) =>
+                              area.city === name ? { ...area, districts: [] } : area
+                            ),
+                          })
+                        }
+                        className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+                      >
+                        <IconX className="size-4" />
+                      </button>
+                    </li>
+                  )}
+                  {districts !== null && districts.length === 0 && (
+                    <li className="text-meta leading-8 text-muted-foreground">
+                      Belum ada kecamatan · tidak dilayani
+                    </li>
+                  )}
+                  {(districts ?? []).map((area) => (
                     <li
                       key={area}
                       className="box-content inline-flex h-8 items-center gap-0.5 rounded-pill border border-input bg-background pr-1 pl-2.75 text-meta leading-none font-medium"
@@ -196,9 +237,17 @@ export default function AdminStoreSettings() {
                         aria-label={`Hapus ${area}`}
                         onClick={() => {
                           update({
-                            areas: { ...draft.areas, [name]: list.filter((item) => item !== area) },
+                            areas: draft.areas.map((item) =>
+                              item.city === name
+                                ? {
+                                    ...item,
+                                    districts: (item.districts ?? []).filter(
+                                      (district) => district !== area
+                                    ),
+                                  }
+                                : item
+                            ),
                           })
-                          toast.success(`Kec. ${area} dihapus dari area layanan.`)
                         }}
                         className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
                       >
@@ -226,7 +275,9 @@ export default function AdminStoreSettings() {
                     setAreaProblem(null)
                   }}
                   onKeyDown={(event) => {
-                    if (event.key === 'Enter') addArea()
+                    if (event.key === 'Enter') {
+                      addArea()
+                    }
                   }}
                   className="px-3"
                 />
@@ -245,7 +296,7 @@ export default function AdminStoreSettings() {
                   value={city}
                   onChange={setCity}
                   pillClassName="h-btn-desktop"
-                  options={Object.keys(draft.areas).map((name) => ({ value: name, label: name }))}
+                  options={draft.areas.map((area) => ({ value: area.city, label: area.city }))}
                 />
               </div>
               <Button size="desktop" onPress={addArea} className="gap-1.5">
@@ -269,7 +320,7 @@ export default function AdminStoreSettings() {
                 >
                   <Switch
                     isSelected={slot.on}
-                    onChange={(on) => setSlot({ on })}
+                    onChange={(isOn) => setSlot({ on: isOn })}
                     aria-label={`Aktifkan slot ${slot.label}`}
                   />
                   <span className="flex-1 font-mono text-[14.5px] leading-[1.2] font-semibold">
@@ -316,8 +367,8 @@ export default function AdminStoreSettings() {
               )
             })}
             <p className="text-note leading-normal text-foreground-secondary">
-              Kapasitas = jumlah penjemputan per slot. Slot penuh tetap terlihat tapi nonaktif bagi
-              pelanggan.
+              Kapasitas = jumlah penjemputan per slot per hari. Slot penuh tetap terlihat tapi tidak
+              bisa dipilih pelanggan; slot nonaktif disembunyikan.
             </p>
           </Panel>
         </div>
@@ -327,10 +378,14 @@ export default function AdminStoreSettings() {
               <IconQrcode className="size-6 shrink-0 text-info-foreground" />
               <span className="flex-1">
                 <span className="block text-[14.5px] leading-[1.3] font-semibold">
-                  QRIS online · terhubung
+                  {isQrisAvailable
+                    ? 'QRIS online · Midtrans terhubung'
+                    : 'QRIS online · belum aktif'}
                 </span>
                 <span className="block text-caption leading-[1.35] text-foreground-secondary">
-                  Satu-satunya metode untuk pesanan online · merchant UMIMA CLEAN
+                  {isQrisAvailable
+                    ? 'Satu-satunya metode untuk pesanan online'
+                    : 'Isi MIDTRANS_SERVER_KEY di server agar pelanggan bisa membayar QRIS'}
                 </span>
               </span>
             </div>
@@ -353,7 +408,7 @@ export default function AdminStoreSettings() {
                 </div>
               )
             })}
-            {payWarning && (
+            {showPayWarning && (
               <FieldError className="text-meta">Minimal satu metode toko harus aktif.</FieldError>
             )}
           </Panel>

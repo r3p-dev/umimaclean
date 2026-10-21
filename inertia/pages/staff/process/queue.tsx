@@ -3,17 +3,28 @@ import { Head } from '@inertiajs/react'
 import { IconArrowDownLeft, IconCircleCheck, IconClockShare } from '@tabler/icons-react'
 import EmptyState from '~/components/molecules/empty_state'
 import TabList from '~/components/molecules/tab_list'
-import DemoSwitcher from '~/components/organisms/demo_switcher'
 import ProcessRow from '~/components/organisms/processing/process_row'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
 import StaffLayout from '~/components/templates/staff_layout'
-import { PROCESS_GROUPS, processQueue, type ProcessGroupKey } from '~/lib/processing/queue'
-import { resetWorkday, useWorkday } from '~/lib/staff/workday'
+import {
+  PROCESS_GROUPS,
+  type ProcessGroupKey,
+  type ProcessRow as Row,
+} from '~/lib/processing/queue'
+import { useLiveReload } from '~/lib/shared/live'
 
-export default function ProcessQueue() {
-  const day = useWorkday()
-  const queue = processQueue(day)
+export default function ProcessQueue({
+  periksa,
+  cuci,
+  waiting,
+}: {
+  periksa: Row[]
+  cuci: Row[]
+  waiting: string[]
+}) {
+  const queue = { periksa, cuci, total: periksa.length + cuci.length }
   const [tab, setTab] = useState<ProcessGroupKey>('periksa')
+  useLiveReload('staff/queues', ['periksa', 'cuci', 'waiting'])
   const rows = queue[tab]
   const group = PROCESS_GROUPS[tab]
 
@@ -59,7 +70,9 @@ export default function ProcessQueue() {
         <div className="flex flex-col gap-2 rounded-md border border-dashed border-input px-3.5 py-3 text-note leading-[1.45] text-foreground-secondary">
           <p className="flex gap-2">
             <IconClockShare className="mt-0.5 size-4.5 shrink-0 text-muted-foreground" />
-            {queue.waitText}
+            {waiting.length
+              ? `${waiting.length} pesanan online menunggu pembayaran QRIS (${waiting.join(', ')}). Bukan tugas staf: tagihan sudah dikirim ke WhatsApp pelanggan, dan pesanan masuk Dalam Pencucian setelah lunas.`
+              : 'Tidak ada pesanan online yang menunggu pembayaran.'}
           </p>
           <p className="flex gap-2">
             <IconArrowDownLeft className="mt-0.5 size-4.5 shrink-0 text-muted-foreground" />
@@ -67,18 +80,6 @@ export default function ProcessQueue() {
           </p>
         </div>
       </div>
-      <DemoSwitcher
-        className="max-sm:bottom-19 sm:right-3 sm:left-auto"
-        label="Data contoh proses"
-        options={[
-          { value: 'keep', label: 'Data saat ini' },
-          { value: 'reset', label: 'Mulai ulang hari' },
-        ]}
-        value="keep"
-        onChange={(value) => {
-          if (value === 'reset') resetWorkday()
-        }}
-      />
     </StaffLayout>
   )
 }

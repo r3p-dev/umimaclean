@@ -10,24 +10,25 @@ import { DEFAULT_REMINDER } from '~/lib/customers/segments'
 
 export default function ReminderDialog({
   count,
-  open,
+  isOpen,
   onOpenChange,
   onSend,
 }: {
   count: number
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
   onSend: (message: string) => void
 }) {
   const [message, setMessage] = useState(DEFAULT_REMINDER)
-  const [error, setError] = useState(false)
+  const [hasError, setError] = useState(false)
   const id = useId()
 
   return (
-    <Dialog isOpen={open} onOpenChange={onOpenChange} variant="panel">
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
       <DialogTitleBar>Kirim pengingat ke {count} pelanggan</DialogTitleBar>
       <DialogDescription className="text-note leading-normal">
-        Dikirim dari WhatsApp bisnis toko. Pelanggan yang menolak pesan promosi otomatis dilewati.
+        Dikirim dari WhatsApp bisnis toko, satu per satu. Pelanggan yang sudah diingatkan 7 hari
+        terakhir dilewati.
       </DialogDescription>
       <div className="flex min-w-0 flex-col gap-1.5">
         <Label htmlFor={id} className="text-note leading-[1.2]">
@@ -37,7 +38,7 @@ export default function ReminderDialog({
           id={id}
           rows={4}
           value={message}
-          aria-invalid={error || undefined}
+          aria-invalid={hasError || undefined}
           aria-describedby={`${id}-note`}
           onChange={(event) => {
             setMessage(event.target.value)
@@ -45,7 +46,7 @@ export default function ReminderDialog({
           }}
           className="resize-y px-3 py-2.5 leading-[1.45]"
         />
-        {error ? (
+        {hasError ? (
           <FieldError id={`${id}-note`} className="text-meta">
             Tulis pesan pengingat terlebih dulu.
           </FieldError>

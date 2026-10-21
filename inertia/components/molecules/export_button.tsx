@@ -18,16 +18,22 @@ export default function ExportButton({
   size?: 'desktop' | 'compact'
   className?: string
 }) {
-  const [busy, setBusy] = useState(false)
+  const [isBusy, setBusy] = useState(false)
 
   async function run() {
-    if (busy) return
+    if (isBusy) {
+      return
+    }
     setBusy(true)
     const result = await exportWorkbook(build)
     setBusy(false)
-    if (result.status === 'saved') toast.success(result.message)
-    else if (result.status === 'empty') toast.info(result.message)
-    else toast.error(result.message, { duration: 6000 })
+    if (result.status === 'saved') {
+      toast.success(result.message)
+    } else if (result.status === 'empty') {
+      toast.info(result.message)
+    } else {
+      toast.error(result.message, { duration: 6000 })
+    }
   }
 
   return (
@@ -35,18 +41,18 @@ export default function ExportButton({
       variant="outline"
       size={size}
       onPress={run}
-      isDisabled={busy}
-      aria-busy={busy}
+      isDisabled={isBusy}
+      aria-busy={isBusy}
       aria-label={ariaLabel}
       title={ariaLabel}
       className={cn('gap-1.5 px-3.5 text-sm', className)}
     >
-      {busy ? (
+      {isBusy ? (
         <IconLoader2 className="size-4.5 animate-spin" />
       ) : (
         <IconDownload className="size-4.5" />
       )}
-      {busy ? 'Menyiapkan…' : 'Unduh Excel'}
+      {isBusy ? 'Menyiapkan…' : 'Unduh Excel'}
       {selectedCount > 0 && (
         <span
           aria-hidden="true"

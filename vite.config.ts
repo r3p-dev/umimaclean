@@ -20,6 +20,7 @@ export default defineConfig({
     alias: [
       { find: /^cn$/, replacement: `${import.meta.dirname}/inertia/lib/shared/utils.ts` },
       { find: '~/', replacement: `${import.meta.dirname}/inertia/` },
+      { find: '@enums', replacement: `${import.meta.dirname}/app/enums` },
       { find: '@generated', replacement: `${import.meta.dirname}/.adonisjs/client/` },
     ],
   },
