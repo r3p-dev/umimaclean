@@ -9,9 +9,11 @@ import { Button } from '~/components/ui/button'
 import { FieldDescription } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
+import AreaBadge from '~/components/molecules/area_badge'
 import ChoiceRow from '~/components/molecules/choice_row'
 import LocationMap from '~/components/organisms/location_map'
 import type { PickupPoint } from '~/lib/location/point'
+import { BOUNDARY_CREDIT, type AreaTone } from '~/lib/location/service_area'
 import type { ReturnMethod } from '~/lib/store/walk_in'
 import { RETURN_OPTIONS } from '~/lib/store/walk_in'
 
@@ -30,6 +32,8 @@ export default function ReturnMethodCard({
   address,
   onPoint,
   onAddress,
+  tone,
+  isAreaLoading,
 }: {
   value: ReturnMethod
   onChange: (value: ReturnMethod) => void
@@ -40,6 +44,8 @@ export default function ReturnMethodCard({
   address: string
   onPoint: (point: PickupPoint) => void
   onAddress: (value: string) => void
+  tone: AreaTone | null
+  isAreaLoading: boolean
 }) {
   const addressId = useId()
 
@@ -114,6 +120,8 @@ export default function ReturnMethodCard({
             <FieldDescription className="text-caption leading-[1.4]">
               Geser peta untuk menyesuaikan titik antar.
             </FieldDescription>
+            <AreaBadge tone={tone} isLoading={isAreaLoading} />
+            <p className="text-caption leading-[1.4] text-muted-foreground">{BOUNDARY_CREDIT}</p>
           </div>
         </div>
       )}

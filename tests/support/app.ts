@@ -10,22 +10,44 @@ import { MessageStatus } from '#enums/message_enum'
 import { ItemKind, OrderAddressType } from '#enums/order_enum'
 import { ServiceType } from '#enums/service_enum'
 import Service from '#models/service'
+import ServiceArea, { type Point } from '#models/service_area'
 import MidtransGateway, { type ChargeInput, type ProviderStatus } from '#services/midtrans_gateway'
 import { CustomerAddressFactory } from '#database/factories/customer_address_factory'
 import { OrderAddressFactory } from '#database/factories/order_address_factory'
 import { OrderFactory } from '#database/factories/order_factory'
 import type User from '#models/user'
 import FonnteService from '#services/fonnte_service'
-import AreaService, { type GeocodedAddress } from '#services/area_service'
 import TurnstileService from '#services/turnstile_service'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
-export class FakeGeocoder extends AreaService {
-  address: GeocodedAddress | null = { city: 'Kota Bandung', district: 'Coblong' }
+export const AREA_POINTS = {
+  covered: { lat: -6.89, lng: 107.61 },
+  inactive: { lat: -6.93, lng: 107.75 },
+  outside: { lat: -7.2, lng: 107.9 },
+} satisfies Record<string, Point>
 
-  override async reverse() {
-    return this.address
-  }
+function box(west: number, south: number, east: number, north: number) {
+  return `SRID=4326;MULTIPOLYGON(((${west} ${south},${east} ${south},${east} ${north},${west} ${north},${west} ${south})))`
+}
+
+export async function serviceAreaFixtures() {
+  const [covered, inactive] = await ServiceArea.createMany([
+    {
+      city: 'Kota Contoh',
+      name: 'Sukamaju',
+      code: 'TEST01',
+      isActive: true,
+      boundary: box(107.55, -6.95, 107.66, -6.85),
+    },
+    {
+      city: 'Kabupaten Contoh',
+      name: 'Sukaraja',
+      code: 'TEST02',
+      isActive: false,
+      boundary: box(107.7, -6.98, 107.8, -6.88),
+    },
+  ])
+  return { covered, inactive }
 }
 
 export class FakeFonnte extends FonnteService {
@@ -108,27 +130,25 @@ export async function seedCatalogue() {
 
 export function useApp(group: Group) {
   const state = {
-    geocoder: new FakeGeocoder(),
+    areas: {} as Awaited<ReturnType<typeof serviceAreaFixtures>>,
     fonnte: new FakeFonnte(),
     turnstile: new FakeTurnstile(),
     gateway: new FakePaymentGateway(),
   }
   group.each.setup(async () => {
-    state.geocoder = new FakeGeocoder()
     state.fonnte = new FakeFonnte()
     state.turnstile = new FakeTurnstile()
     state.gateway = new FakePaymentGateway()
-    app.container.swap(AreaService, () => state.geocoder)
     app.container.swap(FonnteService, () => state.fonnte)
     app.container.swap(TurnstileService, () => state.turnstile)
     app.container.swap(MidtransGateway, () => state.gateway)
     await limiter.clear()
     const truncate = await testUtils.db().truncate()
     await truncate()
+    state.areas = await serviceAreaFixtures()
     return truncate
   })
   group.each.teardown(() => {
-    app.container.restore(AreaService)
     app.container.restore(FonnteService)
     app.container.restore(TurnstileService)
     app.container.restore(MidtransGateway)

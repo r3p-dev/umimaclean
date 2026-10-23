@@ -450,17 +450,34 @@ export class RememberMeTokenSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
-export class ServiceDistrictSchema extends BaseModel {
-  static $columns = ['city', 'createdAt', 'district', 'id'] as const
-  $columns = ServiceDistrictSchema.$columns
+export class ServiceAreaSchema extends BaseModel {
+  static $columns = [
+    'boundary',
+    'city',
+    'code',
+    'createdAt',
+    'id',
+    'isActive',
+    'name',
+    'updatedAt',
+  ] as const
+  $columns = ServiceAreaSchema.$columns
+  @column({ serializeAs: null })
+  declare boundary: string
   @column()
   declare city: string
+  @column()
+  declare code: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
-  @column()
-  declare district: string | null
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare name: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
 }
 
 export class ServiceSchema extends BaseModel {
@@ -530,6 +547,21 @@ export class SettingSchema extends BaseModel {
   declare updatedAt: DateTime
   @column({ prepare: (value) => JSON.stringify(value) })
   declare value: unknown
+}
+
+export class SpatialRefSySchema extends BaseModel {
+  static $columns = ['authName', 'authSrid', 'proj4Text', 'srid', 'srtext'] as const
+  $columns = SpatialRefSySchema.$columns
+  @column()
+  declare authName: string | null
+  @column()
+  declare authSrid: number | null
+  @column()
+  declare proj4Text: string | null
+  @column({ isPrimary: true })
+  declare srid: number
+  @column()
+  declare srtext: string | null
 }
 
 export class UserSchema extends BaseModel {

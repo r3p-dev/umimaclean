@@ -3,10 +3,11 @@ import { cn } from '~/lib/shared/utils'
 
 const TABS = [
   { key: 'staff', label: 'Akun staf', route: 'admin.staff' },
-  { key: 'store', label: 'Toko, area & pembayaran', route: 'admin.store' },
+  { key: 'store', label: 'Toko & pembayaran', route: 'admin.store' },
+  { key: 'areas', label: 'Area layanan', route: 'admin.areas' },
 ] as const
 
-export default function SettingsTabs({ active }: { active: 'staff' | 'store' }) {
+export default function SettingsTabs({ active }: { active: (typeof TABS)[number]['key'] }) {
   return (
     <nav
       aria-label="Bagian pengaturan"

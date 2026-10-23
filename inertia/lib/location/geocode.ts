@@ -72,12 +72,12 @@ export async function searchFirst(text: string, signal?: AbortSignal) {
   return null
 }
 
-export async function reverseGeocode(point: PickupPoint, signal?: AbortSignal, zoom = 18) {
+export async function reverseGeocode(point: PickupPoint, signal?: AbortSignal) {
   const params = new URLSearchParams({
     'lat': String(point.lat),
     'lon': String(point.lng),
     'format': 'jsonv2',
-    'zoom': String(zoom),
+    'zoom': '18',
     'addressdetails': '1',
     'accept-language': 'id',
   })

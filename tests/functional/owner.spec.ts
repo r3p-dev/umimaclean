@@ -171,7 +171,6 @@ test.group('Owner tools', (group) => {
       whatsapp: '085157900974',
       storeAddress: DEFAULT_SETTINGS.store.address,
       hours: DEFAULT_SETTINGS.store.hours,
-      areas: [{ city: 'Kota Bandung', districts: null }],
       slots: [
         { label: '09.00–12.00', capacity: 1, on: true },
         { label: '12.00–15.00', capacity: 6, on: false },
@@ -189,30 +188,6 @@ test.group('Owner tools', (group) => {
     full.assertBodyContains({ errors: [{ rule: 'slot.full' }] })
     const closed = await post(client, '/pesan/tinjau', { ...payload, slot: 1 }).loginAs(customer)
     closed.assertBodyContains({ errors: [{ rule: 'slot.closed' }] })
-  })
-
-  test('the service area edited in Toko is used by the server check', async ({ client }) => {
-    const owner = await UserFactory.apply('admin').create()
-    const customer = await UserFactory.create()
-
-    await send(client, 'put', '/admin/pengaturan/toko', {
-      storeName: DEFAULT_SETTINGS.store.name,
-      whatsapp: '085157900974',
-      storeAddress: DEFAULT_SETTINGS.store.address,
-      hours: DEFAULT_SETTINGS.store.hours,
-      areas: [{ city: 'Kota Bandung', districts: ['Sukajadi'] }],
-      slots: DEFAULT_SETTINGS.pickup_slots,
-      payments: { qris: true, cash: true, edc: true },
-      inactiveDays: 60,
-    }).loginAs(owner)
-
-    const outside = await post(client, '/profil/alamat', {
-      label: 'Rumah',
-      recipientName: customer.name,
-      addressText: 'Jl. Dipati Ukur No. 35, Coblong, Kota Bandung',
-      point: { lat: -6.89, lng: 107.61 },
-    }).loginAs(customer)
-    outside.assertBodyContains({ errors: [{ rule: 'area.outside' }] })
   })
 
   test('owner bulk status changes only take the next legal step', async ({ client, assert }) => {

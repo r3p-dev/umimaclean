@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { describeAddress, reverseGeocode } from '~/lib/location/geocode'
-import { checkPointArea, type AreaTone, type Coverage } from '~/lib/location/service_area'
+import { checkPointArea, type AreaTone } from '~/lib/location/service_area'
 import type { PickupPoint, PointLabel } from '~/lib/location/point'
 
 type Lookup = { key: string; label: PointLabel | null; tone: AreaTone }
@@ -9,35 +9,26 @@ function pointKey(point: PickupPoint) {
   return `${point.lat.toFixed(6)},${point.lng.toFixed(6)}`
 }
 
-export function usePointLookup(point: PickupPoint, coverage: Coverage, typedStreet?: string) {
+export function usePointLookup(point: PickupPoint, typedStreet?: string) {
   const [lookup, setLookup] = useState<Lookup | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
     const key = pointKey(point)
     const timer = window.setTimeout(async () => {
-      try {
-        const address = await reverseGeocode(point, controller.signal)
-        let tone = checkPointArea(address, coverage)
-        if (tone === 'unknown' && address?.county) {
-          tone = checkPointArea(await reverseGeocode(point, controller.signal, 12), coverage)
-        }
-        setLookup({
-          key,
-          label: address ? describeAddress(address, typedStreet) : null,
-          tone,
-        })
-      } catch {
-        if (!controller.signal.aborted) {
-          setLookup({ key, label: null, tone: 'unknown' })
-        }
+      const [address, tone] = await Promise.all([
+        reverseGeocode(point, controller.signal).catch(() => null),
+        checkPointArea(point, controller.signal).catch((): AreaTone => 'unknown'),
+      ])
+      if (!controller.signal.aborted) {
+        setLookup({ key, label: address ? describeAddress(address, typedStreet) : null, tone })
       }
     }, 600)
     return () => {
       window.clearTimeout(timer)
       controller.abort()
     }
-  }, [point, typedStreet, coverage])
+  }, [point, typedStreet])
 
   const current = lookup?.key === pointKey(point) ? lookup : null
   return { loading: !current, label: current?.label ?? null, tone: current?.tone ?? null }

@@ -15,7 +15,6 @@ import ReturnMethodCard from '~/components/organisms/store/return_method_card'
 import WalkInCustomer from '~/components/organisms/store/walk_in_customer'
 import StaffLayout from '~/components/templates/staff_layout'
 import { usePointLookup } from '~/lib/location/point_lookup'
-import type { Coverage } from '~/lib/location/service_area'
 import { itemsSummary } from '~/lib/order/items'
 import {
   WALK_IN_STEPS,
@@ -35,13 +34,7 @@ const COUNTERS = [
   { key: 'helm', label: 'Helm', icon: IconHelmet },
 ] as const
 
-export default function WalkIn({
-  lookup: found,
-  coverage,
-}: {
-  lookup: CustomerLookup
-  coverage: Coverage
-}) {
+export default function WalkIn({ lookup: found }: { lookup: CustomerLookup }) {
   const form = walkInForm.use()
   const { phone, name, isPicked, items, returnMethod, shouldUseSaved, point, typedAddress } = form
   const [isBusy, setBusy] = useState(false)
@@ -57,7 +50,7 @@ export default function WalkIn({
     }, 300)
     return () => window.clearTimeout(timer)
   }, [lookup.key, lookup.isChecked])
-  const pointLookup = usePointLookup(point, coverage)
+  const pointLookup = usePointLookup(point)
   const pointAddress = pointLookup.label
     ? [pointLookup.label.street, pointLookup.label.area].filter(Boolean).join(', ')
     : ''
@@ -176,6 +169,8 @@ export default function WalkIn({
               address={address}
               onPoint={(next) => updateWalkInForm({ point: next, typedAddress: null })}
               onAddress={(value) => updateWalkInForm({ typedAddress: value })}
+              tone={pointLookup.tone}
+              isAreaLoading={pointLookup.loading}
             />
             <section className="flex flex-col gap-2.5 rounded-lg border border-border bg-card p-4">
               <h2 className="text-base leading-[1.3] font-semibold">Ringkasan</h2>

@@ -2,14 +2,14 @@ import { test } from '@japa/runner'
 import { CustomerAddressFactory } from '#database/factories/customer_address_factory'
 import { UserFactory } from '#database/factories/user_factory'
 import CustomerAddress from '#models/customer_address'
-import { addressPayload, post, savedAddress, send, useApp } from '#tests/support/app'
+import { AREA_POINTS, addressPayload, post, savedAddress, send, useApp } from '#tests/support/app'
 
 function addressesOf(userId: number) {
   return CustomerAddress.query().where('user_id', userId)
 }
 
 test.group('Address book', (group) => {
-  const state = useApp(group)
+  useApp(group)
 
   test('the first address becomes primary automatically', async ({ client, assert }) => {
     const user = await UserFactory.create()
@@ -96,9 +96,12 @@ test.group('Address book', (group) => {
 
   test('rejects a pin outside the free pickup area', async ({ client, assert }) => {
     const user = await UserFactory.create()
-    state.geocoder.address = { county: 'Kabupaten Garut', town: 'Tarogong' }
 
-    const response = await post(client, '/profil/alamat', addressPayload()).loginAs(user)
+    const response = await post(
+      client,
+      '/profil/alamat',
+      addressPayload({ point: AREA_POINTS.outside })
+    ).loginAs(user)
 
     response.assertBodyContains({ errors: [{ rule: 'area.outside' }] })
     assert.lengthOf(await CustomerAddress.all(), 0)

@@ -4,7 +4,6 @@ import type { HttpContext } from '@adonisjs/core/http'
 import CustomerAddress, { MAX_ADDRESSES } from '#models/customer_address'
 import CustomerAddressPolicy from '#policies/customer_address_policy'
 import AddressService from '#services/address_service'
-import AreaService from '#services/area_service'
 import AddressTransformer from '#transformers/address_transformer'
 import { saveAddressValidator } from '#validators/customer/address'
 
@@ -12,10 +11,7 @@ type Origin = 'order' | 'addresses'
 
 @inject()
 export default class AddressesController {
-  constructor(
-    protected addresses: AddressService,
-    protected area: AreaService
-  ) {}
+  constructor(protected addresses: AddressService) {}
 
   async index({ inertia, auth }: HttpContext) {
     const addresses = await this.addresses.list(auth.getUserOrFail())
@@ -40,7 +36,6 @@ export default class AddressesController {
       origin: this.#originOf(request.qs().dari),
       recipientName: user.name,
       isFirstAddress: saved.length === 0,
-      coverage: await this.area.coverage(),
     })
   }
 
@@ -63,7 +58,6 @@ export default class AddressesController {
       origin: 'addresses' as Origin,
       recipientName: auth.getUserOrFail().name,
       isFirstAddress: false,
-      coverage: await this.area.coverage(),
     })
   }
 

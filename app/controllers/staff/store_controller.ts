@@ -7,7 +7,6 @@ import User from '#models/user'
 import Setting from '#models/setting'
 import OrderPolicy from '#policies/order_policy'
 import AddressService from '#services/address_service'
-import AreaService from '#services/area_service'
 import OrderService from '#services/order_service'
 import PaymentService from '#services/payment_service'
 import { maskPhone, normalizePhone } from '#helpers/phone'
@@ -26,8 +25,7 @@ export default class StoreController {
   constructor(
     protected orders: OrderService,
     protected payments: PaymentService,
-    protected addresses: AddressService,
-    protected area: AreaService
+    protected addresses: AddressService
   ) {}
 
   async walkIn({ bouncer, inertia, request }: HttpContext) {
@@ -56,10 +54,7 @@ export default class StoreController {
         point: address ? { lat: address.lat, lng: address.lng } : null,
       }
     }
-    return inertia.render('staff/store/walk_in', {
-      lookup: phone ? { phone, match } : null,
-      coverage: await this.area.coverage(),
-    })
+    return inertia.render('staff/store/walk_in', { lookup: phone ? { phone, match } : null })
   }
 
   async store({ auth, bouncer, request, response }: HttpContext) {

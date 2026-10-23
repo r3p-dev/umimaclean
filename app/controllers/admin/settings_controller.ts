@@ -3,13 +3,19 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { enterAdminArea } from '#abilities/main'
 import { ActivityAction } from '#enums/activity_enum'
 import ActivityLog from '#models/activity_log'
+import ServiceArea from '#models/service_area'
 import Setting from '#models/setting'
 import User from '#models/user'
-import PaymentService from '#services/payment_service'
 import AreaService from '#services/area_service'
+import PaymentService from '#services/payment_service'
 import StaffService from '#services/staff_service'
+import ServiceAreaTransformer from '#transformers/service_area_transformer'
 import StaffAccountTransformer from '#transformers/staff_account_transformer'
-import { saveStoreSettingsValidator } from '#validators/admin/settings'
+import {
+  saveStoreSettingsValidator,
+  searchAreasValidator,
+  toggleAreaValidator,
+} from '#validators/admin/settings'
 import { saveStaffValidator, staffActiveValidator } from '#validators/admin/staff'
 
 const PASSWORD_KEY = 'staff_password'
@@ -80,7 +86,6 @@ export default class SettingsController {
         whatsapp: values.store.whatsapp,
         address: values.store.address,
         hours: values.store.hours,
-        areas: await this.area.coverage(),
         slots: values.pickup_slots,
         payments: values.payment_methods,
         inactiveDays: values.inactive_days,
@@ -102,7 +107,6 @@ export default class SettingsController {
     await Setting.put('pickup_slots', payload.slots)
     await Setting.put('payment_methods', payload.payments)
     await Setting.put('inactive_days', payload.inactiveDays)
-    await this.area.save(owner, payload.areas)
     await ActivityLog.record({
       actor: owner,
       action: ActivityAction.SETTINGS_CHANGED,
@@ -110,6 +114,33 @@ export default class SettingsController {
     })
     session.flash('success', 'Pengaturan disimpan · tercatat di Aktivitas Staf.')
     return response.redirect().toRoute('admin.store')
+  }
+
+  async areas({ inertia, request }: HttpContext) {
+    const { q } = await request.validateUsing(searchAreasValidator, { data: request.qs() })
+    const query = q ?? ''
+    const [active, results] = await Promise.all([
+      ServiceArea.active(),
+      query ? this.area.search(query) : [],
+    ])
+    return inertia.render('admin/settings/areas', {
+      q: query,
+      active: active.map((area) => new ServiceAreaTransformer(area).toObject()),
+      results: results.map((area) => new ServiceAreaTransformer(area).toObject()),
+    })
+  }
+
+  async toggleArea({ auth, bouncer, params, request, response, session }: HttpContext) {
+    await bouncer.authorize(enterAdminArea)
+    const { isActive } = await request.validateUsing(toggleAreaValidator)
+    const area = await this.area.setActive(auth.getUserOrFail(), params.id, isActive)
+    session.flash(
+      'success',
+      isActive
+        ? `Kec. ${area.name} masuk area layanan.`
+        : `Kec. ${area.name} dikeluarkan dari area layanan. Pesanan yang sudah berjalan tidak berubah.`
+    )
+    return response.redirect().back()
   }
 
   #notice(name: string, password: string): PasswordNotice {

@@ -32,6 +32,7 @@ export const controllers = {
   Seo: () => import('#controllers/seo_controller'),
   shared: {
     AccountSecurity: () => import('#controllers/shared/account_security_controller'),
+    Areas: () => import('#controllers/shared/areas_controller'),
     PaymentNotifications: () => import('#controllers/shared/payment_notifications_controller'),
     ProofPhotos: () => import('#controllers/shared/proof_photos_controller'),
   },

@@ -1,16 +1,12 @@
-import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import CustomerAddress, { MAX_ADDRESSES } from '#models/customer_address'
+import ServiceArea, { type Point } from '#models/service_area'
 import User from '#models/user'
-import AreaService, { type Point } from '#services/area_service'
 import type { AddressInput } from '#validators/customer/address'
 import { fieldError } from '#validators/shared/field_error'
 
-@inject()
 export default class AddressService {
-  constructor(protected area: AreaService) {}
-
   list(user: User, transaction?: TransactionClientContract) {
     return CustomerAddress.query({ client: transaction })
       .where('user_id', user.id)
@@ -28,9 +24,9 @@ export default class AddressService {
     return this.list(user).where('is_primary', true).first()
   }
 
-  async #assertServiceable(point: Point, field = 'point') {
-    if ((await this.area.check(point)) === 'outside') {
-      throw fieldError(field, 'Titik jemput di luar area antar-jemput gratis.', 'area.outside')
+  async #assertServiceable(point: Point) {
+    if (!(await ServiceArea.contains(point))) {
+      throw fieldError('point', 'Titik jemput di luar area antar-jemput gratis.', 'area.outside')
     }
   }
 

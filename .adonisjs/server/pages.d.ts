@@ -20,6 +20,7 @@ declare module '@adonisjs/inertia/types' {
     'admin/reconciliation': ExtractProps<(typeof import('../../inertia/pages/admin/reconciliation.tsx'))['default']>
     'admin/reports': ExtractProps<(typeof import('../../inertia/pages/admin/reports.tsx'))['default']>
     'admin/services': ExtractProps<(typeof import('../../inertia/pages/admin/services.tsx'))['default']>
+    'admin/settings/areas': ExtractProps<(typeof import('../../inertia/pages/admin/settings/areas.tsx'))['default']>
     'admin/settings/staff': ExtractProps<(typeof import('../../inertia/pages/admin/settings/staff.tsx'))['default']>
     'admin/settings/store': ExtractProps<(typeof import('../../inertia/pages/admin/settings/store.tsx'))['default']>
     'admin/summary': ExtractProps<(typeof import('../../inertia/pages/admin/summary.tsx'))['default']>

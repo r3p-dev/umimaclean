@@ -588,6 +588,18 @@ const routes = {
     tokens: [{"old":"/admin/pengaturan/toko","type":0,"val":"admin","end":""},{"old":"/admin/pengaturan/toko","type":0,"val":"pengaturan","end":""},{"old":"/admin/pengaturan/toko","type":0,"val":"toko","end":""}],
     types: placeholder as Registry['admin.store.update']['types'],
   },
+  'admin.areas': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/pengaturan/area',
+    tokens: [{"old":"/admin/pengaturan/area","type":0,"val":"admin","end":""},{"old":"/admin/pengaturan/area","type":0,"val":"pengaturan","end":""},{"old":"/admin/pengaturan/area","type":0,"val":"area","end":""}],
+    types: placeholder as Registry['admin.areas']['types'],
+  },
+  'admin.areas.update': {
+    methods: ["PUT"],
+    pattern: '/admin/pengaturan/area/:id',
+    tokens: [{"old":"/admin/pengaturan/area/:id","type":0,"val":"admin","end":""},{"old":"/admin/pengaturan/area/:id","type":0,"val":"pengaturan","end":""},{"old":"/admin/pengaturan/area/:id","type":0,"val":"area","end":""},{"old":"/admin/pengaturan/area/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['admin.areas.update']['types'],
+  },
   'admin.profile': {
     methods: ["GET","HEAD"],
     pattern: '/admin/profil',
@@ -635,6 +647,12 @@ const routes = {
     pattern: '/robots.txt',
     tokens: [{"old":"/robots.txt","type":0,"val":"robots.txt","end":""}],
     types: placeholder as Registry['seo.robots']['types'],
+  },
+  'area.check': {
+    methods: ["GET","HEAD"],
+    pattern: '/area',
+    tokens: [{"old":"/area","type":0,"val":"area","end":""}],
+    types: placeholder as Registry['area.check']['types'],
   },
   'webhooks.midtrans': {
     methods: ["POST"],

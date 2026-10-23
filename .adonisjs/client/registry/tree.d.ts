@@ -143,6 +143,9 @@ export interface ApiDefinition {
     store: typeof routes['admin.store'] & {
       update: typeof routes['admin.store.update']
     }
+    areas: typeof routes['admin.areas'] & {
+      update: typeof routes['admin.areas.update']
+    }
     profile: typeof routes['admin.profile']
     password: {
       update: typeof routes['admin.password.update']
@@ -157,6 +160,9 @@ export interface ApiDefinition {
   seo: {
     sitemap: typeof routes['seo.sitemap']
     robots: typeof routes['seo.robots']
+  }
+  area: {
+    check: typeof routes['area.check']
   }
   webhooks: {
     midtrans: typeof routes['webhooks.midtrans']

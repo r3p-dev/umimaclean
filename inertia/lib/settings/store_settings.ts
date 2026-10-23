@@ -1,6 +1,5 @@
 import { router } from '@inertiajs/react'
 import { urlFor } from '~/client'
-import type { Coverage } from '~/lib/location/service_area'
 
 export type StorePayKey = 'qris' | 'cash' | 'edc'
 
@@ -17,32 +16,12 @@ export type StoreSettings = {
   whatsapp: string
   address: string
   hours: string
-  areas: Coverage
   slots: PickupSlotSetting[]
   payments: Record<StorePayKey, boolean>
   inactiveDays: number
 }
 
 export const SLOT_CAPACITY = { min: 1, max: 20 }
-
-export function areaCount(areas: Coverage) {
-  return areas.reduce((sum, area) => sum + (area.districts?.length ?? 0), 0)
-}
-
-export function areaError(areas: Coverage, city: string, name: string) {
-  const value = name.trim()
-  if (!value) {
-    return 'Tulis nama kecamatan.'
-  }
-  const area = areas.find((item) => item.city === city)
-  if (area && area.districts === null) {
-    return `Seluruh ${city} sudah termasuk area layanan.`
-  }
-  if ((area?.districts ?? []).some((item) => item.toLowerCase() === value.toLowerCase())) {
-    return `Sudah ada di ${city}.`
-  }
-  return null
-}
 
 export function saveStoreSettings(
   settings: StoreSettings,

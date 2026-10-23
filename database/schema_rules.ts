@@ -106,5 +106,14 @@ export default {
         value: jsonColumn('unknown'),
       },
     },
+
+    service_areas: {
+      columns: {
+        boundary: {
+          tsType: 'string',
+          decorators: [{ name: '@column', args: { serializeAs: null } }],
+        },
+      },
+    },
   },
 } satisfies SchemaRules

@@ -23,7 +23,7 @@ import {
 } from '~/components/ui/dialog'
 import { addressKey, useAddressPin } from '~/lib/location/address_pin'
 import { locateDevice, usePointLookup } from '~/lib/location/point_lookup'
-import { SERVICE_CENTER, type Coverage } from '~/lib/location/service_area'
+import { SERVICE_CENTER } from '~/lib/location/service_area'
 import { suggestNearby, useAddressSuggestions } from '~/lib/location/suggest'
 import type { PickupPoint } from '~/lib/location/point'
 import { ADDRESS_LABELS, type AddressInput, type SavedAddress } from '~/lib/order/addresses'
@@ -51,13 +51,11 @@ export default function AddressForm({
   origin,
   recipientName,
   isFirstAddress,
-  coverage,
 }: {
   address: SavedAddress | null
   origin: 'order' | 'addresses'
   recipientName: string
   isFirstAddress: boolean
-  coverage: Coverage
 }) {
   const isEditing = address !== null
   const [values, setValues] = useState(() => initialValues(address, recipientName))
@@ -77,7 +75,7 @@ export default function AddressForm({
   const [point, setPoint] = useState<PickupPoint>(start)
   const [isLocating, setLocating] = useState(false)
   const suggestions = useAddressSuggestions(values.addressText)
-  const lookup = usePointLookup(point, coverage, values.addressText.split(',')[0]?.trim())
+  const lookup = usePointLookup(point, values.addressText.split(',')[0]?.trim())
   const move = useCallback((target: PickupPoint) => mapRef.current?.moveTo(target, 17), [])
   const { adopt, pick, follow } = useAddressPin(initial.key, move)
   const best =

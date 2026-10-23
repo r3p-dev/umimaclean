@@ -8,18 +8,6 @@ export const saveStoreSettingsValidator = vine.create({
   whatsapp: phoneField(),
   storeAddress: vine.string().trim().minLength(10).maxLength(200),
   hours: vine.string().trim().minLength(3).maxLength(80),
-  areas: vine
-    .array(
-      vine.object({
-        city: vine.string().trim().minLength(3).maxLength(60),
-        districts: vine
-          .array(vine.string().trim().minLength(3).maxLength(60))
-          .maxLength(60)
-          .nullable(),
-      })
-    )
-    .minLength(1)
-    .maxLength(20),
   slots: vine
     .array(
       vine.object({
@@ -34,3 +22,9 @@ export const saveStoreSettingsValidator = vine.create({
 })
 
 export type StoreSettingsPayload = Infer<typeof saveStoreSettingsValidator>
+
+export const searchAreasValidator = vine.create({
+  q: vine.string().trim().maxLength(60).optional(),
+})
+
+export const toggleAreaValidator = vine.create({ isActive: vine.boolean() })

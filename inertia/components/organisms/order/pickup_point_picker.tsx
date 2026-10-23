@@ -5,7 +5,7 @@ import LocationMap, { type LocationMapHandle } from '~/components/organisms/loca
 import { Button } from '~/components/ui/button'
 import { Field, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
-import type { AreaTone } from '~/lib/location/service_area'
+import { BOUNDARY_CREDIT, type AreaTone } from '~/lib/location/service_area'
 import type { PickupPoint, PointLabel } from '~/lib/location/point'
 import { cn } from '~/lib/shared/utils'
 
@@ -74,6 +74,7 @@ export default function PickupPointPicker({
           <IconCurrentLocation className={cn('size-6', isLocating && 'animate-pulse')} />
         </Button>
       </LocationMap>
+      <p className="-mt-1.5 text-caption leading-[1.4] text-muted-foreground">{BOUNDARY_CREDIT}</p>
       <div className="flex items-start gap-3" aria-live="polite">
         <IconMapPinFilled className="size-6 shrink-0 text-primary" />
         <div className="flex flex-1 flex-col gap-1.5">

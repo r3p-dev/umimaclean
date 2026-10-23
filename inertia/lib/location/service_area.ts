@@ -1,63 +1,13 @@
-import type { GeocodedAddress } from '~/lib/location/geocode'
+import { urlFor } from '~/client'
 import type { PickupPoint } from '~/lib/location/point'
 
 export const SERVICE_CENTER: PickupPoint = { lat: -6.8779, lng: 107.6106 }
 
+export const BOUNDARY_CREDIT = 'Batas wilayah: BPS, via HDX (CC BY-IGO)'
+
 export type AreaTone = 'idle' | 'covered' | 'outside' | 'unknown'
 
-export type Coverage = { city: string; districts: string[] | null }[]
-
-export const CITY_DISTRICTS: Record<string, string[]> = {
-  'Kota Bandung': [
-    'Coblong',
-    'Sukajadi',
-    'Sukasari',
-    'Cidadap',
-    'Bandung Wetan',
-    'Sumur Bandung',
-    'Cicendo',
-    'Andir',
-    'Lengkong',
-    'Regol',
-    'Batununggal',
-    'Kiaracondong',
-    'Antapani',
-    'Arcamanik',
-    'Buahbatu',
-    'Bojongloa Kaler',
-    'Bojongloa Kidul',
-    'Astanaanyar',
-    'Babakan Ciparay',
-    'Bandung Kulon',
-    'Bandung Kidul',
-    'Cibeunying Kaler',
-    'Cibeunying Kidul',
-    'Cibiru',
-    'Cinambo',
-    'Gedebage',
-    'Mandalajati',
-    'Panyileukan',
-    'Rancasari',
-    'Ujungberung',
-  ],
-  'Kota Cimahi': ['Cimahi Utara', 'Cimahi Tengah', 'Cimahi Selatan'],
-}
-
-const OUTSIDE: Record<string, string> = {
-  Cileunyi: 'Kab. Bandung',
-  Rancaekek: 'Kab. Bandung',
-  Lembang: 'Kab. Bandung Barat',
-  Parongpong: 'Kab. Bandung Barat',
-  Ngamprah: 'Kab. Bandung Barat',
-  Padalarang: 'Kab. Bandung Barat',
-  Cisarua: 'Kab. Bandung Barat',
-  Jatinangor: 'Kab. Sumedang',
-  Tanjungsari: 'Kab. Sumedang',
-  Purwakarta: 'Kab. Purwakarta',
-  Garut: 'Kab. Garut',
-  Subang: 'Kab. Subang',
-  Cianjur: 'Kab. Cianjur',
-}
+export type ServiceAreaRow = { id: number; city: string; name: string; isActive: boolean }
 
 export const AREA_QUERY_MAX = 40
 
@@ -69,21 +19,27 @@ function normalize(value: string) {
     .trim()
 }
 
-function bareRegion(value: string) {
-  return normalize(value).replace(/^(kota|kab\.?|kabupaten)\s+/, '')
+export function groupByCity(areas: ServiceAreaRow[]) {
+  const cities = new Map<string, ServiceAreaRow[]>()
+  for (const area of areas) {
+    cities.set(area.city, [...(cities.get(area.city) ?? []), area])
+  }
+  return [...cities].map(([city, rows]) => ({ city, areas: rows }))
 }
 
-function isRegency(name: string) {
-  return /^(kab\.?|kabupaten)\s/i.test(name.trim())
-}
-
-function districtsOf(entry: Coverage[number]) {
-  return entry.districts ?? CITY_DISTRICTS[entry.city] ?? []
+export function servedCities(areas: ServiceAreaRow[]) {
+  return groupByCity(areas)
+    .map(({ city, areas: rows }) => ({
+      city,
+      active: rows.filter((area) => area.isActive).length,
+      total: rows.length,
+    }))
+    .filter((city) => city.active > 0)
 }
 
 export function checkServiceArea(
   query: string,
-  coverage: Coverage
+  areas: ServiceAreaRow[]
 ): { tone: AreaTone; message: string } {
   const normalized = normalize(query)
 
@@ -94,32 +50,29 @@ export function checkServiceArea(
     }
   }
 
-  for (const entry of coverage) {
-    const district = districtsOf(entry).find((name) => normalize(name).startsWith(normalized))
-    if (district) {
-      return {
-        tone: 'covered',
-        message: `Kec. ${district}, ${entry.city} masuk area layanan. Antar-jemput gratis.`,
-      }
-    }
-  }
-
-  const region = coverage.find((entry) => normalize(entry.city).includes(normalized))
-  if (region?.districts) {
+  const matches = areas.filter((area) => normalize(area.name).startsWith(normalized))
+  const district = matches.find((area) => area.isActive) ?? matches[0]
+  if (district?.isActive) {
     return {
       tone: 'covered',
-      message: `Sebagian ${region.city} masuk area layanan: Kec. ${region.districts.join(', ')}.`,
+      message: `Kec. ${district.name}, ${district.city} masuk area layanan. Antar-jemput gratis.`,
     }
   }
-  if (region) {
-    return { tone: 'covered', message: `${region.city} masuk area layanan. Antar-jemput gratis.` }
-  }
-
-  const outside = Object.keys(OUTSIDE).find((name) => normalize(name).startsWith(normalized))
-  if (outside) {
+  if (district) {
     return {
       tone: 'outside',
-      message: `Kec. ${outside}, ${OUTSIDE[outside]} belum masuk area layanan. Hubungi kami via WhatsApp untuk info perluasan area.`,
+      message: `Kec. ${district.name}, ${district.city} belum masuk area layanan. Hubungi kami via WhatsApp untuk info perluasan area.`,
+    }
+  }
+
+  const city = servedCities(areas).find((entry) => normalize(entry.city).includes(normalized))
+  if (city) {
+    return {
+      tone: 'covered',
+      message:
+        city.active === city.total
+          ? `${city.city} masuk area layanan. Antar-jemput gratis.`
+          : `Sebagian ${city.city} masuk area layanan. Ketik nama kecamatan Anda untuk memastikan.`,
     }
   }
 
@@ -130,33 +83,15 @@ export function checkServiceArea(
   }
 }
 
-export function checkPointArea(address: GeocodedAddress | null, coverage: Coverage): AreaTone {
-  if (!address) {
-    return 'unknown'
+export async function checkPointArea(point: PickupPoint, signal?: AbortSignal) {
+  const params = new URLSearchParams({ lat: String(point.lat), lng: String(point.lng) })
+  const response = await fetch(`${urlFor('area.check')}?${params}`, {
+    signal,
+    headers: { accept: 'application/json' },
+  })
+  if (!response.ok) {
+    throw new Error('area check failed')
   }
-
-  const region = address.county ?? address.city ?? address.municipality
-  if (!region) {
-    return 'unknown'
-  }
-  const wantsRegency = !!address.county
-  const area = coverage.find(
-    (entry) =>
-      isRegency(entry.city) === wantsRegency && bareRegion(entry.city) === bareRegion(region)
-  )
-  if (!area) {
-    return 'outside'
-  }
-  if (area.districts === null) {
-    return 'covered'
-  }
-
-  const covered = area.districts.map(normalize)
-  const districts = [address.town, address.city_district, address.district, address.municipality]
-    .filter((value): value is string => !!value)
-    .map(normalize)
-  if (districts.some((district) => covered.includes(district))) {
-    return 'covered'
-  }
-  return districts.length ? 'outside' : 'unknown'
+  const body = (await response.json()) as { covered: boolean; name: string | null }
+  return body.covered ? 'covered' : 'outside'
 }

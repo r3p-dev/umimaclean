@@ -53,6 +53,11 @@ router
       .as('staff.toggle')
     router.get('/pengaturan/toko', [controllers.admin.Settings, 'store']).as('store')
     router.put('/pengaturan/toko', [controllers.admin.Settings, 'saveStore']).as('store.update')
+    router.get('/pengaturan/area', [controllers.admin.Settings, 'areas']).as('areas')
+    router
+      .put('/pengaturan/area/:id', [controllers.admin.Settings, 'toggleArea'])
+      .where('id', router.matchers.number())
+      .as('areas.update')
     router.get('/profil', [controllers.admin.Profile, 'show']).as('profile')
     router
       .put('/profil/kata-sandi', [controllers.shared.AccountSecurity, 'updatePassword'])

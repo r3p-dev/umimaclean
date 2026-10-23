@@ -9,9 +9,9 @@ import PriceListSection, {
 } from '~/components/organisms/landing/price_list_section'
 import ReviewsSection from '~/components/organisms/landing/reviews_section'
 import ServiceAreaSection from '~/components/organisms/landing/service_area_section'
-import type { Coverage } from '~/lib/location/service_area'
+import type { ServiceAreaRow } from '~/lib/location/service_area'
 
-export default function Home({ prices, coverage }: { prices: PriceGroup[]; coverage: Coverage }) {
+export default function Home({ prices, areas }: { prices: PriceGroup[]; areas: ServiceAreaRow[] }) {
   return (
     <>
       <Head title="Beranda" />
@@ -21,7 +21,7 @@ export default function Home({ prices, coverage }: { prices: PriceGroup[]; cover
       <ReviewsSection />
       <PriceListSection groups={prices} />
       <FaqSection />
-      <ServiceAreaSection coverage={coverage} />
+      <ServiceAreaSection areas={areas} />
     </>
   )
 }

@@ -1171,6 +1171,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['saveStore']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.areas': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/pengaturan/area'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/admin/settings').searchAreasValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['areas']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['areas']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.areas.update': {
+    methods: ["PUT"]
+    pattern: '/admin/pengaturan/area/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/admin/settings').toggleAreaValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/admin/settings').toggleAreaValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['toggleArea']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/settings_controller').default['toggleArea']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.profile': {
     methods: ["GET","HEAD"]
     pattern: '/admin/profil'
@@ -1265,6 +1289,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['robots']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['robots']>>>
+    }
+  }
+  'area.check': {
+    methods: ["GET","HEAD"]
+    pattern: '/area'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/shared/area').checkAreaValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/areas_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/areas_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'webhooks.midtrans': {

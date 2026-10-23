@@ -1,169 +1,30 @@
-import logger from '@adonisjs/core/services/logger'
-import db from '@adonisjs/lucid/services/db'
 import { ActivityAction } from '#enums/activity_enum'
 import ActivityLog from '#models/activity_log'
-import ServiceDistrict from '#models/service_district'
+import ServiceArea, { type Point } from '#models/service_area'
 import type User from '#models/user'
-import env from '#start/env'
-
-export type Point = { lat: number; lng: number }
-
-export type GeocodedAddress = Partial<
-  Record<
-    'town' | 'city' | 'county' | 'municipality' | 'district' | 'city_district' | 'village',
-    string
-  >
->
-
-export type AreaTone = 'covered' | 'outside' | 'unknown'
-
-export type Coverage = { city: string; districts: string[] | null }[]
-
-export const DEFAULT_COVERAGE: Coverage = [
-  { city: 'Kota Bandung', districts: null },
-  { city: 'Kota Cimahi', districts: null },
-  {
-    city: 'Kab. Bandung',
-    districts: [
-      'Margaasih',
-      'Margahayu',
-      'Dayeuhkolot',
-      'Bojongsoang',
-      'Baleendah',
-      'Katapang',
-      'Soreang',
-      'Pameungpeuk',
-      'Banjaran',
-      'Cangkuang',
-    ],
-  },
-]
-
-function normalize(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/^(kec\.?|kecamatan)\s+/, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-function bareRegion(value: string) {
-  return normalize(value).replace(/^(kota|kab\.?|kabupaten)\s+/, '')
-}
-
-function isRegency(name: string) {
-  return /^(kab\.?|kabupaten)\s/i.test(name.trim())
-}
-
-type CoverageRow = { city: string; district: string | null }
-
-export function coverageRows(coverage: Coverage): CoverageRow[] {
-  return coverage.flatMap((entry): CoverageRow[] =>
-    entry.districts === null
-      ? [{ city: entry.city, district: null }]
-      : entry.districts.map((district) => ({ city: entry.city, district }))
-  )
-}
-
-export function pointArea(
-  address: GeocodedAddress | null,
-  coverage: Coverage = DEFAULT_COVERAGE
-): AreaTone {
-  if (!address) {
-    return 'unknown'
-  }
-
-  const region = address.county ?? address.city ?? address.municipality
-  if (!region) {
-    return 'unknown'
-  }
-  const wantsRegency = !!address.county
-  const area = coverage.find(
-    (entry) =>
-      isRegency(entry.city) === wantsRegency && bareRegion(entry.city) === bareRegion(region)
-  )
-  if (!area) {
-    return 'outside'
-  }
-  if (area.districts === null) {
-    return 'covered'
-  }
-
-  const covered = area.districts.map(normalize)
-  const districts = [address.town, address.city_district, address.district, address.municipality]
-    .filter((value): value is string => !!value)
-    .map(normalize)
-  if (districts.some((district) => covered.includes(district))) {
-    return 'covered'
-  }
-  return districts.length ? 'outside' : 'unknown'
-}
 
 export default class AreaService {
-  async coverage(): Promise<Coverage> {
-    const rows = await ServiceDistrict.query().orderBy('id', 'asc')
-    if (!rows.length) {
-      return DEFAULT_COVERAGE
-    }
-    const cities = new Map<string, string[] | null>()
-    for (const row of rows) {
-      const current = cities.get(row.city)
-      if (row.district === null || current === null) {
-        cities.set(row.city, null)
-      } else {
-        cities.set(row.city, [...(current ?? []), row.district])
-      }
-    }
-    return [...cities].map(([city, districts]) => ({ city, districts }))
+  async check(point: Point) {
+    const area = await ServiceArea.contains(point)
+    return { covered: area !== null, name: area ? `${area.name}, ${area.city}` : null }
   }
 
-  async save(owner: User, coverage: Coverage) {
-    await db.transaction(async (transaction) => {
-      await ServiceDistrict.query({ client: transaction }).delete()
-      await ServiceDistrict.createMany(coverageRows(coverage), { client: transaction })
+  search(query: string) {
+    const term = `%${query}%`
+    return ServiceArea.summary().where((builder) => {
+      builder.whereILike('name', term).orWhereILike('city', term)
     })
+  }
+
+  async setActive(owner: User, id: number, isActive: boolean) {
+    const area = await ServiceArea.summary().where('id', id).firstOrFail()
+    area.isActive = isActive
+    await area.save()
     await ActivityLog.record({
       actor: owner,
       action: ActivityAction.SETTINGS_CHANGED,
-      detail: `Area layanan: ${coverage
-        .map((entry) =>
-          entry.districts === null
-            ? `${entry.city} (seluruh)`
-            : `${entry.city} (${entry.districts.length} kec.)`
-        )
-        .join(', ')}`,
+      detail: `Area layanan: Kec. ${area.name}, ${area.city} ${isActive ? 'diaktifkan' : 'dinonaktifkan'}`,
     })
-  }
-
-  async check(point: Point): Promise<AreaTone> {
-    try {
-      return pointArea(await this.reverse(point), await this.coverage())
-    } catch (error) {
-      logger.warn({ err: error }, 'Service area lookup failed')
-      return 'unknown'
-    }
-  }
-
-  async reverse(point: Point): Promise<GeocodedAddress | null> {
-    const params = new URLSearchParams({
-      'lat': String(point.lat),
-      'lon': String(point.lng),
-      'format': 'jsonv2',
-      'zoom': '12',
-      'addressdetails': '1',
-      'accept-language': 'id',
-    })
-
-    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`, {
-      headers: { 'user-agent': `UmimaClean/1.0 (${env.get('APP_URL')})` },
-      signal: AbortSignal.timeout(5000),
-    })
-    if (!response.ok) {
-      throw new Error(`Nominatim responded ${response.status}`)
-    }
-
-    const body = (await response.json()) as { address?: GeocodedAddress; error?: string }
-
-    return body.error || !body.address ? null : body.address
+    return area
   }
 }

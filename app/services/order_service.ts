@@ -38,16 +38,23 @@ import OrderAddress from '#models/order_address'
 import OrderEvent from '#models/order_event'
 import OrderItem from '#models/order_item'
 import OrderPhoto from '#models/order_photo'
+import ServiceArea, { type Point } from '#models/service_area'
 import Setting from '#models/setting'
 import User from '#models/user'
 import FonnteService from '#services/fonnte_service'
-import AreaService, { type Point } from '#services/area_service'
 import type { OrderPayload } from '#validators/customer/order'
 import { fieldError } from '#validators/shared/field_error'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 import type { WalkInPayload } from '#validators/staff/store'
 
 const TRACKING_KEY = 'unlocked_orders'
+
+const OUTSIDE_MESSAGES = {
+  pickup: 'Alamat jemput ini sekarang di luar area layanan. Pilih alamat lain atau ubah titiknya.',
+  delivery: 'Alamat antar ini sekarang di luar area layanan. Pilih alamat lain atau ubah titiknya.',
+  saved: 'Alamat tersimpan pelanggan di luar area layanan. Pilih titik antar lain di peta.',
+  point: 'Titik antar di luar area antar-jemput gratis.',
+}
 
 export const STAFF_QUEUES_CHANNEL = 'staff/queues'
 export const ADMIN_ORDERS_CHANNEL = 'admin/orders'
@@ -108,10 +115,7 @@ export type TransitionOptions = {
 
 @inject()
 export default class OrderService {
-  constructor(
-    protected fonnte: FonnteService,
-    protected area: AreaService
-  ) {}
+  constructor(protected fonnte: FonnteService) {}
 
   async lock(transaction: TransactionClientContract, id: number) {
     const order = await Order.query({ client: transaction }).where('id', id).forUpdate().first()
@@ -316,12 +320,12 @@ export default class OrderService {
   async check(user: User, payload: OrderPayload) {
     await this.#assertSlotOpen(payload)
     const pickup = await this.#resolveAddress(user, payload.pickupAddressId, 'pickupAddressId')
-    await this.#assertServiceable(pickup, 'pickupAddressId')
+    await this.#assertServiceable(pickup, 'pickupAddressId', OUTSIDE_MESSAGES.pickup)
     const delivery = payload.deliveryAddressId
       ? await this.#resolveAddress(user, payload.deliveryAddressId, 'deliveryAddressId')
       : null
     if (delivery) {
-      await this.#assertServiceable(delivery, 'deliveryAddressId')
+      await this.#assertServiceable(delivery, 'deliveryAddressId', OUTSIDE_MESSAGES.delivery)
     }
     return { pickup, delivery }
   }
@@ -428,12 +432,13 @@ export default class OrderService {
               .first()
           : null
       if (saved) {
+        await this.#assertServiceable(saved, 'address', OUTSIDE_MESSAGES.saved)
         delivery = snapshotOf(customer!, saved)
       } else {
         if (!payload.address || !payload.point) {
           throw fieldError('address', 'Isi alamat dan titik antar di peta.', 'address.required')
         }
-        await this.#assertServiceable(payload.point, 'address')
+        await this.#assertServiceable(payload.point, 'address', OUTSIDE_MESSAGES.point)
         delivery = {
           label: 'Alamat antar',
           recipientName: name,
@@ -611,9 +616,9 @@ export default class OrderService {
     return address
   }
 
-  async #assertServiceable(point: Point, field: string) {
-    if ((await this.area.check(point)) === 'outside') {
-      throw fieldError(field, 'Titik jemput di luar area antar-jemput gratis.', 'area.outside')
+  async #assertServiceable(point: Point, field: string, message: string) {
+    if (!(await ServiceArea.contains(point))) {
+      throw fieldError(field, message, 'area.outside')
     }
   }
 

@@ -79,6 +79,7 @@ test.group('Every page renders with seeded data', (group) => {
           '/admin/aktivitas',
           '/admin/pengaturan',
           '/admin/pengaturan/toko',
+          '/admin/pengaturan/area',
           '/admin/rekonsiliasi',
           '/admin/profil',
         ],

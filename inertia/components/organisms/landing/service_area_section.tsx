@@ -16,8 +16,9 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/in
 import {
   AREA_QUERY_MAX,
   checkServiceArea,
+  servedCities,
   type AreaTone,
-  type Coverage,
+  type ServiceAreaRow,
 } from '~/lib/location/service_area'
 import { cn } from '~/lib/shared/utils'
 
@@ -40,9 +41,9 @@ const TONES: Record<AreaTone, { border: string; text: string; Icon: typeof IconI
   },
 }
 
-export default function ServiceAreaSection({ coverage }: { coverage: Coverage }) {
+export default function ServiceAreaSection({ areas }: { areas: ServiceAreaRow[] }) {
   const [query, setQuery] = useState('')
-  const result = checkServiceArea(query, coverage)
+  const result = checkServiceArea(query, areas)
   const tone = TONES[result.tone]
 
   return (
@@ -53,10 +54,10 @@ export default function ServiceAreaSection({ coverage }: { coverage: Coverage })
       <div className="flex flex-col gap-3.5">
         <h2 className="text-title">Area layanan</h2>
         <ul className="flex flex-wrap gap-2">
-          {coverage.map((region) => (
+          {servedCities(areas).map((region) => (
             <li key={region.city}>
               <Badge variant="outline" size="chip">
-                {region.districts ? `${region.city} (sebagian)` : region.city}
+                {region.active === region.total ? region.city : `${region.city} (sebagian)`}
               </Badge>
             </li>
           ))}

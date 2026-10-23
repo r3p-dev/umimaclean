@@ -13,6 +13,7 @@ import type InspectionTransformer from '#transformers/inspection_transformer'
 import type OrderTransformer from '#transformers/order_transformer'
 import type ProcessRowTransformer from '#transformers/process_row_transformer'
 import type ReceiptTransformer from '#transformers/receipt_transformer'
+import type ServiceAreaTransformer from '#transformers/service_area_transformer'
 import type ServiceTransformer from '#transformers/service_transformer'
 import type StaffAccountTransformer from '#transformers/staff_account_transformer'
 import type TaskTransformer from '#transformers/task_transformer'
@@ -48,6 +49,10 @@ export namespace Data {
   export type Receipt = InferData<ReceiptTransformer>
   export namespace Receipt {
     export type Variants = InferVariants<ReceiptTransformer>
+  }
+  export type ServiceArea = InferData<ServiceAreaTransformer>
+  export namespace ServiceArea {
+    export type Variants = InferVariants<ServiceAreaTransformer>
   }
   export type Service = InferData<ServiceTransformer>
   export namespace Service {
