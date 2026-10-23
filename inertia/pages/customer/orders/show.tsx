@@ -35,8 +35,8 @@ const CUSTOMER_CANCEL_REASONS = [
   'Lainnya',
 ]
 
-export default function OrderDetail({ order }: { order: OrderRecord }) {
-  useLiveReload(`orders/${order.number}`, ['order'])
+export default function OrderDetail({ order, isOwner }: { order: OrderRecord; isOwner: boolean }) {
+  useLiveReload(`orders/${order.id}`, ['order'])
   const [isCancelling, setCancelling] = useState(false)
   const view = buildTracking(order)
   const timeline = orderTimeline(order)
@@ -52,20 +52,20 @@ export default function OrderDetail({ order }: { order: OrderRecord }) {
           {view.total}
         </span>
       </div>
-      {view.needsPay ? (
+      {view.needsPay && isOwner ? (
         <LinkButton
-          href={urlFor('customer.orders.pay', { code: order.number })}
+          href={urlFor('customer.orders.pay', { id: order.id })}
           size="cta"
           className="gap-2"
         >
           <IconQrcode className="size-5.5" />
           Bayar dengan QRIS
         </LinkButton>
-      ) : (
+      ) : view.needsPay ? null : (
         <p className="text-sm leading-[1.4] text-success-foreground">{view.payment.label}</p>
       )}
       <LinkButton
-        href={urlFor('customer.orders.bill', { code: order.number })}
+        href={urlFor('customer.orders.bill', { id: order.id })}
         variant="link"
         className="self-start"
       >
@@ -224,7 +224,7 @@ export default function OrderDetail({ order }: { order: OrderRecord }) {
             </section>
             {order.status === COMPLETED && (
               <LinkButton
-                href={urlFor('customer.orders.receipt', { code: order.number })}
+                href={urlFor('customer.orders.receipt', { id: order.id })}
                 variant="outline"
                 size="desktop"
                 className="gap-2"
@@ -233,7 +233,7 @@ export default function OrderDetail({ order }: { order: OrderRecord }) {
                 Lihat Struk
               </LinkButton>
             )}
-            {order.canCancel && (
+            {isOwner && order.canCancel && (
               <Button
                 variant="destructive-outline"
                 size="desktop"
@@ -271,7 +271,7 @@ export default function OrderDetail({ order }: { order: OrderRecord }) {
         confirmLabel="Batalkan Pesanan"
         onConfirm={(reason) =>
           router.post(
-            urlFor('customer.orders.cancel', { code: order.number }),
+            urlFor('customer.orders.cancel', { id: order.id }),
             { reason },
             { preserveScroll: true, onSuccess: () => setCancelling(false) }
           )

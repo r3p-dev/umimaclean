@@ -152,19 +152,19 @@ export default class TaskService {
     return !!arrival
   }
 
-  async startTrip(user: User, code: string, kind: TripKind) {
+  async startTrip(user: User, id: number, kind: TripKind) {
     const trip = TRIP[kind]
     const current = await this.activeTrip(kind)
-    if (current && current.publicCode !== code) {
+    if (current && current.id !== id) {
       throw fieldError(
         'form',
-        `Selesaikan atau lewati dulu tugas ${current.publicCode}.`,
+        `Selesaikan atau lewati dulu tugas ${current.number()}.`,
         'task.busy'
       )
     }
 
     const order = await db.transaction(async (transaction) => {
-      const locked = await this.orders.lockByCode(transaction, code)
+      const locked = await this.orders.lock(transaction, id)
       await this.orders.transition(
         locked,
         trip.active,
@@ -178,8 +178,8 @@ export default class TaskService {
     return order
   }
 
-  async arrive(user: User, code: string, kind: TripKind) {
-    const order = await Order.findBy('public_code', code)
+  async arrive(user: User, id: number, kind: TripKind) {
+    const order = await Order.find(id)
     if (!order) {
       throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
     }
@@ -189,14 +189,14 @@ export default class TaskService {
 
   async completeTrip(
     user: User,
-    code: string,
+    id: number,
     kind: TripKind,
     photo: MultipartFile,
     receiver?: string
   ) {
     const trip = TRIP[kind]
     const order = await db.transaction(async (transaction) => {
-      const locked = await this.orders.lockByCode(transaction, code)
+      const locked = await this.orders.lock(transaction, id)
       this.#assertActive(locked, kind)
       await OrderPhoto.store(photo, locked, trip.photo, user, transaction)
       if (receiver) {
@@ -225,11 +225,11 @@ export default class TaskService {
     return order
   }
 
-  async skipTrip(user: User, code: string, kind: TripKind, reason: string, note?: string | null) {
+  async skipTrip(user: User, id: number, kind: TripKind, reason: string, note?: string | null) {
     const trip = TRIP[kind]
     const text = note ? `${reason} · ${note}` : reason
     const order = await db.transaction(async (transaction) => {
-      const locked = await this.orders.lockByCode(transaction, code)
+      const locked = await this.orders.lock(transaction, id)
       this.#assertActive(locked, kind)
       await this.orders.transition(
         locked,
@@ -254,11 +254,11 @@ export default class TaskService {
       .orderBy('updated_at', 'asc')
   }
 
-  findForWorkshop(code: string) {
+  findForWorkshop(id: number) {
     return Order.query()
-      .where('public_code', code)
+      .where('id', id)
       .preload('items', (items) => items.orderBy('position', 'asc'))
-      .preload('bill', (bill) => bill.preload('lines'))
+      .preload('bill', (bill) => bill.preload('lines', (lines) => lines.preload('service')))
       .preload('payments')
       .preload('photos', (photos) => photos.preload('taker').orderBy('id', 'asc'))
       .preload('events', (events) => events.preload('actor').orderBy('id', 'asc'))
@@ -266,9 +266,9 @@ export default class TaskService {
       .first()
   }
 
-  async startInspection(user: User, code: string) {
+  async startInspection(user: User, id: number) {
     return db.transaction(async (transaction) => {
-      const order = await this.orders.lockByCode(transaction, code)
+      const order = await this.orders.lock(transaction, id)
       if (order.status === OrderStatus.PICKED_UP) {
         await this.orders.transition(
           order,
@@ -283,9 +283,9 @@ export default class TaskService {
     })
   }
 
-  async completeWash(user: User, code: string, photo: MultipartFile) {
+  async completeWash(user: User, id: number, photo: MultipartFile) {
     const order = await db.transaction(async (transaction) => {
-      const locked = await this.orders.lockByCode(transaction, code)
+      const locked = await this.orders.lock(transaction, id)
       if (locked.status !== OrderStatus.IN_CLEANING) {
         throw fieldError('form', 'Pesanan ini tidak sedang dicuci.', 'order.status')
       }
@@ -314,9 +314,9 @@ export default class TaskService {
     return { order, notice }
   }
 
-  async collect(user: User, code: string) {
+  async collect(user: User, id: number) {
     return db.transaction(async (transaction) => {
-      const order = await this.orders.lockByCode(transaction, code)
+      const order = await this.orders.lock(transaction, id)
       await this.orders.transition(
         order,
         OrderStatus.COMPLETED,
@@ -373,7 +373,7 @@ export default class TaskService {
         icon: HISTORY_ICON[log.action]!,
         title: isSkip ? HISTORY_TITLE[log.action]! : `${HISTORY_TITLE[log.action]} · ${log.detail}`,
         who: shortName(log.order.customerName),
-        ref: log.order.publicCode,
+        ref: log.order.number(),
         isInStore: log.order.source === OrderSource.STORE,
         note: isSkip ? log.detail : '',
       }

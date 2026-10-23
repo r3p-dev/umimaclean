@@ -13,7 +13,8 @@ export default class WashTransformer extends BaseTransformer<Order> {
     const isDone = order.status !== OrderStatus.IN_CLEANING
 
     return {
-      number: order.publicCode,
+      id: order.id,
+      number: order.number(),
       customer: shortName(order.customerName),
       source: order.source === OrderSource.STORE ? ('toko' as const) : ('online' as const),
       returnMethod: order.returnMethod,

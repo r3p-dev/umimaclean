@@ -29,7 +29,7 @@ import OrderPhoto, { proofPath } from '#models/order_photo'
 import Payment from '#models/payment'
 import Service from '#models/service'
 import User from '#models/user'
-import { newPublicCode, snapshotOf } from '#services/order_service'
+import { snapshotOf } from '#services/order_service'
 import { orderRoute } from '#transformers/order_transformer'
 import { ORDER_STATUS_SEQUENCE } from '#enums/order_enum'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
@@ -187,7 +187,6 @@ export default class extends BaseSeeder {
     const phone = customer?.phone ?? spec.walkIn?.phone ?? ''
     const isOnline = spec.source === OrderSource.ONLINE
     const order = await Order.create({
-      publicCode: newPublicCode(),
       userId: customer?.id ?? null,
       requestKey: randomUUID(),
       source: spec.source,
@@ -295,7 +294,7 @@ export default class extends BaseSeeder {
           amount: total,
           cashReceived: method === PaymentMethod.CASH ? Math.ceil(total / 50000) * 50000 : null,
           reference: method === PaymentMethod.CARD ? `APR${order.id}` : null,
-          providerOrderId: isOnline ? `${order.publicCode}-1` : null,
+          providerOrderId: isOnline ? `UMC-${order.id}-${at.toMillis()}` : null,
           providerTransactionId: isOnline ? randomUUID() : null,
           paidAt: at,
           recordedBy: isCounter ? staff.courier.id : null,
@@ -391,7 +390,6 @@ export default class extends BaseSeeder {
           billId: bill.id,
           orderItemId: item.id,
           serviceId: service.id,
-          serviceType: service.type,
           name: service.name,
           price: service.price,
         })

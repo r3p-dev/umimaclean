@@ -45,7 +45,7 @@ export default function ActiveOrderPanel({ order }: { order: OrderRecord }) {
       <div className="flex flex-col gap-2.5 sm:flex-row">
         {view.needsPay && (
           <LinkButton
-            href={urlFor('customer.orders.pay', { code: order.number })}
+            href={urlFor('customer.orders.pay', { id: order.id })}
             size="desktop"
             className="gap-2 px-4 max-sm:h-btn"
           >
@@ -54,7 +54,7 @@ export default function ActiveOrderPanel({ order }: { order: OrderRecord }) {
           </LinkButton>
         )}
         <LinkButton
-          href={urlFor('customer.orders.show', { code: order.number })}
+          href={urlFor('customer.orders.show', { id: order.id })}
           variant="outline"
           size="desktop"
           className="px-4 max-sm:h-btn"

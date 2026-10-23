@@ -30,7 +30,15 @@ type Phase = 'idle' | 'camera' | 'preview' | 'ready' | 'sending' | 'done'
 
 type Shot = { photo: string; stamp: string }
 
-export default function ProofPhoto({ kind: rawKind, number }: { kind: string; number: string }) {
+export default function ProofPhoto({
+  kind: rawKind,
+  id,
+  number,
+}: {
+  kind: string
+  id: number | null
+  number: string
+}) {
   const account = useAccount()
   const kind = isProofKind(rawKind) ? rawKind : 'intake'
   const copy = PROOF_KINDS[kind]
@@ -42,8 +50,8 @@ export default function ProofPhoto({ kind: rawKind, number }: { kind: string; nu
   const [hasFailed, setFailed] = useState(false)
   const camera = useCamera(phase === 'camera')
   const position = { idle: 0, camera: 0, preview: 1, ready: 2, sending: 2, done: 3 }[phase]
-  const backHref = number
-    ? urlFor('staff.inspection', { number })
+  const backHref = id
+    ? urlFor('staff.inspection', { id })
     : kind === 'intake'
       ? urlFor('staff.walk_in')
       : urlFor('staff.home')
@@ -63,7 +71,7 @@ export default function ProofPhoto({ kind: rawKind, number }: { kind: string; nu
   }
 
   async function send() {
-    if (!number) {
+    if (!id) {
       setFailed(true)
       return
     }
@@ -73,7 +81,7 @@ export default function ProofPhoto({ kind: rawKind, number }: { kind: string; nu
     )
     let isSent = false
     router.post(
-      urlFor('staff.walk_in.photos', { number }),
+      urlFor('staff.walk_in.photos', { id }),
       { photos },
       {
         forceFormData: true,

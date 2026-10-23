@@ -1,9 +1,11 @@
 /*
  * orders: one row per order, placed online by a customer or entered at the store (walk-in).
  *
+ * - id: also the order number customers see, shown as UMC-00042 and used in /pesanan/:id.
+ *   Guessing another id is harmless: an order opens only for its signed-in customer or
+ *   after typing the last 4 digits of its phone number.
  * - user_id: the customer's account; null for a walk-in customer without one. RESTRICT so
  *   a customer with orders cannot be deleted.
- * - public_code: the order id shown to customers and used in URLs (UMC- + 6 characters).
  * - request_key: random key sent by the order form; unique per user so a double submit
  *   creates one order, not two.
  * - status: current step of the workflow (OrderStatus enum); every change also appends a
@@ -37,7 +39,6 @@ export default class extends BaseSchema {
         .references('id')
         .inTable('users')
         .onDelete('RESTRICT')
-      table.string('public_code', 10).notNullable().unique()
       table.uuid('request_key').notNullable()
       table.string('status').notNullable().defaultTo(OrderStatus.AWAITING_PICKUP).index()
       table.string('source').notNullable().defaultTo(OrderSource.ONLINE).index()

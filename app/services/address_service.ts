@@ -1,8 +1,7 @@
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
-import { DateTime } from 'luxon'
-import CustomerAddress, { MAX_ACTIVE_ADDRESSES } from '#models/customer_address'
+import CustomerAddress, { MAX_ADDRESSES } from '#models/customer_address'
 import User from '#models/user'
 import AreaService, { type Point } from '#services/area_service'
 import type { AddressInput } from '#validators/customer/address'
@@ -15,17 +14,13 @@ export default class AddressService {
   list(user: User, transaction?: TransactionClientContract) {
     return CustomerAddress.query({ client: transaction })
       .where('user_id', user.id)
-      .withScopes((scopes) => {
-        scopes.active()
-        scopes.primaryFirst()
-      })
+      .withScopes((scopes) => scopes.primaryFirst())
   }
 
   find(user: User, id: number, transaction?: TransactionClientContract) {
     return CustomerAddress.query({ client: transaction })
       .where('user_id', user.id)
       .where('id', id)
-      .withScopes((scopes) => scopes.active())
       .first()
   }
 
@@ -45,10 +40,10 @@ export default class AddressService {
       await this.#lockOwner(user, transaction)
 
       const count = await CustomerAddress.countFor(user, transaction)
-      if (count >= MAX_ACTIVE_ADDRESSES) {
+      if (count >= MAX_ADDRESSES) {
         throw fieldError(
           'addressText',
-          `Maksimal ${MAX_ACTIVE_ADDRESSES} alamat tersimpan. Hapus salah satu dulu.`,
+          'Maksimal 3 alamat tersimpan. Hapus salah satu dulu.',
           'addresses.max'
         )
       }
@@ -59,7 +54,7 @@ export default class AddressService {
       }
 
       return CustomerAddress.create(
-        { userId: user.id, recipientPhone: null, isPrimary, ...this.#columns(input) },
+        { userId: user.id, isPrimary, ...this.#columns(input) },
         { client: transaction }
       )
     })
@@ -104,8 +99,7 @@ export default class AddressService {
       const owner = await this.#lockOwner(address.userId, transaction)
 
       const wasPrimary = address.isPrimary
-      address.merge({ isPrimary: false, deletedAt: DateTime.now() })
-      await address.save()
+      await address.delete()
 
       if (!wasPrimary) {
         return
@@ -113,8 +107,6 @@ export default class AddressService {
 
       const next = await CustomerAddress.query({ client: transaction })
         .where('user_id', owner.id)
-        .withScopes((scopes) => scopes.active())
-        .orderByRaw('last_used_at desc nulls last')
         .orderBy('id', 'desc')
         .first()
       if (next) {

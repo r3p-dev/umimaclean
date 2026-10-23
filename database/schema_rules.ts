@@ -81,12 +81,6 @@ export default {
       },
     },
 
-    bill_lines: {
-      columns: {
-        service_type: enumColumn('ServiceType', '#enums/service_enum'),
-      },
-    },
-
     payments: {
       columns: {
         channel: enumColumn('PaymentChannel', PAYMENT),

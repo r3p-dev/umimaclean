@@ -60,7 +60,8 @@ export default class TaskTransformer extends BaseTransformer<Order> {
         : counts
 
     return {
-      ref: order.publicCode,
+      id: order.id,
+      ref: order.number(),
       name: shortName(order.customerName),
       full: order.customerName,
       area: area || '—',

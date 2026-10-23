@@ -53,16 +53,18 @@ function Panel({
 }
 
 export default function AdminOrderDetail({
+  id,
   number,
   order,
 }: {
+  id: number
   number: string
   order: DetailOrder | null
 }) {
   const [dialog, setDialog] = useState<'fix' | 'cancel' | 'history' | null>(null)
   const [isBusy, setBusy] = useState(false)
   const history = useMemo(() => adminOrders(order?.history ?? []), [order])
-  useLiveReload(`orders/${number}`, ['order'])
+  useLiveReload(`orders/${id}`, ['order'])
   const backLink = (
     <LinkButton
       variant="link"
@@ -333,7 +335,7 @@ export default function AdminOrderDetail({
         defaultAmount={detail.paidAmount}
         isSaving={isBusy}
         onSave={(fix) => {
-          router.post(urlFor('admin.order.payment', { number: order.number }), fix, busy)
+          router.post(urlFor('admin.order.payment', { id }), fix, busy)
         }}
       />
       <CancelDialog
@@ -345,7 +347,7 @@ export default function AdminOrderDetail({
         reasons={DETAIL_CANCEL_REASONS}
         confirmLabel="Batalkan Pesanan"
         onConfirm={(reason) => {
-          router.post(urlFor('admin.orders.cancel'), { codes: [order.number], reason }, busy)
+          router.post(urlFor('admin.orders.cancel'), { ids: [id], reason }, busy)
         }}
       />
       <CustomerHistoryDialog

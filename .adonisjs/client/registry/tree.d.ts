@@ -36,14 +36,15 @@ export interface ApiDefinition {
     }
     orders: {
       index: typeof routes['customer.orders.index']
-      show: typeof routes['customer.orders.show']
-      bill: typeof routes['customer.orders.bill']
       cancel: typeof routes['customer.orders.cancel']
-      receipt: typeof routes['customer.orders.receipt']
       pay: typeof routes['customer.orders.pay'] & {
         start: typeof routes['customer.orders.pay.start']
         check: typeof routes['customer.orders.pay.check']
       }
+      show: typeof routes['customer.orders.show']
+      bill: typeof routes['customer.orders.bill']
+      receipt: typeof routes['customer.orders.receipt']
+      unlock: typeof routes['customer.orders.unlock']
     }
     profile: {
       show: typeof routes['customer.profile.show']

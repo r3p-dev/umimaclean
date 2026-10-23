@@ -1,6 +1,9 @@
-import { randomInt, randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { inject } from '@adonisjs/core'
 import type { MultipartFile } from '@adonisjs/core/bodyparser'
+import type { HttpContext } from '@adonisjs/core/http'
+import { errors as limiterErrors } from '@adonisjs/limiter'
+import limiter from '@adonisjs/limiter/services/main'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import transmit from '@adonisjs/transmit/services/main'
@@ -19,6 +22,7 @@ import {
   type OrderStage,
 } from '#enums/order_enum'
 import { Role } from '#enums/role_enum'
+import { lastFourDigits } from '#helpers/phone'
 import ActivityLog from '#models/activity_log'
 import CustomerAddress from '#models/customer_address'
 import Order from '#models/order'
@@ -28,7 +32,6 @@ import OrderPhoto from '#models/order_photo'
 import Setting, { type StoreInfo } from '#models/setting'
 import User from '#models/user'
 import WhatsappMessage from '#models/whatsapp_message'
-import { isUniqueViolation } from '#services/database_service'
 import FonnteService from '#services/fonnte_service'
 import AreaService, { type Point } from '#services/area_service'
 import env from '#start/env'
@@ -37,37 +40,13 @@ import { fieldError } from '#validators/shared/field_error'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 import type { WalkInPayload } from '#validators/staff/store'
 
-export const PUBLIC_CODE_PREFIX = 'UMC-'
-export const PUBLIC_CODE_LENGTH = 6
-export const CROCKFORD_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
-
-const CODE_PATTERN = new RegExp(`^[${CROCKFORD_ALPHABET}]{${PUBLIC_CODE_LENGTH}}$`)
-const CODE_RETRIES = 5
-
-export function newPublicCode() {
-  return (
-    PUBLIC_CODE_PREFIX +
-    Array.from(
-      { length: PUBLIC_CODE_LENGTH },
-      () => CROCKFORD_ALPHABET[randomInt(CROCKFORD_ALPHABET.length)]
-    ).join('')
-  )
-}
-
-export function normalizePublicCode(value: string) {
-  let code = value.toUpperCase().replace(/[\s-]/g, '')
-  if (code.startsWith('UMC')) {
-    code = code.slice(3)
-  }
-  code = code.replaceAll('O', '0').replace(/[IL]/g, '1')
-  return CODE_PATTERN.test(code) ? PUBLIC_CODE_PREFIX + code : null
-}
+const TRACKING_KEY = 'unlocked_orders'
 
 export const STAFF_QUEUES_CHANNEL = 'staff/queues'
 export const ADMIN_ORDERS_CHANNEL = 'admin/orders'
 
-export function orderChannel(publicCode: string) {
-  return `orders/${publicCode}`
+export function orderChannel(id: number) {
+  return `orders/${id}`
 }
 
 export const ORDER_FILTERS = ['semua', 'berjalan', 'selesai', 'dibatalkan'] as const
@@ -81,10 +60,9 @@ export function orderFilterOf(value: unknown): OrderFilter {
 
 export function orderSearchTerm(value: unknown) {
   return String(value ?? '')
-    .toUpperCase()
-    .replace(/^UMC-?/, '')
-    .replace(/[^0-9A-Z]/g, '')
-    .slice(0, 6)
+    .replace(/\D/g, '')
+    .replace(/^0+/, '')
+    .slice(0, 9)
 }
 
 export function deliveryNote(status: MessageStatus, who = 'Pelanggan') {
@@ -99,10 +77,9 @@ export function deliveryNote(status: MessageStatus, who = 'Pelanggan') {
 
 export function snapshotOf(user: User, address: CustomerAddress) {
   return {
-    customerAddressId: address.id,
     label: address.label,
     recipientName: address.recipientName,
-    recipientPhone: address.recipientPhone ?? user.phone,
+    recipientPhone: user.phone,
     addressText: address.addressText,
     landmark: address.landmark,
     lat: address.lat,
@@ -137,15 +114,8 @@ export default class OrderService {
     protected area: AreaService
   ) {}
 
-  lock(transaction: TransactionClientContract, orderId: number) {
-    return Order.query({ client: transaction }).where('id', orderId).forUpdate().firstOrFail()
-  }
-
-  async lockByCode(transaction: TransactionClientContract, code: string) {
-    const order = await Order.query({ client: transaction })
-      .where('public_code', code)
-      .forUpdate()
-      .first()
+  async lock(transaction: TransactionClientContract, id: number) {
+    const order = await Order.query({ client: transaction }).where('id', id).forUpdate().first()
     if (!order) {
       throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
     }
@@ -161,7 +131,7 @@ export default class OrderService {
     if (!order.canTransitionTo(to, options.isOwnerOverride)) {
       throw fieldError(
         'form',
-        `Pesanan ${order.publicCode} sedang "${OrderStatusLabel[order.status]}", jadi tidak bisa diubah ke "${OrderStatusLabel[to]}". Muat ulang halaman.`,
+        `Pesanan ${order.number()} sedang "${OrderStatusLabel[order.status]}", jadi tidak bisa diubah ke "${OrderStatusLabel[to]}". Muat ulang halaman.`,
         'order.transition'
       )
     }
@@ -186,8 +156,8 @@ export default class OrderService {
   }
 
   broadcast(order: Order) {
-    const payload = { code: order.publicCode, status: order.status }
-    transmit.broadcast(orderChannel(order.publicCode), payload)
+    const payload = { id: order.id, status: order.status }
+    transmit.broadcast(orderChannel(order.id), payload)
     transmit.broadcast(STAFF_QUEUES_CHANNEL, payload)
     transmit.broadcast(ADMIN_ORDERS_CHANNEL, payload)
   }
@@ -265,9 +235,59 @@ export default class OrderService {
     return result
   }
 
-  findByCode(code: string) {
+  isTrackingUnlocked(session: HttpContext['session'], order: Order) {
+    const unlocked = (session.get(TRACKING_KEY) as number[] | undefined) ?? []
+    return unlocked.includes(order.id)
+  }
+
+  async unlockTracking(session: HttpContext['session'], order: Order, digits: string, ip: string) {
+    try {
+      const [throttled] = await limiter
+        .multi([
+          {
+            key: `tracking_ip_${ip}`,
+            requests: 5,
+            duration: '15 mins',
+            blockDuration: '15 mins',
+          },
+          {
+            key: `tracking_order_${order.id}`,
+            requests: 5,
+            duration: '15 mins',
+            blockDuration: '15 mins',
+          },
+        ])
+        .penalize(async () => {
+          if (lastFourDigits(order.customerPhone) !== digits) {
+            throw fieldError(
+              'digits',
+              'Nomor tidak cocok. Periksa 4 digit terakhir nomor WhatsApp pemesan.',
+              'tracking.mismatch'
+            )
+          }
+        })
+      if (throttled) {
+        throw throttled
+      }
+    } catch (error) {
+      if (error instanceof limiterErrors.ThrottleException) {
+        const minutes = Math.max(1, Math.ceil(error.response.availableIn / 60))
+        throw fieldError(
+          'digits',
+          `Terlalu banyak percobaan. Coba lagi dalam ${minutes} menit.`,
+          'tracking.throttled'
+        )
+      }
+      throw error
+    }
+
+    const unlocked = (session.get(TRACKING_KEY) as number[] | undefined) ?? []
+    session.put(TRACKING_KEY, [...new Set([...unlocked, order.id])])
+  }
+
+  findWithHistory(id: number) {
     return Order.query()
-      .where('public_code', code)
+      .where('id', id)
       .withScopes((scopes) => {
         scopes.withDetails()
         scopes.withHistory()
@@ -308,7 +328,7 @@ export default class OrderService {
       query.where('status', OrderStatus.CANCELLED)
     }
     if (options.search) {
-      query.whereILike('public_code', `%${options.search}%`)
+      query.whereRaw('cast(id as text) like ?', [`%${options.search}%`])
     }
     const result = await query.paginate(options.page, ORDERS_PER_PAGE)
     return {
@@ -328,9 +348,9 @@ export default class OrderService {
       .orderBy('created_at', 'desc')
   }
 
-  detailForOwner(code: string) {
+  detailForOwner(id: number) {
     return Order.query()
-      .where('public_code', code)
+      .where('id', id)
       .preload('pickupAddress')
       .preload('deliveryAddress')
       .preload('items', (items) => items.orderBy('position', 'asc'))
@@ -400,19 +420,22 @@ export default class OrderService {
           )
         : pickup
 
-      const order = await this.#createWithCode(transaction, {
-        userId: user.id,
-        customerName: user.name,
-        customerPhone: user.phone,
-        requestKey: payload.key,
-        status: OrderStatus.AWAITING_PICKUP,
-        itemsSepatu: payload.items.sepatu,
-        itemsTas: payload.items.tas,
-        itemsHelm: payload.items.helm,
-        note: payload.note ?? '',
-        pickupDate: DateTime.fromISO(payload.date, { zone: SERVICE_ZONE }),
-        pickupSlot: payload.slot,
-      })
+      const order = await Order.create(
+        {
+          userId: user.id,
+          customerName: user.name,
+          customerPhone: user.phone,
+          requestKey: payload.key,
+          status: OrderStatus.AWAITING_PICKUP,
+          itemsSepatu: payload.items.sepatu,
+          itemsTas: payload.items.tas,
+          itemsHelm: payload.items.helm,
+          note: payload.note ?? '',
+          pickupDate: DateTime.fromISO(payload.date, { zone: SERVICE_ZONE }),
+          pickupSlot: payload.slot,
+        },
+        { client: transaction }
+      )
       await OrderAddress.createMany(
         [
           { ...snapshotOf(user, pickup), orderId: order.id, type: OrderAddressType.PICKUP },
@@ -420,9 +443,6 @@ export default class OrderService {
         ],
         { client: transaction }
       )
-      await CustomerAddress.query({ client: transaction })
-        .whereIn('id', [...new Set([pickup.id, delivery.id])])
-        .update({ last_used_at: DateTime.now().toJSDate() })
       await this.#record(order, OrderStatus.AWAITING_PICKUP, { actor: user }, transaction)
       return { order, isNew: true }
     })
@@ -476,7 +496,6 @@ export default class OrderService {
           ? await CustomerAddress.query()
               .where('user_id', customer.id)
               .where('is_primary', true)
-              .withScopes((scopes) => scopes.active())
               .first()
           : null
       if (saved) {
@@ -487,7 +506,6 @@ export default class OrderService {
         }
         await this.#assertServiceable(payload.point, 'address')
         delivery = {
-          customerAddressId: null,
           label: 'Alamat antar',
           recipientName: name,
           recipientPhone: phone,
@@ -500,21 +518,24 @@ export default class OrderService {
     }
 
     return db.transaction(async (transaction) => {
-      const order = await this.#createWithCode(transaction, {
-        userId: customer?.id ?? null,
-        requestKey: randomUUID(),
-        source: OrderSource.STORE,
-        returnMethod: payload.returnMethod,
-        customerName: name,
-        customerPhone: phone,
-        status: OrderStatus.IN_INSPECTION,
-        itemsSepatu: payload.items.sepatu,
-        itemsTas: payload.items.tas,
-        itemsHelm: payload.items.helm,
-        note: payload.note ?? '',
-        pickupDate: null,
-        pickupSlot: null,
-      })
+      const order = await Order.create(
+        {
+          userId: customer?.id ?? null,
+          requestKey: randomUUID(),
+          source: OrderSource.STORE,
+          returnMethod: payload.returnMethod,
+          customerName: name,
+          customerPhone: phone,
+          status: OrderStatus.IN_INSPECTION,
+          itemsSepatu: payload.items.sepatu,
+          itemsTas: payload.items.tas,
+          itemsHelm: payload.items.helm,
+          note: payload.note ?? '',
+          pickupDate: null,
+          pickupSlot: null,
+        },
+        { client: transaction }
+      )
 
       if (delivery) {
         await OrderAddress.create(
@@ -553,14 +574,11 @@ export default class OrderService {
     })
   }
 
-  async moveToStage(owner: User, codes: string[], stage: OrderStage) {
+  async moveToStage(owner: User, ids: number[], stage: OrderStage) {
     let changed = 0
-    for (const code of codes) {
+    for (const id of ids) {
       const isChanged = await db.transaction(async (transaction) => {
-        const order = await Order.query({ client: transaction })
-          .where('public_code', code)
-          .forUpdate()
-          .first()
+        const order = await Order.query({ client: transaction }).where('id', id).forUpdate().first()
         const next = order?.ownerMoves().find((status) => OrderStatusStage[status] === stage)
         if (!order || !next) {
           return false
@@ -575,15 +593,15 @@ export default class OrderService {
       })
       changed += isChanged ? 1 : 0
     }
-    return { changed, skipped: codes.length - changed }
+    return { changed, skipped: ids.length - changed }
   }
 
-  async cancelByOwner(owner: User, codes: string[], reason: string) {
+  async cancelByOwner(owner: User, ids: number[], reason: string) {
     const cancelled: Order[] = []
-    for (const code of codes) {
+    for (const id of ids) {
       const order = await db.transaction(async (transaction) => {
         const locked = await Order.query({ client: transaction })
-          .where('public_code', code)
+          .where('id', id)
           .forUpdate()
           .first()
         if (!locked || FINISHED_STATUSES.includes(locked.status)) {
@@ -614,7 +632,7 @@ export default class OrderService {
     for (const order of cancelled) {
       notices.push(await this.notify(order, MessagePurpose.ORDER_CANCELLED, reason))
     }
-    return { cancelled: cancelled.length, skipped: codes.length - cancelled.length, notices }
+    return { cancelled: cancelled.length, skipped: ids.length - cancelled.length, notices }
   }
 
   async #record(
@@ -670,7 +688,6 @@ export default class OrderService {
     const address = await CustomerAddress.query({ client: transaction })
       .where('user_id', user.id)
       .where('id', id)
-      .withScopes((scopes) => scopes.active())
       .first()
     if (!address) {
       throw fieldError(field, 'Alamat tidak ditemukan. Pilih alamat lain.', 'address.missing')
@@ -695,24 +712,9 @@ export default class OrderService {
     }
   }
 
-  async #createWithCode(transaction: TransactionClientContract, attributes: Partial<Order>) {
-    for (let attempt = 0; attempt < CODE_RETRIES; attempt++) {
-      try {
-        return await transaction.transaction((savepoint) =>
-          Order.create({ ...attributes, publicCode: newPublicCode() }, { client: savepoint })
-        )
-      } catch (error) {
-        if (!isUniqueViolation(error)) {
-          throw error
-        }
-      }
-    }
-    throw new Error('Could not allocate a unique order code')
-  }
-
   #text(order: Order, purpose: MessagePurpose, detail: string, store: StoreInfo) {
-    const code = order.publicCode
-    const link = (path = '') => `${env.get('APP_URL')}/pesanan/${code}${path}`
+    const code = order.number()
+    const link = (path = '') => `${env.get('APP_URL')}/pesanan/${order.id}${path}`
     const greeting = `Halo ${order.customerName.split(' ')[0] || 'Kak'},`
     switch (purpose) {
       case MessagePurpose.NEW_ORDER: {

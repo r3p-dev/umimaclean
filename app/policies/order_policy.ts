@@ -1,4 +1,4 @@
-import { BasePolicy } from '@adonisjs/bouncer'
+import { allowGuest, BasePolicy } from '@adonisjs/bouncer'
 import type { AuthorizerResponse } from '@adonisjs/bouncer/types'
 import { OrderStatus } from '#enums/order_enum'
 import { STAFF_ROLES } from '#enums/role_enum'
@@ -6,8 +6,13 @@ import type Order from '#models/order'
 import type User from '#models/user'
 
 export default class OrderPolicy extends BasePolicy {
-  view(user: User, order: Order): AuthorizerResponse {
+  own(user: User, order: Order): AuthorizerResponse {
     return user.isCustomer() && order.userId === user.id
+  }
+
+  @allowGuest()
+  view(user: User | null, order: Order, isUnlocked: boolean): AuthorizerResponse {
+    return isUnlocked || (!!user && this.own(user, order))
   }
 
   work(user: User): AuthorizerResponse {
@@ -19,14 +24,15 @@ export default class OrderPolicy extends BasePolicy {
   }
 
   cancel(user: User, order: Order): AuthorizerResponse {
-    return this.view(user, order) && order.status === OrderStatus.AWAITING_PICKUP
+    return this.own(user, order) && order.status === OrderStatus.AWAITING_PICKUP
   }
 
   pay(user: User, order: Order): AuthorizerResponse {
-    return this.view(user, order) && order.status === OrderStatus.AWAITING_PAYMENT
+    return this.own(user, order) && order.status === OrderStatus.AWAITING_PAYMENT
   }
 
-  follow(user: User, order: Order): AuthorizerResponse {
-    return this.view(user, order) || this.work(user)
+  @allowGuest()
+  follow(user: User | null, order: Order, isUnlocked: boolean): AuthorizerResponse {
+    return this.view(user, order, isUnlocked) || (!!user && this.work(user))
   }
 }

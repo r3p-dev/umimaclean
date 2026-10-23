@@ -100,8 +100,7 @@ export default class PaymentService {
       )
     }
 
-    const [counted] = await Payment.query().where('order_id', order.id).count('* as total')
-    const providerOrderId = `${order.publicCode}-${Number(counted.$extras.total) + 1}`
+    const providerOrderId = `UMC-${order.id}-${Date.now()}`
     const amount = order.bill.total
 
     let charge
@@ -114,7 +113,7 @@ export default class PaymentService {
         expiryMinutes: QR_LIFETIME_MINUTES,
       })
     } catch (error) {
-      logger.error({ err: error, order: order.publicCode }, 'QRIS charge failed')
+      logger.error({ err: error, order: order.id }, 'QRIS charge failed')
       throw fieldError(
         'form',
         'Layanan pembayaran sedang tidak tersedia. Coba lagi sebentar.',
@@ -210,9 +209,9 @@ export default class PaymentService {
     return payment
   }
 
-  async correct(owner: User, code: string, correction: PaymentCorrection) {
+  async correct(owner: User, id: number, correction: PaymentCorrection) {
     return db.transaction(async (transaction) => {
-      const order = await this.orders.lockByCode(transaction, code)
+      const order = await this.orders.lock(transaction, id)
       const paid = await Payment.query({ client: transaction })
         .where('order_id', order.id)
         .where('status', PaymentStatus.PAID)

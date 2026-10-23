@@ -247,61 +247,25 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['index']>>>
     }
   }
-  'customer.orders.show': {
-    methods: ["GET","HEAD"]
-    pattern: '/pesanan/:code'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { code: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['show']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['show']>>>
-    }
-  }
-  'customer.orders.bill': {
-    methods: ["GET","HEAD"]
-    pattern: '/pesanan/:code/tagihan'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { code: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['bill']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['bill']>>>
-    }
-  }
   'customer.orders.cancel': {
     methods: ["POST"]
-    pattern: '/pesanan/:code/batal'
+    pattern: '/pesanan/:id/batal'
     types: {
       body: ExtractBody<InferInput<(typeof import('#validators/customer/cancel').cancelOrderValidator)>>
       paramsTuple: [ParamValue]
-      params: { code: ParamValue }
+      params: { id: ParamValue }
       query: ExtractQuery<InferInput<(typeof import('#validators/customer/cancel').cancelOrderValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['cancel']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'customer.orders.receipt': {
-    methods: ["GET","HEAD"]
-    pattern: '/pesanan/:code/struk'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { code: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['receipt']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['receipt']>>>
-    }
-  }
   'customer.orders.pay': {
     methods: ["GET","HEAD"]
-    pattern: '/pesanan/:code/bayar'
+    pattern: '/pesanan/:id/bayar'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { code: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['pay']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['pay']>>>
@@ -309,11 +273,11 @@ export interface Registry {
   }
   'customer.orders.pay.start': {
     methods: ["POST"]
-    pattern: '/pesanan/:code/bayar'
+    pattern: '/pesanan/:id/bayar'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { code: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['startPayment']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['startPayment']>>>
@@ -321,11 +285,11 @@ export interface Registry {
   }
   'customer.orders.pay.check': {
     methods: ["POST"]
-    pattern: '/pesanan/:code/bayar/cek'
+    pattern: '/pesanan/:id/bayar/cek'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { code: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['checkPayment']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['checkPayment']>>>
@@ -499,6 +463,54 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/addresses_controller').default['destroy']>>>
     }
   }
+  'customer.orders.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/pesanan/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['show']>>>
+    }
+  }
+  'customer.orders.bill': {
+    methods: ["GET","HEAD"]
+    pattern: '/pesanan/:id/tagihan'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['bill']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['bill']>>>
+    }
+  }
+  'customer.orders.receipt': {
+    methods: ["GET","HEAD"]
+    pattern: '/pesanan/:id/struk'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['receipt']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['receipt']>>>
+    }
+  }
+  'customer.orders.unlock': {
+    methods: ["POST"]
+    pattern: '/pesanan/:id/buka'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/customer/tracking').unlockTrackingValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/customer/tracking').unlockTrackingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['unlock']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/orders_controller').default['unlock']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'staff.home': {
     methods: ["GET","HEAD"]
     pattern: '/staf'
@@ -561,11 +573,11 @@ export interface Registry {
   }
   'staff.task.start': {
     methods: ["POST"]
-    pattern: '/staf/:kind/:code/mulai'
+    pattern: '/staf/:kind/:id/mulai'
     types: {
       body: {}
       paramsTuple: [ParamValue, ParamValue]
-      params: { kind: ParamValue; code: ParamValue }
+      params: { kind: ParamValue; id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['start']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['start']>>>
@@ -573,11 +585,11 @@ export interface Registry {
   }
   'staff.task.arrive': {
     methods: ["POST"]
-    pattern: '/staf/:kind/:code/tiba'
+    pattern: '/staf/:kind/:id/tiba'
     types: {
       body: {}
       paramsTuple: [ParamValue, ParamValue]
-      params: { kind: ParamValue; code: ParamValue }
+      params: { kind: ParamValue; id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['arrive']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['arrive']>>>
@@ -585,11 +597,11 @@ export interface Registry {
   }
   'staff.task.complete': {
     methods: ["POST"]
-    pattern: '/staf/:kind/:code/selesai'
+    pattern: '/staf/:kind/:id/selesai'
     types: {
       body: ExtractBody<InferInput<(typeof import('#validators/staff/task').completeTaskValidator)>>
       paramsTuple: [ParamValue, ParamValue]
-      params: { kind: ParamValue; code: ParamValue }
+      params: { kind: ParamValue; id: ParamValue }
       query: ExtractQuery<InferInput<(typeof import('#validators/staff/task').completeTaskValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['complete']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['complete']>>> | { status: 422; response: { errors: SimpleError[] } }
@@ -597,11 +609,11 @@ export interface Registry {
   }
   'staff.task.skip': {
     methods: ["POST"]
-    pattern: '/staf/:kind/:code/lewati'
+    pattern: '/staf/:kind/:id/lewati'
     types: {
       body: ExtractBody<InferInput<(typeof import('#validators/staff/task').skipTaskValidator)>>
       paramsTuple: [ParamValue, ParamValue]
-      params: { kind: ParamValue; code: ParamValue }
+      params: { kind: ParamValue; id: ParamValue }
       query: ExtractQuery<InferInput<(typeof import('#validators/staff/task').skipTaskValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['skip']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['skip']>>> | { status: 422; response: { errors: SimpleError[] } }
@@ -621,11 +633,11 @@ export interface Registry {
   }
   'staff.inspection': {
     methods: ["GET","HEAD"]
-    pattern: '/staf/proses/:number/periksa'
+    pattern: '/staf/proses/:id/periksa'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['inspection']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['inspection']>>>
@@ -633,11 +645,11 @@ export interface Registry {
   }
   'staff.washing': {
     methods: ["GET","HEAD"]
-    pattern: '/staf/proses/:number/cuci'
+    pattern: '/staf/proses/:id/cuci'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['washing']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['washing']>>>
@@ -645,11 +657,11 @@ export interface Registry {
   }
   'staff.inspection.start': {
     methods: ["POST"]
-    pattern: '/staf/proses/:number/periksa/mulai'
+    pattern: '/staf/proses/:id/periksa/mulai'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['startInspection']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['startInspection']>>>
@@ -657,11 +669,11 @@ export interface Registry {
   }
   'staff.inspection.save': {
     methods: ["POST"]
-    pattern: '/staf/proses/:number/periksa'
+    pattern: '/staf/proses/:id/periksa'
     types: {
       body: ExtractBody<InferInput<(typeof import('#validators/staff/process').saveInspectionValidator)>>
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: ExtractQuery<InferInput<(typeof import('#validators/staff/process').saveInspectionValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['saveInspection']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['saveInspection']>>> | { status: 422; response: { errors: SimpleError[] } }
@@ -669,11 +681,11 @@ export interface Registry {
   }
   'staff.washing.complete': {
     methods: ["POST"]
-    pattern: '/staf/proses/:number/cuci'
+    pattern: '/staf/proses/:id/cuci'
     types: {
       body: ExtractBody<InferInput<(typeof import('#validators/staff/process').washValidator)>>
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: ExtractQuery<InferInput<(typeof import('#validators/staff/process').washValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['completeWash']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['completeWash']>>> | { status: 422; response: { errors: SimpleError[] } }
@@ -681,11 +693,11 @@ export interface Registry {
   }
   'staff.collect': {
     methods: ["POST"]
-    pattern: '/staf/proses/:number/serahkan'
+    pattern: '/staf/proses/:id/serahkan'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['collect']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/process_controller').default['collect']>>>
@@ -729,11 +741,11 @@ export interface Registry {
   }
   'staff.store_payment': {
     methods: ["GET","HEAD"]
-    pattern: '/staf/transaksi/:number/bayar'
+    pattern: '/staf/transaksi/:id/bayar'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['payment']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['payment']>>>
@@ -741,11 +753,11 @@ export interface Registry {
   }
   'staff.store_payment.record': {
     methods: ["POST"]
-    pattern: '/staf/transaksi/:number/bayar'
+    pattern: '/staf/transaksi/:id/bayar'
     types: {
       body: ExtractBody<InferInput<(typeof import('#validators/staff/store').counterPaymentValidator)>>
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: ExtractQuery<InferInput<(typeof import('#validators/staff/store').counterPaymentValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['recordPayment']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['recordPayment']>>> | { status: 422; response: { errors: SimpleError[] } }
@@ -753,11 +765,11 @@ export interface Registry {
   }
   'staff.store_payment.qris': {
     methods: ["POST"]
-    pattern: '/staf/transaksi/:number/qris'
+    pattern: '/staf/transaksi/:id/qris'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['startQris']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['startQris']>>>
@@ -765,11 +777,11 @@ export interface Registry {
   }
   'staff.store_payment.qris_check': {
     methods: ["POST"]
-    pattern: '/staf/transaksi/:number/qris/cek'
+    pattern: '/staf/transaksi/:id/qris/cek'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['checkQris']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['checkQris']>>>
@@ -777,11 +789,11 @@ export interface Registry {
   }
   'staff.store_payment.receipt': {
     methods: ["POST"]
-    pattern: '/staf/transaksi/:number/struk'
+    pattern: '/staf/transaksi/:id/struk'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['sendReceipt']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['sendReceipt']>>>
@@ -789,11 +801,11 @@ export interface Registry {
   }
   'staff.walk_in.photos': {
     methods: ["POST"]
-    pattern: '/staf/transaksi/:number/foto'
+    pattern: '/staf/transaksi/:id/foto'
     types: {
       body: ExtractBody<InferInput<(typeof import('#validators/staff/store').intakePhotosValidator)>>
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: ExtractQuery<InferInput<(typeof import('#validators/staff/store').intakePhotosValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['storePhotos']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['storePhotos']>>> | { status: 422; response: { errors: SimpleError[] } }
@@ -945,11 +957,11 @@ export interface Registry {
   }
   'admin.order': {
     methods: ["GET","HEAD"]
-    pattern: '/admin/pesanan/:number'
+    pattern: '/admin/pesanan/:id'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['show']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['show']>>>
@@ -957,11 +969,11 @@ export interface Registry {
   }
   'admin.order.payment': {
     methods: ["POST"]
-    pattern: '/admin/pesanan/:number/pembayaran'
+    pattern: '/admin/pesanan/:id/pembayaran'
     types: {
       body: ExtractBody<InferInput<(typeof import('#validators/admin/order').correctPaymentValidator)>>
       paramsTuple: [ParamValue]
-      params: { number: ParamValue }
+      params: { id: ParamValue }
       query: ExtractQuery<InferInput<(typeof import('#validators/admin/order').correctPaymentValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['correctPayment']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/orders_controller').default['correctPayment']>>> | { status: 422; response: { errors: SimpleError[] } }

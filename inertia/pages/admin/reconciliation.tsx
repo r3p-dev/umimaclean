@@ -27,7 +27,8 @@ type Row = {
   id: number
   providerOrderId: string
   transactionId: string | null
-  code: string
+  orderId: number
+  number: string
   customer: string
   channel: string
   amount: number
@@ -139,10 +140,10 @@ export default function AdminReconciliation({
                 </TableCell>
                 <TableCell className="py-3">
                   <Link
-                    href={urlFor('admin.order', { number: row.code })}
+                    href={urlFor('admin.order', { id: row.orderId })}
                     className="inline-flex min-h-11 items-center font-mono font-semibold"
                   >
-                    {row.code}
+                    {row.number}
                   </Link>
                   <span className="block text-caption text-muted-foreground">{row.customer}</span>
                 </TableCell>

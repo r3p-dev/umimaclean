@@ -22,7 +22,8 @@ export default class ReceiptTransformer extends BaseTransformer<Order> {
       payment?.method === PaymentMethod.CASH ? (payment.cashReceived ?? null) : null
 
     return {
-      number: order.publicCode,
+      id: order.id,
+      number: order.number(),
       customer: order.customerName,
       createdAt: formatEvent(order.createdAt),
       items,

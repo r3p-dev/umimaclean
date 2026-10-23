@@ -24,13 +24,10 @@ export type ScannedRoutes = {
     'customer.order.confirm': { paramsTuple?: []; params?: {} }
     'customer.order.store': { paramsTuple?: []; params?: {} }
     'customer.orders.index': { paramsTuple?: []; params?: {} }
-    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.bill': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.cancel': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.receipt': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.pay': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.pay.start': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.pay.check': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
+    'customer.orders.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.pay': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.pay.start': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.pay.check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.profile.update': { paramsTuple?: []; params?: {} }
@@ -45,31 +42,35 @@ export type ScannedRoutes = {
     'customer.addresses.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'customer.addresses.primary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'customer.addresses.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.bill': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.unlock': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'staff.pickups': { paramsTuple?: []; params?: {} }
     'staff.pickup_task': { paramsTuple?: []; params?: {} }
     'staff.deliveries': { paramsTuple?: []; params?: {} }
     'staff.delivery_task': { paramsTuple?: []; params?: {} }
-    'staff.task.start': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
-    'staff.task.arrive': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
-    'staff.task.complete': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
-    'staff.task.skip': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
+    'staff.task.start': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
+    'staff.task.arrive': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
+    'staff.task.complete': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
+    'staff.task.skip': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
     'staff.process': { paramsTuple?: []; params?: {} }
-    'staff.inspection': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.washing': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.inspection.start': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.inspection.save': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.washing.complete': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.collect': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.inspection': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.washing': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.inspection.start': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.inspection.save': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.washing.complete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.collect': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.more': { paramsTuple?: []; params?: {} }
     'staff.walk_in': { paramsTuple?: []; params?: {} }
     'staff.walk_in.store': { paramsTuple?: []; params?: {} }
-    'staff.store_payment': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.store_payment.record': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.store_payment.qris': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.store_payment.qris_check': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.store_payment.receipt': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.walk_in.photos': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.store_payment': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.store_payment.record': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.store_payment.qris': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.store_payment.qris_check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.store_payment.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.walk_in.photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.photo': { paramsTuple?: []; params?: {} }
     'staff.history': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
@@ -82,8 +83,8 @@ export type ScannedRoutes = {
     'admin.orders': { paramsTuple?: []; params?: {} }
     'admin.orders.move': { paramsTuple?: []; params?: {} }
     'admin.orders.cancel': { paramsTuple?: []; params?: {} }
-    'admin.order': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'admin.order.payment': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'admin.order': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.order.payment': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.services': { paramsTuple?: []; params?: {} }
     'admin.services.store': { paramsTuple?: []; params?: {} }
     'admin.services.toggle': { paramsTuple?: []; params?: {} }
@@ -127,27 +128,27 @@ export type ScannedRoutes = {
     'customer.order.create': { paramsTuple?: []; params?: {} }
     'customer.order.confirm': { paramsTuple?: []; params?: {} }
     'customer.orders.index': { paramsTuple?: []; params?: {} }
-    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.bill': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.receipt': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.pay': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
+    'customer.orders.pay': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
     'customer.addresses.index': { paramsTuple?: []; params?: {} }
     'customer.addresses.create': { paramsTuple?: []; params?: {} }
     'customer.addresses.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.bill': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'staff.pickups': { paramsTuple?: []; params?: {} }
     'staff.pickup_task': { paramsTuple?: []; params?: {} }
     'staff.deliveries': { paramsTuple?: []; params?: {} }
     'staff.delivery_task': { paramsTuple?: []; params?: {} }
     'staff.process': { paramsTuple?: []; params?: {} }
-    'staff.inspection': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.washing': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.inspection': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.washing': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.more': { paramsTuple?: []; params?: {} }
     'staff.walk_in': { paramsTuple?: []; params?: {} }
-    'staff.store_payment': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.store_payment': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.photo': { paramsTuple?: []; params?: {} }
     'staff.history': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
@@ -155,7 +156,7 @@ export type ScannedRoutes = {
     'admin.customers': { paramsTuple?: []; params?: {} }
     'admin.activity': { paramsTuple?: []; params?: {} }
     'admin.orders': { paramsTuple?: []; params?: {} }
-    'admin.order': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'admin.order': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.services': { paramsTuple?: []; params?: {} }
     'admin.reconciliation': { paramsTuple?: []; params?: {} }
     'admin.reports': { paramsTuple?: []; params?: {} }
@@ -181,27 +182,27 @@ export type ScannedRoutes = {
     'customer.order.create': { paramsTuple?: []; params?: {} }
     'customer.order.confirm': { paramsTuple?: []; params?: {} }
     'customer.orders.index': { paramsTuple?: []; params?: {} }
-    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.bill': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.receipt': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.pay': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
+    'customer.orders.pay': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
     'customer.addresses.index': { paramsTuple?: []; params?: {} }
     'customer.addresses.create': { paramsTuple?: []; params?: {} }
     'customer.addresses.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.bill': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'staff.pickups': { paramsTuple?: []; params?: {} }
     'staff.pickup_task': { paramsTuple?: []; params?: {} }
     'staff.deliveries': { paramsTuple?: []; params?: {} }
     'staff.delivery_task': { paramsTuple?: []; params?: {} }
     'staff.process': { paramsTuple?: []; params?: {} }
-    'staff.inspection': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.washing': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.inspection': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.washing': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.more': { paramsTuple?: []; params?: {} }
     'staff.walk_in': { paramsTuple?: []; params?: {} }
-    'staff.store_payment': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.store_payment': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.photo': { paramsTuple?: []; params?: {} }
     'staff.history': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
@@ -209,7 +210,7 @@ export type ScannedRoutes = {
     'admin.customers': { paramsTuple?: []; params?: {} }
     'admin.activity': { paramsTuple?: []; params?: {} }
     'admin.orders': { paramsTuple?: []; params?: {} }
-    'admin.order': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'admin.order': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.services': { paramsTuple?: []; params?: {} }
     'admin.reconciliation': { paramsTuple?: []; params?: {} }
     'admin.reports': { paramsTuple?: []; params?: {} }
@@ -234,32 +235,33 @@ export type ScannedRoutes = {
     'auth.logout': { paramsTuple?: []; params?: {} }
     'customer.order.review': { paramsTuple?: []; params?: {} }
     'customer.order.store': { paramsTuple?: []; params?: {} }
-    'customer.orders.cancel': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.pay.start': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
-    'customer.orders.pay.check': { paramsTuple: [ParamValue]; params: {'code': ParamValue} }
+    'customer.orders.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.pay.start': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.pay.check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'customer.profile.sign_out_others': { paramsTuple?: []; params?: {} }
     'customer.phone.store': { paramsTuple?: []; params?: {} }
     'customer.addresses.store': { paramsTuple?: []; params?: {} }
     'customer.addresses.primary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'staff.task.start': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
-    'staff.task.arrive': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
-    'staff.task.complete': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
-    'staff.task.skip': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
-    'staff.inspection.start': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.inspection.save': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.washing.complete': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.collect': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'customer.orders.unlock': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.task.start': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
+    'staff.task.arrive': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
+    'staff.task.complete': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
+    'staff.task.skip': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
+    'staff.inspection.start': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.inspection.save': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.washing.complete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.collect': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.walk_in.store': { paramsTuple?: []; params?: {} }
-    'staff.store_payment.record': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.store_payment.qris': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.store_payment.qris_check': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.store_payment.receipt': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.walk_in.photos': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.store_payment.record': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.store_payment.qris': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.store_payment.qris_check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.store_payment.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.walk_in.photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.sign_out_others': { paramsTuple?: []; params?: {} }
     'admin.customers.remind': { paramsTuple?: []; params?: {} }
     'admin.orders.move': { paramsTuple?: []; params?: {} }
     'admin.orders.cancel': { paramsTuple?: []; params?: {} }
-    'admin.order.payment': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'admin.order.payment': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.services.store': { paramsTuple?: []; params?: {} }
     'admin.services.toggle': { paramsTuple?: []; params?: {} }
     'admin.services.destroy': { paramsTuple?: []; params?: {} }

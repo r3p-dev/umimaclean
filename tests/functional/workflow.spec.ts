@@ -62,7 +62,7 @@ test.group('Order workflow', (group) => {
       state.fonnte.messages.some(
         (message) =>
           message.target === DEFAULT_SETTINGS.store.whatsapp &&
-          message.message.includes(order.publicCode)
+          message.message.includes(order.number())
       )
     )
 
@@ -72,7 +72,7 @@ test.group('Order workflow', (group) => {
     const tasks = (queue.inertiaProps as { tasks: { ref: string }[] }).tasks
     assert.deepEqual(
       tasks.map((task) => task.ref),
-      [order.publicCode]
+      [order.number()]
     )
 
     const owner = await UserFactory.apply('admin').create()
@@ -115,7 +115,7 @@ test.group('Order workflow', (group) => {
       itemsTas: 1,
       itemsHelm: 0,
     })
-    const code = order.publicCode
+    const code = order.id
 
     await post(client, `/staf/jemput/${code}/mulai`).loginAs(courier)
     assert.equal(await statusOf(order), OrderStatus.COURIER_EN_ROUTE)
@@ -191,7 +191,7 @@ test.group('Order workflow', (group) => {
     assert.isAbove(actions.length, 6)
 
     const detail = await inertia(client, `/pesanan/${code}`).loginAs(customer)
-    detail.assertInertiaPropsContains({ order: { number: code, receiver: 'Rina' } })
+    detail.assertInertiaPropsContains({ order: { number: order.number(), receiver: 'Rina' } })
   })
 
   test('two start requests on the same pickup cannot both succeed', async ({ client, assert }) => {
@@ -201,8 +201,8 @@ test.group('Order workflow', (group) => {
     const order = await createOrder(customer, { pickupDate: today() })
 
     const responses = await Promise.all([
-      post(client, `/staf/jemput/${order.publicCode}/mulai`).loginAs(courier),
-      post(client, `/staf/jemput/${order.publicCode}/mulai`).loginAs(owner),
+      post(client, `/staf/jemput/${order.id}/mulai`).loginAs(courier),
+      post(client, `/staf/jemput/${order.id}/mulai`).loginAs(owner),
     ])
 
     const statuses = responses.map((response) => response.status()).sort()
@@ -228,8 +228,8 @@ test.group('Order workflow', (group) => {
     const staff = await UserFactory.apply('staff').create()
     const order = await createOrder(customer, { pickupDate: today() })
 
-    await post(client, `/staf/jemput/${order.publicCode}/mulai`).loginAs(staff)
-    await post(client, `/staf/jemput/${order.publicCode}/lewati`, {
+    await post(client, `/staf/jemput/${order.id}/mulai`).loginAs(staff)
+    await post(client, `/staf/jemput/${order.id}/lewati`, {
       reason: 1,
       note: 'Sudah ditelepon 3 kali',
     }).loginAs(staff)
@@ -245,9 +245,9 @@ test.group('Order workflow', (group) => {
     const staff = await UserFactory.apply('staff').create()
     const order = await createOrder(customer, { pickupDate: today() })
 
-    const wash = await upload(client, `/staf/proses/${order.publicCode}/cuci`, staff)
+    const wash = await upload(client, `/staf/proses/${order.id}/cuci`, staff)
     wash.assertBodyContains({ errors: [{ rule: 'order.status' }] })
-    const deliver = await post(client, `/staf/antar/${order.publicCode}/mulai`).loginAs(staff)
+    const deliver = await post(client, `/staf/antar/${order.id}/mulai`).loginAs(staff)
     deliver.assertBodyContains({ errors: [{ rule: 'order.transition' }] })
     assert.equal(await statusOf(order), OrderStatus.AWAITING_PICKUP)
   })
@@ -261,15 +261,15 @@ test.group('Order workflow', (group) => {
     const order = await createOrder(await UserFactory.create(), {
       status: OrderStatus.PICKED_UP,
     })
-    await post(client, `/staf/proses/${order.publicCode}/periksa/mulai`).loginAs(staff)
+    await post(client, `/staf/proses/${order.id}/periksa/mulai`).loginAs(staff)
 
-    const wrongKind = await post(client, `/staf/proses/${order.publicCode}/periksa`, {
+    const wrongKind = await post(client, `/staf/proses/${order.id}/periksa`, {
       items: [{ kind: 'shoe', itemName: 'Sepatu', services: { main: bagWash.id, addons: [] } }],
     }).loginAs(staff)
     wrongKind.assertBodyContains({ errors: [{ rule: 'service.main' }] })
 
     await Service.query().where('id', deepClean.id).update({ is_active: false })
-    const inactive = await post(client, `/staf/proses/${order.publicCode}/periksa`, {
+    const inactive = await post(client, `/staf/proses/${order.id}/periksa`, {
       items: [{ kind: 'shoe', itemName: 'Sepatu', services: { main: deepClean.id, addons: [] } }],
     }).loginAs(staff)
     inactive.assertBodyContains({ errors: [{ rule: 'service.main' }] })
@@ -293,17 +293,17 @@ test.group('Payments', (group) => {
   }) => {
     const { customer, order } = await billedOrder()
 
-    await post(client, `/pesanan/${order.publicCode}/bayar`).loginAs(customer)
+    await post(client, `/pesanan/${order.id}/bayar`).loginAs(customer)
     const first = await Payment.query().where('order_id', order.id).firstOrFail()
     assert.equal(first.status, PaymentStatus.PENDING)
     assert.equal(first.amount, 55000)
     assert.include(first.qrUrl ?? '', first.providerOrderId ?? 'missing')
 
-    await post(client, `/pesanan/${order.publicCode}/bayar`).loginAs(customer)
+    await post(client, `/pesanan/${order.id}/bayar`).loginAs(customer)
     assert.lengthOf(state.gateway.charges, 1)
 
     await first.merge({ expiresAt: DateTime.now().minus({ minutes: 1 }) }).save()
-    await post(client, `/pesanan/${order.publicCode}/bayar`).loginAs(customer)
+    await post(client, `/pesanan/${order.id}/bayar`).loginAs(customer)
     assert.lengthOf(state.gateway.charges, 2)
     await first.refresh()
     assert.equal(first.status, PaymentStatus.EXPIRED)
@@ -350,11 +350,11 @@ test.group('Payments', (group) => {
       method: 'qris',
       status: PaymentStatus.PENDING,
       amount: 55000,
-      providerOrderId: `${order.publicCode}-1`,
+      providerOrderId: `${order.id}-1`,
       expiresAt: DateTime.now().plus({ minutes: 15 }),
     })
     await client.post('/webhooks/midtrans').json({
-      order_id: `${order.publicCode}-1`,
+      order_id: `${order.id}-1`,
       transaction_status: 'settlement',
       status_code: '200',
       gross_amount: '1000.00',
@@ -367,9 +367,9 @@ test.group('Payments', (group) => {
   test('without Midtrans keys the pay page says QRIS is unavailable', async ({ client }) => {
     state.gateway.isAvailable = false
     const { customer, order } = await billedOrder()
-    const page = await inertia(client, `/pesanan/${order.publicCode}/bayar`).loginAs(customer)
+    const page = await inertia(client, `/pesanan/${order.id}/bayar`).loginAs(customer)
     page.assertInertiaPropsContains({ isAvailable: false, qris: null })
-    const start = await post(client, `/pesanan/${order.publicCode}/bayar`).loginAs(customer)
+    const start = await post(client, `/pesanan/${order.id}/bayar`).loginAs(customer)
     start.assertBodyContains({ errors: [{ rule: 'payment.unavailable' }] })
   })
 
@@ -381,13 +381,13 @@ test.group('Payments', (group) => {
     const { order } = await billedOrder(75000)
     await order.merge({ source: 'store' }).save()
 
-    const short = await post(client, `/staf/transaksi/${order.publicCode}/bayar`, {
+    const short = await post(client, `/staf/transaksi/${order.id}/bayar`, {
       method: 'cash',
       cashReceived: 50000,
     }).loginAs(staff)
     short.assertBodyContains({ errors: [{ field: 'cashReceived' }] })
 
-    await post(client, `/staf/transaksi/${order.publicCode}/bayar`, {
+    await post(client, `/staf/transaksi/${order.id}/bayar`, {
       method: 'cash',
       cashReceived: 100000,
     }).loginAs(staff)
@@ -397,7 +397,7 @@ test.group('Payments', (group) => {
     assert.equal(payment.recordedBy, staff.id)
     assert.equal(await statusOf(order), OrderStatus.IN_CLEANING)
 
-    const page = await inertia(client, `/staf/transaksi/${order.publicCode}/bayar`).loginAs(staff)
+    const page = await inertia(client, `/staf/transaksi/${order.id}/bayar`).loginAs(staff)
     page.assertInertiaPropsContains({ order: { payment: { change: 25000 } } })
   })
 
@@ -413,18 +413,18 @@ test.group('Payments', (group) => {
       returnMethod: 'store',
     }).loginAs(staff)
     const order = await Order.firstOrFail()
-    created.assertHeader('location', `/staf/foto?untuk=intake&pesanan=${order.publicCode}`)
+    created.assertHeader('location', `/staf/foto?untuk=intake&pesanan=${order.id}`)
     assert.equal(order.source, 'store')
     assert.equal(order.status, OrderStatus.IN_INSPECTION)
     assert.equal(order.customerPhone, '6281277778888')
 
     await Bill.create({ orderId: order.id, total: 45000, decidedBy: staff.id })
     await order.merge({ status: OrderStatus.AWAITING_PAYMENT }).save()
-    await post(client, `/staf/transaksi/${order.publicCode}/bayar`, {
+    await post(client, `/staf/transaksi/${order.id}/bayar`, {
       method: 'card',
       reference: 'APR12345',
     }).loginAs(staff)
-    await post(client, `/staf/transaksi/${order.publicCode}/struk`).loginAs(staff)
+    await post(client, `/staf/transaksi/${order.id}/struk`).loginAs(staff)
     assert.isTrue(
       state.fonnte.messages.some(
         (message) => message.target === '6281277778888' && message.message.includes('Struk')

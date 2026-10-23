@@ -2,7 +2,6 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import OrderPolicy from '#policies/order_policy'
 import Setting from '#models/setting'
-import { normalizePublicCode } from '#services/order_service'
 import TaskService, { SKIP_REASONS } from '#services/task_service'
 import TaskTransformer from '#transformers/task_transformer'
 import { formatClock } from '#transformers/order_transformer'
@@ -15,7 +14,7 @@ type KindParameter = keyof typeof KINDS
 
 const RESULT_KEY = 'task_result'
 
-type TaskResult = { kind: KindParameter; code: string; isSkipped: boolean; reason: string | null }
+type TaskResult = { kind: KindParameter; id: number; isSkipped: boolean; reason: string | null }
 
 @inject()
 export default class TasksController {
@@ -40,14 +39,14 @@ export default class TasksController {
   async start(ctx: HttpContext) {
     const { auth, response } = ctx
     const kind = await this.#authorize(ctx)
-    await this.tasks.startTrip(auth.getUserOrFail(), this.#code(ctx), KINDS[kind])
+    await this.tasks.startTrip(auth.getUserOrFail(), Number(ctx.params.id), KINDS[kind])
     return response.redirect().toRoute(this.#taskRoute(kind))
   }
 
   async arrive(ctx: HttpContext) {
     const { auth, response } = ctx
     const kind = await this.#authorize(ctx)
-    await this.tasks.arrive(auth.getUserOrFail(), this.#code(ctx), KINDS[kind])
+    await this.tasks.arrive(auth.getUserOrFail(), Number(ctx.params.id), KINDS[kind])
     return response.redirect().toRoute(this.#taskRoute(kind))
   }
 
@@ -58,15 +57,15 @@ export default class TasksController {
     if (kind === 'antar' && !payload.receiver) {
       throw fieldError('receiver', 'Isi nama penerima barang.', 'receiver.required')
     }
-    const code = this.#code(ctx)
+    const id = Number(ctx.params.id)
     await this.tasks.completeTrip(
       auth.getUserOrFail(),
-      code,
+      id,
       KINDS[kind],
       payload.photo,
       payload.receiver
     )
-    session.flash(RESULT_KEY, { kind, code, isSkipped: false, reason: null } satisfies TaskResult)
+    session.flash(RESULT_KEY, { kind, id, isSkipped: false, reason: null } satisfies TaskResult)
     return response.redirect().toRoute(this.#taskRoute(kind))
   }
 
@@ -74,10 +73,10 @@ export default class TasksController {
     const { auth, request, response, session } = ctx
     const kind = await this.#authorize(ctx)
     const payload = await request.validateUsing(skipTaskValidator)
-    const code = this.#code(ctx)
+    const id = Number(ctx.params.id)
     const reason = SKIP_REASONS[payload.reason]
-    await this.tasks.skipTrip(auth.getUserOrFail(), code, KINDS[kind], reason, payload.note)
-    session.flash(RESULT_KEY, { kind, code, isSkipped: true, reason } satisfies TaskResult)
+    await this.tasks.skipTrip(auth.getUserOrFail(), id, KINDS[kind], reason, payload.note)
+    session.flash(RESULT_KEY, { kind, id, isSkipped: true, reason } satisfies TaskResult)
     return response.redirect().toRoute(this.#taskRoute(kind))
   }
 
@@ -116,7 +115,7 @@ export default class TasksController {
     const [active, queue] = await Promise.all([this.tasks.activeTrip(trip), this.tasks.queue(trip)])
     const result = session.flashMessages.get(RESULT_KEY) as TaskResult | undefined
     const handledToday = result ? await this.tasks.handledToday(user, trip) : []
-    const handled = handledToday.find((entry) => entry.order.publicCode === result?.code)
+    const handled = handledToday.find((entry) => entry.order.id === result?.id)
 
     return inertia.render('staff/tasks/active', {
       kind,
@@ -139,14 +138,6 @@ export default class TasksController {
   async #authorize({ bouncer, params }: HttpContext): Promise<KindParameter> {
     await bouncer.with(OrderPolicy).authorize('work')
     return params.kind === 'antar' ? 'antar' : 'jemput'
-  }
-
-  #code({ params }: HttpContext) {
-    const code = normalizePublicCode(String(params.code))
-    if (!code) {
-      throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
-    }
-    return code
   }
 
   #taskRoute(kind: KindParameter) {

@@ -4,8 +4,8 @@ import { UserFactory } from '#database/factories/user_factory'
 import CustomerAddress from '#models/customer_address'
 import { addressPayload, post, savedAddress, send, useApp } from '#tests/support/app'
 
-function activeAddresses(userId: number) {
-  return CustomerAddress.query().where('user_id', userId).whereNull('deleted_at')
+function addressesOf(userId: number) {
+  return CustomerAddress.query().where('user_id', userId)
 }
 
 test.group('Address book', (group) => {
@@ -30,18 +30,26 @@ test.group('Address book', (group) => {
     response.assertHeader('location', '/pesan')
   })
 
-  test('allows at most 5 active addresses', async ({ client, assert }) => {
+  test('allows at most 3 addresses', async ({ client, assert }) => {
     const user = await UserFactory.create()
-    const addresses = await CustomerAddressFactory.merge({ userId: user.id }).createMany(5)
+    const addresses = await CustomerAddressFactory.merge({ userId: user.id }).createMany(3)
 
     const full = await post(client, '/profil/alamat', addressPayload()).loginAs(user)
     full.assertStatus(422)
-    full.assertBodyContains({ errors: [{ rule: 'addresses.max' }] })
+    full.assertBodyContains({
+      errors: [
+        {
+          rule: 'addresses.max',
+          message: 'Maksimal 3 alamat tersimpan. Hapus salah satu dulu.',
+        },
+      ],
+    })
+    assert.lengthOf(await addressesOf(user.id), 3)
 
     await send(client, 'delete', `/profil/alamat/${addresses[0].id}`).loginAs(user)
     const room = await post(client, '/profil/alamat', addressPayload()).loginAs(user)
     room.assertStatus(302)
-    assert.lengthOf(await activeAddresses(user.id), 5)
+    assert.lengthOf(await addressesOf(user.id), 3)
   })
 
   test('keeps exactly one primary address', async ({ client, assert }) => {
@@ -54,7 +62,7 @@ test.group('Address book', (group) => {
       user
     )
 
-    const primaries = await activeAddresses(user.id).where('is_primary', true)
+    const primaries = await addressesOf(user.id).where('is_primary', true)
     assert.lengthOf(primaries, 1)
     assert.equal(primaries[0].label, 'Kos')
     await home.refresh()
@@ -68,23 +76,22 @@ test.group('Address book', (group) => {
     await assert.rejects(() => savedAddress(user, { isPrimary: true }))
   })
 
-  test('deleting the primary promotes the most recently used address', async ({
+  test('deleting the primary removes it and promotes the newest address', async ({
     client,
     assert,
   }) => {
-    const { DateTime } = await import('luxon')
     const user = await UserFactory.create()
     const primary = await savedAddress(user, { isPrimary: true })
-    await savedAddress(user, { label: 'Lama', lastUsedAt: DateTime.now().minus({ days: 30 }) })
-    const recent = await savedAddress(user, { label: 'Baru', lastUsedAt: DateTime.now() })
+    const older = await savedAddress(user, { label: 'Lama' })
+    const newest = await savedAddress(user, { label: 'Baru' })
 
     await send(client, 'delete', `/profil/alamat/${primary.id}`).loginAs(user)
 
-    await primary.refresh()
-    assert.isNotNull(primary.deletedAt)
-    assert.isFalse(primary.isPrimary)
-    await recent.refresh()
-    assert.isTrue(recent.isPrimary)
+    assert.isNull(await CustomerAddress.find(primary.id))
+    await newest.refresh()
+    assert.isTrue(newest.isPrimary)
+    await older.refresh()
+    assert.isFalse(older.isPrimary)
   })
 
   test('rejects a pin outside the free pickup area', async ({ client, assert }) => {
@@ -120,6 +127,6 @@ test.group('Address book', (group) => {
     }
     await address.refresh()
     assert.equal(address.label, 'Rumah')
-    assert.isNull(address.deletedAt)
+    assert.isTrue(address.isPrimary)
   })
 })

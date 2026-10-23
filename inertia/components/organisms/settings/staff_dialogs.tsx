@@ -6,6 +6,7 @@ import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import ChoicePills from '~/components/molecules/choice_pills'
 import DialogTitleBar from '~/components/molecules/dialog_title_bar'
+import { RoleLabel } from '@enums/role_enum'
 import { STAFF_ROLES, staffFormErrors, type StaffForm } from '~/lib/settings/staff_accounts'
 
 const FOOTER = 'flex flex-col-reverse justify-end gap-2 sm:flex-row sm:items-center'
@@ -88,7 +89,7 @@ export function StaffFormDialog({
           labelledBy={roleId}
           value={form.role}
           onChange={(role) => setForm({ ...form, role })}
-          options={STAFF_ROLES.map((role) => ({ value: role, label: role }))}
+          options={STAFF_ROLES.map((role) => ({ value: role, label: RoleLabel[role] }))}
         />
         <FieldDescription className="text-caption leading-[1.4]">
           Peran menentukan halaman awal dan akses. Owner bisa melihat laporan &amp; pengaturan.

@@ -33,9 +33,9 @@ export default class AdminOrderTransformer extends BaseTransformer<Order> {
       .at(-1)?.actor
 
     return {
-      id: order.publicCode,
-      label: `${order.publicCode} · ${order.customerName}`,
-      number: order.publicCode,
+      id: String(order.id),
+      label: `${order.number()} · ${order.customerName}`,
+      number: order.number(),
       customer: order.customerName,
       area: areaOf(order),
       isInStore: order.source === OrderSource.STORE,

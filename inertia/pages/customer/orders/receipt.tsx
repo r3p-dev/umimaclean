@@ -19,7 +19,7 @@ export default function OrderReceipt({ receipt, store }: { receipt: Data.Receipt
       <div className="mx-auto box-content max-w-page px-5 pt-4 pb-10 lg:pt-8">
         <div className="print:hidden">
           <BackLink
-            href={urlFor('customer.orders.show', { code: receipt.number })}
+            href={urlFor('customer.orders.show', { id: receipt.id })}
             label="Detail pesanan"
           />
         </div>

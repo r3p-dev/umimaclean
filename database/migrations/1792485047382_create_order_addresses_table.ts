@@ -5,9 +5,7 @@
  * order must still show where it was picked up and where it goes. Walk-in deliveries
  * have no saved address at all.
  * - type: 'pickup' or 'delivery' (OrderAddressType enum).
- * - customer_address_id: the saved address it was copied from; SET NULL when that
- *   address is removed.
- * - recipient_phone: always filled, falling back to the customer's phone.
+ * - recipient_phone: the customer's phone at order time, or the phone typed for a walk-in.
  *
  * Unique (order_id, type): an order has at most one pickup and one delivery address.
  */
@@ -27,13 +25,6 @@ export default class extends BaseSchema {
         .inTable('orders')
         .onDelete('CASCADE')
       table.string('type').notNullable()
-      table
-        .integer('customer_address_id')
-        .nullable()
-        .unsigned()
-        .references('id')
-        .inTable('customer_addresses')
-        .onDelete('SET NULL')
       table.string('label', 30).notNullable()
       table.string('recipient_name', 80).notNullable()
       table.string('recipient_phone', 15).notNullable()

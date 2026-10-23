@@ -2,14 +2,12 @@ import { randomBytes } from 'node:crypto'
 import { inject } from '@adonisjs/core'
 import { DateTime } from 'luxon'
 import { ActivityAction } from '#enums/activity_enum'
-import { Role, STAFF_ROLES } from '#enums/role_enum'
+import { Role, RoleLabel, STAFF_ROLES } from '#enums/role_enum'
 import ActivityLog from '#models/activity_log'
 import User from '#models/user'
 import AccountService from '#services/account_service'
 import type { StaffPayload } from '#validators/admin/staff'
 import { fieldError } from '#validators/shared/field_error'
-
-const ROLE_OF = { Staf: Role.STAFF, Owner: Role.ADMIN } as const
 
 export function temporaryPassword() {
   return randomBytes(9).toString('base64url')
@@ -35,14 +33,14 @@ export default class StaffService {
       name: payload.name,
       phone: payload.phone,
       password,
-      role: ROLE_OF[payload.role],
+      role: payload.role,
       isActive: true,
       phoneVerifiedAt: null,
     })
     await ActivityLog.record({
       actor: owner,
       action: ActivityAction.STAFF_CHANGED,
-      detail: `Menambah akun ${user.name} (${payload.role})`,
+      detail: `Menambah akun ${user.name} (${RoleLabel[payload.role]})`,
       isSensitive: true,
     })
     return { user, password }
@@ -52,20 +50,19 @@ export default class StaffService {
     if (await User.isPhoneTaken(payload.phone, { exceptUserId: user.id })) {
       throw fieldError('phone', 'Nomor ini sudah dipakai akun lain.', 'phone.taken')
     }
-    const role = ROLE_OF[payload.role]
-    if (user.id === owner.id && role !== Role.ADMIN) {
+    if (user.id === owner.id && payload.role !== Role.ADMIN) {
       throw fieldError('role', 'Anda tidak bisa menurunkan peran akun sendiri.', 'role.self')
     }
     user.merge({
       name: payload.name,
       phone: payload.phone,
-      role,
+      role: payload.role,
     })
     await user.save()
     await ActivityLog.record({
       actor: owner,
       action: ActivityAction.STAFF_CHANGED,
-      detail: `Mengubah akun ${user.name} (${payload.role})`,
+      detail: `Mengubah akun ${user.name} (${RoleLabel[payload.role]})`,
       isSensitive: true,
     })
   }
@@ -75,7 +72,8 @@ export default class StaffService {
       throw fieldError('form', 'Ganti kata sandi Anda sendiri di halaman Profil.', 'staff.self')
     }
     const password = temporaryPassword()
-    await this.accounts.updatePassword(user, password)
+    user.merge({ password, passwordChangedAt: null })
+    await user.save()
     await this.accounts.endAllSessions(user)
     await ActivityLog.record({
       actor: owner,

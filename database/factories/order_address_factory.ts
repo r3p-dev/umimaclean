@@ -5,7 +5,6 @@ import OrderAddress from '#models/order_address'
 export const OrderAddressFactory = factory
   .define(OrderAddress, ({ faker }) => ({
     type: OrderAddressType.PICKUP as OrderAddressType,
-    customerAddressId: null,
     label: 'Rumah',
     recipientName: faker.person.fullName(),
     recipientPhone: '628' + faker.string.numeric(9),

@@ -37,7 +37,15 @@ const ICONS: Record<ItemCategory, ComponentType<SVGProps<SVGSVGElement>>> = {
 
 type CameraPhase = 'off' | 'live' | 'preview'
 
-export default function Washing({ number, order }: { number: string; order: Data.Wash | null }) {
+export default function Washing({
+  id,
+  number,
+  order,
+}: {
+  id: number
+  number: string
+  order: Data.Wash | null
+}) {
   const account = useAccount()
   const [cameraPhase, setCameraPhase] = useState<CameraPhase>('off')
   const [pending, setPending] = useState<{ photo: string; stamp: string } | null>(null)
@@ -67,7 +75,7 @@ export default function Washing({ number, order }: { number: string; order: Data
     setBusy(true)
     const photo = await photoFile(localShot.photo)
     router.post(
-      urlFor('staff.washing.complete', { number }),
+      urlFor('staff.washing.complete', { id }),
       { photo },
       { forceFormData: true, onSuccess: () => setLocalShot(null), onFinish: () => setBusy(false) }
     )
@@ -266,7 +274,7 @@ export default function Washing({ number, order }: { number: string; order: Data
                   isPending={isBusy}
                   onPress={() =>
                     router.post(
-                      urlFor('staff.collect', { number }),
+                      urlFor('staff.collect', { id }),
                       {},
                       {
                         onStart: () => setBusy(true),

@@ -6,6 +6,7 @@ import { Button, LinkButton } from '~/components/ui/button'
 import { formatDuration } from '~/lib/shared/format'
 
 export default function QrisPanel({
+  id,
   number,
   total,
   qrUrl,
@@ -15,6 +16,7 @@ export default function QrisPanel({
   onRenew,
   onCheck,
 }: {
+  id: number
   number: string
   total: string
   qrUrl: string | null
@@ -125,7 +127,7 @@ export default function QrisPanel({
             </>
           )}
           <BackLink
-            href={urlFor('customer.orders.bill', { code: number })}
+            href={urlFor('customer.orders.bill', { id })}
             label="Kembali ke Rincian Tagihan"
             className="ml-0 self-stretch"
           />

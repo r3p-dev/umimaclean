@@ -47,7 +47,7 @@ export default function RecentOrdersCard({ orders }: { orders: OrderRecord[] }) 
                 </span>
               </div>
               <LinkButton
-                href={`${urlFor('customer.order.create')}?ulang=${order.number}`}
+                href={`${urlFor('customer.order.create')}?ulang=${order.id}`}
                 variant="outline"
                 size="compact"
                 className="shrink-0 gap-1.5 rounded-pill px-3.5 sm:rounded-md"

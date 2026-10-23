@@ -12,7 +12,6 @@ import { OtpPurpose } from '#enums/otp_enum'
 import { Role } from '#enums/role_enum'
 import OtpCode, { OTP_MAX_ATTEMPTS } from '#models/otp_code'
 import User from '#models/user'
-import { isUniqueViolation } from '#services/database_service'
 import FonnteService from '#services/fonnte_service'
 import env from '#start/env'
 import { fieldError } from '#validators/shared/field_error'
@@ -310,7 +309,12 @@ export default class OtpService {
     try {
       await user.save()
     } catch (error) {
-      if (isUniqueViolation(error)) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        String(error.code) === '23505'
+      ) {
         return null
       }
 

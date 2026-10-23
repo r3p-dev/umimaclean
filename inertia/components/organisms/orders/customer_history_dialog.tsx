@@ -32,7 +32,7 @@ export default function CustomerHistoryDialog({
             className="flex flex-wrap items-center gap-2.5 border-t border-border px-3.5 py-3 first:border-t-0"
           >
             <Link
-              href={urlFor('admin.order', { number: order.number })}
+              href={urlFor('admin.order', { id: order.id })}
               onClick={() => onOpenChange(false)}
               className="font-mono text-meta leading-none font-semibold text-foreground"
             >

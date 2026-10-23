@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Head } from '@inertiajs/react'
+import { RoleLabel } from '@enums/role_enum'
 import { toast } from 'sonner'
 import { IconPencil, IconUserPlus } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
@@ -157,7 +158,7 @@ export default function AdminStaffSettings({
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="py-3">{account.role}</TableCell>
+                <TableCell className="py-3">{RoleLabel[account.role]}</TableCell>
                 <TableCell className="py-3">
                   <ToneBadge tone={account.active ? 'ok' : 'off'}>
                     {account.active ? 'Aktif' : 'Nonaktif'}
@@ -187,7 +188,7 @@ export default function AdminStaffSettings({
                     {account.name}
                   </span>
                   <span className="block text-meta leading-[1.3] text-muted-foreground">
-                    {account.role}
+                    {RoleLabel[account.role]}
                   </span>
                 </span>
                 <ToneBadge tone={account.active ? 'ok' : 'off'}>

@@ -2,16 +2,16 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { ItemKindLabel, OrderSource, OrderStatus } from '#enums/order_enum'
 import { ServiceType } from '#enums/service_enum'
+import Order from '#models/order'
 import OrderPolicy from '#policies/order_policy'
 import BillingService from '#services/billing_service'
-import { deliveryNote, normalizePublicCode } from '#services/order_service'
+import { deliveryNote } from '#services/order_service'
 import TaskService from '#services/task_service'
 import InspectionTransformer from '#transformers/inspection_transformer'
 import ProcessRowTransformer from '#transformers/process_row_transformer'
 import { shortName } from '#transformers/task_transformer'
 import WashTransformer from '#transformers/wash_transformer'
 import { saveInspectionValidator, washValidator } from '#validators/staff/process'
-import { fieldError } from '#validators/shared/field_error'
 
 @inject()
 export default class ProcessController {
@@ -40,7 +40,7 @@ export default class ProcessController {
 
   async inspection({ bouncer, inertia, params }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const order = await this.#find(params.number)
+    const order = await this.tasks.findForWorkshop(params.id)
     const services = await this.billing.activePriceList()
     const catalog = Object.fromEntries(
       Object.entries(ItemKindLabel).map(([kind, label]) => {
@@ -56,7 +56,8 @@ export default class ProcessController {
     )
 
     return inertia.render('staff/process/inspection', {
-      number: String(params.number),
+      id: Number(params.id),
+      number: Order.numberOf(params.id),
       order: order ? new InspectionTransformer(order).toObject() : null,
       catalog,
     })
@@ -64,70 +65,54 @@ export default class ProcessController {
 
   async startInspection({ auth, bouncer, params, response }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const code = this.#code(params.number)
-    await this.tasks.startInspection(auth.getUserOrFail(), code)
-    return response.redirect().toRoute('staff.inspection', { number: code })
+    const id = Number(params.id)
+    await this.tasks.startInspection(auth.getUserOrFail(), id)
+    return response.redirect().toRoute('staff.inspection', { id })
   }
 
   async saveInspection({ auth, bouncer, params, request, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const code = this.#code(params.number)
+    const id = Number(params.id)
     const payload = await request.validateUsing(saveInspectionValidator)
-    const result = await this.billing.createFromInspection(
-      auth.getUserOrFail(),
-      code,
-      payload.items
-    )
+    const result = await this.billing.createFromInspection(auth.getUserOrFail(), id, payload.items)
 
     if (result.order.source === OrderSource.STORE) {
       session.flash('success', 'Pemeriksaan disimpan. Lanjutkan pembayaran di kasir.')
-      return response.redirect().toRoute('staff.store_payment', { number: code })
+      return response.redirect().toRoute('staff.store_payment', { id })
     }
     session.flash('success', `Tagihan dibuat. ${deliveryNote(result.notice!)}`)
-    return response.redirect().toRoute('staff.inspection', { number: code })
+    return response.redirect().toRoute('staff.inspection', { id })
   }
 
   async washing({ bouncer, inertia, params }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const order = await this.#find(params.number)
+    const order = await this.tasks.findForWorkshop(params.id)
     return inertia.render('staff/process/washing', {
-      number: String(params.number),
+      id: Number(params.id),
+      number: Order.numberOf(params.id),
       order: order ? new WashTransformer(order).toObject() : null,
     })
   }
 
   async completeWash({ auth, bouncer, params, request, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const code = this.#code(params.number)
+    const id = Number(params.id)
     const { photo } = await request.validateUsing(washValidator)
-    const result = await this.tasks.completeWash(auth.getUserOrFail(), code, photo)
+    const result = await this.tasks.completeWash(auth.getUserOrFail(), id, photo)
     session.flash(
       'success',
       result.notice
         ? `Pencucian selesai. ${deliveryNote(result.notice)}`
         : 'Pencucian selesai. Pesanan masuk antrean Antar.'
     )
-    return response.redirect().toRoute('staff.washing', { number: code })
+    return response.redirect().toRoute('staff.washing', { id })
   }
 
   async collect({ auth, bouncer, params, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const code = this.#code(params.number)
-    await this.tasks.collect(auth.getUserOrFail(), code)
-    session.flash('success', `Pesanan ${code} sudah diambil pelanggan.`)
+    const id = Number(params.id)
+    const order = await this.tasks.collect(auth.getUserOrFail(), id)
+    session.flash('success', `Pesanan ${order.number()} sudah diambil pelanggan.`)
     return response.redirect().toRoute('staff.process')
-  }
-
-  async #find(number: unknown) {
-    const code = normalizePublicCode(String(number))
-    return code ? this.tasks.findForWorkshop(code) : null
-  }
-
-  #code(number: unknown) {
-    const code = normalizePublicCode(String(number))
-    if (!code) {
-      throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
-    }
-    return code
   }
 }

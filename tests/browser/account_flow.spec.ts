@@ -40,14 +40,14 @@ test.group('Customer account in the browser', (group) => {
     await page.assertTextContains('body', 'Sepatu ×2')
     await page.getByRole('button', { name: 'Buat Pesanan' }).first().click()
 
-    await page.waitForURL(/\/pesanan\/UMC-[0-9A-Z]{6}$/, { timeout: 15_000 })
+    await page.waitForURL(/\/pesanan\/\d+$/, { timeout: 15_000 })
     const order = await Order.query().preload('addresses').firstOrFail()
     assert.equal(order.itemsSepatu, 2)
     assert.equal(
       order.addresses[0].addressText,
       'Jl. Cisitu Indah III No. 12, Dago, Coblong, Kota Bandung'
     )
-    await page.assertTextContains('h1', order.publicCode)
+    await page.assertTextContains('h1', order.number())
   })
 
   test('signs up with a WhatsApp code and lands on the new-account home', async ({

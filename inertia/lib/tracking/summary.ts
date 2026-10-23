@@ -28,6 +28,6 @@ export function orderSummary(order: OrderRecord) {
     needsAction: order.status === AWAITING_PAYMENT,
     finished: order.status === COMPLETED || order.status === CANCELLED,
     cancelled: order.status === CANCELLED,
-    href: urlFor('customer.orders.show', { code: order.number }),
+    href: urlFor('customer.orders.show', { id: order.id }),
   }
 }

@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core'
 import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
-import CustomerAddress, { MAX_ACTIVE_ADDRESSES } from '#models/customer_address'
+import CustomerAddress, { MAX_ADDRESSES } from '#models/customer_address'
 import CustomerAddressPolicy from '#policies/customer_address_policy'
 import AddressService from '#services/address_service'
 import AreaService from '#services/area_service'
@@ -22,7 +22,7 @@ export default class AddressesController {
 
     return inertia.render('customer/addresses/index', {
       addresses: addresses.map((address) => new AddressTransformer(address).toObject()),
-      max: MAX_ACTIVE_ADDRESSES,
+      max: MAX_ADDRESSES,
     })
   }
 
@@ -30,11 +30,8 @@ export default class AddressesController {
     const user = auth.getUserOrFail()
 
     const saved = await this.addresses.list(user)
-    if (saved.length >= MAX_ACTIVE_ADDRESSES) {
-      session.flash(
-        'error',
-        `Maksimal ${MAX_ACTIVE_ADDRESSES} alamat tersimpan. Hapus salah satu dulu.`
-      )
+    if (saved.length >= MAX_ADDRESSES) {
+      session.flash('error', 'Maksimal 3 alamat tersimpan. Hapus salah satu dulu.')
       return response.redirect().toRoute('customer.addresses.index')
     }
 

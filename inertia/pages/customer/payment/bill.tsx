@@ -11,19 +11,22 @@ import type { OrderRecord } from '~/lib/tracking/orders'
 import { ORDER_STATUSES, isPaid } from '~/lib/tracking/status'
 
 export default function PaymentBill({
-  number,
+  id,
   order,
+  isOwner,
 }: {
+  id: number
   number: string
   order: OrderRecord | null
+  isOwner: boolean
 }) {
   const isMissingBill = !order || !order.bill
 
   useEffect(() => {
     if (isMissingBill) {
-      router.visit(urlFor('customer.orders.show', { code: number }), { replace: true })
+      router.visit(urlFor('customer.orders.show', { id }), { replace: true })
     }
-  }, [isMissingBill, number])
+  }, [isMissingBill, id])
 
   if (!order || !order.bill) {
     return null
@@ -40,7 +43,8 @@ export default function PaymentBill({
           bill={order.bill}
         />
         <PaymentMethodPanel
-          number={order.number}
+          id={order.id}
+          canPay={isOwner}
           total={formatRupiah(billTotal(order.bill))}
           paidAt={isPaid(order) ? (order.paidAt ?? 'Lunas') : null}
         />

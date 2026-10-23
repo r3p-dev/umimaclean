@@ -7,7 +7,7 @@ import Setting from '#models/setting'
 import OrderPolicy from '#policies/order_policy'
 import AddressService from '#services/address_service'
 import AreaService from '#services/area_service'
-import OrderService, { deliveryNote, normalizePublicCode } from '#services/order_service'
+import OrderService, { deliveryNote } from '#services/order_service'
 import PaymentService from '#services/payment_service'
 import { maskPhone, normalizePhone } from '#helpers/phone'
 import { qrisOf } from '#transformers/order_transformer'
@@ -65,37 +65,35 @@ export default class StoreController {
     await bouncer.with(OrderPolicy).authorize('work')
     const payload = await request.validateUsing(walkInValidator)
     const order = await this.orders.createWalkIn(auth.getUserOrFail(), payload.phone, payload)
-    return response
-      .redirect()
-      .withQs({ untuk: 'intake', pesanan: order.publicCode })
-      .toRoute('staff.photo')
+    return response.redirect().withQs({ untuk: 'intake', pesanan: order.id }).toRoute('staff.photo')
   }
 
   async photo({ bouncer, inertia, request }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
     return inertia.render('staff/store/photo', {
       kind: String(request.qs().untuk ?? 'intake'),
-      number: normalizePublicCode(String(request.qs().pesanan ?? '')) ?? '',
+      id: Number(request.qs().pesanan) || null,
+      number: Number(request.qs().pesanan) ? Order.numberOf(Number(request.qs().pesanan)) : '',
     })
   }
 
   async storePhotos({ auth, bouncer, params, request, response }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const order = await this.#order(params.number)
+    const order = await this.#order(params.id)
     const { photos } = await request.validateUsing(intakePhotosValidator)
     await this.orders.addIntakePhotos(auth.getUserOrFail(), order, photos)
-    return response.redirect().toRoute('staff.inspection', { number: order.publicCode })
+    return response.redirect().toRoute('staff.inspection', { id: order.id })
   }
 
   async payment({ bouncer, inertia, params }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const code = normalizePublicCode(String(params.number))
-    const order = code ? await this.#load(code) : null
+    const order = await this.#load(params.id)
     const methods = await Setting.get('payment_methods')
     const pending = order ? await this.payments.currentQris(order) : null
 
     return inertia.render('staff/store/payment', {
-      number: String(params.number),
+      id: Number(params.id),
+      number: Order.numberOf(params.id),
       order:
         order && order.source === OrderSource.STORE
           ? {
@@ -113,36 +111,36 @@ export default class StoreController {
 
   async recordPayment({ auth, bouncer, params, request, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const order = await this.#order(params.number)
+    const order = await this.#order(params.id)
     const payload = await request.validateUsing(counterPaymentValidator)
     if (payload.method === 'card' && !payload.reference) {
       throw fieldError('reference', 'Isi nomor referensi dari struk EDC.', 'reference.required')
     }
     await this.payments.recordCounter(auth.getUserOrFail(), order, payload)
     session.flash('success', 'Pembayaran dicatat. Pesanan masuk Dalam Pencucian.')
-    return response.redirect().toRoute('staff.store_payment', { number: order.publicCode })
+    return response.redirect().toRoute('staff.store_payment', { id: order.id })
   }
 
   async startQris({ bouncer, params, response }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const order = await this.#order(params.number)
+    const order = await this.#order(params.id)
     await this.payments.startQris(order, PaymentChannel.COUNTER)
-    return response.redirect().toRoute('staff.store_payment', { number: order.publicCode })
+    return response.redirect().toRoute('staff.store_payment', { id: order.id })
   }
 
   async checkQris({ bouncer, params, response }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const order = await this.#order(params.number)
+    const order = await this.#order(params.id)
     const pending = await this.payments.currentQris(order)
     if (pending) {
       await this.payments.refresh(pending)
     }
-    return response.redirect().toRoute('staff.store_payment', { number: order.publicCode })
+    return response.redirect().toRoute('staff.store_payment', { id: order.id })
   }
 
   async sendReceipt({ auth, bouncer, params, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const order = await this.#load(this.#code(params.number))
+    const order = await this.#load(params.id)
     if (!order) {
       throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
     }
@@ -152,28 +150,20 @@ export default class StoreController {
       new ReceiptTransformer(order).toText()
     )
     session.flash(status === 'failed' ? 'error' : 'success', deliveryNote(status))
-    return response.redirect().toRoute('staff.store_payment', { number: order.publicCode })
+    return response.redirect().toRoute('staff.store_payment', { id: order.id })
   }
 
-  #code(number: unknown) {
-    const code = normalizePublicCode(String(number))
-    if (!code) {
-      throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
-    }
-    return code
-  }
-
-  async #order(number: unknown) {
-    const order = await Order.findBy('public_code', this.#code(number))
+  async #order(id: number) {
+    const order = await Order.find(id)
     if (!order) {
       throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
     }
     return order
   }
 
-  #load(code: string) {
+  #load(id: number) {
     return Order.query()
-      .where('public_code', code)
+      .where('id', id)
       .preload('items', (items) => items.orderBy('position', 'asc'))
       .preload('bill', (bill) => bill.preload('lines'))
       .preload('payments')

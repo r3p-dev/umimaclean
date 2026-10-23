@@ -48,7 +48,8 @@ export default class ProcessRowTransformer extends BaseTransformer<Order> {
     }
 
     return {
-      number: order.publicCode,
+      id: order.id,
+      number: order.number(),
       name: shortName(order.customerName),
       source: order.source === OrderSource.STORE ? ('toko' as const) : ('online' as const),
       status: order.status,

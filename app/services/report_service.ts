@@ -164,7 +164,7 @@ export default class ReportService {
         staff: log.actor?.name ?? 'Sistem',
         action: ActivityActionLabel[log.action],
         category: ActivityCategoryOf[log.action],
-        ref: log.order?.publicCode ?? '—',
+        ref: log.order?.number() ?? '—',
         detail: log.detail,
         isSensitive: log.isSensitive,
       }
@@ -177,7 +177,7 @@ export default class ReportService {
         max(p.paid_at) as last_paid, min(p.paid_at) as first_paid,
         count(distinct p.order_id) as orders, coalesce(sum(p.amount), 0) as spend,
         (select a.address_text from customer_addresses a
-          where a.user_id = u.id and a.deleted_at is null and a.is_primary limit 1) as address_text
+          where a.user_id = u.id and a.is_primary limit 1) as address_text
       from users u
       left join orders o on o.user_id = u.id
       left join payments p on p.order_id = o.id and p.status = ?

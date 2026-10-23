@@ -5,6 +5,6 @@ import type User from '#models/user'
 
 export default class CustomerAddressPolicy extends BasePolicy {
   manage(user: User, address: CustomerAddress): AuthorizerResponse {
-    return user.isCustomer() && address.userId === user.id && address.deletedAt === null
+    return user.isCustomer() && address.userId === user.id
   }
 }

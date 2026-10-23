@@ -23,10 +23,12 @@ import {
 import { formatRupiah } from '~/lib/shared/format'
 
 export default function Inspection({
+  id: orderId,
   number,
   order,
   catalog,
 }: {
+  id: number
   number: string
   order: InspectionOrder | null
   catalog: Catalog
@@ -54,7 +56,10 @@ export default function Inspection({
     ? `Tersimpan · total ${total}. Lanjutkan ke pembayaran di kasir: QRIS, tunai, atau EDC.`
     : `Tersimpan · total ${total}. Tagihan dikirim ke WhatsApp ${order.customer}. Pesanan masuk Dalam Pencucian setelah lunas.`
   const next = isInStore
-    ? { href: urlFor('staff.store_payment', { number }), label: 'Lanjut ke Pembayaran di Kasir' }
+    ? {
+        href: urlFor('staff.store_payment', { id: orderId }),
+        label: 'Lanjut ke Pembayaran di Kasir',
+      }
     : back
 
   function update(id: string, change: (item: InspectionItem) => InspectionItem) {
@@ -79,7 +84,7 @@ export default function Inspection({
     if (summary.missing || isBusy) {
       return
     }
-    router.post(urlFor('staff.inspection.save', { number }), inspectionPayload(items), {
+    router.post(urlFor('staff.inspection.save', { id: orderId }), inspectionPayload(items), {
       preserveScroll: true,
       onStart: () => setBusy(true),
       onFinish: () => setBusy(false),
@@ -115,7 +120,7 @@ export default function Inspection({
           <Button
             size="cta"
             className="self-start"
-            onPress={() => router.post(urlFor('staff.inspection.start', { number }))}
+            onPress={() => router.post(urlFor('staff.inspection.start', { id: orderId }))}
           >
             <IconClipboardCheck />
             Mulai Periksa

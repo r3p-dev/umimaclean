@@ -6,11 +6,13 @@ import BackLink from '~/components/molecules/back_link'
 import InfoNote from '~/components/molecules/info_note'
 
 export default function PaymentMethodPanel({
-  number,
+  id,
+  canPay,
   total,
   paidAt,
 }: {
-  number: string
+  id: number
+  canPay: boolean
   total: string
   paidAt: string | null
 }) {
@@ -44,18 +46,18 @@ export default function PaymentMethodPanel({
             <IconCircleCheckFilled />
             <AlertDescription>Tagihan sudah dibayar · {paidAt}</AlertDescription>
           </Alert>
-        ) : (
-          <LinkButton
-            size="cta"
-            className="w-full"
-            href={urlFor('customer.orders.pay', { code: number })}
-          >
+        ) : canPay ? (
+          <LinkButton size="cta" className="w-full" href={urlFor('customer.orders.pay', { id })}>
             <IconQrcode />
             Bayar dengan QRIS · {total}
           </LinkButton>
+        ) : (
+          <InfoNote icon={IconQrcode} tone="accent">
+            Total {total}. Bayar di toko, atau masuk ke akun pemesan untuk membayar dengan QRIS.
+          </InfoNote>
         )}
         <BackLink
-          href={urlFor('customer.orders.show', { code: number })}
+          href={urlFor('customer.orders.show', { id })}
           label="Kembali ke Status Pesanan"
           className="ml-0 self-stretch"
         />

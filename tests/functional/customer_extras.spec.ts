@@ -17,11 +17,11 @@ test.group('Customer extras', (group) => {
     const customer = await UserFactory.create()
     const order = await createOrder(customer)
 
-    const response = await post(client, `/pesanan/${order.publicCode}/batal`, {
+    const response = await post(client, `/pesanan/${order.id}/batal`, {
       reason: 'Salah jadwal',
     }).loginAs(customer)
 
-    response.assertHeader('location', `/pesanan/${order.publicCode}`)
+    response.assertHeader('location', `/pesanan/${order.id}`)
     await order.refresh()
     assert.equal(order.status, OrderStatus.CANCELLED)
     assert.equal(order.cancelReason, 'Salah jadwal')
@@ -40,13 +40,13 @@ test.group('Customer extras', (group) => {
   }) => {
     const customer = await UserFactory.create()
     const started = await createOrder(customer, { status: OrderStatus.COURIER_EN_ROUTE })
-    const refused = await post(client, `/pesanan/${started.publicCode}/batal`, {
+    const refused = await post(client, `/pesanan/${started.id}/batal`, {
       reason: 'Salah jadwal',
     }).loginAs(customer)
     refused.assertStatus(403)
 
     const other = await createOrder(await UserFactory.create())
-    const hidden = await post(client, `/pesanan/${other.publicCode}/batal`, {
+    const hidden = await post(client, `/pesanan/${other.id}/batal`, {
       reason: 'Salah jadwal',
     }).loginAs(customer)
     hidden.assertStatus(404)
@@ -67,15 +67,15 @@ test.group('Customer extras', (group) => {
       cashReceived: 60000,
     })
 
-    const page = await inertia(client, `/pesanan/${order.publicCode}/struk`).loginAs(customer)
+    const page = await inertia(client, `/pesanan/${order.id}/struk`).loginAs(customer)
     page.assertInertiaComponent('customer/orders/receipt')
     page.assertInertiaPropsContains({
-      receipt: { number: order.publicCode, total: 55000, payment: { change: 5000 } },
+      receipt: { number: order.number(), total: 55000, payment: { change: 5000 } },
     })
 
     const open = await createOrder(customer)
-    const redirected = await inertia(client, `/pesanan/${open.publicCode}/struk`).loginAs(customer)
-    redirected.assertHeader('location', `/pesanan/${open.publicCode}`)
+    const redirected = await inertia(client, `/pesanan/${open.id}/struk`).loginAs(customer)
+    redirected.assertHeader('location', `/pesanan/${open.id}`)
   })
 
   test('terms, privacy, robots.txt and sitemap.xml are public', async ({ client, assert }) => {

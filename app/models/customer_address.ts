@@ -4,18 +4,11 @@ import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { CustomerAddressSchema } from '#database/schema'
 import User from '#models/user'
 
-export const MAX_ACTIVE_ADDRESSES = 5
+export const MAX_ADDRESSES = 3
 
 export default class CustomerAddress extends CustomerAddressSchema {
-  static active = scope((query) => {
-    query.whereNull('deleted_at')
-  })
-
   static primaryFirst = scope((query) => {
-    query
-      .orderBy('is_primary', 'desc')
-      .orderByRaw('last_used_at desc nulls last')
-      .orderBy('id', 'desc')
+    query.orderBy('is_primary', 'desc').orderBy('id', 'desc')
   })
 
   @belongsTo(() => User)
@@ -24,7 +17,6 @@ export default class CustomerAddress extends CustomerAddressSchema {
   static async countFor(user: User, transaction?: TransactionClientContract) {
     const row = await CustomerAddress.query({ client: transaction })
       .where('user_id', user.id)
-      .withScopes((scopes) => scopes.active())
       .count('* as total')
       .firstOrFail()
 

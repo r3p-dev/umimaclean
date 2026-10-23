@@ -165,7 +165,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
     />
   )
 
-  const detailHref = (number: string) => urlFor('admin.order', { number })
+  const detailHref = (id: string) => urlFor('admin.order', { id })
 
   return (
     <AdminLayout active="pesanan" title="Pesanan">
@@ -320,7 +320,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
                     </TableCell>
                     <TableCell className="py-1">
                       <Link
-                        href={detailHref(row.number)}
+                        href={detailHref(row.id)}
                         className="inline-flex min-h-11 items-center font-mono text-meta leading-[1.3] font-semibold text-primary"
                       >
                         {row.number}
@@ -372,7 +372,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
                   aria-label={`Pilih ${row.label}`}
                 />
                 <Link
-                  href={detailHref(row.number)}
+                  href={detailHref(row.id)}
                   className="flex min-w-0 flex-1 flex-col gap-1.5 py-2 text-foreground no-underline hover:text-foreground hover:no-underline"
                 >
                   <span className="flex items-center gap-2">
@@ -425,7 +425,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
           }
           router.post(
             urlFor('admin.orders.move'),
-            { codes: eligible.map((order) => order.number), stage: target },
+            { ids: eligible.map((order) => Number(order.id)), stage: target },
             {
               preserveScroll: true,
               onSuccess: () => {
@@ -453,7 +453,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
         onConfirm={(reason) => {
           router.post(
             urlFor('admin.orders.cancel'),
-            { codes: cancellable.map((order) => order.number), reason },
+            { ids: cancellable.map((order) => Number(order.id)), reason },
             {
               preserveScroll: true,
               onSuccess: () => {

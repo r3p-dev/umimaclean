@@ -12,18 +12,13 @@ router
     router.post('/pesan', [controllers.customer.Checkout, 'store']).as('order.store')
 
     router.get('/pesanan', [controllers.customer.Orders, 'index']).as('orders.index')
-    router.get('/pesanan/:code', [controllers.customer.Orders, 'show']).as('orders.show')
-    router.get('/pesanan/:code/tagihan', [controllers.customer.Orders, 'bill']).as('orders.bill')
-    router.post('/pesanan/:code/batal', [controllers.customer.Orders, 'cancel']).as('orders.cancel')
+    router.post('/pesanan/:id/batal', [controllers.customer.Orders, 'cancel']).as('orders.cancel')
+    router.get('/pesanan/:id/bayar', [controllers.customer.Orders, 'pay']).as('orders.pay')
     router
-      .get('/pesanan/:code/struk', [controllers.customer.Orders, 'receipt'])
-      .as('orders.receipt')
-    router.get('/pesanan/:code/bayar', [controllers.customer.Orders, 'pay']).as('orders.pay')
-    router
-      .post('/pesanan/:code/bayar', [controllers.customer.Orders, 'startPayment'])
+      .post('/pesanan/:id/bayar', [controllers.customer.Orders, 'startPayment'])
       .as('orders.pay.start')
     router
-      .post('/pesanan/:code/bayar/cek', [controllers.customer.Orders, 'checkPayment'])
+      .post('/pesanan/:id/bayar/cek', [controllers.customer.Orders, 'checkPayment'])
       .as('orders.pay.check')
 
     router.get('/profil', [controllers.customer.Profile, 'show']).as('profile.show')
@@ -58,5 +53,16 @@ router
       .delete('/profil/alamat/:id', [controllers.customer.Addresses, 'destroy'])
       .as('addresses.destroy')
   })
+  .where('id', router.matchers.number())
   .use([middleware.auth(), middleware.area('customer')])
+  .as('customer')
+
+router
+  .group(() => {
+    router.get('/pesanan/:id', [controllers.customer.Orders, 'show']).as('orders.show')
+    router.get('/pesanan/:id/tagihan', [controllers.customer.Orders, 'bill']).as('orders.bill')
+    router.get('/pesanan/:id/struk', [controllers.customer.Orders, 'receipt']).as('orders.receipt')
+    router.post('/pesanan/:id/buka', [controllers.customer.Orders, 'unlock']).as('orders.unlock')
+  })
+  .where('id', router.matchers.number())
   .as('customer')

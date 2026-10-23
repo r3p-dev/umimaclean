@@ -118,7 +118,8 @@ export default class OrderTransformer extends BaseTransformer<Order> {
     const firstName = order.customerName.trim().split(/\s+/)[0] ?? ''
 
     return {
-      number: order.publicCode,
+      id: order.id,
+      number: order.number(),
       status: orderStatusIndex(order.status),
       source: order.source,
       returnMethod: order.returnMethod,

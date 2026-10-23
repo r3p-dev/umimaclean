@@ -12,7 +12,7 @@ async function code(status: OrderStatus, source?: OrderSource) {
     query.where('source', source)
   }
   const order = await query.firstOrFail()
-  return order.publicCode
+  return order.id
 }
 
 test.group('Every page renders with seeded data', (group) => {
@@ -34,7 +34,7 @@ test.group('Every page renders with seeded data', (group) => {
       .first()
 
     const roles: [User | null, string[]][] = [
-      [null, ['/', '/syarat', '/privasi', '/masuk', '/staf/masuk']],
+      [null, ['/', '/syarat', '/privasi', '/masuk', '/staf/masuk', `/pesanan/${awaiting}`]],
       [
         rina,
         [
@@ -44,7 +44,7 @@ test.group('Every page renders with seeded data', (group) => {
           `/pesanan/${awaiting}`,
           `/pesanan/${awaiting}/tagihan`,
           `/pesanan/${awaiting}/bayar`,
-          ...(completed ? [`/pesanan/${completed.publicCode}/struk`] : []),
+          ...(completed ? [`/pesanan/${completed.id}/struk`] : []),
           '/profil',
           '/profil/alamat',
         ],

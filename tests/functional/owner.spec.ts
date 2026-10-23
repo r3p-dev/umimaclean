@@ -35,7 +35,7 @@ test.group('Owner tools', (group) => {
     const order = await createOrder(customer, { status: OrderStatus.PICKED_UP })
 
     const response = await post(client, '/admin/pesanan/batal', {
-      codes: [order.publicCode],
+      ids: [order.id],
       reason: 'Permintaan pelanggan',
     }).loginAs(owner)
 
@@ -50,7 +50,7 @@ test.group('Owner tools', (group) => {
     state.fonnte.shouldFail = true
     const second = await createOrder(customer)
     const failed = await post(client, '/admin/pesanan/batal', {
-      codes: [second.publicCode],
+      ids: [second.id],
       reason: 'Di luar area layanan',
     }).loginAs(owner)
     assert.notInclude(String(failed.flashMessages().success), 'diberi tahu')
@@ -66,7 +66,7 @@ test.group('Owner tools', (group) => {
     })
     await Bill.create({ orderId: order.id, total: 80000, decidedBy: null })
 
-    await post(client, `/admin/pesanan/${order.publicCode}/pembayaran`, {
+    await post(client, `/admin/pesanan/${order.id}/pembayaran`, {
       method: 'cash',
       amount: 80000,
       correctionReason: 'Dibayar tunai di toko',
@@ -92,13 +92,21 @@ test.group('Owner tools', (group) => {
     const created = await post(client, '/admin/pengaturan', {
       name: 'Agus Firmansyah',
       phone: '0857 1122 3344',
-      role: 'Staf',
+      role: 'staff',
     }).loginAs(owner)
     const staff = await User.findByOrFail('phone', '6285711223344')
     assert.equal(staff.role, 'staff')
     const notice = created.flashMessages().staff_password as { password: string }
     assert.isTrue(await staff.verifyPassword(notice.password))
     assert.isFalse(state.fonnte.messages.some((message) => message.target === staff.phone))
+    assert.isNull(staff.passwordChangedAt)
+
+    await staff.merge({ passwordChangedAt: DateTime.now() }).save()
+    const reset = await post(client, `/admin/pengaturan/${staff.id}/reset`).loginAs(owner)
+    const resetNotice = reset.flashMessages().staff_password as { password: string }
+    await staff.refresh()
+    assert.isTrue(await staff.verifyPassword(resetNotice.password))
+    assert.isNull(staff.passwordChangedAt)
 
     await User.rememberMeTokens.create(staff, '180 days')
     await post(client, `/admin/pengaturan/${staff.id}/aktif`, { active: false }).loginAs(owner)
@@ -139,8 +147,8 @@ test.group('Owner tools', (group) => {
     assert.isTrue(prices.prices[0].main.some((entry) => entry.price === 52000))
 
     const order = await createOrder(await UserFactory.create(), { status: OrderStatus.PICKED_UP })
-    await post(client, `/staf/proses/${order.publicCode}/periksa/mulai`).loginAs(staff)
-    await post(client, `/staf/proses/${order.publicCode}/periksa`, {
+    await post(client, `/staf/proses/${order.id}/periksa/mulai`).loginAs(staff)
+    await post(client, `/staf/proses/${order.id}/periksa`, {
       items: [{ kind: 'shoe', itemName: 'Sepatu', services: { main: deepClean.id, addons: [] } }],
     }).loginAs(staff)
     const bill = await Bill.findByOrFail('order_id', order.id)
@@ -209,11 +217,11 @@ test.group('Owner tools', (group) => {
     const awaiting = await createOrder(customer, { status: OrderStatus.AWAITING_PAYMENT })
 
     await post(client, '/admin/pesanan/status', {
-      codes: [pickedUp.publicCode, awaiting.publicCode],
+      ids: [pickedUp.id, awaiting.id],
       stage: 'periksa',
     }).loginAs(owner)
     await post(client, '/admin/pesanan/status', {
-      codes: [awaiting.publicCode],
+      ids: [awaiting.id],
       stage: 'cuci',
     }).loginAs(owner)
 
@@ -244,7 +252,7 @@ test.group('Owner tools', (group) => {
     const staff = await UserFactory.apply('staff').create()
     const order = await createOrder(await UserFactory.create())
     const response = await post(client, '/admin/pesanan/batal', {
-      codes: [order.publicCode],
+      ids: [order.id],
       reason: 'Coba-coba',
     }).loginAs(staff)
     response.assertHeader('location', '/staf')

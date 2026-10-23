@@ -14,12 +14,11 @@ export default class StaffAccountTransformer extends BaseTransformer<User> {
 
   toObject() {
     const user = this.resource
-    const role = user.role === Role.ADMIN ? ('Owner' as const) : ('Staf' as const)
     return {
       id: String(user.id),
       name: user.name,
       phone: displayPhone(user.phone).replace('+62 ', '0'),
-      role,
+      role: user.role === Role.ADMIN ? Role.ADMIN : Role.STAFF,
       active: user.isActive,
       lastSeen: user.lastSeenAt
         ? user.lastSeenAt.setZone(SERVICE_ZONE).setLocale('id').toFormat('d LLL · HH.mm')

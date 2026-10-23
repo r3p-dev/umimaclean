@@ -1,9 +1,7 @@
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
-import { DateTime } from 'luxon'
 import CustomerAddress from '#models/customer_address'
 import User from '#models/user'
 import { DEMO_PHONE } from '#database/seeders/user_seeder'
-import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
 export const ADDRESSES = [
   {
@@ -12,7 +10,6 @@ export const ADDRESSES = [
     landmark: 'Pagar hitam, sebelah warung',
     lat: -6.8784,
     lng: 107.6128,
-    lastUsedAt: '2026-08-14T10:05',
     isPrimary: true,
   },
   {
@@ -21,7 +18,6 @@ export const ADDRESSES = [
     landmark: 'Titip di resepsionis lobi',
     lat: -6.9215,
     lng: 107.6094,
-    lastUsedAt: '2026-06-02T19:40',
     isPrimary: false,
   },
   {
@@ -30,7 +26,6 @@ export const ADDRESSES = [
     landmark: 'Depan masjid',
     lat: -6.9663,
     lng: 107.5742,
-    lastUsedAt: null,
     isPrimary: false,
   },
 ]
@@ -73,11 +68,6 @@ export default class extends BaseSeeder {
           ...address,
           userId: customer.id,
           recipientName: customer.name,
-          recipientPhone: null,
-          deletedAt: null,
-          lastUsedAt: address.lastUsedAt
-            ? DateTime.fromISO(address.lastUsedAt, { zone: SERVICE_ZONE }).toUTC()
-            : null,
         }
       )
     }
@@ -88,7 +78,6 @@ export default class extends BaseSeeder {
         { userId: user.id, label: 'Rumah' },
         {
           recipientName: user.name,
-          recipientPhone: null,
           addressText,
           landmark: null,
           lat,

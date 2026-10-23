@@ -7,7 +7,6 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { ActivityAction } from '#enums/activity_enum'
 import { DateTime } from 'luxon'
-import { ServiceType } from '#enums/service_enum'
 import { CostCategory } from '#enums/cost_enum'
 import {
   OrderAddressType,
@@ -19,6 +18,7 @@ import {
 } from '#enums/order_enum'
 import { OtpPurpose } from '#enums/otp_enum'
 import { PaymentChannel, PaymentMethod, PaymentStatus } from '#enums/payment_enum'
+import { ServiceType } from '#enums/service_enum'
 import { Role } from '#enums/role_enum'
 import { MessagePurpose, MessageStatus } from '#enums/message_enum'
 
@@ -50,15 +50,7 @@ export class ActivityLogSchema extends BaseModel {
 }
 
 export class BillLineSchema extends BaseModel {
-  static $columns = [
-    'billId',
-    'id',
-    'name',
-    'orderItemId',
-    'price',
-    'serviceId',
-    'serviceType',
-  ] as const
+  static $columns = ['billId', 'id', 'name', 'orderItemId', 'price', 'serviceId'] as const
   $columns = BillLineSchema.$columns
   @column()
   declare billId: number
@@ -72,8 +64,6 @@ export class BillLineSchema extends BaseModel {
   declare price: number
   @column()
   declare serviceId: number | null
-  @column()
-  declare serviceType: ServiceType
 }
 
 export class BillSchema extends BaseModel {
@@ -97,16 +87,13 @@ export class CustomerAddressSchema extends BaseModel {
   static $columns = [
     'addressText',
     'createdAt',
-    'deletedAt',
     'id',
     'isPrimary',
     'label',
     'landmark',
-    'lastUsedAt',
     'lat',
     'lng',
     'recipientName',
-    'recipientPhone',
     'updatedAt',
     'userId',
   ] as const
@@ -115,8 +102,6 @@ export class CustomerAddressSchema extends BaseModel {
   declare addressText: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
-  @column.dateTime()
-  declare deletedAt: DateTime | null
   @column({ isPrimary: true })
   declare id: number
   @column()
@@ -125,16 +110,12 @@ export class CustomerAddressSchema extends BaseModel {
   declare label: string
   @column()
   declare landmark: string | null
-  @column.dateTime()
-  declare lastUsedAt: DateTime | null
   @column()
   declare lat: number
   @column()
   declare lng: number
   @column()
   declare recipientName: string
-  @column()
-  declare recipientPhone: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
   @column()
@@ -175,7 +156,6 @@ export class OrderAddressSchema extends BaseModel {
   static $columns = [
     'addressText',
     'createdAt',
-    'customerAddressId',
     'id',
     'label',
     'landmark',
@@ -192,8 +172,6 @@ export class OrderAddressSchema extends BaseModel {
   declare addressText: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
-  @column()
-  declare customerAddressId: number | null
   @column({ isPrimary: true })
   declare id: number
   @column()
@@ -298,7 +276,6 @@ export class OrderSchema extends BaseModel {
     'note',
     'pickupDate',
     'pickupSlot',
-    'publicCode',
     'receiverName',
     'requestKey',
     'returnMethod',
@@ -330,8 +307,6 @@ export class OrderSchema extends BaseModel {
   declare pickupDate: DateTime | null
   @column()
   declare pickupSlot: number | null
-  @column()
-  declare publicCode: string
   @column()
   declare receiverName: string | null
   @column()

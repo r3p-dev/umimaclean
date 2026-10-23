@@ -21,17 +21,17 @@ const ACTIONS: Record<ProcessAction, { label: string; icon: typeof IconEdit; isP
   }
 
 function target(row: Row) {
-  const number = row.number
+  const id = row.id
   if (row.action === 'inspect') {
-    return { href: urlFor('staff.inspection.start', { number }), method: 'post' as const }
+    return { href: urlFor('staff.inspection.start', { id }), method: 'post' as const }
   }
   if (row.action === 'collect') {
-    return { href: urlFor('staff.store_payment', { number }), method: 'get' as const }
+    return { href: urlFor('staff.store_payment', { id }), method: 'get' as const }
   }
   if (row.action === 'open' || row.action === 'handover') {
-    return { href: urlFor('staff.washing', { number }), method: 'get' as const }
+    return { href: urlFor('staff.washing', { id }), method: 'get' as const }
   }
-  return { href: urlFor('staff.inspection', { number }), method: 'get' as const }
+  return { href: urlFor('staff.inspection', { id }), method: 'get' as const }
 }
 
 export default function ProcessRow({ row }: { row: Row }) {

@@ -38,7 +38,7 @@ export default function TaskQueue({
 
   function start(task: Task) {
     router.post(
-      urlFor('staff.task.start', { kind, code: task.ref }),
+      urlFor('staff.task.start', { kind, id: task.id }),
       {},
       { onStart: () => setStarting(true), onFinish: () => setStarting(false) }
     )

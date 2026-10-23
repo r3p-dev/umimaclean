@@ -37,8 +37,8 @@ test.group('Orders', (group) => {
     const response = await placeOrder(client, user, orderPayload(address.id))
 
     const order = await Order.query().preload('addresses').firstOrFail()
-    response.assertHeader('location', `/pesanan/${order.publicCode}`)
-    assert.match(order.publicCode, /^UMC-[0-9A-HJKMNP-TV-Z]{6}$/)
+    response.assertHeader('location', `/pesanan/${order.id}`)
+    assert.match(order.number(), /^UMC-\d{5}$/)
     assert.equal(order.status, OrderStatus.AWAITING_PICKUP)
     assert.equal(order.userId, user.id)
     assert.lengthOf(order.addresses, 2)
@@ -46,10 +46,7 @@ test.group('Orders', (group) => {
       assert.equal(snapshot.addressText, address.addressText)
       assert.equal(snapshot.landmark, 'Pagar hitam')
       assert.equal(snapshot.recipientPhone, user.phone)
-      assert.equal(snapshot.customerAddressId, address.id)
     }
-    await address.refresh()
-    assert.isNotNull(address.lastUsedAt)
   })
 
   test('a different delivery address is snapshotted separately', async ({ client, assert }) => {
@@ -129,18 +126,21 @@ test.group('Orders', (group) => {
     assert.lengthOf(await Order.all(), 1)
   })
 
-  test('a customer cannot read another customer’s order', async ({ client }) => {
+  test('a customer cannot read another customer’s order', async ({ client, assert }) => {
     const owner = await UserFactory.create()
     const intruder = await UserFactory.create()
     const order = await createOrder(owner)
 
-    for (const path of ['', '/tagihan', '/bayar']) {
-      const response = await client.get(`/pesanan/${order.publicCode}${path}`).loginAs(intruder)
-      response.assertStatus(404)
+    for (const path of ['', '/tagihan']) {
+      const response = await inertia(client, `/pesanan/${order.id}${path}`).loginAs(intruder)
+      response.assertInertiaComponent('customer/orders/unlock')
+      assert.notProperty(response.inertiaProps, 'order')
     }
-    const own = await inertia(client, `/pesanan/${order.publicCode}`).loginAs(owner)
+    const pay = await client.get(`/pesanan/${order.id}/bayar`).loginAs(intruder)
+    pay.assertStatus(404)
+    const own = await inertia(client, `/pesanan/${order.id}`).loginAs(owner)
     own.assertInertiaComponent('customer/orders/show')
-    own.assertInertiaPropsContains({ order: { number: order.publicCode, status: 0 } })
+    own.assertInertiaPropsContains({ order: { number: order.number(), status: 0 } })
   })
 
   test('history only lists the customer’s own orders and filters by status', async ({

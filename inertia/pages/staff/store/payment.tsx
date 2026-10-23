@@ -47,12 +47,14 @@ type Receipt = {
 type Qris = { qrUrl: string | null; expiresAt: string | null; status: string }
 
 export default function StorePayment({
+  id,
   number,
   order,
   methods: enabled,
   isQrisAvailable,
   qris,
 }: {
+  id: number
   number: string
   order: Receipt | null
   methods: Record<PaymentMethod, boolean>
@@ -71,7 +73,7 @@ export default function StorePayment({
   const back = { href: urlFor('staff.process'), label: 'Kembali ke Proses' }
   const method = picked && methods.some((item) => item.key === picked) ? picked : methods[0]?.key
   const remaining = useCountdown(qris?.expiresAt ? new Date(qris.expiresAt).getTime() : null)
-  useLiveReload(`orders/${number}`, ['order', 'qris'])
+  useLiveReload(`orders/${id}`, ['order', 'qris'])
 
   if (!order) {
     return (
@@ -101,7 +103,7 @@ export default function StorePayment({
         urlFor(
           qris && remaining > 0 ? 'staff.store_payment.qris_check' : 'staff.store_payment.qris',
           {
-            number,
+            id,
           }
         ),
         {},
@@ -126,7 +128,7 @@ export default function StorePayment({
       return
     }
     router.post(
-      urlFor('staff.store_payment.record', { number }),
+      urlFor('staff.store_payment.record', { id }),
       method === 'cash'
         ? { method: 'cash', cashReceived: received }
         : { method: 'card', reference: reference.trim() },
@@ -195,11 +197,7 @@ export default function StorePayment({
             <p className="text-note leading-[1.45] text-foreground-secondary">
               Tentukan layanan dan simpan pemeriksaan dulu agar tagihan bisa dibayar.
             </p>
-            <LinkButton
-              variant="outline"
-              size="desktop"
-              href={urlFor('staff.inspection', { number })}
-            >
+            <LinkButton variant="outline" size="desktop" href={urlFor('staff.inspection', { id })}>
               Buka Pemeriksaan
             </LinkButton>
           </section>
@@ -235,9 +233,7 @@ export default function StorePayment({
                 className="text-[15px]"
                 isDisabled={!order.hasPhone}
                 isPending={isBusy}
-                onPress={() =>
-                  router.post(urlFor('staff.store_payment.receipt', { number }), {}, busy)
-                }
+                onPress={() => router.post(urlFor('staff.store_payment.receipt', { id }), {}, busy)}
               >
                 <IconReceipt />
                 Kirim Struk ke WhatsApp

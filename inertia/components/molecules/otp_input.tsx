@@ -5,6 +5,7 @@ export default function OtpInput({
   value,
   onChange,
   length = 6,
+  label = 'Kode verifikasi',
   isInvalid,
   isDisabled,
   describedBy,
@@ -12,6 +13,7 @@ export default function OtpInput({
   value: string
   onChange: (value: string) => void
   length?: number
+  label?: string
   isInvalid?: boolean
   isDisabled?: boolean
   describedBy?: string
@@ -50,7 +52,7 @@ export default function OtpInput({
   return (
     <div
       role="group"
-      aria-label={`Kode verifikasi ${length} digit`}
+      aria-label={`${label} ${length} digit`}
       aria-describedby={describedBy}
       className="grid gap-2"
       style={{ gridTemplateColumns: `repeat(${length}, minmax(0, 1fr))` }}

@@ -1,9 +1,9 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { MAX_ACTIVE_ADDRESSES } from '#models/customer_address'
+import { MAX_ADDRESSES } from '#models/customer_address'
 import OrderPolicy from '#policies/order_policy'
 import AddressService from '#services/address_service'
-import OrderService, { normalizePublicCode } from '#services/order_service'
+import OrderService from '#services/order_service'
 import AddressTransformer from '#transformers/address_transformer'
 import UserTransformer from '#transformers/user_transformer'
 import { createOrderValidator, type OrderPayload } from '#validators/customer/order'
@@ -21,15 +21,15 @@ export default class CheckoutController {
     const user = auth.getUserOrFail()
     const addresses = await this.addresses.list(user)
     const draft = (session.get(DRAFT_KEY) as OrderPayload | undefined) ?? null
-    const repeatCode = normalizePublicCode(String(request.qs().ulang ?? ''))
-    const repeat = repeatCode ? await this.orders.findByCode(repeatCode) : null
+    const repeatId = Number(request.qs().ulang) || null
+    const repeat = repeatId ? await this.orders.findWithHistory(repeatId) : null
     const repeatItems =
-      repeat && (await bouncer.with(OrderPolicy).allows('view', repeat))
+      repeat && (await bouncer.with(OrderPolicy).allows('own', repeat))
         ? { sepatu: repeat.itemsSepatu, tas: repeat.itemsTas, helm: repeat.itemsHelm }
         : null
     return inertia.render('customer/order/create', {
       addresses: addresses.map((address) => new AddressTransformer(address).toObject()),
-      canAddAddress: addresses.length < MAX_ACTIVE_ADDRESSES,
+      canAddAddress: addresses.length < MAX_ADDRESSES,
       draft: draft
         ? {
             key: draft.key,
@@ -83,7 +83,7 @@ export default class CheckoutController {
     const order = await this.orders.place(auth.getUserOrFail(), payload)
     session.forget(DRAFT_KEY)
     session.flash('success', 'Pesanan dibuat. Kurir menghubungi via WhatsApp sebelum datang.')
-    return response.redirect().toRoute('customer.orders.show', { code: order.publicCode })
+    return response.redirect().toRoute('customer.orders.show', { id: order.id })
   }
 
   async #draft(session: HttpContext['session']) {

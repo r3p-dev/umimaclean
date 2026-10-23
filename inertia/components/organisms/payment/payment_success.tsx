@@ -4,10 +4,12 @@ import { LinkButton } from '~/components/ui/button'
 import DetailRows from '~/components/molecules/detail_rows'
 
 export default function PaymentSuccess({
+  id,
   number,
   total,
   paidOn,
 }: {
+  id: number
   number: string
   total: string
   paidOn: string
@@ -32,7 +34,7 @@ export default function PaymentSuccess({
       <LinkButton
         size="cta"
         className="mt-2 self-stretch"
-        href={urlFor('customer.orders.show', { code: number })}
+        href={urlFor('customer.orders.show', { id })}
       >
         Lihat Status Pesanan
       </LinkButton>

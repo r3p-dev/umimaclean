@@ -2,8 +2,9 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { MessageStatus } from '#enums/message_enum'
 import { PaymentChannel, PaymentMethod } from '#enums/payment_enum'
+import Order from '#models/order'
 import OrderPolicy from '#policies/order_policy'
-import OrderService, { deliveryNote, normalizePublicCode } from '#services/order_service'
+import OrderService, { deliveryNote } from '#services/order_service'
 import PaymentService from '#services/payment_service'
 import AdminOrderDetailTransformer from '#transformers/admin_order_detail_transformer'
 import AdminOrderTransformer from '#transformers/admin_order_transformer'
@@ -52,17 +53,21 @@ export default class OrdersController {
 
   async show({ bouncer, inertia, params }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('manage')
-    const code = normalizePublicCode(String(params.number))
-    const order = code ? await this.orders.detailForOwner(code) : null
+    const order = await this.orders.detailForOwner(params.id)
     if (!order) {
-      return inertia.render('admin/orders/detail', { number: String(params.number), order: null })
+      return inertia.render('admin/orders/detail', {
+        id: Number(params.id),
+        number: Order.numberOf(params.id),
+        order: null,
+      })
     }
     const [logs, history] = await Promise.all([
       this.orders.activityOf(order),
       this.orders.historyOf(order),
     ])
     return inertia.render('admin/orders/detail', {
-      number: order.publicCode,
+      id: order.id,
+      number: order.number(),
       order: {
         ...new AdminOrderTransformer(order).toObject(),
         detail: new AdminOrderDetailTransformer(order, logs).toObject(),
@@ -74,7 +79,7 @@ export default class OrdersController {
   async move({ auth, bouncer, request, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('manage')
     const payload = await request.validateUsing(moveOrdersValidator)
-    const result = await this.orders.moveToStage(auth.getUserOrFail(), payload.codes, payload.stage)
+    const result = await this.orders.moveToStage(auth.getUserOrFail(), payload.ids, payload.stage)
     session.flash(
       result.changed ? 'success' : 'error',
       `${result.changed} pesanan diubah${result.skipped ? `, ${result.skipped} dilewati karena tidak bisa ke status ini` : ''}. Tercatat di Aktivitas Staf.`
@@ -87,7 +92,7 @@ export default class OrdersController {
     const payload = await request.validateUsing(cancelOrdersValidator)
     const result = await this.orders.cancelByOwner(
       auth.getUserOrFail(),
-      payload.codes,
+      payload.ids,
       payload.reason
     )
     session.flash(
@@ -99,9 +104,8 @@ export default class OrdersController {
 
   async correctPayment({ auth, bouncer, params, request, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('manage')
-    const code = normalizePublicCode(String(params.number)) ?? ''
     const payload = await request.validateUsing(correctPaymentValidator)
-    await this.payments.correct(auth.getUserOrFail(), code, {
+    await this.payments.correct(auth.getUserOrFail(), params.id, {
       ...FIX_METHOD[payload.method],
       amount: payload.amount,
       reason: payload.correctionReason,

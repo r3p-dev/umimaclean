@@ -43,7 +43,7 @@ const HINTS = {
 
 type TaskResult = {
   kind: TaskKind
-  code: string
+  id: number
   isSkipped: boolean
   reason: string | null
   task: Task
@@ -99,7 +99,7 @@ export default function ActiveTask({
     if (!task) {
       return
     }
-    router.post(urlFor('staff.task.arrive', { kind, code: task.ref }), {}, { ...busy, onSuccess })
+    router.post(urlFor('staff.task.arrive', { kind, id: task.id }), {}, { ...busy, onSuccess })
   }
 
   if (result) {
@@ -198,7 +198,7 @@ export default function ActiveTask({
     setBusy(true)
     const photo = await photoFile(shot.photo)
     router.post(
-      urlFor('staff.task.complete', { kind, code: current.ref }),
+      urlFor('staff.task.complete', { kind, id: current.id }),
       { photo, ...(kind === 'antar' ? { receiver: receiverValue.trim() } : {}) },
       {
         forceFormData: true,
@@ -402,7 +402,7 @@ export default function ActiveTask({
         onSkip={(reason, note) => {
           setCameraPhase('off')
           router.post(
-            urlFor('staff.task.skip', { kind, code: current.ref }),
+            urlFor('staff.task.skip', { kind, id: current.id }),
             { reason, ...(note.trim() ? { note: note.trim() } : {}) },
             { ...busy, onSuccess: () => setSkipOpen(false) }
           )

@@ -61,6 +61,14 @@ export default class Order extends OrderSchema {
   @hasMany(() => OrderPhoto)
   declare photos: HasMany<typeof OrderPhoto>
 
+  static numberOf(id: number) {
+    return `UMC-${String(id).padStart(5, '0')}`
+  }
+
+  number() {
+    return Order.numberOf(this.id)
+  }
+
   itemCount() {
     return this.itemsSepatu + this.itemsTas + this.itemsHelm
   }

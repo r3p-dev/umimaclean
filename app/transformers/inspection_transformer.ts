@@ -35,9 +35,10 @@ export default class InspectionTransformer extends BaseTransformer<Order> {
             name: item.name,
             note: item.note,
             selection: {
-              main: lines.find((line) => line.serviceType === ServiceType.MAIN)?.serviceId ?? null,
+              main:
+                lines.find((line) => line.service?.type === ServiceType.MAIN)?.serviceId ?? null,
               addons: lines
-                .filter((line) => line.serviceType === ServiceType.ADDON)
+                .filter((line) => line.service?.type === ServiceType.ADDON)
                 .map((line) => line.serviceId)
                 .filter((id): id is number => id !== null),
             },
@@ -59,7 +60,8 @@ export default class InspectionTransformer extends BaseTransformer<Order> {
       : ''
 
     return {
-      number: order.publicCode,
+      id: order.id,
+      number: order.number(),
       customer: shortName(order.customerName),
       customerFull: order.customerName,
       phone: order.customerPhone ? maskPhone(order.customerPhone) : '—',

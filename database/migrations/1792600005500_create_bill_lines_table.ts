@@ -2,11 +2,10 @@
  * bill_lines: one row per service charged on one item of a bill.
  *
  * - order_item_id: the item the service was done on.
- * - service_id: the price-list entry it came from, used by the owner's "top services"
- *   report; SET NULL if the service row is ever removed.
- * - service_type, name, price: copied from the price list at inspection time. The owner
- *   changes prices and names later, and an old bill must keep what the customer was
- *   charged.
+ * - service_id: the price-list entry it came from; its type (main or add-on) is read from
+ *   there. Services are only soft-deleted, so the row always exists.
+ * - name, price: copied from the price list at inspection time. The owner changes prices
+ *   and names later, and an old bill must keep what the customer was charged.
  *
  * Index on bill_id: lines are always read per bill.
  */
@@ -39,7 +38,6 @@ export default class extends BaseSchema {
         .references('id')
         .inTable('services')
         .onDelete('SET NULL')
-      table.string('service_type').notNullable()
       table.string('name', 60).notNullable()
       table.integer('price').notNullable()
       table.index(['bill_id'])

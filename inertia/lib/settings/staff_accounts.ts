@@ -3,9 +3,9 @@ import type { Data } from '@generated/data'
 import { urlFor } from '~/client'
 import { nameError, phoneError } from '~/lib/shared/validation'
 
-export type StaffRole = 'Staf' | 'Owner'
+export type StaffRole = 'staff' | 'admin'
 
-export const STAFF_ROLES: StaffRole[] = ['Staf', 'Owner']
+export const STAFF_ROLES: StaffRole[] = ['staff', 'admin']
 
 export type StaffAccount = Data.StaffAccount
 
@@ -22,7 +22,7 @@ export type StaffForm = { name: string; phone: string; role: StaffRole }
 export const EMPTY_STAFF_FORM: StaffForm = {
   name: '',
   phone: '',
-  role: 'Staf',
+  role: 'staff',
 }
 
 export function staffFormErrors(form: StaffForm) {
