@@ -85,14 +85,20 @@ export function walkInBlocker(draft: WalkInDraft, lookup: CustomerLookup) {
   if (result.match && !draft.customer) {
     return 'Pilih pelanggan yang disarankan.'
   }
-  if (!result.match && draft.name.trim().length < 2) {
+  if (!result.match && !draft.name.trim()) {
     return 'Isi nama pelanggan.'
+  }
+  if (!result.match && draft.name.trim().length < 2) {
+    return 'Nama minimal 2 karakter.'
   }
   if (totalItems(draft.items) === 0) {
     return 'Tambahkan minimal 1 barang.'
   }
+  if (draft.returnMethod === 'antar' && !draft.useSaved && !draft.address.trim()) {
+    return 'Isi alamat dan titik antar di peta.'
+  }
   if (draft.returnMethod === 'antar' && !draft.useSaved && draft.address.trim().length < 10) {
-    return 'Isi alamat antar.'
+    return 'Alamat minimal 10 karakter.'
   }
   return null
 }

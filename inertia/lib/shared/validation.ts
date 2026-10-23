@@ -98,11 +98,8 @@ export function recipientError(value: string) {
 
 export function labelError(value: string) {
   const label = value.trim()
-  if (!value) {
-    return 'Label wajib diisi.'
-  }
   if (!label) {
-    return 'Label minimal 1 karakter.'
+    return 'Pilih atau isi label alamat.'
   }
   if (label.length > LIMITS.label) {
     return `Label maksimal ${LIMITS.label} karakter.`

@@ -126,7 +126,7 @@ export function CancelDialog({
           options={reasons.map((item) => ({ value: item, label: item }))}
         />
       </div>
-      {hasError && <FieldError className="text-meta">Pilih alasan pembatalan.</FieldError>}
+      {hasError && <FieldError className="text-meta">Pilih alasan.</FieldError>}
       <div className={FOOTER}>
         <DialogClose variant="outline" size="desktop">
           {backLabel}

@@ -39,6 +39,8 @@ export function serviceFormErrors(form: ServiceForm) {
   const errors: { name?: string; price?: string } = {}
   if (!form.name.trim()) {
     errors.name = 'Nama layanan wajib diisi.'
+  } else if (form.name.trim().length < 2) {
+    errors.name = 'Nama layanan minimal 2 karakter.'
   } else if (!form.categories.length) {
     errors.name = 'Pilih minimal satu kategori.'
   }

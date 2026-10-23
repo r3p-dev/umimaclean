@@ -48,7 +48,7 @@ export default function ReminderDialog({
         />
         {hasError ? (
           <FieldError id={`${id}-note`} className="text-meta">
-            Tulis pesan pengingat terlebih dulu.
+            Pesan wajib diisi.
           </FieldError>
         ) : (
           <FieldDescription id={`${id}-note`} className="text-caption">

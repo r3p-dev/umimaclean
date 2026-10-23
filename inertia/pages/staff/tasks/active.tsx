@@ -185,8 +185,12 @@ export default function ActiveTask({
   }
 
   async function complete() {
-    if (kind === 'antar' && receiverValue.trim().length < 2) {
+    if (kind === 'antar' && !receiverValue.trim()) {
       setReceiverError('Isi nama penerima barang.')
+      return
+    }
+    if (kind === 'antar' && receiverValue.trim().length < 2) {
+      setReceiverError('Nama penerima minimal 2 karakter.')
       return
     }
     if (!shot || isBusy) {

@@ -106,7 +106,7 @@ export default class OrdersController {
     await this.corrections.correctPayment(auth.getUserOrFail(), code, {
       ...FIX_METHOD[payload.method],
       amount: payload.amount,
-      reason: payload.reason,
+      reason: payload.correctionReason,
     })
     session.flash('success', 'Koreksi pembayaran disimpan dan tercatat di log aktivitas.')
     return response.redirect().back()

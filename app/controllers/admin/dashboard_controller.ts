@@ -87,7 +87,7 @@ export default class DashboardController {
       category: CATEGORY_OF[payload.category],
       note: payload.detail,
       amount: payload.amount,
-      spentOn: payload.date,
+      spentOn: payload.spentOn,
       createdBy: owner.id,
     })
     await this.activity.record({
@@ -108,7 +108,7 @@ export default class DashboardController {
       category: CATEGORY_OF[payload.category],
       note: payload.detail,
       amount: payload.amount,
-      spentOn: payload.date,
+      spentOn: payload.spentOn,
     })
     await cost.save()
     await this.activity.record({

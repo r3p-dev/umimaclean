@@ -32,16 +32,18 @@ export default function PaymentFixDialog({
   function save() {
     const found: typeof errors = {}
     if (!(Number(amount) > 0)) {
-      found.amount = 'Isi jumlah yang diterima.'
+      found.amount = 'Isi jumlah lebih dari 0.'
     }
     if (!reason.trim()) {
-      found.reason = 'Alasan wajib diisi.'
+      found.reason = 'Alasan koreksi wajib diisi.'
+    } else if (reason.trim().length < 3) {
+      found.reason = 'Alasan koreksi minimal 3 karakter.'
     }
     setErrors(found)
     if (Object.keys(found).length) {
       return
     }
-    onSave({ method, amount: Number(amount), reason: reason.trim() })
+    onSave({ method, amount: Number(amount), correctionReason: reason.trim() })
   }
 
   return (

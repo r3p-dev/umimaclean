@@ -69,7 +69,7 @@ test.group('Owner tools', (group) => {
     await post(client, `/admin/pesanan/${order.publicCode}/pembayaran`, {
       method: 'cash',
       amount: 80000,
-      reason: 'Dibayar tunai di toko',
+      correctionReason: 'Dibayar tunai di toko',
     }).loginAs(owner)
 
     await order.refresh()

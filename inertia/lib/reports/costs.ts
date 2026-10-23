@@ -32,8 +32,8 @@ export function costShare(total: number, periodDays: number) {
 type Callbacks = { onSuccess?: () => void; onError?: (errors: Record<string, string>) => void }
 
 export function saveCost(cost: Omit<Cost, 'id'>, id: string | null, callbacks: Callbacks = {}) {
-  const { note, ...rest } = cost
-  const body = { ...rest, detail: note }
+  const { note, date, ...rest } = cost
+  const body = { ...rest, detail: note, spentOn: date }
   if (id) {
     router.put(urlFor('admin.costs.update', { id }), body, { preserveScroll: true, ...callbacks })
   } else {

@@ -117,8 +117,12 @@ export default function StorePayment({
       )
       return
     }
-    if (method === 'edc' && reference.trim().length < 4) {
+    if (method === 'edc' && !reference.trim()) {
       setError('Isi nomor referensi dari struk EDC.')
+      return
+    }
+    if (method === 'edc' && reference.trim().length < 4) {
+      setError('Nomor referensi minimal 4 karakter.')
       return
     }
     router.post(

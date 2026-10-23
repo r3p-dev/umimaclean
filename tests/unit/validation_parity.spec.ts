@@ -6,13 +6,24 @@ import { registerValidator } from '#validators/auth/register'
 type ClientRule = (value: string) => string | null
 
 const clientModule = new URL('../../inertia/lib/shared/validation.ts', import.meta.url).href
-const client: Record<'name' | 'phone' | 'address', ClientRule> = await import(clientModule).then(
+
+type Field = 'name' | 'phone' | 'address' | 'label' | 'recipient'
+
+const client: Record<Field, ClientRule> = await import(clientModule).then(
   (rules: Record<string, ClientRule>) => ({
     name: rules.nameError,
     phone: rules.phoneError,
     address: rules.addressError,
+    label: rules.labelError,
+    recipient: rules.recipientError,
   })
 )
+
+const ADDRESS_FIELDS = {
+  address: 'addressText',
+  label: 'label',
+  recipient: 'recipientName',
+} as const
 
 const account = {
   name: 'Budi Santoso',
@@ -28,13 +39,14 @@ const address = {
   point: { lat: -6.8848, lng: 107.6152 },
 }
 
-async function serverError(field: 'name' | 'phone' | 'address', value: string) {
+async function serverError(field: Field, value: string) {
   const input = value === '' ? null : value
+  const name = field === 'name' || field === 'phone' ? field : ADDRESS_FIELDS[field]
   try {
-    if (field === 'address') {
-      await saveAddressValidator.validate({ ...address, addressText: input })
-    } else {
+    if (field === 'name' || field === 'phone') {
       await registerValidator.validate({ ...account, [field]: input })
+    } else {
+      await saveAddressValidator.validate({ ...address, [name]: input })
     }
     return null
   } catch (error) {
@@ -42,7 +54,6 @@ async function serverError(field: 'name' | 'phone' | 'address', value: string) {
       throw error
     }
     const messages = error.messages as { field: string; message: string }[]
-    const name = field === 'address' ? 'addressText' : field
     return messages.find((message) => message.field === name)?.message ?? null
   }
 }
@@ -69,6 +80,14 @@ test.group('Client and server validation agree', () => {
       { field: 'address', value: 'Jl. Dago' },
       { field: 'address', value: 'Jl. Dago 1' },
       { field: 'address', value: 'x'.repeat(301) },
+      { field: 'label', value: '' },
+      { field: 'label', value: '   ' },
+      { field: 'label', value: 'x'.repeat(30) },
+      { field: 'label', value: 'x'.repeat(31) },
+      { field: 'recipient', value: '' },
+      { field: 'recipient', value: ' A ' },
+      { field: 'recipient', value: 'x'.repeat(80) },
+      { field: 'recipient', value: 'x'.repeat(81) },
     ] as const)
     .run(async ({ assert }, { field, value }) => {
       assert.equal(client[field](value), await serverError(field, value))

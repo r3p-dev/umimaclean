@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react'
 import type { Data } from '@generated/data'
 import { urlFor } from '~/client'
+import { nameError, phoneError } from '~/lib/shared/validation'
 
 export type StaffRole = 'Kurir & toko' | 'Workshop' | 'Owner'
 
@@ -31,11 +32,13 @@ export const EMPTY_STAFF_FORM: StaffForm = {
 
 export function staffFormErrors(form: StaffForm) {
   const errors: { name?: string; phone?: string } = {}
-  if (!form.name.trim()) {
-    errors.name = 'Nama wajib diisi.'
+  const name = nameError(form.name.trim())
+  if (name) {
+    errors.name = name
   }
-  if (form.phone.replace(/\D/g, '').length < 10) {
-    errors.phone = 'Nomor terlalu pendek.'
+  const phone = phoneError(form.phone)
+  if (phone) {
+    errors.phone = phone
   }
   return errors
 }

@@ -16,7 +16,7 @@ export const cancelOrdersValidator = vine.create({ codes: codes(), reason: reaso
 export const correctPaymentValidator = vine.create({
   method: vine.enum(FIX_METHODS),
   amount: vine.number().withoutDecimals().min(1).max(100_000_000),
-  reason: reason(),
+  correctionReason: reason(),
 })
 
 export type CorrectPaymentPayload = Infer<typeof correctPaymentValidator>

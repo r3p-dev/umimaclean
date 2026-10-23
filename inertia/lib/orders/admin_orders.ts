@@ -55,7 +55,7 @@ export const FIX_METHODS: { value: FixMethod; label: string }[] = [
   { value: 'qris_online', label: 'QRIS (online)' },
 ]
 
-export type PaymentFix = { method: FixMethod; amount: number; reason: string }
+export type PaymentFix = { method: FixMethod; amount: number; correctionReason: string }
 
 export type AdminOrderRow = Data.AdminOrder
 
