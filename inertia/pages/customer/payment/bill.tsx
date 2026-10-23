@@ -45,6 +45,7 @@ export default function PaymentBill({
         <PaymentMethodPanel
           id={order.id}
           canPay={isOwner}
+          isWalkIn={order.source === 'store'}
           total={formatRupiah(billTotal(order.bill))}
           paidAt={isPaid(order) ? (order.paidAt ?? 'Lunas') : null}
         />

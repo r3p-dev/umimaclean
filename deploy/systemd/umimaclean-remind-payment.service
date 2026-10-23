@@ -1,0 +1,6 @@
+[Unit]
+Description=Umima Clean: send due payment reminders
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman exec umimaclean-web node ace orders:remind-payment

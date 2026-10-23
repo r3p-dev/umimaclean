@@ -1,6 +1,6 @@
 import { BaseCommand } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
-import OrderService from '#services/order_service'
+import ReminderService from '#services/reminder_service'
 
 export default class RemindPayment extends BaseCommand {
   static override commandName = 'orders:remind-payment'
@@ -9,8 +9,8 @@ export default class RemindPayment extends BaseCommand {
   static override options: CommandOptions = { startApp: true }
 
   override async run() {
-    const orders = await this.app.container.make(OrderService)
-    const sent = await orders.sendDuePaymentReminders()
+    const reminders = await this.app.container.make(ReminderService)
+    const sent = await reminders.sendDue()
     this.logger.info(`${sent} payment reminder(s) sent`)
   }
 }

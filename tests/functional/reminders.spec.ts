@@ -6,7 +6,7 @@ import { OrderSource, OrderStatus } from '#enums/order_enum'
 import { PaymentChannel, PaymentMethod, PaymentStatus } from '#enums/payment_enum'
 import Bill from '#models/bill'
 import Payment from '#models/payment'
-import OrderService from '#services/order_service'
+import ReminderService from '#services/reminder_service'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 import { createOrder, useApp } from '#tests/support/app'
 
@@ -27,8 +27,8 @@ async function unpaidBill(billedAt: string, overrides: Record<string, unknown> =
 test.group('Automatic payment reminders', (group) => {
   const state = useApp(group)
   const remind = async (now: string) => {
-    const orders = await app.container.make(OrderService)
-    return orders.sendDuePaymentReminders(at(now))
+    const reminders = await app.container.make(ReminderService)
+    return reminders.sendDue(at(now))
   }
 
   test('the first reminder comes after 24 hours, then one every 2 days', async ({ assert }) => {

@@ -3,6 +3,7 @@ import type { ApiClient } from '@japa/api-client'
 import { DateTime } from 'luxon'
 import { UserFactory } from '#database/factories/user_factory'
 import { OrderStatus } from '#enums/order_enum'
+import { orderLink } from '#helpers/whatsapp_text'
 import Order from '#models/order'
 import type User from '#models/user'
 import { DEFAULT_SETTINGS } from '#models/setting'
@@ -67,7 +68,7 @@ test.group('Customer WhatsApp messages', (group) => {
     assert.lengthOf(sent(), 3)
     assert.include(sent()[2], '- Sneakers putih: Deep Clean Rp45.000')
     assert.include(sent()[2], 'Total Rp45.000')
-    assert.include(sent()[2], `/pesanan/${order.id}`)
+    assert.isTrue(sent()[2].endsWith(`Rincian dan pembayaran: ${orderLink(order.id)}`))
 
     await post(client, `/admin/pesanan/${order.id}/pembayaran`, {
       method: 'cash',
@@ -139,6 +140,7 @@ test.group('Customer WhatsApp messages', (group) => {
     )
     assert.include(state.fonnte.messages[0].message, 'Halo Andi')
     assert.include(state.fonnte.messages[1].message, 'Total Rp45.000')
+    assert.isTrue(state.fonnte.messages[1].message.endsWith(`\nRincian: ${orderLink(order.id)}`))
   })
 
   test('a Fonnte crash never fails the order action', async ({ client, assert }) => {

@@ -8,11 +8,13 @@ import InfoNote from '~/components/molecules/info_note'
 export default function PaymentMethodPanel({
   id,
   canPay,
+  isWalkIn,
   total,
   paidAt,
 }: {
   id: number
   canPay: boolean
+  isWalkIn: boolean
   total: string
   paidAt: string | null
 }) {
@@ -51,6 +53,10 @@ export default function PaymentMethodPanel({
             <IconQrcode />
             Bayar dengan QRIS · {total}
           </LinkButton>
+        ) : isWalkIn ? (
+          <InfoNote icon={IconQrcode} tone="accent">
+            Total {total}. Pembayaran dilakukan di kasir Umima Clean.
+          </InfoNote>
         ) : (
           <InfoNote icon={IconQrcode} tone="accent">
             Total {total}. Bayar di toko, atau masuk ke akun pemesan untuk membayar dengan QRIS.

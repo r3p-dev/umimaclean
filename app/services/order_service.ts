@@ -7,7 +7,6 @@ import { errors as limiterErrors } from '@adonisjs/limiter'
 import limiter from '@adonisjs/limiter/services/main'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
-import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 import transmit from '@adonisjs/transmit/services/main'
 import { DateTime } from 'luxon'
 import { ActivityAction } from '#enums/activity_enum'
@@ -23,9 +22,14 @@ import {
   ReturnMethod,
   type OrderStage,
 } from '#enums/order_enum'
-import { PaymentStatus } from '#enums/payment_enum'
-import { formatRupiah } from '#helpers/money'
 import { lastFourDigits } from '#helpers/phone'
+import {
+  billText,
+  courierOnTheWayText,
+  orderCancelledText,
+  orderCreatedText,
+  orderLink,
+} from '#helpers/whatsapp_text'
 import ActivityLog from '#models/activity_log'
 import Bill from '#models/bill'
 import CustomerAddress from '#models/customer_address'
@@ -38,7 +42,6 @@ import Setting from '#models/setting'
 import User from '#models/user'
 import FonnteService from '#services/fonnte_service'
 import AreaService, { type Point } from '#services/area_service'
-import env from '#start/env'
 import type { OrderPayload } from '#validators/customer/order'
 import { fieldError } from '#validators/shared/field_error'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
@@ -92,7 +95,7 @@ export type SlotAvailability = {
   isFull: boolean
 }
 
-type CustomerMessage = 'created' | 'courierOnTheWay' | 'bill' | 'paymentReminder' | 'cancelled'
+type CustomerMessage = 'created' | 'courierOnTheWay' | 'bill' | 'cancelled'
 
 export type TransitionOptions = {
   actor: User | null
@@ -557,39 +560,6 @@ export default class OrderService {
     return { cancelled, skipped: ids.length - cancelled }
   }
 
-  async sendDuePaymentReminders(now: DateTime = DateTime.now()) {
-    const hour = now.setZone(SERVICE_ZONE).hour
-    if (hour < 10 || hour >= 15) {
-      return 0
-    }
-
-    const due = await this.#dueReminders(Bill.query(), now).select('id')
-    let sent = 0
-    for (const { id } of due) {
-      const isSent = await db.transaction(async (transaction) => {
-        const bill = await this.#dueReminders(Bill.query({ client: transaction }), now)
-          .where('id', id)
-          .forUpdate()
-          .skipLocked()
-          .preload('order')
-          .first()
-        if (!bill) {
-          return false
-        }
-        const status = await this.#send(bill.order, 'paymentReminder')
-        if (status === MessageStatus.FAILED) {
-          return false
-        }
-        bill.useTransaction(transaction)
-        bill.merge({ reminderCount: bill.reminderCount + 1, lastRemindedAt: now })
-        await bill.save()
-        return true
-      })
-      sent += isSent ? 1 : 0
-    }
-    return sent
-  }
-
   async #record(
     order: Order,
     status: OrderStatus,
@@ -658,27 +628,6 @@ export default class OrderService {
     }
   }
 
-  #dueReminders(query: ModelQueryBuilderContract<typeof Bill>, now: DateTime) {
-    return query
-      .whereHas('order', (order) => {
-        order
-          .where('status', OrderStatus.AWAITING_PAYMENT)
-          .where('source', OrderSource.ONLINE)
-          .whereDoesntHave('payments', (payments) => {
-            payments.where('status', PaymentStatus.PAID)
-          })
-      })
-      .where((reminder) => {
-        reminder
-          .where((first) => {
-            first
-              .whereNull('last_reminded_at')
-              .where('created_at', '<=', now.minus({ hours: 24 }).toJSDate())
-          })
-          .orWhere('last_reminded_at', '<=', now.minus({ days: 2 }).toJSDate())
-      })
-  }
-
   #messageFor(order: Order, to: OrderStatus, actor: User | null): CustomerMessage | null {
     if (to === OrderStatus.COURIER_EN_ROUTE) {
       return 'courierOnTheWay'
@@ -712,32 +661,49 @@ export default class OrderService {
   }
 
   async #text(order: Order, message: CustomerMessage, actor: User | null) {
-    const greeting = `Halo ${order.customerName.split(' ')[0] || 'Kak'},`
+    const customerName = order.customerName
     const number = order.number()
-    const link = `${env.get('APP_URL')}/pesanan/${order.id}`
+    const link = orderLink(order.id)
 
     switch (message) {
       case 'created':
-        return `${greeting} pesanan ${number} sudah kami terima. Pantau statusnya di ${link}`
+        return orderCreatedText({ customerName, number, link })
       case 'courierOnTheWay':
-        return `${greeting} kurir ${actor?.firstName() || 'kami'} sedang menuju lokasi Anda untuk menjemput pesanan ${number}. Pantau di ${link}`
+        return courierOnTheWayText({
+          customerName,
+          number,
+          courier: actor?.firstName() || 'kami',
+          link,
+        })
       case 'bill': {
         const bill = await Bill.query().where('order_id', order.id).preload('lines').firstOrFail()
         const items = await OrderItem.query().where('order_id', order.id).orderBy('position', 'asc')
         const lines = items.map((item) => {
           const services = bill.lines.filter((line) => line.orderItemId === item.id)
-          const total = services.reduce((sum, line) => sum + line.price, 0)
-          return `- ${item.name}: ${services.map((line) => line.name).join(' + ')} ${formatRupiah(total)}`
+          return {
+            item: item.name,
+            services: services.map((line) => line.name),
+            total: services.reduce((sum, line) => sum + line.price, 0),
+          }
         })
-        return `${greeting} barang pesanan ${number} sudah diperiksa.\n${lines.join('\n')}\nTotal ${formatRupiah(bill.total)}\nRincian dan pembayaran: ${link}`
-      }
-      case 'paymentReminder': {
-        const bill = await Bill.query().where('order_id', order.id).firstOrFail()
-        return `${greeting} tagihan pesanan ${number} sebesar ${formatRupiah(bill.total)} belum dibayar. Lihat rincian dan bayar di ${link}`
+        return billText({
+          customerName,
+          number,
+          lines,
+          total: bill.total,
+          link,
+          isWalkIn: order.source === OrderSource.STORE,
+        })
       }
       case 'cancelled': {
         const store = await Setting.get('store')
-        return `${greeting} pesanan ${number} dibatalkan oleh ${store.name}. Alasan: ${order.cancelReason ?? '-'}. Detail di ${link}`
+        return orderCancelledText({
+          customerName,
+          number,
+          store: store.name,
+          reason: order.cancelReason ?? '-',
+          link,
+        })
       }
     }
   }
