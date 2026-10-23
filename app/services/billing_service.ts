@@ -10,7 +10,7 @@ import CatalogService, { type ItemSelection } from '#services/catalog_service'
 
 export type InspectedItem = {
   kind: ItemKind
-  name: string
+  itemName: string
   note?: string | null
   services: ItemSelection
 }
@@ -55,7 +55,7 @@ export default class BillingService {
         {
           orderId: order.id,
           kind: entry.item.kind,
-          name: entry.item.name,
+          name: entry.item.itemName,
           note: entry.item.note ?? '',
           position: index + 1,
         },

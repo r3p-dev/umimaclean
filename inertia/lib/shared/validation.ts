@@ -11,8 +11,11 @@ export const LIMITS = {
 
 export function nameError(value: string) {
   const name = value.trim()
+  if (!value) {
+    return 'Nama wajib diisi.'
+  }
   if (name.length < LIMITS.name.min) {
-    return 'Isi nama Anda.'
+    return `Nama minimal ${LIMITS.name.min} karakter.`
   }
   if (name.length > LIMITS.name.max) {
     return `Nama maksimal ${LIMITS.name.max} karakter.`
@@ -34,7 +37,7 @@ export function nationalPhone(value: string) {
 export function phoneError(value: string) {
   const digits = compactPhone(value)
   if (!digits) {
-    return 'Isi nomor WhatsApp Anda.'
+    return 'Nomor WhatsApp wajib diisi.'
   }
   if (!/^\d+$/.test(digits)) {
     return 'Nomor WhatsApp hanya boleh berisi angka.'
@@ -54,7 +57,7 @@ export function phoneError(value: string) {
 
 export function passwordError(value: string) {
   if (!value) {
-    return 'Isi kata sandi.'
+    return 'Kata sandi wajib diisi.'
   }
   if (value.length < LIMITS.password.min) {
     return `Kata sandi minimal ${LIMITS.password.min} karakter.`
@@ -67,8 +70,8 @@ export function passwordError(value: string) {
 
 export function addressError(value: string) {
   const address = value.trim()
-  if (!address) {
-    return 'Isi alamat penjemputan.'
+  if (!value) {
+    return 'Alamat wajib diisi.'
   }
   if (address.length < LIMITS.address.min) {
     return 'Lengkapi alamat: nama jalan, nomor rumah, RT/RW.'
@@ -81,8 +84,11 @@ export function addressError(value: string) {
 
 export function recipientError(value: string) {
   const name = value.trim()
+  if (!value) {
+    return 'Nama penerima wajib diisi.'
+  }
   if (name.length < LIMITS.name.min) {
-    return 'Isi nama penerima.'
+    return `Nama penerima minimal ${LIMITS.name.min} karakter.`
   }
   if (name.length > LIMITS.name.max) {
     return `Nama penerima maksimal ${LIMITS.name.max} karakter.`
@@ -92,8 +98,11 @@ export function recipientError(value: string) {
 
 export function labelError(value: string) {
   const label = value.trim()
+  if (!value) {
+    return 'Label wajib diisi.'
+  }
   if (!label) {
-    return 'Pilih atau isi label alamat.'
+    return 'Label minimal 1 karakter.'
   }
   if (label.length > LIMITS.label) {
     return `Label maksimal ${LIMITS.label} karakter.`

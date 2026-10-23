@@ -44,7 +44,7 @@ export function inspectionPayload(items: InspectionItem[]) {
   return {
     items: items.map((item) => ({
       kind: item.kind,
-      name: item.name.trim(),
+      itemName: item.name.trim(),
       ...(item.note.trim() ? { note: item.note.trim() } : {}),
       services: { main: item.selection.main, addons: item.selection.addons },
     })),

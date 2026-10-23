@@ -12,11 +12,11 @@ export const pickupDateRule = vine.createRule((value, _options, field) => {
   const date = DateTime.fromISO(value, { zone: SERVICE_ZONE })
   const today = DateTime.now().setZone(SERVICE_ZONE).startOf('day')
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || !date.isValid) {
-    field.report('Pilih tanggal penjemputan.', 'date.format', field)
+    field.report('pickupDateFormat', 'pickupDateFormat', field)
   } else if (date <= today || date > today.plus({ days: PICKUP_DAYS_AHEAD })) {
-    field.report('Tanggal penjemputan tidak tersedia. Pilih tanggal lain.', 'date.range', field)
+    field.report('pickupDateRange', 'pickupDateRange', field)
   } else if (date.weekday === 7) {
-    field.report('Tidak ada penjemputan di hari Minggu.', 'date.sunday', field)
+    field.report('pickupDateSunday', 'pickupDateSunday', field)
   }
 })
 
@@ -30,6 +30,6 @@ export const itemsRule = vine.createRule((value, _options, field) => {
     0
   )
   if (total < 1) {
-    field.report('Tambahkan minimal 1 barang.', 'items.min', field)
+    field.report('itemsEmpty', 'itemsEmpty', field)
   }
 })

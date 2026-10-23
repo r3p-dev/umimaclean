@@ -1,4 +1,4 @@
-import vine, { SimpleMessagesProvider } from '@vinejs/vine'
+import vine from '@vinejs/vine'
 import type { Infer } from '@vinejs/vine/types'
 import { ReturnMethod } from '#enums/order_enum'
 import { PaymentMethod } from '#enums/payment_enum'
@@ -21,13 +21,6 @@ export const walkInValidator = vine.create({
     .optional(),
   note: vine.string().trim().maxLength(300).optional(),
 })
-walkInValidator.messagesProvider = new SimpleMessagesProvider({
-  'name.minLength': 'Isi nama pelanggan.',
-  'name.maxLength': 'Nama maksimal 80 karakter.',
-  'address.minLength': 'Lengkapi alamat antar.',
-  'address.maxLength': 'Alamat maksimal 300 karakter.',
-  'range': 'Jumlah barang 0 sampai 20 per jenis.',
-})
 
 export type WalkInPayload = Infer<typeof walkInValidator>
 
@@ -36,15 +29,7 @@ export const counterPaymentValidator = vine.create({
   cashReceived: vine.number().withoutDecimals().min(0).max(100_000_000).optional(),
   reference: vine.string().trim().minLength(4).maxLength(40).optional(),
 })
-counterPaymentValidator.messagesProvider = new SimpleMessagesProvider({
-  'reference.minLength': 'Isi nomor referensi dari struk EDC.',
-  'reference.maxLength': 'Nomor referensi maksimal 40 karakter.',
-})
 
 export const intakePhotosValidator = vine.create({
   photos: vine.array(proofPhoto()).minLength(1).maxLength(3),
-})
-intakePhotosValidator.messagesProvider = new SimpleMessagesProvider({
-  'photos.minLength': 'Ambil minimal 1 foto.',
-  'photos.maxLength': 'Maksimal 3 foto.',
 })

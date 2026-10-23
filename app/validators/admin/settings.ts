@@ -1,12 +1,12 @@
-import vine, { SimpleMessagesProvider } from '@vinejs/vine'
+import vine from '@vinejs/vine'
 import type { Infer } from '@vinejs/vine/types'
 import { SLOT_CAPACITY } from '#services/settings_service'
 import { phoneField } from '#validators/shared/rules/phone'
 
 export const saveStoreSettingsValidator = vine.create({
-  name: vine.string().trim().minLength(2).maxLength(60),
+  storeName: vine.string().trim().minLength(2).maxLength(60),
   whatsapp: phoneField(),
-  address: vine.string().trim().minLength(10).maxLength(200),
+  storeAddress: vine.string().trim().minLength(10).maxLength(200),
   hours: vine.string().trim().minLength(3).maxLength(80),
   areas: vine
     .array(
@@ -31,12 +31,6 @@ export const saveStoreSettingsValidator = vine.create({
     .fixedLength(3),
   payments: vine.object({ qris: vine.boolean(), cash: vine.boolean(), edc: vine.boolean() }),
   inactiveDays: vine.number().withoutDecimals().range([7, 365]),
-})
-saveStoreSettingsValidator.messagesProvider = new SimpleMessagesProvider({
-  'name.minLength': 'Isi nama toko.',
-  'address.minLength': 'Lengkapi alamat toko.',
-  'hours.minLength': 'Isi jam buka.',
-  'areas.minLength': 'Minimal satu kota di area layanan.',
 })
 
 export type StoreSettingsPayload = Infer<typeof saveStoreSettingsValidator>

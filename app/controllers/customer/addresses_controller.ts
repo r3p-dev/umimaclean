@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core'
+import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
-import AddressNotFoundException from '#exceptions/address_not_found_exception'
 import CustomerAddress, { MAX_ACTIVE_ADDRESSES } from '#models/customer_address'
 import CustomerAddressPolicy from '#policies/customer_address_policy'
 import AddressBookService from '#services/address_book_service'
@@ -100,7 +100,7 @@ export default class AddressesController {
   async #owned(bouncer: HttpContext['bouncer'], id: unknown) {
     const address = await CustomerAddress.find(Number(id) || 0)
     if (!address || !(await bouncer.with(CustomerAddressPolicy).allows('manage', address))) {
-      throw new AddressNotFoundException()
+      throw new Exception('Alamat tidak ditemukan', { status: 404 })
     }
 
     return address

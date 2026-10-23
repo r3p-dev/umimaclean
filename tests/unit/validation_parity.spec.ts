@@ -29,11 +29,12 @@ const address = {
 }
 
 async function serverError(field: 'name' | 'phone' | 'address', value: string) {
+  const input = value === '' ? null : value
   try {
     if (field === 'address') {
-      await saveAddressValidator.validate({ ...address, addressText: value })
+      await saveAddressValidator.validate({ ...address, addressText: input })
     } else {
-      await registerValidator.validate({ ...account, [field]: value })
+      await registerValidator.validate({ ...account, [field]: input })
     }
     return null
   } catch (error) {

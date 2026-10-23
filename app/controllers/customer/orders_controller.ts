@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core'
+import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
-import OrderNotFoundException from '#exceptions/order_not_found_exception'
 import OrderPolicy from '#policies/order_policy'
 import OrderHistoryService, {
   orderFilterOf,
@@ -115,7 +115,7 @@ export default class OrdersController {
 
     const order = publicCode ? await this.orders.findByCode(publicCode) : null
     if (!order || !(await bouncer.with(OrderPolicy).allows('view', order))) {
-      throw new OrderNotFoundException()
+      throw new Exception('Pesanan tidak ditemukan', { status: 404 })
     }
 
     return order

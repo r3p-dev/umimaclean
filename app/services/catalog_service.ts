@@ -12,7 +12,7 @@ import { formatRupiah } from '#services/notification_service'
 import { fieldError } from '#validators/shared/field_error'
 
 export type ServiceInput = {
-  name: string
+  serviceName: string
   type: 'utama' | 'tambahan'
   categories: ('Sepatu' | 'Tas' | 'Helm')[]
   price: number
@@ -86,7 +86,7 @@ export default class CatalogService {
       const before = service.$isPersisted ? `${service.name} ${formatRupiah(service.price)}` : null
       service.useTransaction(transaction)
       service.merge({
-        name: input.name,
+        name: input.serviceName,
         type: input.type === 'utama' ? ServiceType.MAIN : ServiceType.ADDON,
         categories: input.categories.map((category) => KIND_OF[category]),
         price: input.price,

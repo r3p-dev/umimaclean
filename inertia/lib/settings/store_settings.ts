@@ -48,5 +48,10 @@ export function saveStoreSettings(
   settings: StoreSettings,
   callbacks: { onError?: (errors: Record<string, string>) => void; onFinish?: () => void } = {}
 ) {
-  router.put(urlFor('admin.store.update'), settings, { preserveScroll: true, ...callbacks })
+  const { name, address, ...rest } = settings
+  router.put(
+    urlFor('admin.store.update'),
+    { ...rest, storeName: name, storeAddress: address },
+    { preserveScroll: true, ...callbacks }
+  )
 }

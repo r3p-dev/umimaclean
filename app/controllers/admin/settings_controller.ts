@@ -98,9 +98,9 @@ export default class SettingsController {
     const owner = auth.getUserOrFail()
     const payload = await request.validateUsing(saveStoreSettingsValidator)
     await this.settings.put('store', {
-      name: payload.name,
+      name: payload.storeName,
       whatsapp: payload.whatsapp,
-      address: payload.address,
+      address: payload.storeAddress,
       hours: payload.hours,
     })
     await this.settings.put('pickup_slots', payload.slots)

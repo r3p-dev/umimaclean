@@ -52,7 +52,7 @@ export default function SignInForm({
       found.phone = phoneProblem
     }
     if (!password) {
-      found.password = 'Isi kata sandi.'
+      found.password = 'Kata sandi wajib diisi.'
     }
     if (turnstile.isEnabled && !turnstile.token) {
       found.turnstile = 'Selesaikan verifikasi keamanan, lalu coba lagi.'

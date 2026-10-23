@@ -85,7 +85,7 @@ export default class DashboardController {
     const owner = auth.getUserOrFail()
     const cost = await OperatingCost.create({
       category: CATEGORY_OF[payload.category],
-      note: payload.note,
+      note: payload.detail,
       amount: payload.amount,
       spentOn: payload.date,
       createdBy: owner.id,
@@ -106,7 +106,7 @@ export default class DashboardController {
     const before = `${cost.note} ${formatRupiah(cost.amount)}`
     cost.merge({
       category: CATEGORY_OF[payload.category],
-      note: payload.note,
+      note: payload.detail,
       amount: payload.amount,
       spentOn: payload.date,
     })

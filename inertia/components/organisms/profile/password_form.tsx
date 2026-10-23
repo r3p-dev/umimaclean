@@ -56,7 +56,7 @@ export default function PasswordForm({
     }
     const found: Partial<Record<PasswordField, string>> = {}
     if (!values.currentPassword) {
-      found.currentPassword = 'Isi kata sandi saat ini.'
+      found.currentPassword = 'Kata sandi saat ini wajib diisi.'
     }
     const problem = passwordError(values.password)
     if (problem) {

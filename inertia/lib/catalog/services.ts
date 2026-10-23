@@ -52,7 +52,7 @@ type Callbacks = { onSuccess?: () => void; onFinish?: () => void }
 
 export function saveService(form: ServiceForm, id: string | null, callbacks: Callbacks = {}) {
   const body = {
-    name: form.name.trim(),
+    serviceName: form.name.trim(),
     type: form.type,
     categories: form.categories,
     price: Number(form.price),

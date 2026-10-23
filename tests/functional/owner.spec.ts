@@ -128,7 +128,7 @@ test.group('Owner tools', (group) => {
     const [deepClean] = await seedCatalogue()
 
     await send(client, 'put', `/admin/layanan/${deepClean.id}`, {
-      name: 'Deep Clean',
+      serviceName: 'Deep Clean',
       type: 'utama',
       categories: ['Sepatu'],
       price: 52000,
@@ -143,7 +143,7 @@ test.group('Owner tools', (group) => {
     const order = await createOrder(await UserFactory.create(), { status: OrderStatus.PICKED_UP })
     await post(client, `/staf/proses/${order.publicCode}/periksa/mulai`).loginAs(staff)
     await post(client, `/staf/proses/${order.publicCode}/periksa`, {
-      items: [{ kind: 'shoe', name: 'Sepatu', services: { main: deepClean.id, addons: [] } }],
+      items: [{ kind: 'shoe', itemName: 'Sepatu', services: { main: deepClean.id, addons: [] } }],
     }).loginAs(staff)
     const bill = await Bill.findByOrFail('order_id', order.id)
     assert.equal(bill.total, 52000)
@@ -156,9 +156,9 @@ test.group('Owner tools', (group) => {
     const payload = orderPayload(address.id, { slot: 0 })
 
     await send(client, 'put', '/admin/pengaturan/toko', {
-      name: DEFAULT_SETTINGS.store.name,
+      storeName: DEFAULT_SETTINGS.store.name,
       whatsapp: '085157900974',
-      address: DEFAULT_SETTINGS.store.address,
+      storeAddress: DEFAULT_SETTINGS.store.address,
       hours: DEFAULT_SETTINGS.store.hours,
       areas: [{ city: 'Kota Bandung', districts: null }],
       slots: [
@@ -185,9 +185,9 @@ test.group('Owner tools', (group) => {
     const customer = await UserFactory.create()
 
     await send(client, 'put', '/admin/pengaturan/toko', {
-      name: DEFAULT_SETTINGS.store.name,
+      storeName: DEFAULT_SETTINGS.store.name,
       whatsapp: '085157900974',
-      address: DEFAULT_SETTINGS.store.address,
+      storeAddress: DEFAULT_SETTINGS.store.address,
       hours: DEFAULT_SETTINGS.store.hours,
       areas: [{ city: 'Kota Bandung', districts: ['Sukajadi'] }],
       slots: DEFAULT_SETTINGS.pickup_slots,

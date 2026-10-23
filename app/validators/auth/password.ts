@@ -1,5 +1,5 @@
-import vine, { SimpleMessagesProvider } from '@vinejs/vine'
-import { passwordField, passwordMessages } from '#validators/shared/rules/password'
+import vine from '@vinejs/vine'
+import { passwordField } from '#validators/shared/rules/password'
 import { phoneField } from '#validators/shared/rules/phone'
 
 export const forgotPasswordValidator = vine.create({
@@ -11,4 +11,3 @@ export const resetPasswordValidator = vine.create({
   password: passwordField().confirmed({ confirmationField: 'passwordConfirmation' }),
   logoutOthers: vine.boolean().optional(),
 })
-resetPasswordValidator.messagesProvider = new SimpleMessagesProvider(passwordMessages)

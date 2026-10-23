@@ -1,4 +1,4 @@
-import vine, { SimpleMessagesProvider } from '@vinejs/vine'
+import vine from '@vinejs/vine'
 import type { Infer } from '@vinejs/vine/types'
 import { phoneField } from '#validators/shared/rules/phone'
 
@@ -11,10 +11,6 @@ export const saveStaffValidator = vine.create({
   phone: phoneField(),
   role: vine.enum(STAFF_FORM_ROLES),
   shift: vine.enum(STAFF_FORM_SHIFTS),
-})
-saveStaffValidator.messagesProvider = new SimpleMessagesProvider({
-  'name.required': 'Nama wajib diisi.',
-  'name.minLength': 'Nama wajib diisi.',
 })
 
 export type StaffPayload = Infer<typeof saveStaffValidator>

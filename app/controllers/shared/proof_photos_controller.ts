@@ -1,5 +1,5 @@
+import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
-import OrderNotFoundException from '#exceptions/order_not_found_exception'
 import OrderPhoto from '#models/order_photo'
 import OrderPolicy from '#policies/order_policy'
 import { proofPath } from '#services/proof_photo_service'
@@ -11,7 +11,7 @@ export default class ProofPhotosController {
       .preload('order')
       .first()
     if (!photo?.path || !(await bouncer.with(OrderPolicy).allows('follow', photo.order))) {
-      throw new OrderNotFoundException()
+      throw new Exception('Pesanan tidak ditemukan', { status: 404 })
     }
 
     response.header('cache-control', 'private, max-age=86400')

@@ -135,10 +135,10 @@ test.group('Order workflow', (group) => {
       items: [
         {
           kind: 'shoe',
-          name: 'Sneakers putih',
+          itemName: 'Sneakers putih',
           services: { main: deepClean.id, addons: [whitening.id] },
         },
-        { kind: 'bag', name: 'Ransel', services: { main: bagWash.id, addons: [] } },
+        { kind: 'bag', itemName: 'Ransel', services: { main: bagWash.id, addons: [] } },
       ],
     }).loginAs(courier)
     assert.equal(await statusOf(order), OrderStatus.AWAITING_PAYMENT)
@@ -262,13 +262,13 @@ test.group('Order workflow', (group) => {
     await post(client, `/staf/proses/${order.publicCode}/periksa/mulai`).loginAs(staff)
 
     const wrongKind = await post(client, `/staf/proses/${order.publicCode}/periksa`, {
-      items: [{ kind: 'shoe', name: 'Sepatu', services: { main: bagWash.id, addons: [] } }],
+      items: [{ kind: 'shoe', itemName: 'Sepatu', services: { main: bagWash.id, addons: [] } }],
     }).loginAs(staff)
     wrongKind.assertBodyContains({ errors: [{ rule: 'service.main' }] })
 
     await Service.query().where('id', deepClean.id).update({ is_active: false })
     const inactive = await post(client, `/staf/proses/${order.publicCode}/periksa`, {
-      items: [{ kind: 'shoe', name: 'Sepatu', services: { main: deepClean.id, addons: [] } }],
+      items: [{ kind: 'shoe', itemName: 'Sepatu', services: { main: deepClean.id, addons: [] } }],
     }).loginAs(staff)
     inactive.assertBodyContains({ errors: [{ rule: 'service.main' }] })
     assert.equal(await statusOf(order), OrderStatus.IN_INSPECTION)
