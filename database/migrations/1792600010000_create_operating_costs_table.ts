@@ -1,3 +1,11 @@
+/*
+ * operating_costs: business expenses the owner enters (rent, salaries, supplies), used to
+ * show profit on the reports page.
+ *
+ * - category: CostCategory enum.
+ * - spent_on: the day of the expense; indexed because reports sum costs per date range.
+ * - created_by: the owner who entered it.
+ */
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {

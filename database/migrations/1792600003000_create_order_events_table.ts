@@ -1,3 +1,14 @@
+/*
+ * order_events: the order timeline shown to the customer, one row per status change.
+ *
+ * Append-only: rows are never updated, so the timeline is a faithful history.
+ * - status: the status the order moved to.
+ * - actor_id: who made the change (customer, staff, owner); null for the system, e.g. a
+ *   payment webhook. SET NULL keeps the event if the account is removed.
+ * - note: short text for the customer, e.g. the skip reason or who received the delivery.
+ *
+ * Index (order_id, id): the timeline is read per order in insertion order.
+ */
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {

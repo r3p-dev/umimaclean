@@ -1,3 +1,16 @@
+/*
+ * order_addresses: the pickup and delivery address of an order, copied at order time.
+ *
+ * A copy, not a link: the customer can edit or delete a saved address later, and the
+ * order must still show where it was picked up and where it goes. Walk-in deliveries
+ * have no saved address at all.
+ * - type: 'pickup' or 'delivery' (OrderAddressType enum).
+ * - customer_address_id: the saved address it was copied from; SET NULL when that
+ *   address is removed.
+ * - recipient_phone: always filled, falling back to the customer's phone.
+ *
+ * Unique (order_id, type): an order has at most one pickup and one delivery address.
+ */
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {

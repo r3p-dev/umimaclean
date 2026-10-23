@@ -1,3 +1,19 @@
+/*
+ * customer_addresses: a customer's saved pickup and delivery addresses.
+ *
+ * - label: "Rumah", "Kantor" or a custom name.
+ * - recipient_phone: optional other phone for the recipient; the order falls back to the
+ *   customer's own phone.
+ * - lat, lng: the pin dropped on the map, checked against the service area.
+ * - is_primary: the address preselected on the order form.
+ * - last_used_at: when the address was last used in an order; deleting the primary
+ *   address promotes the most recently used one.
+ * - deleted_at: soft delete, so the row behind an old order is never removed.
+ *
+ * Index (user_id, deleted_at): every read lists one customer's active addresses.
+ * Partial unique index on user_id where is_primary and not deleted: the database itself
+ * guarantees at most one primary address per customer.
+ */
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {

@@ -1,8 +1,19 @@
+/*
+ * bills: the bill of an order, created when staff finish the inspection.
+ *
+ * - order_id: unique, an order has at most one bill (re-inspection replaces it).
+ * - total: sum of the bill lines, stored once because payments, reports and every order
+ *   screen read it.
+ * - decided_by: the staff member who priced the items; SET NULL keeps the bill if the
+ *   account is removed.
+ */
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {
+  protected tableName = 'bills'
+
   override async up() {
-    this.schema.createTable('bills', (table) => {
+    this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table
         .integer('order_id')
@@ -23,39 +34,9 @@ export default class extends BaseSchema {
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').notNullable()
     })
-
-    this.schema.createTable('bill_lines', (table) => {
-      table.increments('id')
-      table
-        .integer('bill_id')
-        .notNullable()
-        .unsigned()
-        .references('id')
-        .inTable('bills')
-        .onDelete('CASCADE')
-      table
-        .integer('order_item_id')
-        .notNullable()
-        .unsigned()
-        .references('id')
-        .inTable('order_items')
-        .onDelete('CASCADE')
-      table
-        .integer('service_id')
-        .nullable()
-        .unsigned()
-        .references('id')
-        .inTable('services')
-        .onDelete('SET NULL')
-      table.string('service_type').notNullable()
-      table.string('name', 60).notNullable()
-      table.integer('price').notNullable()
-      table.index(['bill_id'])
-    })
   }
 
   override async down() {
-    this.schema.dropTable('bill_lines')
-    this.schema.dropTable('bills')
+    this.schema.dropTable(this.tableName)
   }
 }

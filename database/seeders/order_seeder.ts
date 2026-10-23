@@ -5,7 +5,6 @@ import logger from '@adonisjs/core/services/logger'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { DateTime } from 'luxon'
 import { ActivityAction } from '#enums/activity_enum'
-import { CostCategory } from '#enums/cost_enum'
 import {
   ItemKind,
   ItemKindLabel,
@@ -23,7 +22,6 @@ import ActivityLog from '#models/activity_log'
 import Bill from '#models/bill'
 import BillLine from '#models/bill_line'
 import CustomerAddress from '#models/customer_address'
-import OperatingCost from '#models/operating_cost'
 import Order from '#models/order'
 import OrderAddress from '#models/order_address'
 import OrderEvent from '#models/order_event'
@@ -38,85 +36,12 @@ import { proofPath } from '#services/proof_photo_service'
 import { orderRoute } from '#transformers/order_transformer'
 import { ORDER_STATUS_SEQUENCE } from '#enums/order_enum'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
-import { DEMO_PHONE } from '#database/seeders/base_seeder'
+import { DEMO_CUSTOMERS, DEMO_PHONE } from '#database/seeders/user_seeder'
 
 const PLACEHOLDER = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
   'base64'
 )
-
-const CUSTOMERS = [
-  [
-    'Laras Putri',
-    '6281223456701',
-    'Jl. Cisitu Indah III No. 20, Dago, Coblong, Kota Bandung',
-    -6.8806,
-    107.6113,
-  ],
-  [
-    'Fajar Nugraha',
-    '6281223456702',
-    'Jl. Sukajadi No. 140, Sukagalih, Sukajadi, Kota Bandung',
-    -6.889,
-    107.596,
-  ],
-  [
-    'Siti Aminah',
-    '6281223456703',
-    'Jl. Gegerkalong Hilir No. 41, Sukarasa, Sukasari, Kota Bandung',
-    -6.872,
-    107.589,
-  ],
-  [
-    'Dewi Lestari',
-    '6281223456704',
-    'Jl. Tubagus Ismail VIII No. 7, Sekeloa, Coblong, Kota Bandung',
-    -6.886,
-    107.621,
-  ],
-  [
-    'Hendra Wijaya',
-    '6281223456705',
-    'Jl. Gegerkalong Girang No. 18, Isola, Sukasari, Kota Bandung',
-    -6.864,
-    107.593,
-  ],
-  [
-    'Maya Sari',
-    '6281223456706',
-    'Jl. Cipaganti No. 102, Pasteur, Sukajadi, Kota Bandung',
-    -6.889,
-    107.604,
-  ],
-  [
-    'Indra Kusuma',
-    '6281223456707',
-    'Jl. Dipatiukur No. 66, Lebakgede, Coblong, Kota Bandung',
-    -6.8898,
-    107.6158,
-  ],
-  [
-    'Rudi Hartono',
-    '6281223456708',
-    'Jl. Terusan Jakarta No. 12, Antapani, Kota Bandung',
-    -6.913,
-    107.66,
-  ],
-  [
-    'Nadia Putri',
-    '6281223456709',
-    'Jl. Margahayu Raya No. 5, Margahayu, Kab. Bandung',
-    -6.97,
-    107.58,
-  ],
-  [
-    'Teguh Prasetyo',
-    '6281223456710',
-    'Jl. Amir Machmud No. 300, Cimahi Tengah, Kota Cimahi',
-    -6.872,
-    107.542,
-  ],
-] as const
 
 const COURIER_STEPS = [
   OrderStatus.COURIER_EN_ROUTE,
@@ -150,8 +75,6 @@ function rng(seed: number) {
 }
 
 export default class extends BaseSeeder {
-  static override environment = ['development']
-
   #random = rng(20261021)
 
   override async run() {
@@ -166,29 +89,8 @@ export default class extends BaseSeeder {
     }
     const rina = await User.findByOrFail('phone', DEMO_PHONE)
     const customers = [rina]
-    for (const [name, phone, addressText, lat, lng] of CUSTOMERS) {
-      const user =
-        (await User.findBy('phone', phone)) ??
-        (await User.create({
-          role: Role.CUSTOMER,
-          name,
-          phone,
-          password: randomUUID(),
-          phoneVerifiedAt: DateTime.now(),
-        }))
-      await CustomerAddress.firstOrCreate(
-        { userId: user.id, label: 'Rumah' },
-        {
-          recipientName: name,
-          recipientPhone: null,
-          addressText,
-          landmark: null,
-          lat,
-          lng,
-          isPrimary: true,
-        }
-      )
-      customers.push(user)
+    for (const [, phone] of DEMO_CUSTOMERS) {
+      customers.push(await User.findByOrFail('phone', phone))
     }
     const services = await Service.query().where('is_active', true)
     const today = DateTime.now().setZone(SERVICE_ZONE).startOf('day')
@@ -275,31 +177,6 @@ export default class extends BaseSeeder {
       staff,
       services
     )
-
-    const month = today.startOf('month')
-    await OperatingCost.createMany([
-      {
-        category: CostCategory.RENT,
-        note: 'Sewa ruko',
-        amount: 3000000,
-        spentOn: month,
-        createdBy: staff.owner.id,
-      },
-      {
-        category: CostCategory.SALARY,
-        note: 'Gaji 2 staf',
-        amount: 3500000,
-        spentOn: month,
-        createdBy: staff.owner.id,
-      },
-      {
-        category: CostCategory.SUPPLIES,
-        note: 'Sabun, sikat, deodorizer',
-        amount: 700000,
-        spentOn: month.plus({ days: 2 }),
-        createdBy: staff.owner.id,
-      },
-    ])
 
     logger.info(
       `Demo orders created: ${await Order.query()

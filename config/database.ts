@@ -24,7 +24,7 @@ const dbConfig = defineConfig({
       },
 
       seeders: {
-        paths: ['database/seeders'],
+        paths: ['database/seeders/main'],
 
         naturalSort: true,
       },

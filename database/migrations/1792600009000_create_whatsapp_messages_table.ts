@@ -1,3 +1,13 @@
+/*
+ * whatsapp_messages: a log of every WhatsApp message sent through Fonnte.
+ *
+ * - target: the number it was sent to.
+ * - purpose: which message it was (MessagePurpose enum).
+ * - status: sent, failed or logged (no Fonnte token outside production).
+ *
+ * Index (user_id, purpose, created_at): the owner's customer reminders check whether a
+ * customer was already reminded in the last 7 days. Index on order_id: messages per order.
+ */
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {

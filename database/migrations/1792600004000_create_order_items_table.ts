@@ -1,3 +1,14 @@
+/*
+ * order_items: the actual items of an order, listed by staff during inspection.
+ *
+ * - kind: shoe, bag or helmet (ItemKind enum).
+ * - name: what staff wrote down, e.g. "Nike Air Force 1 putih".
+ * - note: condition notes, e.g. stains or damage.
+ * - position: 1, 2, 3... the order staff listed them in.
+ * - washed_at: set when washing is done.
+ *
+ * Unique (order_id, position): each item has its own number within the order.
+ */
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {

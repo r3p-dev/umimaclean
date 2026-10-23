@@ -1,3 +1,11 @@
+/*
+ * rate_limits: storage for @adonisjs/limiter (login, OTP, QRIS and similar limits).
+ *
+ * The shape (key, points, expire) is the one the limiter's database store expects.
+ * - key: the limited action plus who does it, e.g. "login_phone_628...".
+ * - points: requests used in the current window.
+ * - expire: when the window ends, in milliseconds since epoch.
+ */
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {

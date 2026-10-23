@@ -1,3 +1,12 @@
+/*
+ * remember_me_tokens: the "Ingat saya" tokens of the AdonisJS session guard (180 days).
+ *
+ * - hash: only the token hash is stored, unique so a cookie maps to exactly one row.
+ * - tokenable_id cascades on delete: removing a user removes their remembered devices.
+ *
+ * Deleting a user's rows signs every remembered device out (password reset and
+ * "log out other devices").
+ */
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {

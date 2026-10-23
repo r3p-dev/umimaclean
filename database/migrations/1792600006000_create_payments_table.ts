@@ -1,3 +1,22 @@
+/*
+ * payments: every payment attempt for an order, QRIS (Midtrans) or at the counter.
+ *
+ * An order can have several rows (an expired QR code, then a new one); at most one ends
+ * up 'paid'.
+ * - channel: where the payment was started, online or counter (PaymentChannel enum).
+ * - method: qris, cash or card (PaymentMethod enum).
+ * - status: pending, paid, expired, failed or cancelled (PaymentStatus enum).
+ * - amount: what was charged, copied from the bill; the owner can correct it later.
+ * - cash_received: cash handed over, to print the change on the receipt.
+ * - reference: EDC slip number for card payments.
+ * - provider_order_id: the id sent to Midtrans; unique so a webhook finds exactly one row.
+ * - provider_transaction_id, qr_url, expires_at: Midtrans transaction, QR image and expiry.
+ * - recorded_by: the staff member or owner who recorded a counter payment.
+ * - note: why the owner corrected the payment, or a mismatch warning.
+ *
+ * Indexes: status (reconciliation list), paid_at (revenue reports by day),
+ * (order_id, status) (find the paid or pending payment of one order).
+ */
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {

@@ -3,8 +3,7 @@ import db from '@adonisjs/lucid/services/db'
 import { OrderSource, OrderStatus } from '#enums/order_enum'
 import Order from '#models/order'
 import User from '#models/user'
-import BaseSeeder from '#database/seeders/base_seeder'
-import DemoOrdersSeeder from '#database/seeders/demo_orders_seeder'
+import IndexSeeder from '#database/seeders/main/index_seeder'
 import { useApp } from '#tests/support/app'
 
 async function code(status: OrderStatus, source?: OrderSource) {
@@ -23,8 +22,7 @@ test.group('Every page renders with seeded data', (group) => {
     browserContext,
     assert,
   }) => {
-    await new BaseSeeder(db.connection()).run()
-    await new DemoOrdersSeeder(db.connection()).run()
+    await new IndexSeeder(db.connection()).run()
 
     const rina = await User.findByOrFail('phone', '6281223456789')
     const staff = await User.findByOrFail('phone', '6281234567801')
