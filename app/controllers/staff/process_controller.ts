@@ -5,7 +5,6 @@ import { ServiceType } from '#enums/service_enum'
 import Order from '#models/order'
 import OrderPolicy from '#policies/order_policy'
 import BillingService from '#services/billing_service'
-import { deliveryNote } from '#services/order_service'
 import TaskService from '#services/task_service'
 import InspectionTransformer from '#transformers/inspection_transformer'
 import ProcessRowTransformer from '#transformers/process_row_transformer'
@@ -80,7 +79,7 @@ export default class ProcessController {
       session.flash('success', 'Pemeriksaan disimpan. Lanjutkan pembayaran di kasir.')
       return response.redirect().toRoute('staff.store_payment', { id })
     }
-    session.flash('success', `Tagihan dibuat. ${deliveryNote(result.notice!)}`)
+    session.flash('success', 'Tagihan dibuat.')
     return response.redirect().toRoute('staff.inspection', { id })
   }
 
@@ -98,11 +97,11 @@ export default class ProcessController {
     await bouncer.with(OrderPolicy).authorize('work')
     const id = Number(params.id)
     const { photo } = await request.validateUsing(washValidator)
-    const result = await this.tasks.completeWash(auth.getUserOrFail(), id, photo)
+    const order = await this.tasks.completeWash(auth.getUserOrFail(), id, photo)
     session.flash(
       'success',
-      result.notice
-        ? `Pencucian selesai. ${deliveryNote(result.notice)}`
+      order.status === OrderStatus.READY_FOR_COLLECTION
+        ? 'Pencucian selesai. Pesanan siap diambil di toko.'
         : 'Pencucian selesai. Pesanan masuk antrean Antar.'
     )
     return response.redirect().toRoute('staff.washing', { id })

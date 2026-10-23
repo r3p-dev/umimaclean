@@ -1,22 +1,19 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import AddressService from '#services/address_service'
-import OrderService from '#services/order_service'
+import Order from '#models/order'
 import AddressTransformer from '#transformers/address_transformer'
 import OrderTransformer from '#transformers/order_transformer'
 import UserTransformer from '#transformers/user_transformer'
 
 @inject()
 export default class HomeController {
-  constructor(
-    protected orders: OrderService,
-    protected addresses: AddressService
-  ) {}
+  constructor(protected addresses: AddressService) {}
 
   async show({ inertia, auth }: HttpContext) {
     const user = auth.getUserOrFail()
     const [hasOrders, addresses] = await Promise.all([
-      this.orders.hasOrders(user),
+      Order.hasAnyFor(user),
       this.addresses.list(user),
     ])
     const profile = new UserTransformer(user).toObject()
@@ -28,8 +25,8 @@ export default class HomeController {
     }
 
     const [active, completed] = await Promise.all([
-      this.orders.latestActive(user),
-      this.orders.recentCompleted(user),
+      Order.latestActiveFor(user),
+      Order.recentCompletedFor(user),
     ])
     return inertia.render('customer/home/index', {
       user: profile,

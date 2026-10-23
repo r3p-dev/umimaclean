@@ -4,7 +4,6 @@ import db from '@adonisjs/lucid/services/db'
 import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 import { DateTime } from 'luxon'
 import { ActivityAction } from '#enums/activity_enum'
-import { MessagePurpose } from '#enums/message_enum'
 import { OrderSource, OrderStatus, PhotoKind, ReturnMethod } from '#enums/order_enum'
 import ActivityLog from '#models/activity_log'
 import Order from '#models/order'
@@ -47,9 +46,6 @@ const TRIP = {
     photo: PhotoKind.PICKUP,
     doneAction: ActivityAction.PICKUP_DONE,
     skipAction: ActivityAction.PICKUP_SKIPPED,
-    startMessage: MessagePurpose.COURIER_ON_THE_WAY,
-    doneMessage: MessagePurpose.PICKED_UP,
-    skipMessage: MessagePurpose.PICKUP_SKIPPED,
   },
   delivery: {
     queued: OrderStatus.READY_FOR_DELIVERY,
@@ -59,9 +55,6 @@ const TRIP = {
     photo: PhotoKind.DELIVERY,
     doneAction: ActivityAction.DELIVERY_DONE,
     skipAction: ActivityAction.DELIVERY_SKIPPED,
-    startMessage: MessagePurpose.OUT_FOR_DELIVERY,
-    doneMessage: null,
-    skipMessage: MessagePurpose.DELIVERY_SKIPPED,
   },
 } as const
 
@@ -77,7 +70,6 @@ const HISTORY_ICON: Partial<
   [ActivityAction.COLLECTED]: 'proses',
   [ActivityAction.WALK_IN_CREATED]: 'toko',
   [ActivityAction.PAYMENT_RECORDED]: 'toko',
-  [ActivityAction.RECEIPT_SENT]: 'toko',
 }
 
 const HISTORY_TITLE: Partial<Record<ActivityAction, string>> = {
@@ -90,7 +82,6 @@ const HISTORY_TITLE: Partial<Record<ActivityAction, string>> = {
   [ActivityAction.COLLECTED]: 'Diserahkan di toko',
   [ActivityAction.WALK_IN_CREATED]: 'Transaksi toko dibuat',
   [ActivityAction.PAYMENT_RECORDED]: 'Pembayaran dicatat',
-  [ActivityAction.RECEIPT_SENT]: 'Struk dikirim',
 }
 
 function startOfToday() {
@@ -163,7 +154,7 @@ export default class TaskService {
       )
     }
 
-    const order = await db.transaction(async (transaction) => {
+    return db.transaction(async (transaction) => {
       const locked = await this.orders.lock(transaction, id)
       await this.orders.transition(
         locked,
@@ -173,9 +164,6 @@ export default class TaskService {
       )
       return locked
     })
-
-    await this.orders.notify(order, trip.startMessage, user.firstName())
-    return order
   }
 
   async arrive(user: User, id: number, kind: TripKind) {
@@ -195,7 +183,7 @@ export default class TaskService {
     receiver?: string
   ) {
     const trip = TRIP[kind]
-    const order = await db.transaction(async (transaction) => {
+    return db.transaction(async (transaction) => {
       const locked = await this.orders.lock(transaction, id)
       this.#assertActive(locked, kind)
       await OrderPhoto.store(photo, locked, trip.photo, user, transaction)
@@ -218,17 +206,12 @@ export default class TaskService {
       )
       return locked
     })
-
-    if (trip.doneMessage) {
-      await this.orders.notify(order, trip.doneMessage)
-    }
-    return order
   }
 
   async skipTrip(user: User, id: number, kind: TripKind, reason: string, note?: string | null) {
     const trip = TRIP[kind]
     const text = note ? `${reason} · ${note}` : reason
-    const order = await db.transaction(async (transaction) => {
+    return db.transaction(async (transaction) => {
       const locked = await this.orders.lock(transaction, id)
       this.#assertActive(locked, kind)
       await this.orders.transition(
@@ -239,9 +222,6 @@ export default class TaskService {
       )
       return locked
     })
-
-    await this.orders.notify(order, trip.skipMessage, reason.toLowerCase())
-    return order
   }
 
   workshopQueue() {
@@ -284,7 +264,7 @@ export default class TaskService {
   }
 
   async completeWash(user: User, id: number, photo: MultipartFile) {
-    const order = await db.transaction(async (transaction) => {
+    return db.transaction(async (transaction) => {
       const locked = await this.orders.lock(transaction, id)
       if (locked.status !== OrderStatus.IN_CLEANING) {
         throw fieldError('form', 'Pesanan ini tidak sedang dicuci.', 'order.status')
@@ -306,12 +286,6 @@ export default class TaskService {
       )
       return locked
     })
-
-    const notice =
-      order.status === OrderStatus.READY_FOR_COLLECTION
-        ? await this.orders.notify(order, MessagePurpose.READY_FOR_COLLECTION)
-        : null
-    return { order, notice }
   }
 
   async collect(user: User, id: number) {

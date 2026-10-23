@@ -31,8 +31,12 @@ export class FakeGeocoder extends AreaService {
 export class FakeFonnte extends FonnteService {
   messages: { target: string; message: string }[] = []
   shouldFail = false
+  shouldThrow = false
 
   override async send(target: string, message: string) {
+    if (this.shouldThrow) {
+      throw new Error('Fonnte is down')
+    }
     if (this.shouldFail) {
       return MessageStatus.FAILED
     }

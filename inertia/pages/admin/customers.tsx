@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Head } from '@inertiajs/react'
-import { IconCheck, IconListCheck, IconMessage } from '@tabler/icons-react'
-import { Button } from '~/components/ui/button'
+import { IconListCheck } from '@tabler/icons-react'
 import { Checkbox } from '~/components/ui/checkbox'
 import {
   Table,
@@ -18,7 +17,6 @@ import SortHeader from '~/components/molecules/sort_header'
 import TabList from '~/components/molecules/tab_list'
 import TablePagination from '~/components/molecules/table_pagination'
 import AdminPageHeader from '~/components/organisms/admin_page_header'
-import ReminderDialog from '~/components/organisms/customers/reminder_dialog'
 import {
   BulkBar,
   CHECK_CELL,
@@ -34,7 +32,6 @@ import {
   SEGMENT_TABS,
   THRESHOLDS,
   inSegment,
-  sendReminder,
   type CustomerRow,
   segmentLabel,
   type Customer,
@@ -53,15 +50,6 @@ const SORT_OPTIONS = [
   { value: 'orders:desc', label: 'Total pesanan · terbanyak' },
 ]
 
-function RemindedBadge() {
-  return (
-    <span className="ml-1.5 inline-flex h-5.5 items-center gap-1 rounded-pill bg-success px-2 text-[11.5px] leading-none font-semibold text-success-foreground">
-      <IconCheck className="size-3.5" />
-      Sudah diingatkan
-    </span>
-  )
-}
-
 export default function AdminCustomers({
   customers,
   inactiveDays,
@@ -73,7 +61,6 @@ export default function AdminCustomers({
   const [segment, setSegment] = useState<Segment>('inactive')
   const [threshold, setThreshold] = useState<number | null>(null)
   const [query, setQuery] = useState('')
-  const [remindIds, setRemindIds] = useState<string[] | null>(null)
   const days = threshold ?? inactiveDays
   const search = query.trim().toLowerCase()
   const rows = CUSTOMERS.filter(
@@ -218,15 +205,6 @@ export default function AdminCustomers({
             onSelectAll={table.selectAll}
             onClear={table.clear}
           >
-            <Button
-              variant="outline"
-              size="compact"
-              onPress={() => setRemindIds(table.selectedRows.map((row) => row.id))}
-              className="text-[13.5px]"
-            >
-              <IconMessage className="size-4.5" />
-              Kirim pengingat WhatsApp
-            </Button>
             {exportButton('compact')}
           </BulkBar>
         )}
@@ -262,7 +240,6 @@ export default function AdminCustomers({
                     {label}
                   </SortHeader>
                 ))}
-                <TableHead className="pr-4.5 last:pr-4.5" />
               </tr>
             </TableHeader>
             <TableBody>
@@ -278,10 +255,7 @@ export default function AdminCustomers({
                       />
                     </TableCell>
                     <TableCell className="py-2">
-                      <div className="font-semibold">
-                        {row.name}
-                        {row.isReminded && <RemindedBadge />}
-                      </div>
+                      <div className="font-semibold">{row.name}</div>
                       <div className="font-mono text-caption leading-[1.3] text-muted-foreground">
                         {row.phone}
                       </div>
@@ -298,18 +272,6 @@ export default function AdminCustomers({
                     </TableCell>
                     <TableCell className="py-2 text-right tabular-nums">
                       {formatRupiah(row.spend)}
-                    </TableCell>
-                    <TableCell className="py-2 pr-4.5 text-right last:pr-4.5">
-                      <Button
-                        variant="outline"
-                        size="compact"
-                        aria-label={`Kirim WhatsApp ke ${row.name}`}
-                        onPress={() => setRemindIds([row.id])}
-                        className="gap-1.5 text-meta"
-                      >
-                        <IconMessage className="size-4" />
-                        <span className="max-lg:hidden">WhatsApp</span>
-                      </Button>
                     </TableCell>
                   </TableRow>
                 )
@@ -335,10 +297,7 @@ export default function AdminCustomers({
                   aria-label={`Pilih ${row.label}`}
                 />
                 <div className="min-w-0 flex-1 py-2">
-                  <p className="text-[15px] leading-[1.3] font-semibold">
-                    {row.name}
-                    {row.isReminded && <RemindedBadge />}
-                  </p>
+                  <p className="text-[15px] leading-[1.3] font-semibold">{row.name}</p>
                   <p className="text-meta leading-[1.4] text-muted-foreground">
                     {row.days} hari tidak aktif · terakhir {formatDayMonth(row.last, true)}
                   </p>
@@ -346,14 +305,6 @@ export default function AdminCustomers({
                     {row.orders} pesanan · {formatRupiah(row.spend)} · {row.area}
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label={`Kirim WhatsApp ke ${row.name}`}
-                  onPress={() => setRemindIds([row.id])}
-                >
-                  <IconMessage />
-                </Button>
               </li>
             )
           })}
@@ -385,23 +336,6 @@ export default function AdminCustomers({
           onSize={table.setSize}
         />
       </div>
-      <ReminderDialog
-        key={remindIds?.join(',') ?? 'closed'}
-        count={remindIds?.length ?? 0}
-        isOpen={remindIds !== null}
-        onOpenChange={(isOpen) => !isOpen && setRemindIds(null)}
-        onSend={(message) => {
-          const ids = remindIds ?? []
-          sendReminder(ids, message, {
-            onSuccess: () => {
-              setRemindIds(null)
-              if (ids.length > 1) {
-                table.clear()
-              }
-            },
-          })
-        }}
-      />
     </AdminLayout>
   )
 }

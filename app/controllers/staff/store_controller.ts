@@ -3,11 +3,12 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { OrderSource } from '#enums/order_enum'
 import { PaymentChannel, PaymentStatus } from '#enums/payment_enum'
 import Order from '#models/order'
+import User from '#models/user'
 import Setting from '#models/setting'
 import OrderPolicy from '#policies/order_policy'
 import AddressService from '#services/address_service'
 import AreaService from '#services/area_service'
-import OrderService, { deliveryNote } from '#services/order_service'
+import OrderService from '#services/order_service'
 import PaymentService from '#services/payment_service'
 import { maskPhone, normalizePhone } from '#helpers/phone'
 import { qrisOf } from '#transformers/order_transformer'
@@ -32,7 +33,7 @@ export default class StoreController {
   async walkIn({ bouncer, inertia, request }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
     const phone = normalizePhone(String(request.qs().nomor ?? ''))
-    const customer = phone ? await this.orders.customerByPhone(phone) : null
+    const customer = phone ? await User.findCustomerByPhone(phone) : null
     let match = null
     if (customer) {
       const [address, orders] = await Promise.all([
@@ -100,7 +101,6 @@ export default class StoreController {
               ...new ReceiptTransformer(order).toObject(),
               isSaved: !!order.bill,
               isPaid: order.payments.some((payment) => payment.status === PaymentStatus.PAID),
-              hasPhone: !!order.customerPhone,
             }
           : null,
       methods,
@@ -135,21 +135,6 @@ export default class StoreController {
     if (pending) {
       await this.payments.refresh(pending)
     }
-    return response.redirect().toRoute('staff.store_payment', { id: order.id })
-  }
-
-  async sendReceipt({ auth, bouncer, params, response, session }: HttpContext) {
-    await bouncer.with(OrderPolicy).authorize('work')
-    const order = await this.#load(params.id)
-    if (!order) {
-      throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
-    }
-    const status = await this.orders.sendReceipt(
-      auth.getUserOrFail(),
-      order,
-      new ReceiptTransformer(order).toText()
-    )
-    session.flash(status === 'failed' ? 'error' : 'success', deliveryNote(status))
     return response.redirect().toRoute('staff.store_payment', { id: order.id })
   }
 

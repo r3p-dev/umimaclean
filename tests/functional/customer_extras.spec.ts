@@ -4,13 +4,12 @@ import { OrderStatus } from '#enums/order_enum'
 import { PaymentStatus } from '#enums/payment_enum'
 import Bill from '#models/bill'
 import Payment from '#models/payment'
-import { DEFAULT_SETTINGS } from '#models/setting'
 import { createOrder, inertia, post, useApp } from '#tests/support/app'
 
 test.group('Customer extras', (group) => {
   const state = useApp(group)
 
-  test('a customer cancels before pickup with a reason and the shop is told', async ({
+  test('a customer cancels before pickup with a reason and no WhatsApp goes out', async ({
     client,
     assert,
   }) => {
@@ -25,13 +24,7 @@ test.group('Customer extras', (group) => {
     await order.refresh()
     assert.equal(order.status, OrderStatus.CANCELLED)
     assert.equal(order.cancelReason, 'Salah jadwal')
-    assert.isTrue(
-      state.fonnte.messages.some(
-        (message) =>
-          message.target === DEFAULT_SETTINGS.store.whatsapp &&
-          message.message.includes('dibatalkan pelanggan')
-      )
-    )
+    assert.lengthOf(state.fonnte.messages, 0)
   })
 
   test('cancelling is refused once the courier has set off, and for other customers', async ({

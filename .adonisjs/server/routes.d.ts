@@ -69,7 +69,6 @@ export type ScannedRoutes = {
     'staff.store_payment.record': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.store_payment.qris': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.store_payment.qris_check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'staff.store_payment.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.walk_in.photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.photo': { paramsTuple?: []; params?: {} }
     'staff.history': { paramsTuple?: []; params?: {} }
@@ -78,7 +77,6 @@ export type ScannedRoutes = {
     'staff.sign_out_others': { paramsTuple?: []; params?: {} }
     'admin.summary': { paramsTuple?: []; params?: {} }
     'admin.customers': { paramsTuple?: []; params?: {} }
-    'admin.customers.remind': { paramsTuple?: []; params?: {} }
     'admin.activity': { paramsTuple?: []; params?: {} }
     'admin.orders': { paramsTuple?: []; params?: {} }
     'admin.orders.move': { paramsTuple?: []; params?: {} }
@@ -255,10 +253,8 @@ export type ScannedRoutes = {
     'staff.store_payment.record': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.store_payment.qris': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.store_payment.qris_check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'staff.store_payment.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.walk_in.photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.sign_out_others': { paramsTuple?: []; params?: {} }
-    'admin.customers.remind': { paramsTuple?: []; params?: {} }
     'admin.orders.move': { paramsTuple?: []; params?: {} }
     'admin.orders.cancel': { paramsTuple?: []; params?: {} }
     'admin.order.payment': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

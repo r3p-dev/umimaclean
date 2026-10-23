@@ -396,12 +396,6 @@ const routes = {
     tokens: [{"old":"/staf/transaksi/:id/qris/cek","type":0,"val":"staf","end":""},{"old":"/staf/transaksi/:id/qris/cek","type":0,"val":"transaksi","end":""},{"old":"/staf/transaksi/:id/qris/cek","type":1,"val":"id","end":""},{"old":"/staf/transaksi/:id/qris/cek","type":0,"val":"qris","end":""},{"old":"/staf/transaksi/:id/qris/cek","type":0,"val":"cek","end":""}],
     types: placeholder as Registry['staff.store_payment.qris_check']['types'],
   },
-  'staff.store_payment.receipt': {
-    methods: ["POST"],
-    pattern: '/staf/transaksi/:id/struk',
-    tokens: [{"old":"/staf/transaksi/:id/struk","type":0,"val":"staf","end":""},{"old":"/staf/transaksi/:id/struk","type":0,"val":"transaksi","end":""},{"old":"/staf/transaksi/:id/struk","type":1,"val":"id","end":""},{"old":"/staf/transaksi/:id/struk","type":0,"val":"struk","end":""}],
-    types: placeholder as Registry['staff.store_payment.receipt']['types'],
-  },
   'staff.walk_in.photos': {
     methods: ["POST"],
     pattern: '/staf/transaksi/:id/foto',
@@ -449,12 +443,6 @@ const routes = {
     pattern: '/admin/pelanggan',
     tokens: [{"old":"/admin/pelanggan","type":0,"val":"admin","end":""},{"old":"/admin/pelanggan","type":0,"val":"pelanggan","end":""}],
     types: placeholder as Registry['admin.customers']['types'],
-  },
-  'admin.customers.remind': {
-    methods: ["POST"],
-    pattern: '/admin/pelanggan/pengingat',
-    tokens: [{"old":"/admin/pelanggan/pengingat","type":0,"val":"admin","end":""},{"old":"/admin/pelanggan/pengingat","type":0,"val":"pelanggan","end":""},{"old":"/admin/pelanggan/pengingat","type":0,"val":"pengingat","end":""}],
-    types: placeholder as Registry['admin.customers.remind']['types'],
   },
   'admin.activity': {
     methods: ["GET","HEAD"],

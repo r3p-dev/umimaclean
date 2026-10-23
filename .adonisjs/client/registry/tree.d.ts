@@ -99,7 +99,6 @@ export interface ApiDefinition {
       record: typeof routes['staff.store_payment.record']
       qris: typeof routes['staff.store_payment.qris']
       qrisCheck: typeof routes['staff.store_payment.qris_check']
-      receipt: typeof routes['staff.store_payment.receipt']
     }
     photo: typeof routes['staff.photo']
     history: typeof routes['staff.history']
@@ -111,9 +110,7 @@ export interface ApiDefinition {
   }
   admin: {
     summary: typeof routes['admin.summary']
-    customers: typeof routes['admin.customers'] & {
-      remind: typeof routes['admin.customers.remind']
-    }
+    customers: typeof routes['admin.customers']
     activity: typeof routes['admin.activity']
     orders: typeof routes['admin.orders'] & {
       move: typeof routes['admin.orders.move']

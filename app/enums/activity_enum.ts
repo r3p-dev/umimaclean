@@ -14,13 +14,11 @@ export const ActivityAction = {
   ITEMS_PHOTOGRAPHED: 'items_photographed',
   PAYMENT_RECORDED: 'payment_recorded',
   PAYMENT_CORRECTED: 'payment_corrected',
-  RECEIPT_SENT: 'receipt_sent',
   ORDER_CANCELLED: 'order_cancelled',
   PRICE_CHANGED: 'price_changed',
   SETTINGS_CHANGED: 'settings_changed',
   STAFF_CHANGED: 'staff_changed',
   COST_CHANGED: 'cost_changed',
-  REMINDER_SENT: 'reminder_sent',
   SIGNED_IN: 'signed_in',
 } as const
 
@@ -42,13 +40,11 @@ export const ActivityActionLabel: Record<ActivityAction, string> = {
   [ActivityAction.ITEMS_PHOTOGRAPHED]: 'Memotret barang diterima',
   [ActivityAction.PAYMENT_RECORDED]: 'Mencatat pembayaran',
   [ActivityAction.PAYMENT_CORRECTED]: 'Mengoreksi pembayaran',
-  [ActivityAction.RECEIPT_SENT]: 'Mengirim struk',
   [ActivityAction.ORDER_CANCELLED]: 'Membatalkan pesanan',
   [ActivityAction.PRICE_CHANGED]: 'Mengubah layanan & harga',
   [ActivityAction.SETTINGS_CHANGED]: 'Mengubah pengaturan toko',
   [ActivityAction.STAFF_CHANGED]: 'Mengubah akun staf',
   [ActivityAction.COST_CHANGED]: 'Mengubah biaya operasional',
-  [ActivityAction.REMINDER_SENT]: 'Mengirim pengingat pelanggan',
   [ActivityAction.SIGNED_IN]: 'Masuk',
 }
 
@@ -71,12 +67,10 @@ export const ActivityCategoryOf: Record<ActivityAction, ActivityCategory> = {
   [ActivityAction.ITEMS_PHOTOGRAPHED]: 'foto',
   [ActivityAction.PAYMENT_RECORDED]: 'bayar',
   [ActivityAction.PAYMENT_CORRECTED]: 'bayar',
-  [ActivityAction.RECEIPT_SENT]: 'bayar',
   [ActivityAction.ORDER_CANCELLED]: 'batal',
   [ActivityAction.PRICE_CHANGED]: 'harga',
   [ActivityAction.SETTINGS_CHANGED]: 'harga',
   [ActivityAction.STAFF_CHANGED]: 'masuk',
   [ActivityAction.COST_CHANGED]: 'harga',
-  [ActivityAction.REMINDER_SENT]: 'status',
   [ActivityAction.SIGNED_IN]: 'masuk',
 }

@@ -6,7 +6,6 @@ import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
 import { ActivityAction } from '#enums/activity_enum'
-import { MessagePurpose } from '#enums/message_enum'
 import { OrderStatus } from '#enums/order_enum'
 import {
   PaymentChannel,
@@ -341,9 +340,6 @@ export default class PaymentService {
       },
       transaction
     )
-    transaction.after('commit', async () => {
-      await this.orders.notify(order, MessagePurpose.PAID, formatRupiah(payment.amount))
-    })
   }
 
   #assertPayable(order: Order) {

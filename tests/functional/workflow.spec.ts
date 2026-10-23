@@ -45,7 +45,7 @@ async function statusOf(order: Order) {
 test.group('Order workflow', (group) => {
   const state = useApp(group)
 
-  test('a placed order reaches the staff pickup queue and the shop gets a WhatsApp', async ({
+  test('a placed order reaches the staff pickup queue and the customer gets its link', async ({
     client,
     assert,
   }) => {
@@ -58,13 +58,12 @@ test.group('Order workflow', (group) => {
     const order = await Order.firstOrFail()
     assert.equal(order.customerName, customer.name)
     assert.lengthOf(await OrderEvent.query().where('order_id', order.id), 1)
-    assert.isTrue(
-      state.fonnte.messages.some(
-        (message) =>
-          message.target === DEFAULT_SETTINGS.store.whatsapp &&
-          message.message.includes(order.number())
-      )
+    assert.deepEqual(
+      state.fonnte.messages.map((message) => message.target),
+      [customer.phone]
     )
+    assert.include(state.fonnte.messages[0].message, order.number())
+    assert.include(state.fonnte.messages[0].message, `/pesanan/${order.id}`)
 
     await order.merge({ pickupDate: today() }).save()
     const queue = await inertia(client, '/staf/jemput').loginAs(staff)
@@ -401,7 +400,7 @@ test.group('Payments', (group) => {
     page.assertInertiaPropsContains({ order: { payment: { change: 25000 } } })
   })
 
-  test('a walk-in becomes a real store order and its receipt is sent by WhatsApp', async ({
+  test('a walk-in becomes a real store order and gets its tracking link', async ({
     client,
     assert,
   }) => {
@@ -424,11 +423,11 @@ test.group('Payments', (group) => {
       method: 'card',
       reference: 'APR12345',
     }).loginAs(staff)
-    await post(client, `/staf/transaksi/${order.id}/struk`).loginAs(staff)
-    assert.isTrue(
-      state.fonnte.messages.some(
-        (message) => message.target === '6281277778888' && message.message.includes('Struk')
-      )
-    )
+    const sent = state.fonnte.messages.filter((message) => message.target === '6281277778888')
+    assert.lengthOf(sent, 1)
+    assert.include(sent[0].message, order.number())
+    assert.include(sent[0].message, `/pesanan/${order.id}`)
+    await order.refresh()
+    assert.equal(order.status, OrderStatus.IN_CLEANING)
   })
 })

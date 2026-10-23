@@ -26,7 +26,7 @@ import {
 test.group('Owner tools', (group) => {
   const state = useApp(group)
 
-  test('cancelling tells the customer and says so only when WhatsApp went out', async ({
+  test('cancelling tells the customer, and a WhatsApp failure still cancels', async ({
     client,
     assert,
   }) => {
@@ -42,8 +42,11 @@ test.group('Owner tools', (group) => {
     await order.refresh()
     assert.equal(order.status, OrderStatus.CANCELLED)
     assert.equal(order.cancelReason, 'Permintaan pelanggan')
-    assert.isTrue(state.fonnte.messages.some((message) => message.target === customer.phone))
-    assert.include(String(response.flashMessages().success), 'Pelanggan diberi tahu via WhatsApp')
+    const sent = state.fonnte.messages.filter((message) => message.target === customer.phone)
+    assert.lengthOf(sent, 1)
+    assert.include(sent[0].message, 'Permintaan pelanggan')
+    assert.include(sent[0].message, order.number())
+    assert.equal(response.flashMessages().success, '1 pesanan dibatalkan.')
     const log = await ActivityLog.query().where('action', ActivityAction.ORDER_CANCELLED).first()
     assert.isTrue(log?.isSensitive)
 
@@ -53,7 +56,9 @@ test.group('Owner tools', (group) => {
       ids: [second.id],
       reason: 'Di luar area layanan',
     }).loginAs(owner)
-    assert.notInclude(String(failed.flashMessages().success), 'diberi tahu')
+    assert.equal(failed.flashMessages().success, '1 pesanan dibatalkan.')
+    await second.refresh()
+    assert.equal(second.status, OrderStatus.CANCELLED)
   })
 
   test('a payment recorded by the owner moves the order to washing and is logged', async ({
@@ -229,23 +234,6 @@ test.group('Owner tools', (group) => {
     await awaiting.refresh()
     assert.equal(pickedUp.status, OrderStatus.IN_INSPECTION)
     assert.equal(awaiting.status, OrderStatus.AWAITING_PAYMENT)
-  })
-
-  test('reminders go out once a week per customer', async ({ client, assert }) => {
-    const owner = await UserFactory.apply('admin').create()
-    const customer = await UserFactory.create()
-
-    const message = 'Halo {nama}, sudah lama tidak mencuci sepatu di Umima.'
-    await post(client, '/admin/pelanggan/pengingat', { ids: [customer.id], message }).loginAs(owner)
-    const second = await post(client, '/admin/pelanggan/pengingat', {
-      ids: [customer.id],
-      message,
-    }).loginAs(owner)
-
-    const sent = state.fonnte.messages.filter((entry) => entry.target === customer.phone)
-    assert.lengthOf(sent, 1)
-    assert.include(sent[0].message, customer.firstName())
-    assert.include(String(second.flashMessages().error), 'dilewati')
   })
 
   test('staff cannot use owner actions', async ({ client, assert }) => {

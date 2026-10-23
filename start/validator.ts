@@ -202,7 +202,6 @@ vine.messagesProvider = new SimpleMessagesProvider(
     category: 'Kategori',
     detail: 'Keterangan',
     spentOn: 'Tanggal',
-    message: 'Pesan',
     storeName: 'Nama toko',
     whatsapp: 'WhatsApp bisnis',
     storeAddress: 'Alamat toko',

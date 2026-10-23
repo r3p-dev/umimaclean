@@ -1,10 +1,10 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { MessageStatus } from '#enums/message_enum'
 import { PaymentChannel, PaymentMethod } from '#enums/payment_enum'
+import ActivityLog from '#models/activity_log'
 import Order from '#models/order'
 import OrderPolicy from '#policies/order_policy'
-import OrderService, { deliveryNote } from '#services/order_service'
+import OrderService from '#services/order_service'
 import PaymentService from '#services/payment_service'
 import AdminOrderDetailTransformer from '#transformers/admin_order_detail_transformer'
 import AdminOrderTransformer from '#transformers/admin_order_transformer'
@@ -20,20 +20,6 @@ const FIX_METHOD = {
   card: { method: PaymentMethod.CARD, channel: PaymentChannel.COUNTER },
   qris_online: { method: PaymentMethod.QRIS, channel: PaymentChannel.ONLINE },
 } as const
-
-function noticeSummary(notices: MessageStatus[]) {
-  if (!notices.length) {
-    return ''
-  }
-  const sent = notices.filter((status) => status === MessageStatus.SENT).length
-  if (sent === notices.length) {
-    return ' Pelanggan diberi tahu via WhatsApp.'
-  }
-  if (notices.every((status) => status === MessageStatus.LOGGED)) {
-    return ` ${deliveryNote(MessageStatus.LOGGED)}`
-  }
-  return ` WhatsApp terkirim ke ${sent} dari ${notices.length} pelanggan.`
-}
 
 @inject()
 export default class OrdersController {
@@ -53,7 +39,7 @@ export default class OrdersController {
 
   async show({ bouncer, inertia, params }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('manage')
-    const order = await this.orders.detailForOwner(params.id)
+    const order = await Order.findForOwner(params.id)
     if (!order) {
       return inertia.render('admin/orders/detail', {
         id: Number(params.id),
@@ -62,7 +48,7 @@ export default class OrdersController {
       })
     }
     const [logs, history] = await Promise.all([
-      this.orders.activityOf(order),
+      ActivityLog.forOrder(order),
       this.orders.historyOf(order),
     ])
     return inertia.render('admin/orders/detail', {
@@ -97,7 +83,7 @@ export default class OrdersController {
     )
     session.flash(
       result.cancelled ? 'success' : 'error',
-      `${result.cancelled} pesanan dibatalkan${result.skipped ? `, ${result.skipped} dilewati` : ''}.${noticeSummary(result.notices)}`
+      `${result.cancelled} pesanan dibatalkan${result.skipped ? `, ${result.skipped} dilewati` : ''}.`
     )
     return response.redirect().back()
   }

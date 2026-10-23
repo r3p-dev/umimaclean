@@ -1,5 +1,3 @@
-import { router } from '@inertiajs/react'
-import { urlFor } from '~/client'
 import { fromIso } from '~/lib/shared/date'
 
 export type Segment = 'inactive' | 'active' | 'new'
@@ -28,7 +26,6 @@ export type CustomerRow = {
   days: number
   isNew: boolean
   hasPaid: boolean
-  isReminded: boolean
 }
 
 export type Customer = Omit<CustomerRow, 'last' | 'first'> & { last: Date; first: Date }
@@ -52,16 +49,4 @@ export function segmentLabel(customer: Customer, threshold: number) {
     return `Tidak aktif (≥ ${threshold} hari)`
   }
   return customer.isNew ? 'Baru' : 'Aktif'
-}
-
-export function sendReminder(
-  ids: string[],
-  message: string,
-  callbacks: { onSuccess?: () => void; onFinish?: () => void } = {}
-) {
-  router.post(
-    urlFor('admin.customers.remind'),
-    { ids: ids.map(Number), message },
-    { preserveScroll: true, ...callbacks }
-  )
 }

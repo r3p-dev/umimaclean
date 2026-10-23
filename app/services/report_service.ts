@@ -1,9 +1,7 @@
-import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
 import { ActivityAction, ActivityActionLabel, ActivityCategoryOf } from '#enums/activity_enum'
-import { CostCategory, CostCategoryLabel } from '#enums/cost_enum'
-import { MessagePurpose, MessageStatus } from '#enums/message_enum'
+import { type CostCategory, CostCategoryLabel } from '#enums/cost_enum'
 import { ItemKindLabel, type ItemKind } from '#enums/order_enum'
 import { PaymentStatus } from '#enums/payment_enum'
 import { Role } from '#enums/role_enum'
@@ -11,9 +9,7 @@ import { maskPhone } from '#helpers/phone'
 import { formatRupiah } from '#helpers/money'
 import ActivityLog from '#models/activity_log'
 import OperatingCost from '#models/operating_cost'
-import User from '#models/user'
-import WhatsappMessage from '#models/whatsapp_message'
-import FonnteService from '#services/fonnte_service'
+import type User from '#models/user'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
 export const REPORT_MAX_DAYS = 400
@@ -32,8 +28,6 @@ type DayRow = [
 type ServiceRow = [date: string, name: string, category: string, items: number, revenue: number]
 
 const LOCAL_DAY = `(p.paid_at at time zone '${SERVICE_ZONE}')::date`
-
-export const REMINDER_COOLDOWN_DAYS = 7
 
 type CustomerRow = {
   id: number
@@ -55,10 +49,7 @@ const CATEGORY_OF = Object.fromEntries(
   Object.entries(CostCategoryLabel).map(([key, label]) => [label, key])
 ) as Record<string, CostCategory>
 
-@inject()
 export default class ReportService {
-  constructor(protected fonnte: FonnteService) {}
-
   today() {
     return DateTime.now().setZone(SERVICE_ZONE).startOf('day')
   }
@@ -186,7 +177,6 @@ export default class ReportService {
       order by last_paid desc nulls last`,
       [PaymentStatus.PAID, Role.CUSTOMER]
     )
-    const reminded = await this.#remindedRecently()
     const today = DateTime.now().setZone(SERVICE_ZONE).startOf('day')
 
     return result.rows.map((row) => {
@@ -211,55 +201,8 @@ export default class ReportService {
         ),
         isNew: today.diff(DateTime.fromJSDate(first), 'days').days <= 30,
         hasPaid: row.last_paid !== null,
-        isReminded: reminded.has(row.id),
       }
     })
-  }
-
-  async remind(owner: User, ids: number[], message: string) {
-    const reminded = await this.#remindedRecently()
-    const customers = await User.query().whereIn('id', ids).where('role', Role.CUSTOMER)
-    const result = { sent: 0, logged: 0, failed: 0, skipped: 0 }
-    for (const customer of customers) {
-      if (reminded.has(customer.id)) {
-        result.skipped += 1
-        continue
-      }
-      const status = await this.fonnte.send(
-        customer.phone,
-        message.replaceAll('{nama}', customer.firstName())
-      )
-      await WhatsappMessage.create({
-        target: customer.phone,
-        purpose: MessagePurpose.REMINDER,
-        status,
-        orderId: null,
-        userId: customer.id,
-      })
-      if (status === MessageStatus.SENT) {
-        result.sent += 1
-      } else if (status === MessageStatus.LOGGED) {
-        result.logged += 1
-      } else {
-        result.failed += 1
-      }
-    }
-    await ActivityLog.record({
-      actor: owner,
-      action: ActivityAction.REMINDER_SENT,
-      detail: `${result.sent} terkirim, ${result.failed} gagal, ${result.skipped} dilewati`,
-    })
-    return result
-  }
-
-  async #remindedRecently() {
-    const rows = await WhatsappMessage.query()
-      .where('purpose', MessagePurpose.REMINDER)
-      .whereNot('status', MessageStatus.FAILED)
-      .where('created_at', '>=', DateTime.now().minus({ days: REMINDER_COOLDOWN_DAYS }).toJSDate())
-      .whereNotNull('user_id')
-      .select('user_id')
-    return new Set(rows.map((row) => row.userId!))
   }
 
   async saveCost(

@@ -20,7 +20,6 @@ import { OtpPurpose } from '#enums/otp_enum'
 import { PaymentChannel, PaymentMethod, PaymentStatus } from '#enums/payment_enum'
 import { ServiceType } from '#enums/service_enum'
 import { Role } from '#enums/role_enum'
-import { MessagePurpose, MessageStatus } from '#enums/message_enum'
 
 export class ActivityLogSchema extends BaseModel {
   static $columns = [
@@ -67,7 +66,16 @@ export class BillLineSchema extends BaseModel {
 }
 
 export class BillSchema extends BaseModel {
-  static $columns = ['createdAt', 'decidedBy', 'id', 'orderId', 'total', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'decidedBy',
+    'id',
+    'lastRemindedAt',
+    'orderId',
+    'reminderCount',
+    'total',
+    'updatedAt',
+  ] as const
   $columns = BillSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -75,8 +83,12 @@ export class BillSchema extends BaseModel {
   declare decidedBy: number | null
   @column({ isPrimary: true })
   declare id: number
+  @column.dateTime()
+  declare lastRemindedAt: DateTime | null
   @column()
   declare orderId: number
+  @column()
+  declare reminderCount: number
   @column()
   declare total: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
@@ -557,23 +569,4 @@ export class UserSchema extends BaseModel {
   declare role: Role
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
-}
-
-export class WhatsappMessageSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'orderId', 'purpose', 'status', 'target', 'userId'] as const
-  $columns = WhatsappMessageSchema.$columns
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-  @column({ isPrimary: true })
-  declare id: number
-  @column()
-  declare orderId: number | null
-  @column()
-  declare purpose: MessagePurpose
-  @column()
-  declare status: MessageStatus
-  @column()
-  declare target: string
-  @column()
-  declare userId: number | null
 }

@@ -21,6 +21,10 @@ export default class ActivityLog extends ActivityLogSchema {
   @belongsTo(() => Order)
   declare order: BelongsTo<typeof Order>
 
+  static forOrder(order: Order) {
+    return ActivityLog.query().where('order_id', order.id).preload('actor').orderBy('id', 'desc')
+  }
+
   static async record(entry: ActivityEntry, transaction?: TransactionClientContract) {
     if (!entry.actor || entry.actor.isCustomer()) {
       return null

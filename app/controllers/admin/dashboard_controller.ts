@@ -4,7 +4,6 @@ import { enterAdminArea } from '#abilities/main'
 import OperatingCost from '#models/operating_cost'
 import Setting from '#models/setting'
 import ReportService from '#services/report_service'
-import { remindCustomersValidator } from '#validators/admin/customer'
 import { saveCostValidator } from '#validators/admin/cost'
 
 @inject()
@@ -37,23 +36,6 @@ export default class DashboardController {
       Setting.get('inactive_days'),
     ])
     return inertia.render('admin/customers', { customers, inactiveDays })
-  }
-
-  async remind({ auth, bouncer, request, response, session }: HttpContext) {
-    await bouncer.authorize(enterAdminArea)
-    const { ids, message } = await request.validateUsing(remindCustomersValidator)
-    const result = await this.reports.remind(auth.getUserOrFail(), ids, message)
-    const parts = [
-      result.sent && `${result.sent} terkirim via WhatsApp`,
-      result.logged && `${result.logged} hanya dicatat di log (WhatsApp belum dikonfigurasi)`,
-      result.failed && `${result.failed} gagal`,
-      result.skipped && `${result.skipped} dilewati karena sudah diingatkan 7 hari terakhir`,
-    ].filter(Boolean)
-    session.flash(
-      result.sent || result.logged ? 'success' : 'error',
-      `Pengingat: ${parts.join(', ')}.`
-    )
-    return response.redirect().toRoute('admin.customers')
   }
 
   async activityLog({ inertia }: HttpContext) {

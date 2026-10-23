@@ -6,9 +6,6 @@ router
   .group(() => {
     router.get('/', [controllers.admin.Dashboard, 'summary']).as('summary')
     router.get('/pelanggan', [controllers.admin.Dashboard, 'customers']).as('customers')
-    router
-      .post('/pelanggan/pengingat', [controllers.admin.Dashboard, 'remind'])
-      .as('customers.remind')
     router.get('/aktivitas', [controllers.admin.Dashboard, 'activityLog']).as('activity')
     router.get('/pesanan', [controllers.admin.Orders, 'index']).as('orders')
     router.post('/pesanan/status', [controllers.admin.Orders, 'move']).as('orders.move')

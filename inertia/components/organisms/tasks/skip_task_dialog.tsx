@@ -40,8 +40,8 @@ export default function SkipTaskDialog({
           Lewati {noun.toLowerCase()} ini?
         </DialogTitle>
         <DialogDescription className="mt-1 text-sm leading-[1.45]">
-          Alasan dicatat bersama waktu dan nama Anda, lalu pelanggan dikabari via WhatsApp. Pesanan
-          kembali ke antrean untuk dijadwalkan ulang.
+          Alasan dicatat bersama waktu dan nama Anda. Pesanan kembali ke antrean untuk dijadwalkan
+          ulang.
         </DialogDescription>
       </div>
       <p className="flex gap-2 rounded-md bg-attention px-3 py-2.5 text-meta leading-[1.45] text-attention-foreground">

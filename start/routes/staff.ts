@@ -46,9 +46,6 @@ router
       .post('/transaksi/:id/qris/cek', [controllers.staff.Store, 'checkQris'])
       .as('store_payment.qris_check')
     router
-      .post('/transaksi/:id/struk', [controllers.staff.Store, 'sendReceipt'])
-      .as('store_payment.receipt')
-    router
       .post('/transaksi/:id/foto', [controllers.staff.Store, 'storePhotos'])
       .as('walk_in.photos')
     router.get('/foto', [controllers.staff.Store, 'photo']).as('photo')

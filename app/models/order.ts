@@ -32,6 +32,57 @@ export default class Order extends OrderSchema {
       .preload('photos', (photos) => photos.preload('taker').orderBy('id', 'asc'))
   })
 
+  static findWithHistory(id: number) {
+    return Order.query()
+      .where('id', id)
+      .withScopes((scopes) => {
+        scopes.withDetails()
+        scopes.withHistory()
+      })
+      .first()
+  }
+
+  static latestActiveFor(user: User) {
+    return Order.query()
+      .where('user_id', user.id)
+      .whereNotIn('status', [...FINISHED_STATUSES])
+      .withScopes((scopes) => {
+        scopes.withDetails()
+        scopes.withHistory()
+      })
+      .orderBy('created_at', 'desc')
+      .first()
+  }
+
+  static recentCompletedFor(user: User, limit = 3) {
+    return Order.query()
+      .where('user_id', user.id)
+      .where('status', OrderStatus.COMPLETED)
+      .withScopes((scopes) => {
+        scopes.withDetails()
+        scopes.withHistory()
+      })
+      .orderBy('created_at', 'desc')
+      .limit(limit)
+  }
+
+  static async hasAnyFor(user: User) {
+    return !!(await Order.query().where('user_id', user.id).select('id').first())
+  }
+
+  static findForOwner(id: number) {
+    return Order.query()
+      .where('id', id)
+      .preload('pickupAddress')
+      .preload('deliveryAddress')
+      .preload('items', (items) => items.orderBy('position', 'asc'))
+      .preload('bill', (bill) => bill.preload('lines').preload('decider'))
+      .preload('payments', (payments) => payments.preload('recorder').orderBy('id', 'asc'))
+      .preload('photos', (photos) => photos.preload('taker').orderBy('id', 'asc'))
+      .preload('events', (events) => events.preload('actor').orderBy('id', 'asc'))
+      .first()
+  }
+
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 

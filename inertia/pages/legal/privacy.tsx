@@ -22,7 +22,6 @@ export default function Privacy({ store, photoDays }: { store: Store; photoDays:
             Foto bukti dari kurir dan workshop. Foto dihapus otomatis setelah {photoDays} hari;
             catatan siapa melakukan apa dan kapan tetap disimpan.
           </li>
-          <li>Catatan pesan WhatsApp yang kami kirim (tujuan, jenis, dan status terkirim).</li>
         </ul>
       </section>
       <section className="flex flex-col gap-2">

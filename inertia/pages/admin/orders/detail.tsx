@@ -343,7 +343,7 @@ export default function AdminOrderDetail({
         isOpen={dialog === 'cancel'}
         onOpenChange={(isOpen) => !isOpen && setDialog(null)}
         title={`Batalkan pesanan ${order.number}?`}
-        description="Pesanan tidak dihapus — statusnya menjadi Dibatalkan dan tetap ada di riwayat & laporan. Pelanggan dikirimi WhatsApp; hasilnya ditampilkan setelah disimpan."
+        description="Pesanan tidak dihapus — statusnya menjadi Dibatalkan dan tetap ada di riwayat & laporan. Pelanggan dikirimi WhatsApp berisi alasan pembatalan."
         reasons={DETAIL_CANCEL_REASONS}
         confirmLabel="Batalkan Pesanan"
         onConfirm={(reason) => {

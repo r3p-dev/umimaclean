@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { Head, router } from '@inertiajs/react'
-import { IconCheck, IconRefresh, IconReceipt, IconWashMachine } from '@tabler/icons-react'
+import { IconCheck, IconRefresh, IconWashMachine } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { Button, LinkButton } from '~/components/ui/button'
 import { FieldDescription, FieldError } from '~/components/ui/field'
@@ -41,7 +41,6 @@ type Receipt = {
   } | null
   isSaved: boolean
   isPaid: boolean
-  hasPhone: boolean
 }
 
 type Qris = { qrUrl: string | null; expiresAt: string | null; status: string }
@@ -227,21 +226,9 @@ export default function StorePayment({
               Pesanan langsung masuk Dalam Pencucian. Bila pelanggan minta diantar, pesanan masuk
               antrean Antar setelah selesai dicuci.
             </p>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
-              <Button
-                variant="outline"
-                className="text-[15px]"
-                isDisabled={!order.hasPhone}
-                isPending={isBusy}
-                onPress={() => router.post(urlFor('staff.store_payment.receipt', { id }), {}, busy)}
-              >
-                <IconReceipt />
-                Kirim Struk ke WhatsApp
-              </Button>
-              <LinkButton variant="ghost" className="px-3 text-primary" href={back.href}>
-                Selesai
-              </LinkButton>
-            </div>
+            <LinkButton variant="outline" className="text-[15px]" href={back.href}>
+              Selesai
+            </LinkButton>
           </section>
         ) : (
           <section className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">

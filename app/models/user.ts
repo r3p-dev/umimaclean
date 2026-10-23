@@ -24,6 +24,10 @@ export default class User extends compose(UserSchema, AuthFinder) {
   @hasMany(() => CustomerAddress)
   declare addresses: HasMany<typeof CustomerAddress>
 
+  static findCustomerByPhone(phone: string) {
+    return User.query().where('phone', phone).where('role', Role.CUSTOMER).first()
+  }
+
   static async isPhoneTaken(
     phone: string,
     options: { exceptUserId?: number; transaction?: TransactionClientContract } = {}

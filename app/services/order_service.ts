@@ -2,14 +2,16 @@ import { randomUUID } from 'node:crypto'
 import { inject } from '@adonisjs/core'
 import type { MultipartFile } from '@adonisjs/core/bodyparser'
 import type { HttpContext } from '@adonisjs/core/http'
+import logger from '@adonisjs/core/services/logger'
 import { errors as limiterErrors } from '@adonisjs/limiter'
 import limiter from '@adonisjs/limiter/services/main'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
+import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 import transmit from '@adonisjs/transmit/services/main'
 import { DateTime } from 'luxon'
 import { ActivityAction } from '#enums/activity_enum'
-import { MessagePurpose, MessageStatus } from '#enums/message_enum'
+import { MessageStatus } from '#enums/message_enum'
 import {
   FINISHED_STATUSES,
   OrderAddressType,
@@ -21,17 +23,19 @@ import {
   ReturnMethod,
   type OrderStage,
 } from '#enums/order_enum'
-import { Role } from '#enums/role_enum'
+import { PaymentStatus } from '#enums/payment_enum'
+import { formatRupiah } from '#helpers/money'
 import { lastFourDigits } from '#helpers/phone'
 import ActivityLog from '#models/activity_log'
+import Bill from '#models/bill'
 import CustomerAddress from '#models/customer_address'
 import Order from '#models/order'
 import OrderAddress from '#models/order_address'
 import OrderEvent from '#models/order_event'
+import OrderItem from '#models/order_item'
 import OrderPhoto from '#models/order_photo'
-import Setting, { type StoreInfo } from '#models/setting'
+import Setting from '#models/setting'
 import User from '#models/user'
-import WhatsappMessage from '#models/whatsapp_message'
 import FonnteService from '#services/fonnte_service'
 import AreaService, { type Point } from '#services/area_service'
 import env from '#start/env'
@@ -65,16 +69,6 @@ export function orderSearchTerm(value: unknown) {
     .slice(0, 9)
 }
 
-export function deliveryNote(status: MessageStatus, who = 'Pelanggan') {
-  if (status === MessageStatus.SENT) {
-    return `${who} diberi tahu via WhatsApp.`
-  }
-  if (status === MessageStatus.LOGGED) {
-    return 'WhatsApp belum dikonfigurasi, pesan hanya dicatat di log server.'
-  }
-  return `WhatsApp ke ${who.toLowerCase()} gagal terkirim.`
-}
-
 export function snapshotOf(user: User, address: CustomerAddress) {
   return {
     label: address.label,
@@ -97,6 +91,8 @@ export type SlotAvailability = {
   isOpen: boolean
   isFull: boolean
 }
+
+type CustomerMessage = 'created' | 'courierOnTheWay' | 'bill' | 'paymentReminder' | 'cancelled'
 
 export type TransitionOptions = {
   actor: User | null
@@ -152,6 +148,13 @@ export default class OrderService {
       },
       transaction
     )
+
+    const message = this.#messageFor(order, to, options.actor)
+    if (message) {
+      transaction.after('commit', async () => {
+        await this.#send(order, message, options.actor)
+      })
+    }
     return order
   }
 
@@ -160,36 +163,6 @@ export default class OrderService {
     transmit.broadcast(orderChannel(order.id), payload)
     transmit.broadcast(STAFF_QUEUES_CHANNEL, payload)
     transmit.broadcast(ADMIN_ORDERS_CHANNEL, payload)
-  }
-
-  async notify(order: Order, purpose: MessagePurpose, detail = '') {
-    const isForShop =
-      purpose === MessagePurpose.NEW_ORDER || purpose === MessagePurpose.CUSTOMER_CANCELLED
-    const store = await Setting.get('store')
-    if (!isForShop && !order.customerPhone) {
-      return MessageStatus.FAILED
-    }
-    const target = isForShop ? store.whatsapp : order.customerPhone
-    const status = await this.fonnte.send(target, this.#text(order, purpose, detail, store))
-    await WhatsappMessage.create({
-      target,
-      purpose,
-      status,
-      orderId: order.id,
-      userId: isForShop ? null : order.userId,
-    })
-    return status
-  }
-
-  async sendReceipt(staff: User, order: Order, receipt: string) {
-    const status = await this.notify(order, MessagePurpose.RECEIPT, receipt)
-    await ActivityLog.record({
-      actor: staff,
-      order,
-      action: ActivityAction.RECEIPT_SENT,
-      detail: deliveryNote(status),
-    })
-    return status
   }
 
   async slotAvailability(from: string, to: string, transaction?: TransactionClientContract) {
@@ -285,39 +258,17 @@ export default class OrderService {
     session.put(TRACKING_KEY, [...new Set([...unlocked, order.id])])
   }
 
-  findWithHistory(id: number) {
-    return Order.query()
-      .where('id', id)
-      .withScopes((scopes) => {
-        scopes.withDetails()
-        scopes.withHistory()
-      })
-      .first()
-  }
-
-  latestActive(user: User) {
-    return this.#forCustomer(user)
-      .whereNotIn('status', [...FINISHED_STATUSES])
-      .orderBy('created_at', 'desc')
-      .first()
-  }
-
-  recentCompleted(user: User, limit = 3) {
-    return this.#forCustomer(user)
-      .where('status', OrderStatus.COMPLETED)
-      .orderBy('created_at', 'desc')
-      .limit(limit)
-  }
-
-  async hasOrders(user: User) {
-    return !!(await Order.query().where('user_id', user.id).select('id').first())
-  }
-
   async listForCustomer(
     user: User,
     options: { filter: OrderFilter; search: string; page: number }
   ) {
-    const query = this.#forCustomer(user).orderBy('created_at', 'desc')
+    const query = Order.query()
+      .where('user_id', user.id)
+      .withScopes((scopes) => {
+        scopes.withDetails()
+        scopes.withHistory()
+      })
+      .orderBy('created_at', 'desc')
     if (options.filter === 'berjalan') {
       query.whereNotIn('status', [...FINISHED_STATUSES])
     }
@@ -346,23 +297,6 @@ export default class OrderService {
       .preload('payments')
       .preload('events', (events) => events.preload('actor').orderBy('id', 'asc'))
       .orderBy('created_at', 'desc')
-  }
-
-  detailForOwner(id: number) {
-    return Order.query()
-      .where('id', id)
-      .preload('pickupAddress')
-      .preload('deliveryAddress')
-      .preload('items', (items) => items.orderBy('position', 'asc'))
-      .preload('bill', (bill) => bill.preload('lines').preload('decider'))
-      .preload('payments', (payments) => payments.preload('recorder').orderBy('id', 'asc'))
-      .preload('photos', (photos) => photos.preload('taker').orderBy('id', 'asc'))
-      .preload('events', (events) => events.preload('actor').orderBy('id', 'asc'))
-      .first()
-  }
-
-  activityOf(order: Order) {
-    return ActivityLog.query().where('order_id', order.id).preload('actor').orderBy('id', 'desc')
   }
 
   historyOf(order: Order) {
@@ -448,15 +382,13 @@ export default class OrderService {
     })
 
     if (result.isNew) {
-      const slots = await Setting.get('pickup_slots')
-      const slot = slots[payload.slot]
-      await this.notify(result.order, MessagePurpose.NEW_ORDER, slot?.label ?? '')
+      await this.#send(result.order, 'created')
     }
     return result.order
   }
 
   async cancelByCustomer(user: User, order: Order, reason: string) {
-    const cancelled = await db.transaction(async (transaction) => {
+    return db.transaction(async (transaction) => {
       const locked = await this.lock(transaction, order.id)
       if (locked.status !== OrderStatus.AWAITING_PICKUP) {
         throw fieldError(
@@ -474,16 +406,10 @@ export default class OrderService {
       )
       return locked
     })
-    await this.notify(cancelled, MessagePurpose.CUSTOMER_CANCELLED, reason)
-    return cancelled
-  }
-
-  customerByPhone(phone: string) {
-    return User.query().where('phone', phone).where('role', Role.CUSTOMER).first()
   }
 
   async createWalkIn(staff: User, phone: string, payload: WalkInPayload) {
-    const customer = await this.customerByPhone(phone)
+    const customer = await User.findCustomerByPhone(phone)
     const name = customer?.name ?? payload.name?.trim()
     if (!name) {
       throw fieldError('name', 'Isi nama pelanggan.', 'name.required')
@@ -517,7 +443,7 @@ export default class OrderService {
       }
     }
 
-    return db.transaction(async (transaction) => {
+    const created = await db.transaction(async (transaction) => {
       const order = await Order.create(
         {
           userId: customer?.id ?? null,
@@ -555,6 +481,9 @@ export default class OrderService {
       )
       return order
     })
+
+    await this.#send(created, 'created')
+    return created
   }
 
   async addIntakePhotos(staff: User, order: Order, files: MultipartFile[]) {
@@ -597,15 +526,15 @@ export default class OrderService {
   }
 
   async cancelByOwner(owner: User, ids: number[], reason: string) {
-    const cancelled: Order[] = []
+    let cancelled = 0
     for (const id of ids) {
-      const order = await db.transaction(async (transaction) => {
+      const isCancelled = await db.transaction(async (transaction) => {
         const locked = await Order.query({ client: transaction })
           .where('id', id)
           .forUpdate()
           .first()
         if (!locked || FINISHED_STATUSES.includes(locked.status)) {
-          return null
+          return false
         }
         locked.cancelReason = reason
         await this.transition(
@@ -621,18 +550,44 @@ export default class OrderService {
           },
           transaction
         )
-        return locked
+        return true
       })
-      if (order) {
-        cancelled.push(order)
-      }
+      cancelled += isCancelled ? 1 : 0
+    }
+    return { cancelled, skipped: ids.length - cancelled }
+  }
+
+  async sendDuePaymentReminders(now: DateTime = DateTime.now()) {
+    const hour = now.setZone(SERVICE_ZONE).hour
+    if (hour < 10 || hour >= 15) {
+      return 0
     }
 
-    const notices: MessageStatus[] = []
-    for (const order of cancelled) {
-      notices.push(await this.notify(order, MessagePurpose.ORDER_CANCELLED, reason))
+    const due = await this.#dueReminders(Bill.query(), now).select('id')
+    let sent = 0
+    for (const { id } of due) {
+      const isSent = await db.transaction(async (transaction) => {
+        const bill = await this.#dueReminders(Bill.query({ client: transaction }), now)
+          .where('id', id)
+          .forUpdate()
+          .skipLocked()
+          .preload('order')
+          .first()
+        if (!bill) {
+          return false
+        }
+        const status = await this.#send(bill.order, 'paymentReminder')
+        if (status === MessageStatus.FAILED) {
+          return false
+        }
+        bill.useTransaction(transaction)
+        bill.merge({ reminderCount: bill.reminderCount + 1, lastRemindedAt: now })
+        await bill.save()
+        return true
+      })
+      sent += isSent ? 1 : 0
     }
-    return { cancelled: cancelled.length, skipped: ids.length - cancelled.length, notices }
+    return sent
   }
 
   async #record(
@@ -648,15 +603,6 @@ export default class OrderService {
     transaction.after('commit', async () => {
       this.broadcast(order)
     })
-  }
-
-  #forCustomer(user: User) {
-    return Order.query()
-      .where('user_id', user.id)
-      .withScopes((scopes) => {
-        scopes.withDetails()
-        scopes.withHistory()
-      })
   }
 
   async #filterCounts(user: User): Promise<Record<OrderFilter, number>> {
@@ -712,51 +658,87 @@ export default class OrderService {
     }
   }
 
-  #text(order: Order, purpose: MessagePurpose, detail: string, store: StoreInfo) {
-    const code = order.number()
-    const link = (path = '') => `${env.get('APP_URL')}/pesanan/${order.id}${path}`
-    const greeting = `Halo ${order.customerName.split(' ')[0] || 'Kak'},`
-    switch (purpose) {
-      case MessagePurpose.NEW_ORDER: {
-        const date = order.pickupDate
-          ? DateTime.fromISO(order.pickupDate.toISODate()!, { zone: SERVICE_ZONE })
-              .setLocale('id')
-              .toFormat('ccc, d LLL')
-          : '-'
-        const items = [
-          [order.itemsSepatu, 'Sepatu'],
-          [order.itemsTas, 'Tas'],
-          [order.itemsHelm, 'Helm'],
-        ]
-          .filter(([count]) => Number(count) > 0)
-          .map(([count, label]) => `${label} ×${count}`)
-          .join(', ')
-        return `Pesanan baru ${code} dari ${order.customerName} (${order.customerPhone}). Jemput ${date} ${detail}. Barang: ${items}.`
+  #dueReminders(query: ModelQueryBuilderContract<typeof Bill>, now: DateTime) {
+    return query
+      .whereHas('order', (order) => {
+        order
+          .where('status', OrderStatus.AWAITING_PAYMENT)
+          .where('source', OrderSource.ONLINE)
+          .whereDoesntHave('payments', (payments) => {
+            payments.where('status', PaymentStatus.PAID)
+          })
+      })
+      .where((reminder) => {
+        reminder
+          .where((first) => {
+            first
+              .whereNull('last_reminded_at')
+              .where('created_at', '<=', now.minus({ hours: 24 }).toJSDate())
+          })
+          .orWhere('last_reminded_at', '<=', now.minus({ days: 2 }).toJSDate())
+      })
+  }
+
+  #messageFor(order: Order, to: OrderStatus, actor: User | null): CustomerMessage | null {
+    if (to === OrderStatus.COURIER_EN_ROUTE) {
+      return 'courierOnTheWay'
+    }
+    if (to === OrderStatus.AWAITING_PAYMENT) {
+      return 'bill'
+    }
+    if (to === OrderStatus.CANCELLED && !(actor && actor.id === order.userId)) {
+      return 'cancelled'
+    }
+    return null
+  }
+
+  async #send(order: Order, message: CustomerMessage, actor: User | null = null) {
+    if (!order.customerPhone) {
+      return MessageStatus.FAILED
+    }
+    try {
+      const status = await this.fonnte.send(
+        order.customerPhone,
+        await this.#text(order, message, actor)
+      )
+      if (status === MessageStatus.FAILED) {
+        logger.warn({ order: order.id, message }, 'Customer WhatsApp was not sent')
       }
-      case MessagePurpose.CUSTOMER_CANCELLED:
-        return `Pesanan ${code} (${order.customerName}) dibatalkan pelanggan. Alasan: ${detail}.`
-      case MessagePurpose.COURIER_ON_THE_WAY:
-        return `${greeting} kurir ${detail} sedang menuju lokasi Anda untuk menjemput pesanan ${code}.`
-      case MessagePurpose.PICKED_UP:
-        return `${greeting} barang pesanan ${code} sudah kami terima. Kami periksa dulu, lalu tagihan dikirim lewat WhatsApp ini.`
-      case MessagePurpose.PICKUP_SKIPPED:
-        return `${greeting} kurir belum bisa menjemput pesanan ${code} (${detail}). Kami akan menghubungi Anda untuk jadwal ulang. Balas pesan ini bila ada pertanyaan.`
-      case MessagePurpose.BILL_READY:
-        return `${greeting} barang pesanan ${code} sudah diperiksa. Total tagihan ${detail}. Lihat rincian dan bayar dengan QRIS: ${link('/tagihan')}`
-      case MessagePurpose.PAID:
-        return `${greeting} pembayaran pesanan ${code} sebesar ${detail} sudah kami terima. Barang Anda mulai dicuci.`
-      case MessagePurpose.OUT_FOR_DELIVERY:
-        return `${greeting} pesanan ${code} sedang diantar oleh ${detail}. Mohon pastikan ada yang menerima di lokasi.`
-      case MessagePurpose.DELIVERY_SKIPPED:
-        return `${greeting} pengantaran pesanan ${code} tertunda (${detail}). Kami akan menghubungi Anda untuk jadwal ulang.`
-      case MessagePurpose.READY_FOR_COLLECTION:
-        return `${greeting} pesanan ${code} sudah selesai dicuci dan siap diambil di ${store.name}, ${store.address} (${store.hours}).`
-      case MessagePurpose.ORDER_CANCELLED:
-        return `${greeting} pesanan ${code} dibatalkan oleh ${store.name}. Alasan: ${detail}. Hubungi kami bila ada pertanyaan.`
-      case MessagePurpose.RECEIPT:
-        return `Struk ${store.name}\n${detail}\nTerima kasih!`
-      default:
-        return `${greeting} ada pembaruan untuk pesanan ${code}: ${detail}`
+      return status
+    } catch (error) {
+      logger.error({ err: error, order: order.id, message }, 'Customer WhatsApp failed')
+      return MessageStatus.FAILED
+    }
+  }
+
+  async #text(order: Order, message: CustomerMessage, actor: User | null) {
+    const greeting = `Halo ${order.customerName.split(' ')[0] || 'Kak'},`
+    const number = order.number()
+    const link = `${env.get('APP_URL')}/pesanan/${order.id}`
+
+    switch (message) {
+      case 'created':
+        return `${greeting} pesanan ${number} sudah kami terima. Pantau statusnya di ${link}`
+      case 'courierOnTheWay':
+        return `${greeting} kurir ${actor?.firstName() || 'kami'} sedang menuju lokasi Anda untuk menjemput pesanan ${number}. Pantau di ${link}`
+      case 'bill': {
+        const bill = await Bill.query().where('order_id', order.id).preload('lines').firstOrFail()
+        const items = await OrderItem.query().where('order_id', order.id).orderBy('position', 'asc')
+        const lines = items.map((item) => {
+          const services = bill.lines.filter((line) => line.orderItemId === item.id)
+          const total = services.reduce((sum, line) => sum + line.price, 0)
+          return `- ${item.name}: ${services.map((line) => line.name).join(' + ')} ${formatRupiah(total)}`
+        })
+        return `${greeting} barang pesanan ${number} sudah diperiksa.\n${lines.join('\n')}\nTotal ${formatRupiah(bill.total)}\nRincian dan pembayaran: ${link}`
+      }
+      case 'paymentReminder': {
+        const bill = await Bill.query().where('order_id', order.id).firstOrFail()
+        return `${greeting} tagihan pesanan ${number} sebesar ${formatRupiah(bill.total)} belum dibayar. Lihat rincian dan bayar di ${link}`
+      }
+      case 'cancelled': {
+        const store = await Setting.get('store')
+        return `${greeting} pesanan ${number} dibatalkan oleh ${store.name}. Alasan: ${order.cancelReason ?? '-'}. Detail di ${link}`
+      }
     }
   }
 }

@@ -442,7 +442,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
         isOpen={dialog === 'cancel'}
         onOpenChange={(isOpen) => !isOpen && setDialog(null)}
         title={`Batalkan ${cancellable.length} pesanan?`}
-        description="Pesanan tidak dihapus — statusnya menjadi Dibatalkan dan tetap ada di riwayat & laporan. Pelanggan dikirimi WhatsApp; hasil pengirimannya ditampilkan setelah disimpan."
+        description="Pesanan tidak dihapus — statusnya menjadi Dibatalkan dan tetap ada di riwayat & laporan. Pelanggan dikirimi WhatsApp berisi alasan pembatalan."
         skipped={
           selected.length > cancellable.length
             ? `${selected.length - cancellable.length} pesanan terpilih dilewati karena sudah selesai atau dibatalkan.`

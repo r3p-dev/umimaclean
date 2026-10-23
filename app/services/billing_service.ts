@@ -3,8 +3,7 @@ import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
 import { ActivityAction } from '#enums/activity_enum'
-import { MessagePurpose } from '#enums/message_enum'
-import { ItemKind, OrderSource, OrderStatus } from '#enums/order_enum'
+import { ItemKind, OrderStatus } from '#enums/order_enum'
 import { ServiceType } from '#enums/service_enum'
 import { formatRupiah } from '#helpers/money'
 import ActivityLog from '#models/activity_log'
@@ -53,7 +52,7 @@ export default class BillingService {
   }
 
   async createFromInspection(user: User, id: number, items: InspectedItem[]) {
-    const result = await db.transaction(async (transaction) => {
+    return db.transaction(async (transaction) => {
       const order = await this.orders.lock(transaction, id)
       if (order.status !== OrderStatus.IN_INSPECTION) {
         throw fieldError('form', 'Pemeriksaan pesanan ini sudah disimpan.', 'order.status')
@@ -120,16 +119,6 @@ export default class BillingService {
       )
       return { order, total: bill.total }
     })
-
-    const notice =
-      result.order.source === OrderSource.ONLINE
-        ? await this.orders.notify(
-            result.order,
-            MessagePurpose.BILL_READY,
-            formatRupiah(result.total)
-          )
-        : null
-    return { ...result, notice }
   }
 
   async savePrice(owner: User, input: ServiceInput, id: number | null) {

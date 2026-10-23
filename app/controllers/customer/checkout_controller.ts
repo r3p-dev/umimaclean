@@ -1,6 +1,7 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { MAX_ADDRESSES } from '#models/customer_address'
+import Order from '#models/order'
 import OrderPolicy from '#policies/order_policy'
 import AddressService from '#services/address_service'
 import OrderService from '#services/order_service'
@@ -22,7 +23,7 @@ export default class CheckoutController {
     const addresses = await this.addresses.list(user)
     const draft = (session.get(DRAFT_KEY) as OrderPayload | undefined) ?? null
     const repeatId = Number(request.qs().ulang) || null
-    const repeat = repeatId ? await this.orders.findWithHistory(repeatId) : null
+    const repeat = repeatId ? await Order.findWithHistory(repeatId) : null
     const repeatItems =
       repeat && (await bouncer.with(OrderPolicy).allows('own', repeat))
         ? { sepatu: repeat.itemsSepatu, tas: repeat.itemsTas, helm: repeat.itemsHelm }

@@ -2,7 +2,6 @@ import { BaseTransformer } from '@adonisjs/core/transformers'
 import { ItemKindLabel } from '#enums/order_enum'
 import { PaymentMethod, PaymentMethodLabel, PaymentStatus } from '#enums/payment_enum'
 import type Order from '#models/order'
-import { formatRupiah } from '#helpers/money'
 import { formatEvent } from '#transformers/order_transformer'
 
 export default class ReceiptTransformer extends BaseTransformer<Order> {
@@ -38,23 +37,5 @@ export default class ReceiptTransformer extends BaseTransformer<Order> {
           }
         : null,
     }
-  }
-
-  toText() {
-    const receipt = this.toObject()
-    return [
-      `Pesanan ${receipt.number} · ${receipt.customer}`,
-      ...receipt.items.flatMap((item) => [
-        `${item.name}`,
-        ...item.services.map((service) => `  ${service.name}: ${formatRupiah(service.price)}`),
-      ]),
-      `Total: ${formatRupiah(receipt.total)}`,
-      receipt.payment
-        ? `Dibayar ${receipt.payment.method} · ${receipt.payment.paidAt}`
-        : 'Belum dibayar',
-      ...(receipt.payment?.change !== null && receipt.payment?.change !== undefined
-        ? [`Kembalian: ${formatRupiah(receipt.payment.change)}`]
-        : []),
-    ].join('\n')
   }
 }

@@ -3,7 +3,7 @@ import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
 import { OrderStatus } from '#enums/order_enum'
 import { PaymentChannel } from '#enums/payment_enum'
-import type Order from '#models/order'
+import Order from '#models/order'
 import Setting from '#models/setting'
 import OrderPolicy from '#policies/order_policy'
 import OrderService, { orderFilterOf, orderSearchTerm } from '#services/order_service'
@@ -106,7 +106,7 @@ export default class OrdersController {
     await bouncer.with(OrderPolicy).authorize('cancel', order)
     const { reason } = await request.validateUsing(cancelOrderValidator)
     await this.orders.cancelByCustomer(auth.getUserOrFail(), order, reason)
-    session.flash('success', 'Pesanan dibatalkan. Toko sudah diberi tahu.')
+    session.flash('success', 'Pesanan dibatalkan.')
     return response.redirect().toRoute('customer.orders.show', { id: order.id })
   }
 
@@ -127,7 +127,7 @@ export default class OrdersController {
   }
 
   async #find(id: number) {
-    const order = await this.orders.findWithHistory(id)
+    const order = await Order.findWithHistory(id)
     if (!order) {
       throw new Exception('Pesanan tidak ditemukan', { status: 404 })
     }

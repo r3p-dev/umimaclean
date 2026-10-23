@@ -787,18 +787,6 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['checkQris']>>>
     }
   }
-  'staff.store_payment.receipt': {
-    methods: ["POST"]
-    pattern: '/staf/transaksi/:id/struk'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { id: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['sendReceipt']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['sendReceipt']>>>
-    }
-  }
   'staff.walk_in.photos': {
     methods: ["POST"]
     pattern: '/staf/transaksi/:id/foto'
@@ -893,18 +881,6 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['customers']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['customers']>>>
-    }
-  }
-  'admin.customers.remind': {
-    methods: ["POST"]
-    pattern: '/admin/pelanggan/pengingat'
-    types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/admin/customer').remindCustomersValidator)>>
-      paramsTuple: []
-      params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/admin/customer').remindCustomersValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['remind']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['remind']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.activity': {

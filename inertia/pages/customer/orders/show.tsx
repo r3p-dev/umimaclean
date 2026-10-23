@@ -160,7 +160,7 @@ export default function OrderDetail({ order, isOwner }: { order: OrderRecord; is
                   </span>
                   <span className="text-sm leading-[1.4] text-foreground-secondary">
                     {order.returnMethod === 'store'
-                      ? 'Kami kabari via WhatsApp saat siap diambil'
+                      ? 'Ambil di toko setelah selesai dicuci'
                       : delivery
                         ? shortStreet(delivery.addressText)
                         : 'Ke alamat yang sama'}
@@ -266,7 +266,7 @@ export default function OrderDetail({ order, isOwner }: { order: OrderRecord; is
         isOpen={isCancelling}
         onOpenChange={setCancelling}
         title={`Batalkan pesanan ${order.number}?`}
-        description="Bisa dibatalkan selama kurir belum berangkat. Toko diberi tahu lewat WhatsApp."
+        description="Bisa dibatalkan selama kurir belum berangkat."
         reasons={CUSTOMER_CANCEL_REASONS}
         confirmLabel="Batalkan Pesanan"
         onConfirm={(reason) =>

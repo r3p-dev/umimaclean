@@ -95,13 +95,6 @@ export default {
       },
     },
 
-    whatsapp_messages: {
-      columns: {
-        purpose: enumColumn('MessagePurpose', '#enums/message_enum'),
-        status: enumColumn('MessageStatus', '#enums/message_enum'),
-      },
-    },
-
     operating_costs: {
       columns: {
         category: enumColumn('CostCategory', '#enums/cost_enum'),
