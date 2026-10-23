@@ -2,8 +2,8 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import hash from '@adonisjs/core/services/hash'
 import { OtpPurpose } from '#enums/otp_enum'
-import AccountService from '#services/account/account_service'
-import OtpFlowService from '#services/otp/otp_flow_service'
+import User from '#models/user'
+import OtpService from '#services/otp_service'
 import TurnstileService from '#services/turnstile_service'
 import { registerValidator } from '#validators/auth/register'
 import { fieldError } from '#validators/shared/field_error'
@@ -11,8 +11,7 @@ import { fieldError } from '#validators/shared/field_error'
 @inject()
 export default class RegisterController {
   constructor(
-    protected accounts: AccountService,
-    protected otpFlow: OtpFlowService,
+    protected otp: OtpService,
     protected turnstile: TurnstileService
   ) {}
 
@@ -24,7 +23,7 @@ export default class RegisterController {
     await this.turnstile.assert(request.input('turnstile'), request.ip())
     const payload = await request.validateUsing(registerValidator)
 
-    if (await this.accounts.isPhoneTaken(payload.phone)) {
+    if (await User.isPhoneTaken(payload.phone)) {
       throw fieldError(
         'phone',
         'Nomor ini sudah terdaftar. Masuk atau atur ulang kata sandi.',
@@ -32,7 +31,7 @@ export default class RegisterController {
       )
     }
 
-    await this.otpFlow.start(
+    await this.otp.start(
       session,
       {
         purpose: OtpPurpose.REGISTER,

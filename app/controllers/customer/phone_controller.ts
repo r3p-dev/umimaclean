@@ -1,9 +1,9 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { OtpPurpose } from '#enums/otp_enum'
-import AccountService from '#services/account/account_service'
-import OtpFlowService, { PHONE_TAKEN_MESSAGE } from '#services/otp/otp_flow_service'
-import { displayPhone } from '#services/phone_service'
+import User from '#models/user'
+import OtpService, { PHONE_TAKEN_MESSAGE } from '#services/otp_service'
+import { displayPhone } from '#helpers/phone'
 import TurnstileService from '#services/turnstile_service'
 import { changePhoneValidator } from '#validators/customer/profile'
 import { fieldError } from '#validators/shared/field_error'
@@ -11,8 +11,7 @@ import { fieldError } from '#validators/shared/field_error'
 @inject()
 export default class PhoneController {
   constructor(
-    protected accounts: AccountService,
-    protected otpFlow: OtpFlowService,
+    protected otp: OtpService,
     protected turnstile: TurnstileService
   ) {}
 
@@ -30,11 +29,11 @@ export default class PhoneController {
       throw fieldError('phone', 'Ini nomor Anda saat ini. Isi nomor baru.', 'phone.same')
     }
 
-    if (await this.accounts.isPhoneTaken(phone, { exceptUserId: user.id })) {
+    if (await User.isPhoneTaken(phone, { exceptUserId: user.id })) {
       throw fieldError('phone', PHONE_TAKEN_MESSAGE, 'phone.taken')
     }
 
-    await this.otpFlow.start(
+    await this.otp.start(
       session,
       { purpose: OtpPurpose.CHANGE_PHONE, phone, userId: user.id, failures: 0 },
       request.ip()

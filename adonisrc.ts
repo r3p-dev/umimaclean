@@ -33,7 +33,6 @@ export default defineConfig({
     () => import('@adonisjs/inertia/inertia_provider'),
     () => import('@adonisjs/auth/auth_provider'),
     () => import('@adonisjs/limiter/limiter_provider'),
-    () => import('#providers/geocoder_provider'),
     () => import('@adonisjs/bouncer/bouncer_provider'),
     () => import('@adonisjs/transmit/transmit_provider'),
   ],

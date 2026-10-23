@@ -3,13 +3,13 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { ItemKindLabel } from '#enums/order_enum'
 import { ServiceType } from '#enums/service_enum'
 import BillingService from '#services/billing_service'
-import ServiceAreaService from '#services/service_area_service'
+import AreaService from '#services/area_service'
 
 @inject()
 export default class HomeController {
   constructor(
     protected billing: BillingService,
-    protected area: ServiceAreaService
+    protected area: AreaService
   ) {}
 
   async show({ inertia }: HttpContext) {

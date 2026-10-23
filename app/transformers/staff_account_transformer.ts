@@ -2,7 +2,7 @@ import { BaseTransformer } from '@adonisjs/core/transformers'
 import { Role } from '#enums/role_enum'
 import { StaffShiftLabel, StaffTypeLabel } from '#enums/staff_enum'
 import type User from '#models/user'
-import { displayPhone } from '#services/phone_service'
+import { displayPhone } from '#helpers/phone'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
 export default class StaffAccountTransformer extends BaseTransformer<User> {

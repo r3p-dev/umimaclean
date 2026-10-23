@@ -1,5 +1,5 @@
 import vine from '@vinejs/vine'
-import { normalizePhone, phoneProblem, type PhoneProblem } from '#services/phone_service'
+import { normalizePhone, phoneProblem, type PhoneProblem } from '#helpers/phone'
 
 const RULES: Record<PhoneProblem, string> = {
   required: 'required',

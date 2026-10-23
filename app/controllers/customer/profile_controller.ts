@@ -1,17 +1,15 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import AccountService from '#services/account/account_service'
-import AccountSessionService from '#services/account/account_session_service'
-import AddressBookService from '#services/address_book_service'
+import AccountService from '#services/account_service'
+import AddressService from '#services/address_service'
 import UserTransformer from '#transformers/user_transformer'
 import { updateProfileValidator } from '#validators/customer/profile'
 
 @inject()
 export default class ProfileController {
   constructor(
-    protected addresses: AddressBookService,
-    protected accounts: AccountService,
-    protected sessions: AccountSessionService
+    protected addresses: AddressService,
+    protected accounts: AccountService
   ) {}
 
   async show({ inertia, auth }: HttpContext) {
@@ -19,7 +17,7 @@ export default class ProfileController {
 
     const [addresses, deviceCount] = await Promise.all([
       this.addresses.list(user),
-      this.sessions.activeDeviceCount(user),
+      this.accounts.activeDeviceCount(user),
     ])
 
     return inertia.render('customer/profile/show', {
@@ -39,7 +37,9 @@ export default class ProfileController {
   async update({ auth, request, response, session }: HttpContext) {
     const { name } = await request.validateUsing(updateProfileValidator)
 
-    await this.accounts.updateProfile(auth.getUserOrFail(), { name })
+    const user = auth.getUserOrFail()
+    user.merge({ name })
+    await user.save()
 
     session.flash('success', 'Profil disimpan.')
     return response.redirect().toRoute('customer.profile.edit')

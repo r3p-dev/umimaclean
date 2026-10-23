@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import { UserFactory, USER_PASSWORD } from '#database/factories/user_factory'
 import User from '#models/user'
-import { LOGIN_FAILED_MESSAGE } from '#services/account/account_session_service'
+import { LOGIN_FAILED_MESSAGE } from '#services/account_service'
 import { inertia, post, TURNSTILE_TOKEN, useApp } from '#tests/support/app'
 
 function login(

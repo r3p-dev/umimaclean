@@ -3,8 +3,8 @@ import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
 import CustomerAddress, { MAX_ACTIVE_ADDRESSES } from '#models/customer_address'
 import CustomerAddressPolicy from '#policies/customer_address_policy'
-import AddressBookService from '#services/address_book_service'
-import ServiceAreaService from '#services/service_area_service'
+import AddressService from '#services/address_service'
+import AreaService from '#services/area_service'
 import AddressTransformer from '#transformers/address_transformer'
 import { saveAddressValidator } from '#validators/customer/address'
 
@@ -13,8 +13,8 @@ type Origin = 'order' | 'addresses'
 @inject()
 export default class AddressesController {
   constructor(
-    protected addresses: AddressBookService,
-    protected area: ServiceAreaService
+    protected addresses: AddressService,
+    protected area: AreaService
   ) {}
 
   async index({ inertia, auth }: HttpContext) {
@@ -50,7 +50,6 @@ export default class AddressesController {
   async store({ auth, request, response, session }: HttpContext) {
     const payload = await request.validateUsing(saveAddressValidator)
 
-    await this.addresses.assertServiceable(payload.point)
     await this.addresses.create(auth.getUserOrFail(), payload)
 
     session.flash('success', 'Alamat disimpan.')
@@ -75,7 +74,6 @@ export default class AddressesController {
     const address = await this.#owned(bouncer, params.id)
     const payload = await request.validateUsing(saveAddressValidator)
 
-    await this.addresses.assertServiceable(payload.point)
     await this.addresses.update(address, payload)
 
     session.flash('success', 'Perubahan alamat disimpan.')

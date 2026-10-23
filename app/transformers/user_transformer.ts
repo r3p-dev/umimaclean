@@ -1,6 +1,6 @@
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import type User from '#models/user'
-import { displayPhone, maskPhone } from '#services/phone_service'
+import { displayPhone, maskPhone } from '#helpers/phone'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
 export default class UserTransformer extends BaseTransformer<User> {

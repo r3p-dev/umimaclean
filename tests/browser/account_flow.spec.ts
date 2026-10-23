@@ -4,6 +4,8 @@ import Order from '#models/order'
 import User from '#models/user'
 import { savedAddress, useApp } from '#tests/support/app'
 
+const TURNSTILE_TOKEN_ISSUED = `document.querySelector('input[name="cf-turnstile-response"]')?.value`
+
 test.group('Customer account in the browser', (group) => {
   const state = useApp(group)
   group.each.setup(() => {
@@ -25,6 +27,7 @@ test.group('Customer account in the browser', (group) => {
     await page.waitForURL(/\/masuk$/)
     await page.getByLabel('Nomor WhatsApp').fill('812 3456 7890')
     await page.getByLabel('Kata sandi', { exact: true }).fill(USER_PASSWORD)
+    await page.waitForFunction(TURNSTILE_TOKEN_ISSUED)
     await page.getByRole('button', { name: 'Masuk' }).click()
 
     await page.waitForURL(/\/pesan$/)
@@ -56,6 +59,7 @@ test.group('Customer account in the browser', (group) => {
     await page.getByLabel('Nomor WhatsApp').fill('812 9999 0000')
     await page.getByLabel('Kata sandi', { exact: true }).fill('kata-sandi-aman')
     await page.getByRole('checkbox', { name: /Saya setuju/ }).check({ force: true })
+    await page.waitForFunction(TURNSTILE_TOKEN_ISSUED)
     await page.getByRole('button', { name: 'Daftar' }).click()
 
     await page.waitForURL(/\/verifikasi$/)

@@ -5,11 +5,11 @@ import { PaymentChannel, PaymentStatus } from '#enums/payment_enum'
 import Order from '#models/order'
 import Setting from '#models/setting'
 import OrderPolicy from '#policies/order_policy'
-import AddressBookService from '#services/address_book_service'
+import AddressService from '#services/address_service'
+import AreaService from '#services/area_service'
 import OrderService, { deliveryNote, normalizePublicCode } from '#services/order_service'
 import PaymentService from '#services/payment_service'
-import { maskPhone, normalizePhone } from '#services/phone_service'
-import ServiceAreaService from '#services/service_area_service'
+import { maskPhone, normalizePhone } from '#helpers/phone'
 import { qrisOf } from '#transformers/order_transformer'
 import ReceiptTransformer from '#transformers/receipt_transformer'
 import {
@@ -25,8 +25,8 @@ export default class StoreController {
   constructor(
     protected orders: OrderService,
     protected payments: PaymentService,
-    protected addresses: AddressBookService,
-    protected area: ServiceAreaService
+    protected addresses: AddressService,
+    protected area: AreaService
   ) {}
 
   async walkIn({ bouncer, inertia, request }: HttpContext) {

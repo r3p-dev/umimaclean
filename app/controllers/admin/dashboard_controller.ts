@@ -1,34 +1,22 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { enterAdminArea } from '#abilities/main'
-import { ActivityAction } from '#enums/activity_enum'
-import { CostCategory, CostCategoryLabel } from '#enums/cost_enum'
-import { formatRupiah } from '#helpers/money'
-import ActivityLog from '#models/activity_log'
 import OperatingCost from '#models/operating_cost'
 import Setting from '#models/setting'
-import CustomerInsightService from '#services/customer_insight_service'
 import ReportService from '#services/report_service'
 import { remindCustomersValidator } from '#validators/admin/customer'
 import { saveCostValidator } from '#validators/admin/cost'
 
-const CATEGORY_OF = Object.fromEntries(
-  Object.entries(CostCategoryLabel).map(([key, label]) => [label, key])
-) as Record<string, CostCategory>
-
 @inject()
 export default class DashboardController {
-  constructor(
-    protected reports: ReportService,
-    protected insights: CustomerInsightService
-  ) {}
+  constructor(protected reports: ReportService) {}
 
   async summary({ inertia }: HttpContext) {
     const [report, costs, inactiveDays, customers, recent] = await Promise.all([
       this.reports.days(),
       this.reports.costs(),
       Setting.get('inactive_days'),
-      this.insights.customers(),
+      this.reports.customers(),
       this.reports.activity(3),
     ])
     return inertia.render('admin/summary', {
@@ -45,7 +33,7 @@ export default class DashboardController {
 
   async customers({ inertia }: HttpContext) {
     const [customers, inactiveDays] = await Promise.all([
-      this.insights.customers(),
+      this.reports.customers(),
       Setting.get('inactive_days'),
     ])
     return inertia.render('admin/customers', { customers, inactiveDays })
@@ -54,7 +42,7 @@ export default class DashboardController {
   async remind({ auth, bouncer, request, response, session }: HttpContext) {
     await bouncer.authorize(enterAdminArea)
     const { ids, message } = await request.validateUsing(remindCustomersValidator)
-    const result = await this.insights.remind(auth.getUserOrFail(), ids, message)
+    const result = await this.reports.remind(auth.getUserOrFail(), ids, message)
     const parts = [
       result.sent && `${result.sent} terkirim via WhatsApp`,
       result.logged && `${result.logged} hanya dicatat di log (WhatsApp belum dikonfigurasi)`,
@@ -80,19 +68,7 @@ export default class DashboardController {
   async storeCost({ auth, bouncer, request, response, session }: HttpContext) {
     await bouncer.authorize(enterAdminArea)
     const payload = await request.validateUsing(saveCostValidator)
-    const owner = auth.getUserOrFail()
-    const cost = await OperatingCost.create({
-      category: CATEGORY_OF[payload.category],
-      note: payload.detail,
-      amount: payload.amount,
-      spentOn: payload.spentOn,
-      createdBy: owner.id,
-    })
-    await ActivityLog.record({
-      actor: owner,
-      action: ActivityAction.COST_CHANGED,
-      detail: `Menambah biaya ${cost.note} ${formatRupiah(cost.amount)}`,
-    })
+    const cost = await this.reports.saveCost(auth.getUserOrFail(), payload, null)
     session.flash('success', `Biaya “${cost.note}” ditambahkan. Laba dihitung ulang.`)
     return response.redirect().toRoute('admin.reports')
   }
@@ -101,34 +77,14 @@ export default class DashboardController {
     await bouncer.authorize(enterAdminArea)
     const cost = await OperatingCost.findOrFail(params.id)
     const payload = await request.validateUsing(saveCostValidator)
-    const before = `${cost.note} ${formatRupiah(cost.amount)}`
-    cost.merge({
-      category: CATEGORY_OF[payload.category],
-      note: payload.detail,
-      amount: payload.amount,
-      spentOn: payload.spentOn,
-    })
-    await cost.save()
-    await ActivityLog.record({
-      actor: auth.getUserOrFail(),
-      action: ActivityAction.COST_CHANGED,
-      detail: `${before} → ${cost.note} ${formatRupiah(cost.amount)}`,
-      isSensitive: true,
-    })
+    await this.reports.saveCost(auth.getUserOrFail(), payload, cost)
     session.flash('success', 'Biaya diperbarui. Laba dihitung ulang.')
     return response.redirect().toRoute('admin.reports')
   }
 
   async destroyCost({ auth, bouncer, params, response, session }: HttpContext) {
     await bouncer.authorize(enterAdminArea)
-    const cost = await OperatingCost.findOrFail(params.id)
-    await cost.delete()
-    await ActivityLog.record({
-      actor: auth.getUserOrFail(),
-      action: ActivityAction.COST_CHANGED,
-      detail: `Menghapus biaya ${cost.note} ${formatRupiah(cost.amount)}`,
-      isSensitive: true,
-    })
+    const cost = await this.reports.removeCost(auth.getUserOrFail(), Number(params.id))
     session.flash('success', `Biaya “${cost.note}” dihapus. Laba dihitung ulang.`)
     return response.redirect().toRoute('admin.reports')
   }

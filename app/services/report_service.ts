@@ -1,10 +1,19 @@
+import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
-import { ActivityActionLabel, ActivityCategoryOf } from '#enums/activity_enum'
-import { CostCategoryLabel } from '#enums/cost_enum'
+import { ActivityAction, ActivityActionLabel, ActivityCategoryOf } from '#enums/activity_enum'
+import { CostCategory, CostCategoryLabel } from '#enums/cost_enum'
+import { MessagePurpose, MessageStatus } from '#enums/message_enum'
 import { ItemKindLabel, type ItemKind } from '#enums/order_enum'
+import { PaymentStatus } from '#enums/payment_enum'
+import { Role } from '#enums/role_enum'
+import { maskPhone } from '#helpers/phone'
+import { formatRupiah } from '#helpers/money'
 import ActivityLog from '#models/activity_log'
 import OperatingCost from '#models/operating_cost'
+import User from '#models/user'
+import WhatsappMessage from '#models/whatsapp_message'
+import FonnteService from '#services/fonnte_service'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
 export const REPORT_MAX_DAYS = 400
@@ -24,7 +33,32 @@ type ServiceRow = [date: string, name: string, category: string, items: number, 
 
 const LOCAL_DAY = `(p.paid_at at time zone '${SERVICE_ZONE}')::date`
 
+export const REMINDER_COOLDOWN_DAYS = 7
+
+type CustomerRow = {
+  id: number
+  name: string
+  phone: string
+  created_at: Date
+  last_paid: Date | null
+  first_paid: Date | null
+  orders: string
+  spend: string
+  address_text: string | null
+}
+
+function isoDate(value: Date) {
+  return DateTime.fromJSDate(value).setZone(SERVICE_ZONE).toISODate()!
+}
+
+const CATEGORY_OF = Object.fromEntries(
+  Object.entries(CostCategoryLabel).map(([key, label]) => [label, key])
+) as Record<string, CostCategory>
+
+@inject()
 export default class ReportService {
+  constructor(protected fonnte: FonnteService) {}
+
   today() {
     return DateTime.now().setZone(SERVICE_ZONE).startOf('day')
   }
@@ -135,5 +169,136 @@ export default class ReportService {
         isSensitive: log.isSensitive,
       }
     })
+  }
+
+  async customers() {
+    const result = await db.rawQuery<{ rows: CustomerRow[] }>(
+      `select u.id, u.name, u.phone, u.created_at,
+        max(p.paid_at) as last_paid, min(p.paid_at) as first_paid,
+        count(distinct p.order_id) as orders, coalesce(sum(p.amount), 0) as spend,
+        (select a.address_text from customer_addresses a
+          where a.user_id = u.id and a.deleted_at is null and a.is_primary limit 1) as address_text
+      from users u
+      left join orders o on o.user_id = u.id
+      left join payments p on p.order_id = o.id and p.status = ?
+      where u.role = ?
+      group by u.id
+      order by last_paid desc nulls last`,
+      [PaymentStatus.PAID, Role.CUSTOMER]
+    )
+    const reminded = await this.#remindedRecently()
+    const today = DateTime.now().setZone(SERVICE_ZONE).startOf('day')
+
+    return result.rows.map((row) => {
+      const last = row.last_paid ?? row.created_at
+      const first = row.first_paid ?? row.created_at
+      const parts = (row.address_text ?? '').split(',').map((part) => part.trim())
+      return {
+        id: String(row.id),
+        label: row.name,
+        name: row.name,
+        phone: maskPhone(row.phone),
+        area: parts.length >= 2 ? parts[parts.length - 2] : '—',
+        last: isoDate(last),
+        first: isoDate(first),
+        orders: Number(row.orders),
+        spend: Number(row.spend),
+        days: Math.max(
+          0,
+          Math.floor(
+            today.diff(DateTime.fromJSDate(last).setZone(SERVICE_ZONE).startOf('day'), 'days').days
+          )
+        ),
+        isNew: today.diff(DateTime.fromJSDate(first), 'days').days <= 30,
+        hasPaid: row.last_paid !== null,
+        isReminded: reminded.has(row.id),
+      }
+    })
+  }
+
+  async remind(owner: User, ids: number[], message: string) {
+    const reminded = await this.#remindedRecently()
+    const customers = await User.query().whereIn('id', ids).where('role', Role.CUSTOMER)
+    const result = { sent: 0, logged: 0, failed: 0, skipped: 0 }
+    for (const customer of customers) {
+      if (reminded.has(customer.id)) {
+        result.skipped += 1
+        continue
+      }
+      const status = await this.fonnte.send(
+        customer.phone,
+        message.replaceAll('{nama}', customer.firstName())
+      )
+      await WhatsappMessage.create({
+        target: customer.phone,
+        purpose: MessagePurpose.REMINDER,
+        status,
+        orderId: null,
+        userId: customer.id,
+      })
+      if (status === MessageStatus.SENT) {
+        result.sent += 1
+      } else if (status === MessageStatus.LOGGED) {
+        result.logged += 1
+      } else {
+        result.failed += 1
+      }
+    }
+    await ActivityLog.record({
+      actor: owner,
+      action: ActivityAction.REMINDER_SENT,
+      detail: `${result.sent} terkirim, ${result.failed} gagal, ${result.skipped} dilewati`,
+    })
+    return result
+  }
+
+  async #remindedRecently() {
+    const rows = await WhatsappMessage.query()
+      .where('purpose', MessagePurpose.REMINDER)
+      .whereNot('status', MessageStatus.FAILED)
+      .where('created_at', '>=', DateTime.now().minus({ days: REMINDER_COOLDOWN_DAYS }).toJSDate())
+      .whereNotNull('user_id')
+      .select('user_id')
+    return new Set(rows.map((row) => row.userId!))
+  }
+
+  async saveCost(
+    owner: User,
+    input: { category: string; detail: string; amount: number; spentOn: DateTime },
+    existing: OperatingCost | null
+  ) {
+    const cost = existing ?? new OperatingCost()
+    const before = existing ? `${cost.note} ${formatRupiah(cost.amount)}` : null
+    cost.merge({
+      category: CATEGORY_OF[input.category],
+      note: input.detail,
+      amount: input.amount,
+      spentOn: input.spentOn,
+    })
+    if (!existing) {
+      cost.createdBy = owner.id
+    }
+    await cost.save()
+    await ActivityLog.record({
+      actor: owner,
+      action: ActivityAction.COST_CHANGED,
+      detail: before
+        ? `${before} → ${cost.note} ${formatRupiah(cost.amount)}`
+        : `Menambah biaya ${cost.note} ${formatRupiah(cost.amount)}`,
+      isSensitive: !!before,
+    })
+    return cost
+  }
+
+  async removeCost(owner: User, id: number) {
+    const cost = await OperatingCost.findOrFail(id)
+    await cost.delete()
+    await ActivityLog.record({
+      actor: owner,
+      action: ActivityAction.COST_CHANGED,
+      detail: `Menghapus biaya ${cost.note} ${formatRupiah(cost.amount)}`,
+      isSensitive: true,
+    })
+    return cost
   }
 }

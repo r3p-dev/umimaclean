@@ -6,10 +6,10 @@ import { MessageStatus } from '#enums/message_enum'
 import ActivityLog from '#models/activity_log'
 import Setting from '#models/setting'
 import User from '#models/user'
-import StaffAccountService from '#services/account/staff_account_service'
 import { deliveryNote } from '#services/order_service'
 import PaymentService from '#services/payment_service'
-import ServiceAreaService from '#services/service_area_service'
+import AreaService from '#services/area_service'
+import StaffService from '#services/staff_service'
 import StaffAccountTransformer from '#transformers/staff_account_transformer'
 import { saveStoreSettingsValidator } from '#validators/admin/settings'
 import { saveStaffValidator, staffActiveValidator } from '#validators/admin/staff'
@@ -21,8 +21,8 @@ type PasswordNotice = { name: string; password: string; notice: string }
 @inject()
 export default class SettingsController {
   constructor(
-    protected staffAccounts: StaffAccountService,
-    protected area: ServiceAreaService,
+    protected staffAccounts: StaffService,
+    protected area: AreaService,
     protected payments: PaymentService
   ) {}
 

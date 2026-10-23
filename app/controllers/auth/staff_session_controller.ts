@@ -3,17 +3,17 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { enterStaffArea } from '#abilities/main'
 import { LoginRedirect } from '#enums/role_enum'
-import AccountSessionService from '#services/account/account_session_service'
-import StaffAccountService from '#services/account/staff_account_service'
+import AccountService from '#services/account_service'
+import StaffService from '#services/staff_service'
 import TurnstileService from '#services/turnstile_service'
 import { loginValidator } from '#validators/auth/session'
 
 @inject()
 export default class StaffSessionController {
   constructor(
-    protected sessions: AccountSessionService,
+    protected accounts: AccountService,
     protected turnstile: TurnstileService,
-    protected staffAccounts: StaffAccountService
+    protected staff: StaffService
   ) {}
 
   async create({ inertia }: HttpContext) {
@@ -25,14 +25,14 @@ export default class StaffSessionController {
     await this.turnstile.assert(request.input('turnstile'), request.ip())
     const payload = await request.validateUsing(loginValidator)
 
-    const user = await this.sessions.authenticate(
+    const user = await this.accounts.authenticate(
       payload.phone,
       payload.password,
       request.ip(),
       (candidate) => new Bouncer(candidate).allows(enterStaffArea)
     )
-    await this.sessions.signIn(ctx, user, payload.remember ?? false)
-    await this.staffAccounts.touch(user)
+    await this.accounts.signIn(ctx, user, payload.remember ?? false)
+    await this.staff.touch(user)
 
     return response.redirect().toIntendedRoute(LoginRedirect[user.role])
   }

@@ -3,10 +3,9 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { OtpPurpose } from '#enums/otp_enum'
 import { LoginRedirect, Role } from '#enums/role_enum'
 import OtpFlowPolicy from '#policies/otp_flow_policy'
-import AccountSessionService from '#services/account/account_session_service'
-import OtpFlowService, { OTP_LOCKED_MESSAGE } from '#services/otp/otp_flow_service'
-import OtpService, { OTP_TTL_MINUTES } from '#services/otp/otp_service'
-import { maskPhone } from '#services/phone_service'
+import AccountService from '#services/account_service'
+import OtpService, { OTP_LOCKED_MESSAGE, OTP_TTL_MINUTES } from '#services/otp_service'
+import { maskPhone } from '#helpers/phone'
 import TurnstileService from '#services/turnstile_service'
 import { verifyOtpValidator } from '#validators/auth/otp'
 import { fieldError } from '#validators/shared/field_error'
@@ -15,8 +14,7 @@ import { fieldError } from '#validators/shared/field_error'
 export default class OtpController {
   constructor(
     protected otp: OtpService,
-    protected otpFlow: OtpFlowService,
-    protected sessions: AccountSessionService,
+    protected accounts: AccountService,
     protected turnstile: TurnstileService
   ) {}
 
@@ -31,7 +29,7 @@ export default class OtpController {
       maskedPhone: maskPhone(flow.phone),
       resendIn: await this.otp.cooldownRemaining(flow.phone),
       ttlMinutes: OTP_TTL_MINUTES,
-      isLocked: this.otpFlow.isLocked(flow),
+      isLocked: this.otp.isLocked(flow),
     })
   }
 
@@ -43,26 +41,26 @@ export default class OtpController {
     }
 
     const { code } = await request.validateUsing(verifyOtpValidator)
-    if (this.otpFlow.isLocked(flow)) {
+    if (this.otp.isLocked(flow)) {
       throw fieldError('code', OTP_LOCKED_MESSAGE, 'otp.locked')
     }
 
-    const { result, user } = await this.otpFlow.verify(flow, code)
+    const { result, user } = await this.otp.verify(flow, code)
     if (!user) {
-      const message = this.otpFlow.recordFailure(session, flow, result === 'locked')
+      const message = this.otp.recordFailure(session, flow, result === 'locked')
       throw fieldError('code', message, 'otp.invalid')
     }
 
-    this.otpFlow.clear(session)
+    this.otp.clear(session)
 
     if (flow.purpose === OtpPurpose.REGISTER) {
-      await this.sessions.signIn(ctx, user, true)
+      await this.accounts.signIn(ctx, user, true)
       session.flash('success', 'Akun berhasil dibuat. Selamat datang!')
       return response.redirect().toRoute(LoginRedirect[Role.CUSTOMER])
     }
 
     if (flow.purpose === OtpPurpose.RESET_PASSWORD) {
-      this.otpFlow.grantPasswordReset(session, user)
+      this.otp.grantPasswordReset(session, user)
       return response.redirect().toRoute('auth.password.reset')
     }
 
@@ -77,14 +75,14 @@ export default class OtpController {
     }
 
     await this.turnstile.assert(request.input('turnstile'), request.ip())
-    await this.otpFlow.resend(session, flow, request.ip())
+    await this.otp.resend(session, flow, request.ip())
 
     session.flash('success', 'Kode baru dikirim via WhatsApp.')
     return response.redirect().toRoute('auth.otp')
   }
 
   async #flow(session: HttpContext['session'], bouncer: HttpContext['bouncer']) {
-    const flow = this.otpFlow.current(session)
+    const flow = this.otp.current(session)
     if (!flow || (await bouncer.with(OtpFlowPolicy).denies('continue', flow))) {
       return null
     }

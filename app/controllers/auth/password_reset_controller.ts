@@ -3,10 +3,9 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { OtpPurpose } from '#enums/otp_enum'
 import { LoginRedirect } from '#enums/role_enum'
 import User from '#models/user'
-import AccountService from '#services/account/account_service'
-import AccountSessionService from '#services/account/account_session_service'
-import OtpFlowService from '#services/otp/otp_flow_service'
-import { maskPhone } from '#services/phone_service'
+import AccountService from '#services/account_service'
+import OtpService from '#services/otp_service'
+import { maskPhone } from '#helpers/phone'
 import TurnstileService from '#services/turnstile_service'
 import { forgotPasswordValidator, resetPasswordValidator } from '#validators/auth/password'
 
@@ -16,8 +15,7 @@ export const FORGOT_PASSWORD_NOTICE = 'Jika nomor terdaftar, kode dikirim via Wh
 export default class PasswordResetController {
   constructor(
     protected accounts: AccountService,
-    protected sessions: AccountSessionService,
-    protected otpFlow: OtpFlowService,
+    protected otp: OtpService,
     protected turnstile: TurnstileService
   ) {}
 
@@ -29,11 +27,11 @@ export default class PasswordResetController {
     await this.turnstile.assert(request.input('turnstile'), request.ip())
     const { phone } = await request.validateUsing(forgotPasswordValidator)
 
-    await this.otpFlow.start(
+    await this.otp.start(
       session,
       { purpose: OtpPurpose.RESET_PASSWORD, phone, failures: 0 },
       request.ip(),
-      await this.accounts.isPhoneTaken(phone)
+      await User.isPhoneTaken(phone)
     )
 
     session.flash('success', FORGOT_PASSWORD_NOTICE)
@@ -41,7 +39,7 @@ export default class PasswordResetController {
   }
 
   async edit({ inertia, response, session }: HttpContext) {
-    const grant = this.otpFlow.passwordResetGrant(session)
+    const grant = this.otp.passwordResetGrant(session)
     if (!grant) {
       return this.#expired(session, response)
     }
@@ -52,7 +50,7 @@ export default class PasswordResetController {
   async update(ctx: HttpContext) {
     const { request, response, session } = ctx
 
-    const grant = this.otpFlow.passwordResetGrant(session)
+    const grant = this.otp.passwordResetGrant(session)
     if (!grant) {
       return this.#expired(session, response)
     }
@@ -60,21 +58,15 @@ export default class PasswordResetController {
     const payload = await request.validateUsing(resetPasswordValidator)
     const user = await User.findOrFail(grant.userId)
 
-    await this.accounts.updatePassword(user, payload.password)
-    this.otpFlow.forgetPasswordReset(session)
-
-    if (payload.logoutOthers !== false) {
-      await this.sessions.endOtherSessions(ctx, user)
-    }
-
-    await this.sessions.signIn(ctx, user, true)
+    await this.accounts.resetPassword(ctx, user, payload.password, payload.logoutOthers !== false)
+    this.otp.forgetPasswordReset(session)
 
     session.flash('success', 'Kata sandi baru disimpan.')
     return response.redirect().toRoute(LoginRedirect[user.role])
   }
 
   #expired(session: HttpContext['session'], response: HttpContext['response']) {
-    this.otpFlow.forgetPasswordReset(session)
+    this.otp.forgetPasswordReset(session)
 
     session.flash('error', 'Waktu atur ulang kata sandi habis. Minta kode baru.')
     return response.redirect().toRoute('auth.password.forgot')

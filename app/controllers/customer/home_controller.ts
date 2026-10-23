@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import AddressBookService from '#services/address_book_service'
+import AddressService from '#services/address_service'
 import OrderService from '#services/order_service'
 import AddressTransformer from '#transformers/address_transformer'
 import OrderTransformer from '#transformers/order_transformer'
@@ -10,7 +10,7 @@ import UserTransformer from '#transformers/user_transformer'
 export default class HomeController {
   constructor(
     protected orders: OrderService,
-    protected addresses: AddressBookService
+    protected addresses: AddressService
   ) {}
 
   async show({ inertia, auth }: HttpContext) {

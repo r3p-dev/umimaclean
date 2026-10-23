@@ -13,7 +13,7 @@ import type Order from '#models/order'
 import type OrderAddress from '#models/order_address'
 import type OrderPhoto from '#models/order_photo'
 import type Payment from '#models/payment'
-import { displayPhone, maskPhone } from '#services/phone_service'
+import { displayPhone, maskPhone } from '#helpers/phone'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
 export function formatEvent(date: DateTime) {

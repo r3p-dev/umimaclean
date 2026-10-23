@@ -16,11 +16,11 @@ import { OrderAddressFactory } from '#database/factories/order_address_factory'
 import { OrderFactory } from '#database/factories/order_factory'
 import type User from '#models/user'
 import FonnteService from '#services/fonnte_service'
-import { Geocoder, type GeocodedAddress } from '#services/service_area_service'
+import AreaService, { type GeocodedAddress } from '#services/area_service'
 import TurnstileService from '#services/turnstile_service'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
-export class FakeGeocoder extends Geocoder {
+export class FakeGeocoder extends AreaService {
   address: GeocodedAddress | null = { city: 'Kota Bandung', district: 'Coblong' }
 
   override async reverse() {
@@ -114,7 +114,7 @@ export function useApp(group: Group) {
     state.fonnte = new FakeFonnte()
     state.turnstile = new FakeTurnstile()
     state.gateway = new FakePaymentGateway()
-    app.container.swap(Geocoder, () => state.geocoder)
+    app.container.swap(AreaService, () => state.geocoder)
     app.container.swap(FonnteService, () => state.fonnte)
     app.container.swap(TurnstileService, () => state.turnstile)
     app.container.swap(MidtransGateway, () => state.gateway)
@@ -124,7 +124,7 @@ export function useApp(group: Group) {
     return truncate
   })
   group.each.teardown(() => {
-    app.container.restore(Geocoder)
+    app.container.restore(AreaService)
     app.container.restore(FonnteService)
     app.container.restore(TurnstileService)
     app.container.restore(MidtransGateway)

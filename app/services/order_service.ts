@@ -31,7 +31,7 @@ import User from '#models/user'
 import WhatsappMessage from '#models/whatsapp_message'
 import { isUniqueViolation } from '#services/database_service'
 import FonnteService from '#services/fonnte_service'
-import ServiceAreaService, { type Point } from '#services/service_area_service'
+import AreaService, { type Point } from '#services/area_service'
 import env from '#start/env'
 import type { OrderPayload } from '#validators/customer/order'
 import { fieldError } from '#validators/shared/field_error'
@@ -135,7 +135,7 @@ export type TransitionOptions = {
 export default class OrderService {
   constructor(
     protected fonnte: FonnteService,
-    protected area: ServiceAreaService
+    protected area: AreaService
   ) {}
 
   lock(transaction: TransactionClientContract, orderId: number) {

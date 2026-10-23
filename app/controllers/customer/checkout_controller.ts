@@ -2,7 +2,7 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { MAX_ACTIVE_ADDRESSES } from '#models/customer_address'
 import OrderPolicy from '#policies/order_policy'
-import AddressBookService from '#services/address_book_service'
+import AddressService from '#services/address_service'
 import OrderService, { normalizePublicCode } from '#services/order_service'
 import AddressTransformer from '#transformers/address_transformer'
 import UserTransformer from '#transformers/user_transformer'
@@ -14,7 +14,7 @@ const DRAFT_KEY = 'order_draft'
 export default class CheckoutController {
   constructor(
     protected orders: OrderService,
-    protected addresses: AddressBookService
+    protected addresses: AddressService
   ) {}
 
   async create({ inertia, auth, request, session, bouncer }: HttpContext) {

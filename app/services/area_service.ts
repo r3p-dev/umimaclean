@@ -1,18 +1,19 @@
-import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
 import { ActivityAction } from '#enums/activity_enum'
 import ActivityLog from '#models/activity_log'
 import ServiceDistrict from '#models/service_district'
 import type User from '#models/user'
-import { Geocoder, type GeocodedAddress, type Point } from '#services/geocoder_service'
+import env from '#start/env'
 
-export {
-  Geocoder,
-  NominatimGeocoder,
-  type GeocodedAddress,
-  type Point,
-} from '#services/geocoder_service'
+export type Point = { lat: number; lng: number }
+
+export type GeocodedAddress = Partial<
+  Record<
+    'town' | 'city' | 'county' | 'municipality' | 'district' | 'city_district' | 'village',
+    string
+  >
+>
 
 export type AreaTone = 'covered' | 'outside' | 'unknown'
 
@@ -98,10 +99,7 @@ export function pointArea(
   return districts.length ? 'outside' : 'unknown'
 }
 
-@inject()
-export default class ServiceAreaService {
-  constructor(protected geocoder: Geocoder) {}
-
+export default class AreaService {
   async coverage(): Promise<Coverage> {
     const rows = await ServiceDistrict.query().orderBy('id', 'asc')
     if (!rows.length) {
@@ -139,10 +137,33 @@ export default class ServiceAreaService {
 
   async check(point: Point): Promise<AreaTone> {
     try {
-      return pointArea(await this.geocoder.reverse(point), await this.coverage())
+      return pointArea(await this.reverse(point), await this.coverage())
     } catch (error) {
       logger.warn({ err: error }, 'Service area lookup failed')
       return 'unknown'
     }
+  }
+
+  async reverse(point: Point): Promise<GeocodedAddress | null> {
+    const params = new URLSearchParams({
+      'lat': String(point.lat),
+      'lon': String(point.lng),
+      'format': 'jsonv2',
+      'zoom': '12',
+      'addressdetails': '1',
+      'accept-language': 'id',
+    })
+
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`, {
+      headers: { 'user-agent': `UmimaClean/1.0 (${env.get('APP_URL')})` },
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!response.ok) {
+      throw new Error(`Nominatim responded ${response.status}`)
+    }
+
+    const body = (await response.json()) as { address?: GeocodedAddress; error?: string }
+
+    return body.error || !body.address ? null : body.address
   }
 }

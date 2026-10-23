@@ -4,13 +4,13 @@ import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
 import CustomerAddress, { MAX_ACTIVE_ADDRESSES } from '#models/customer_address'
 import User from '#models/user'
-import ServiceAreaService, { type Point } from '#services/service_area_service'
+import AreaService, { type Point } from '#services/area_service'
 import type { AddressInput } from '#validators/customer/address'
 import { fieldError } from '#validators/shared/field_error'
 
 @inject()
-export default class AddressBookService {
-  constructor(protected area: ServiceAreaService) {}
+export default class AddressService {
+  constructor(protected area: AreaService) {}
 
   list(user: User, transaction?: TransactionClientContract) {
     return CustomerAddress.query({ client: transaction })
@@ -33,17 +33,18 @@ export default class AddressBookService {
     return this.list(user).where('is_primary', true).first()
   }
 
-  async assertServiceable(point: Point, field = 'point') {
+  async #assertServiceable(point: Point, field = 'point') {
     if ((await this.area.check(point)) === 'outside') {
       throw fieldError(field, 'Titik jemput di luar area antar-jemput gratis.', 'area.outside')
     }
   }
 
   async create(user: User, input: AddressInput) {
+    await this.#assertServiceable(input.point)
     return db.transaction(async (transaction) => {
       await this.#lockOwner(user, transaction)
 
-      const count = await this.#countActive(user, transaction)
+      const count = await CustomerAddress.countFor(user, transaction)
       if (count >= MAX_ACTIVE_ADDRESSES) {
         throw fieldError(
           'addressText',
@@ -65,6 +66,7 @@ export default class AddressBookService {
   }
 
   async update(address: CustomerAddress, input: AddressInput) {
+    await this.#assertServiceable(input.point)
     return db.transaction(async (transaction) => {
       address.useTransaction(transaction)
       const owner = await this.#lockOwner(address.userId, transaction)
@@ -122,16 +124,6 @@ export default class AddressBookService {
     })
   }
 
-  async touch(ids: number[], transaction: TransactionClientContract) {
-    if (ids.length === 0) {
-      return
-    }
-
-    await CustomerAddress.query({ client: transaction })
-      .whereIn('id', ids)
-      .update({ last_used_at: DateTime.now().toJSDate() })
-  }
-
   #lockOwner(user: User | number, transaction: TransactionClientContract) {
     return User.query({ client: transaction })
       .where('id', typeof user === 'number' ? user : user.id)
@@ -144,16 +136,6 @@ export default class AddressBookService {
       .where('user_id', user.id)
       .where('is_primary', true)
       .update({ is_primary: false })
-  }
-
-  async #countActive(user: User, transaction: TransactionClientContract) {
-    const row = await CustomerAddress.query({ client: transaction })
-      .where('user_id', user.id)
-      .withScopes((scopes) => scopes.active())
-      .count('* as total')
-      .firstOrFail()
-
-    return Number(row.$extras.total)
   }
 
   #columns(input: AddressInput) {

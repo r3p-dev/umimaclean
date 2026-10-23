@@ -11,7 +11,7 @@ import { fieldError } from '#validators/shared/field_error'
 export const LOGIN_FAILED_MESSAGE = 'Nomor atau kata sandi salah.'
 
 @inject()
-export default class AccountSessionService {
+export default class AccountService {
   constructor(protected sessions: SessionCollection) {}
 
   async authenticate(
@@ -100,10 +100,57 @@ export default class AccountSessionService {
     return Math.max(1, tokens.filter((token) => token.expiresAt > now).length)
   }
 
+  async updatePassword(user: User, password: string) {
+    user.merge({ password, passwordChangedAt: DateTime.now() })
+    await user.save()
+  }
+
+  async changePassword(ctx: HttpContext, user: User, currentPassword: string, password: string) {
+    const [throttled, isVerified] = await this.#passwordChangeLimiter().penalize(
+      `password_change_${user.id}`,
+      async () => {
+        if (!(await user.verifyPassword(currentPassword))) {
+          throw fieldError('currentPassword', 'Kata sandi saat ini salah.', 'password.current')
+        }
+
+        return true
+      }
+    )
+
+    if (throttled || !isVerified) {
+      throw fieldError(
+        'currentPassword',
+        'Terlalu banyak percobaan. Coba lagi dalam 15 menit.',
+        'password.throttled'
+      )
+    }
+
+    await this.updatePassword(user, password)
+    await this.endOtherSessions(ctx, user)
+    await this.signIn(ctx, user, true)
+  }
+
+  async resetPassword(ctx: HttpContext, user: User, password: string, shouldEndOthers: boolean) {
+    await this.updatePassword(user, password)
+    if (shouldEndOthers) {
+      await this.endOtherSessions(ctx, user)
+    }
+    await this.signIn(ctx, user, true)
+  }
+
+  async signOutOthers(ctx: HttpContext, user: User) {
+    await this.endOtherSessions(ctx, user)
+    await this.signIn(ctx, user, true)
+  }
+
   #loginLimiter(phone: string, ip: string) {
     return limiter.multi([
       { key: `login_phone_${phone}`, requests: 5, duration: '15 mins', blockDuration: '15 mins' },
       { key: `login_ip_${ip}`, requests: 20, duration: '15 mins', blockDuration: '30 mins' },
     ])
+  }
+
+  #passwordChangeLimiter() {
+    return limiter.use({ requests: 5, duration: '15 mins', blockDuration: '15 mins' })
   }
 }

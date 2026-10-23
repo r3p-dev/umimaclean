@@ -7,9 +7,9 @@ import { Role, STAFF_ROLES } from '#enums/role_enum'
 import { StaffShift, StaffType } from '#enums/staff_enum'
 import ActivityLog from '#models/activity_log'
 import User from '#models/user'
-import AccountService from '#services/account/account_service'
-import AccountSessionService from '#services/account/account_session_service'
-import NotificationService from '#services/notification_service'
+import WhatsappMessage from '#models/whatsapp_message'
+import AccountService from '#services/account_service'
+import FonnteService from '#services/fonnte_service'
 import env from '#start/env'
 import type { StaffPayload } from '#validators/admin/staff'
 import { fieldError } from '#validators/shared/field_error'
@@ -31,11 +31,10 @@ export function temporaryPassword() {
 }
 
 @inject()
-export default class StaffAccountService {
+export default class StaffService {
   constructor(
     protected accounts: AccountService,
-    protected sessions: AccountSessionService,
-    protected notifications: NotificationService
+    protected fonnte: FonnteService
   ) {}
 
   list() {
@@ -46,7 +45,7 @@ export default class StaffAccountService {
   }
 
   async create(owner: User, payload: StaffPayload) {
-    if (await this.accounts.isPhoneTaken(payload.phone)) {
+    if (await User.isPhoneTaken(payload.phone)) {
       throw fieldError('phone', 'Nomor ini sudah dipakai akun lain.', 'phone.taken')
     }
     const password = temporaryPassword()
@@ -70,7 +69,7 @@ export default class StaffAccountService {
   }
 
   async update(owner: User, user: User, payload: StaffPayload) {
-    if (await this.accounts.isPhoneTaken(payload.phone, { exceptUserId: user.id })) {
+    if (await User.isPhoneTaken(payload.phone, { exceptUserId: user.id })) {
       throw fieldError('phone', 'Nomor ini sudah dipakai akun lain.', 'phone.taken')
     }
     const target = ROLE_OF[payload.role]
@@ -98,7 +97,7 @@ export default class StaffAccountService {
     }
     const password = temporaryPassword()
     await this.accounts.updatePassword(user, password)
-    await this.sessions.endAllSessions(user)
+    await this.accounts.endAllSessions(user)
     await ActivityLog.record({
       actor: owner,
       action: ActivityAction.STAFF_CHANGED,
@@ -116,7 +115,7 @@ export default class StaffAccountService {
     user.merge({ isActive })
     await user.save()
     if (!isActive) {
-      await this.sessions.endAllSessions(user)
+      await this.accounts.endAllSessions(user)
     }
     await ActivityLog.record({
       actor: owner,
@@ -132,12 +131,19 @@ export default class StaffAccountService {
     await ActivityLog.record({ actor: user, action: ActivityAction.SIGNED_IN })
   }
 
-  #sendPassword(user: User, password: string, isNew: boolean) {
+  async #sendPassword(user: User, password: string, isNew: boolean) {
     const login = `${env.get('APP_URL')}/staf/masuk`
-    return this.notifications.toUser(
-      user,
-      MessagePurpose.STAFF_PASSWORD,
+    const status = await this.fonnte.send(
+      user.phone,
       `${isNew ? 'Akun staf Umima Clean Anda sudah dibuat.' : 'Kata sandi akun staf Umima Clean Anda direset.'} Masuk di ${login} dengan nomor ini dan kata sandi sementara: ${password}\nSegera ganti kata sandi di menu Profil.`
     )
+    await WhatsappMessage.create({
+      target: user.phone,
+      purpose: MessagePurpose.STAFF_PASSWORD,
+      status,
+      orderId: null,
+      userId: user.id,
+    })
+    return status
   }
 }

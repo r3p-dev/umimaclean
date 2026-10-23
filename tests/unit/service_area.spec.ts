@@ -4,7 +4,7 @@ import {
   pointArea,
   type Coverage,
   type GeocodedAddress,
-} from '#services/service_area_service'
+} from '#services/area_service'
 
 type ClientArea = {
   checkPointArea: (address: GeocodedAddress | null, coverage: Coverage) => string

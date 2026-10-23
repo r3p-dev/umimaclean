@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { lastFourDigits, maskPhone, normalizePhone, phoneProblem } from '#services/phone_service'
+import { lastFourDigits, maskPhone, normalizePhone, phoneProblem } from '#helpers/phone'
 
 test.group('Phone normalization', () => {
   test('normalizes "{value}" to 628…')

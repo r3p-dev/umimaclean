@@ -3,7 +3,7 @@ import { ItemKind, ItemKindLabel, OrderSource, OrderStatus, PhotoKind } from '#e
 import { ServiceType } from '#enums/service_enum'
 import type Order from '#models/order'
 import type User from '#models/user'
-import { maskPhone } from '#services/phone_service'
+import { maskPhone } from '#helpers/phone'
 import { formatEvent, orderStatusLabel, photoUrl } from '#transformers/order_transformer'
 import { countLines, shortName } from '#transformers/task_transformer'
 
