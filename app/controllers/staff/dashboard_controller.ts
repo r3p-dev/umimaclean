@@ -1,24 +1,21 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import FieldTaskService, { type TripKind } from '#services/order/field_task_service'
-import SettingsService from '#services/settings_service'
+import Setting from '#models/setting'
+import TaskService, { type TripKind } from '#services/task_service'
 import TaskTransformer from '#transformers/task_transformer'
 
 @inject()
 export default class DashboardController {
-  constructor(
-    protected trips: FieldTaskService,
-    protected settings: SettingsService
-  ) {}
+  constructor(protected tasks: TaskService) {}
 
   async home({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
-    const slots = await this.settings.get('pickup_slots')
+    const slots = await Setting.get('pickup_slots')
 
     let next = null
     for (const kind of ['pickup', 'delivery'] as TripKind[]) {
-      const active = await this.trips.active(user, kind)
-      const queue = active ? [] : await this.trips.queue(user, kind)
+      const active = await this.tasks.activeTrip(user, kind)
+      const queue = active ? [] : await this.tasks.queue(user, kind)
       const first = active ?? queue[0]
       if (first) {
         next = {

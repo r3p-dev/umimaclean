@@ -2,9 +2,9 @@ import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
 import { ActivityAction } from '#enums/activity_enum'
+import ActivityLog from '#models/activity_log'
 import ServiceDistrict from '#models/service_district'
 import type User from '#models/user'
-import ActivityService from '#services/activity_service'
 import { Geocoder, type GeocodedAddress, type Point } from '#services/geocoder_service'
 
 export {
@@ -100,10 +100,7 @@ export function pointArea(
 
 @inject()
 export default class ServiceAreaService {
-  constructor(
-    protected geocoder: Geocoder,
-    protected activity: ActivityService
-  ) {}
+  constructor(protected geocoder: Geocoder) {}
 
   async coverage(): Promise<Coverage> {
     const rows = await ServiceDistrict.query().orderBy('id', 'asc')
@@ -127,7 +124,7 @@ export default class ServiceAreaService {
       await ServiceDistrict.query({ client: transaction }).delete()
       await ServiceDistrict.createMany(coverageRows(coverage), { client: transaction })
     })
-    await this.activity.record({
+    await ActivityLog.record({
       actor: owner,
       action: ActivityAction.SETTINGS_CHANGED,
       detail: `Area layanan: ${coverage

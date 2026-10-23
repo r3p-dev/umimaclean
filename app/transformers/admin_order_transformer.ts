@@ -1,9 +1,8 @@
 import { BaseTransformer } from '@adonisjs/core/transformers'
-import { OrderSource, OrderStatus, OrderStatusLabel, OrderStatusTone } from '#enums/order_enum'
+import { OrderSource, OrderStatus, OrderStatusLabel, OrderStatusStage } from '#enums/order_enum'
 import { PaymentMethodLabel, PaymentStatus } from '#enums/payment_enum'
 import { Role } from '#enums/role_enum'
 import type Order from '#models/order'
-import { ownerTargets } from '#services/order/order_correction_service'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
 export function areaOf(order: Order) {
@@ -41,12 +40,12 @@ export default class AdminOrderTransformer extends BaseTransformer<Order> {
       area: areaOf(order),
       isInStore: order.source === OrderSource.STORE,
       status: OrderStatusLabel[order.status],
-      phase: OrderStatusTone[order.status],
+      stage: OrderStatusStage[order.status],
       total: order.bill?.total ?? 0,
       payment: paymentLabelOf(order),
       staff: staff?.firstName() ?? '—',
       date: order.createdAt.setZone(SERVICE_ZONE).toISODate()!,
-      next: ownerTargets(order.status),
+      next: order.ownerStages(),
     }
   }
 }

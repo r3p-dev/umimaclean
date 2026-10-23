@@ -3,13 +3,13 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { enterAdminArea } from '#abilities/main'
 import { ActivityAction } from '#enums/activity_enum'
 import { MessageStatus } from '#enums/message_enum'
+import ActivityLog from '#models/activity_log'
+import Setting from '#models/setting'
 import User from '#models/user'
-import ActivityService from '#services/activity_service'
 import StaffAccountService from '#services/account/staff_account_service'
-import { deliveryNote } from '#services/notification_service'
-import PaymentService from '#services/payment/payment_service'
+import { deliveryNote } from '#services/order_service'
+import PaymentService from '#services/payment_service'
 import ServiceAreaService from '#services/service_area_service'
-import SettingsService from '#services/settings_service'
 import StaffAccountTransformer from '#transformers/staff_account_transformer'
 import { saveStoreSettingsValidator } from '#validators/admin/settings'
 import { saveStaffValidator, staffActiveValidator } from '#validators/admin/staff'
@@ -22,9 +22,7 @@ type PasswordNotice = { name: string; password: string; notice: string }
 export default class SettingsController {
   constructor(
     protected staffAccounts: StaffAccountService,
-    protected settings: SettingsService,
     protected area: ServiceAreaService,
-    protected activity: ActivityService,
     protected payments: PaymentService
   ) {}
 
@@ -77,7 +75,7 @@ export default class SettingsController {
   }
 
   async store({ inertia }: HttpContext) {
-    const values = await this.settings.all()
+    const values = await Setting.values()
     return inertia.render('admin/settings/store', {
       settings: {
         name: values.store.name,
@@ -97,17 +95,17 @@ export default class SettingsController {
     await bouncer.authorize(enterAdminArea)
     const owner = auth.getUserOrFail()
     const payload = await request.validateUsing(saveStoreSettingsValidator)
-    await this.settings.put('store', {
+    await Setting.put('store', {
       name: payload.storeName,
       whatsapp: payload.whatsapp,
       address: payload.storeAddress,
       hours: payload.hours,
     })
-    await this.settings.put('pickup_slots', payload.slots)
-    await this.settings.put('payment_methods', payload.payments)
-    await this.settings.put('inactive_days', payload.inactiveDays)
+    await Setting.put('pickup_slots', payload.slots)
+    await Setting.put('payment_methods', payload.payments)
+    await Setting.put('inactive_days', payload.inactiveDays)
     await this.area.save(owner, payload.areas)
-    await this.activity.record({
+    await ActivityLog.record({
       actor: owner,
       action: ActivityAction.SETTINGS_CHANGED,
       detail: `Profil toko, slot (${payload.slots.map((slot) => (slot.on ? slot.capacity : 'tutup')).join('/')}), metode bayar`,

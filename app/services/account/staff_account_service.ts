@@ -5,10 +5,10 @@ import { ActivityAction } from '#enums/activity_enum'
 import { MessagePurpose } from '#enums/message_enum'
 import { Role, STAFF_ROLES } from '#enums/role_enum'
 import { StaffShift, StaffType } from '#enums/staff_enum'
+import ActivityLog from '#models/activity_log'
 import User from '#models/user'
 import AccountService from '#services/account/account_service'
 import AccountSessionService from '#services/account/account_session_service'
-import ActivityService from '#services/activity_service'
 import NotificationService from '#services/notification_service'
 import env from '#start/env'
 import type { StaffPayload } from '#validators/admin/staff'
@@ -35,7 +35,6 @@ export default class StaffAccountService {
   constructor(
     protected accounts: AccountService,
     protected sessions: AccountSessionService,
-    protected activity: ActivityService,
     protected notifications: NotificationService
   ) {}
 
@@ -60,7 +59,7 @@ export default class StaffAccountService {
       isActive: true,
       phoneVerifiedAt: null,
     })
-    await this.activity.record({
+    await ActivityLog.record({
       actor: owner,
       action: ActivityAction.STAFF_CHANGED,
       detail: `Menambah akun ${user.name} (${payload.role})`,
@@ -85,7 +84,7 @@ export default class StaffAccountService {
       shift: SHIFT_OF[payload.shift],
     })
     await user.save()
-    await this.activity.record({
+    await ActivityLog.record({
       actor: owner,
       action: ActivityAction.STAFF_CHANGED,
       detail: `Mengubah akun ${user.name} (${payload.role})`,
@@ -100,7 +99,7 @@ export default class StaffAccountService {
     const password = temporaryPassword()
     await this.accounts.updatePassword(user, password)
     await this.sessions.endAllSessions(user)
-    await this.activity.record({
+    await ActivityLog.record({
       actor: owner,
       action: ActivityAction.STAFF_CHANGED,
       detail: `Mereset kata sandi ${user.name}`,
@@ -119,7 +118,7 @@ export default class StaffAccountService {
     if (!isActive) {
       await this.sessions.endAllSessions(user)
     }
-    await this.activity.record({
+    await ActivityLog.record({
       actor: owner,
       action: ActivityAction.STAFF_CHANGED,
       detail: `${isActive ? 'Mengaktifkan' : 'Menonaktifkan'} akun ${user.name}`,
@@ -130,7 +129,7 @@ export default class StaffAccountService {
   async touch(user: User) {
     user.lastSeenAt = DateTime.now()
     await user.save()
-    await this.activity.record({ actor: user, action: ActivityAction.SIGNED_IN })
+    await ActivityLog.record({ actor: user, action: ActivityAction.SIGNED_IN })
   }
 
   #sendPassword(user: User, password: string, isNew: boolean) {

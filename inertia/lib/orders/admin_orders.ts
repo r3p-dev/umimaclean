@@ -2,7 +2,7 @@ import type { Data } from '@generated/data'
 import { fromIso } from '~/lib/shared/date'
 import type { StatusTone } from '~/lib/tracking/status'
 
-export const PHASE_LABEL: Record<StatusTone, string> = {
+export const STAGE_LABEL: Record<StatusTone, string> = {
   jemput: 'Menunggu Penjemputan',
   periksa: 'Sedang Diperiksa',
   bayar: 'Menunggu Pembayaran',
@@ -12,7 +12,7 @@ export const PHASE_LABEL: Record<StatusTone, string> = {
   batal: 'Dibatalkan',
 }
 
-export const PHASE_FILTERS: StatusTone[] = [
+export const STAGE_FILTERS: StatusTone[] = [
   'jemput',
   'periksa',
   'bayar',
@@ -22,7 +22,7 @@ export const PHASE_FILTERS: StatusTone[] = [
   'batal',
 ]
 
-const PHASE_ORDER: Record<StatusTone, number> = {
+const STAGE_ORDER: Record<StatusTone, number> = {
   jemput: 1,
   periksa: 2,
   bayar: 3,
@@ -65,8 +65,8 @@ export function adminOrders(rows: AdminOrderRow[]): AdminOrder[] {
   return rows.map((row) => ({ ...row, date: fromIso(row.date) }))
 }
 
-export function phaseRank(phase: StatusTone) {
-  return PHASE_ORDER[phase]
+export function stageRank(stage: StatusTone) {
+  return STAGE_ORDER[stage]
 }
 
 export function statusEligible(selected: AdminOrder[], target: StatusTone) {
@@ -80,7 +80,7 @@ export function statusNote(selected: AdminOrder[], target: StatusTone | null) {
   const eligible = statusEligible(selected, target).length
   const skipped = selected.length - eligible
   return (
-    `${eligible} dari ${selected.length} pesanan akan diubah ke “${PHASE_LABEL[target]}”.` +
+    `${eligible} dari ${selected.length} pesanan akan diubah ke “${STAGE_LABEL[target]}”.` +
     (skipped
       ? ` ${skipped} dilewati karena bukan langkah berikutnya (pembayaran dicatat lewat koreksi pembayaran).`
       : '')
@@ -88,5 +88,5 @@ export function statusNote(selected: AdminOrder[], target: StatusTone | null) {
 }
 
 export function cancelable(selected: AdminOrder[]) {
-  return selected.filter((order) => order.phase !== 'selesai' && order.phase !== 'batal')
+  return selected.filter((order) => order.stage !== 'selesai' && order.stage !== 'batal')
 }

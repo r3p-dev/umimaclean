@@ -3,8 +3,7 @@ import { OrderSource, OrderStatus } from '#enums/order_enum'
 import { PaymentMethodLabel, PaymentStatus } from '#enums/payment_enum'
 import type Order from '#models/order'
 import type User from '#models/user'
-import { formatRupiah } from '#services/notification_service'
-import OrderTaskService from '#services/order/order_task_service'
+import { formatRupiah } from '#helpers/money'
 import { formatClock, formatEvent } from '#transformers/order_transformer'
 import { countLines, shortName } from '#transformers/task_transformer'
 
@@ -20,7 +19,6 @@ export default class ProcessRowTransformer extends BaseTransformer<Order> {
 
   toObject() {
     const order = this.resource
-    const tasks = new OrderTaskService()
     const received = order.events?.find((event) => event.status === OrderStatus.PICKED_UP)
     const paid = order.payments?.find((payment) => payment.status === PaymentStatus.PAID)
     const itemsText =
@@ -40,7 +38,7 @@ export default class ProcessRowTransformer extends BaseTransformer<Order> {
         ? `Diterima ${formatClock(received.createdAt)}${received.actor ? ` · dijemput ${received.actor.firstName()}` : ''}`
         : 'Menunggu diperiksa'
     } else if (order.status === OrderStatus.IN_INSPECTION) {
-      const isOther = tasks.isHeldByOther(this.user, order)
+      const isOther = order.isClaimedByOther(this.user)
       action = isOther ? 'locked' : 'continue'
       meta = isOther
         ? `Sedang diperiksa ${order.claimer?.firstName() ?? 'staf lain'}`

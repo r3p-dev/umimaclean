@@ -2,7 +2,7 @@ import transmit from '@adonisjs/transmit/services/main'
 import { enterAdminArea, enterStaffArea } from '#abilities/main'
 import Order from '#models/order'
 import OrderPolicy from '#policies/order_policy'
-import { ADMIN_ORDERS_CHANNEL, STAFF_QUEUES_CHANNEL } from '#services/live_update_service'
+import { ADMIN_ORDERS_CHANNEL, STAFF_QUEUES_CHANNEL } from '#services/order_service'
 
 transmit.registerRoutes()
 

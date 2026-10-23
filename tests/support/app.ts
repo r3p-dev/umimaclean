@@ -10,11 +10,7 @@ import { MessageStatus } from '#enums/message_enum'
 import { ItemKind, OrderAddressType } from '#enums/order_enum'
 import { ServiceType } from '#enums/service_enum'
 import Service from '#models/service'
-import {
-  PaymentGateway,
-  type ChargeInput,
-  type ProviderStatus,
-} from '#services/payment/payment_gateway'
+import MidtransGateway, { type ChargeInput, type ProviderStatus } from '#services/midtrans_gateway'
 import { CustomerAddressFactory } from '#database/factories/customer_address_factory'
 import { OrderAddressFactory } from '#database/factories/order_address_factory'
 import { OrderFactory } from '#database/factories/order_factory'
@@ -67,7 +63,7 @@ export class FakeTurnstile extends TurnstileService {
   }
 }
 
-export class FakePaymentGateway extends PaymentGateway {
+export class FakePaymentGateway extends MidtransGateway {
   isAvailable = true
   charges: ChargeInput[] = []
   providerStatus: ProviderStatus | null = null
@@ -121,7 +117,7 @@ export function useApp(group: Group) {
     app.container.swap(Geocoder, () => state.geocoder)
     app.container.swap(FonnteService, () => state.fonnte)
     app.container.swap(TurnstileService, () => state.turnstile)
-    app.container.swap(PaymentGateway, () => state.gateway)
+    app.container.swap(MidtransGateway, () => state.gateway)
     await limiter.clear()
     const truncate = await testUtils.db().truncate()
     await truncate()
@@ -131,7 +127,7 @@ export function useApp(group: Group) {
     app.container.restore(Geocoder)
     app.container.restore(FonnteService)
     app.container.restore(TurnstileService)
-    app.container.restore(PaymentGateway)
+    app.container.restore(MidtransGateway)
   })
   return state
 }

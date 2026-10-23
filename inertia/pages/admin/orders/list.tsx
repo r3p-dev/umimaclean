@@ -34,11 +34,11 @@ import { CancelDialog, StatusDialog } from '~/components/organisms/orders/bulk_o
 import AdminLayout from '~/components/templates/admin_layout'
 import {
   CANCEL_REASONS,
-  PHASE_FILTERS,
-  PHASE_LABEL,
+  STAGE_FILTERS,
+  STAGE_LABEL,
   adminOrders,
   cancelable,
-  phaseRank,
+  stageRank,
   statusEligible,
   type AdminOrder,
   type AdminOrderRow,
@@ -65,14 +65,14 @@ const SORT_OPTIONS = [
 export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
   const all = useMemo(() => adminOrders(orders), [orders])
   useLiveReload('admin/orders', ['orders'])
-  const [phases, setPhases] = useState<StatusTone[]>([])
+  const [stages, setStages] = useState<StatusTone[]>([])
   const [origins, setOrigins] = useState<Origin[]>([])
   const [query, setQuery] = useState('')
   const [dialog, setDialog] = useState<'status' | 'cancel' | null>(null)
   const search = query.trim().toLowerCase()
 
-  const matches = (order: AdminOrder, skip?: 'phase' | 'origin') =>
-    (skip === 'phase' || !phases.length || phases.includes(order.phase)) &&
+  const matches = (order: AdminOrder, skip?: 'stage' | 'origin') =>
+    (skip === 'stage' || !stages.length || stages.includes(order.stage)) &&
     (skip === 'origin' ||
       !origins.length ||
       origins.includes(order.isInStore ? 'toko' : 'online')) &&
@@ -87,7 +87,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
       { key: 'ref', value: (row) => row.number },
       { key: 'name', value: (row) => row.customer },
       { key: 'area', value: (row) => row.area },
-      { key: 'status', value: (row) => phaseRank(row.phase) },
+      { key: 'status', value: (row) => stageRank(row.stage) },
       { key: 'total', value: (row) => row.total, direction: 'desc' },
       { key: 'date', value: (row) => row.date.getTime(), direction: 'desc' },
     ],
@@ -99,8 +99,8 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
   if (search) {
     parts.push(`kata kunci “${query.trim()}”`)
   }
-  if (phases.length) {
-    parts.push(`status: ${phases.map((phase) => PHASE_LABEL[phase]).join(', ')}`)
+  if (stages.length) {
+    parts.push(`status: ${stages.map((stage) => STAGE_LABEL[stage]).join(', ')}`)
   }
   if (origins.length) {
     parts.push(
@@ -116,7 +116,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
   function resetFilters() {
     changeFilter(() => {
       setQuery('')
-      setPhases([])
+      setStages([])
       setOrigins([])
     })
   }
@@ -176,12 +176,12 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
           <FilterMenu<StatusTone>
             word="Status"
             label="Filter status"
-            values={phases}
-            onChange={(value) => changeFilter(() => setPhases(value))}
-            options={PHASE_FILTERS.map((phase) => ({
-              value: phase,
-              label: PHASE_LABEL[phase],
-              count: all.filter((order) => order.phase === phase && matches(order, 'phase')).length,
+            values={stages}
+            onChange={(value) => changeFilter(() => setStages(value))}
+            options={STAGE_FILTERS.map((stage) => ({
+              value: stage,
+              label: STAGE_LABEL[stage],
+              count: all.filter((order) => order.stage === stage && matches(order, 'stage')).length,
             }))}
           />
           <FilterMenu<Origin>
@@ -336,7 +336,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
                       {row.area}
                     </TableCell>
                     <TableCell className="py-1">
-                      <ToneBadge tone={row.phase}>{row.status}</ToneBadge>
+                      <ToneBadge tone={row.stage}>{row.status}</ToneBadge>
                     </TableCell>
                     <TableCell className="py-1 text-right tabular-nums">
                       {row.total ? formatRupiah(row.total) : '—'}
@@ -386,7 +386,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
                   </span>
                   <span className="text-[15px] leading-[1.3] font-semibold">{row.customer}</span>
                   <span className="flex flex-wrap items-center gap-2">
-                    <ToneBadge tone={row.phase}>{row.status}</ToneBadge>
+                    <ToneBadge tone={row.stage}>{row.status}</ToneBadge>
                     <span className="text-meta leading-[1.3] text-muted-foreground">
                       {row.payment} · {formatDayMonth(row.date)}
                     </span>
@@ -425,7 +425,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
           }
           router.post(
             urlFor('admin.orders.move'),
-            { codes: eligible.map((order) => order.number), phase: target },
+            { codes: eligible.map((order) => order.number), stage: target },
             {
               preserveScroll: true,
               onSuccess: () => {

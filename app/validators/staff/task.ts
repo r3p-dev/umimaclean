@@ -1,5 +1,5 @@
 import vine from '@vinejs/vine'
-import { SKIP_REASONS } from '#services/order/field_task_service'
+import { SKIP_REASONS } from '#services/task_service'
 
 export function proofPhoto() {
   return vine.file({ size: '8mb', extnames: ['jpg', 'jpeg', 'png', 'webp'] })

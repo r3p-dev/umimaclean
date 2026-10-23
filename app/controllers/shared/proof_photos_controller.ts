@@ -1,8 +1,7 @@
 import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
-import OrderPhoto from '#models/order_photo'
+import OrderPhoto, { proofPath } from '#models/order_photo'
 import OrderPolicy from '#policies/order_policy'
-import { proofPath } from '#services/proof_photo_service'
 
 export default class ProofPhotosController {
   async show({ bouncer, params, response }: HttpContext) {

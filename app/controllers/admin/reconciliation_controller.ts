@@ -5,7 +5,7 @@ import { enterAdminArea } from '#abilities/main'
 import { OrderStatus, OrderStatusLabel } from '#enums/order_enum'
 import { PaymentChannelLabel, PaymentStatus, PaymentStatusLabel } from '#enums/payment_enum'
 import Payment from '#models/payment'
-import PaymentService from '#services/payment/payment_service'
+import PaymentService from '#services/payment_service'
 import { formatEvent } from '#transformers/order_transformer'
 
 type Flag = 'ok' | 'paid_not_advanced' | 'expired_pending' | 'amount_mismatch' | 'waiting'

@@ -22,13 +22,6 @@ export type ProviderStatus = {
   signatureKey?: string
 }
 
-export abstract class PaymentGateway {
-  abstract isConfigured(): boolean
-  abstract charge(input: ChargeInput): Promise<ChargeResult>
-  abstract status(orderId: string): Promise<ProviderStatus | null>
-  abstract verify(notification: ProviderStatus): boolean
-}
-
 type MidtransResponse = {
   status_code?: string
   status_message?: string
@@ -53,7 +46,7 @@ export function midtransStatus(body: MidtransResponse): ProviderStatus {
   }
 }
 
-export class MidtransGateway extends PaymentGateway {
+export default class MidtransGateway {
   #serverKey() {
     return env.get('MIDTRANS_SERVER_KEY')?.release() ?? ''
   }
@@ -100,7 +93,7 @@ export class MidtransGateway extends PaymentGateway {
     }
   }
 
-  async status(orderId: string) {
+  async status(orderId: string): Promise<ProviderStatus | null> {
     const response = await fetch(`${this.#baseUrl()}/v2/${encodeURIComponent(orderId)}/status`, {
       headers: this.#headers(),
       signal: AbortSignal.timeout(10000),

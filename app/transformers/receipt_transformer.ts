@@ -2,7 +2,7 @@ import { BaseTransformer } from '@adonisjs/core/transformers'
 import { ItemKindLabel } from '#enums/order_enum'
 import { PaymentMethod, PaymentMethodLabel, PaymentStatus } from '#enums/payment_enum'
 import type Order from '#models/order'
-import { formatRupiah } from '#services/notification_service'
+import { formatRupiah } from '#helpers/money'
 import { formatEvent } from '#transformers/order_transformer'
 
 export default class ReceiptTransformer extends BaseTransformer<Order> {

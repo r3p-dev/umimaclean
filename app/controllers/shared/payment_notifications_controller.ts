@@ -1,12 +1,12 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { midtransStatus, PaymentGateway } from '#services/payment/payment_gateway'
-import PaymentService from '#services/payment/payment_service'
+import MidtransGateway, { midtransStatus } from '#services/midtrans_gateway'
+import PaymentService from '#services/payment_service'
 
 @inject()
 export default class PaymentNotificationsController {
   constructor(
-    protected gateway: PaymentGateway,
+    protected gateway: MidtransGateway,
     protected payments: PaymentService
   ) {}
 

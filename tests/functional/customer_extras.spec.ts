@@ -4,7 +4,7 @@ import { OrderStatus } from '#enums/order_enum'
 import { PaymentStatus } from '#enums/payment_enum'
 import Bill from '#models/bill'
 import Payment from '#models/payment'
-import { DEFAULT_SETTINGS } from '#services/settings_service'
+import { DEFAULT_SETTINGS } from '#models/setting'
 import { createOrder, inertia, post, useApp } from '#tests/support/app'
 
 test.group('Customer extras', (group) => {

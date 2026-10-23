@@ -38,7 +38,7 @@ export default function CustomerHistoryDialog({
             >
               {order.number}
             </Link>
-            <ToneBadge tone={order.phase}>{order.status}</ToneBadge>
+            <ToneBadge tone={order.stage}>{order.status}</ToneBadge>
             <span className="flex-1" />
             <span className="text-meta leading-none text-muted-foreground">
               {formatDayMonth(order.date, true)}

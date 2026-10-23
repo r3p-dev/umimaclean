@@ -2,15 +2,14 @@ import { inject } from '@adonisjs/core'
 import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
 import OrderPolicy from '#policies/order_policy'
-import OrderHistoryService, {
+import Setting from '#models/setting'
+import OrderService, {
+  normalizePublicCode,
   orderFilterOf,
   orderSearchTerm,
-} from '#services/order/order_history_service'
-import OrderService from '#services/order/order_service'
-import { normalizePublicCode } from '#services/order/public_code_service'
+} from '#services/order_service'
 import OrderTransformer, { qrisOf } from '#transformers/order_transformer'
-import PaymentService from '#services/payment/payment_service'
-import SettingsService from '#services/settings_service'
+import PaymentService from '#services/payment_service'
 import ReceiptTransformer from '#transformers/receipt_transformer'
 import { cancelOrderValidator } from '#validators/customer/cancel'
 import { OrderStatus } from '#enums/order_enum'
@@ -20,9 +19,7 @@ import { PaymentChannel } from '#enums/payment_enum'
 export default class OrdersController {
   constructor(
     protected orders: OrderService,
-    protected history: OrderHistoryService,
-    protected payments: PaymentService,
-    protected settings: SettingsService
+    protected payments: PaymentService
   ) {}
 
   async index({ inertia, auth, request }: HttpContext) {
@@ -30,7 +27,7 @@ export default class OrdersController {
     const filter = orderFilterOf(status)
     const search = orderSearchTerm(query)
 
-    const result = await this.history.list(auth.getUserOrFail(), {
+    const result = await this.orders.listForCustomer(auth.getUserOrFail(), {
       filter,
       search,
       page: Math.max(1, Number(page) || 1),
@@ -90,7 +87,7 @@ export default class OrdersController {
     }
     return inertia.render('customer/orders/receipt', {
       receipt: new ReceiptTransformer(order).toObject(),
-      store: await this.settings.get('store'),
+      store: await Setting.get('store'),
     })
   }
 

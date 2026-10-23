@@ -9,7 +9,7 @@ import Bill from '#models/bill'
 import Order from '#models/order'
 import Payment from '#models/payment'
 import User from '#models/user'
-import { DEFAULT_SETTINGS } from '#services/settings_service'
+import { DEFAULT_SETTINGS } from '#models/setting'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 import {
   createOrder,
@@ -212,11 +212,11 @@ test.group('Owner tools', (group) => {
 
     await post(client, '/admin/pesanan/status', {
       codes: [pickedUp.publicCode, awaiting.publicCode],
-      phase: 'periksa',
+      stage: 'periksa',
     }).loginAs(owner)
     await post(client, '/admin/pesanan/status', {
       codes: [awaiting.publicCode],
-      phase: 'cuci',
+      stage: 'cuci',
     }).loginAs(owner)
 
     await pickedUp.refresh()

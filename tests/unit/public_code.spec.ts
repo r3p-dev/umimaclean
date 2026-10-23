@@ -1,9 +1,5 @@
 import { test } from '@japa/runner'
-import {
-  CROCKFORD_ALPHABET,
-  newPublicCode,
-  normalizePublicCode,
-} from '#services/order/public_code_service'
+import { CROCKFORD_ALPHABET, newPublicCode, normalizePublicCode } from '#services/order_service'
 
 test.group('Public order code', () => {
   test('uses UMC- and six Crockford Base32 characters', ({ assert }) => {

@@ -3,9 +3,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { MAX_ACTIVE_ADDRESSES } from '#models/customer_address'
 import OrderPolicy from '#policies/order_policy'
 import AddressBookService from '#services/address_book_service'
-import OrderService from '#services/order/order_service'
-import SettingsService from '#services/settings_service'
-import { normalizePublicCode } from '#services/order/public_code_service'
+import OrderService, { normalizePublicCode } from '#services/order_service'
 import AddressTransformer from '#transformers/address_transformer'
 import UserTransformer from '#transformers/user_transformer'
 import { createOrderValidator, type OrderPayload } from '#validators/customer/order'
@@ -16,8 +14,7 @@ const DRAFT_KEY = 'order_draft'
 export default class CheckoutController {
   constructor(
     protected orders: OrderService,
-    protected addresses: AddressBookService,
-    protected settings: SettingsService
+    protected addresses: AddressBookService
   ) {}
 
   async create({ inertia, auth, request, session, bouncer }: HttpContext) {
@@ -45,7 +42,7 @@ export default class CheckoutController {
           }
         : null,
       repeatItems,
-      availability: await this.settings.upcomingAvailability(),
+      availability: await this.orders.upcomingAvailability(),
     })
   }
 

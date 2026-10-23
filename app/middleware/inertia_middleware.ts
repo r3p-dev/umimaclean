@@ -2,7 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import { STAFF_ROLES } from '#enums/role_enum'
-import StaffSummaryService from '#services/order/staff_summary_service'
+import TaskService from '#services/task_service'
 import env from '#start/env'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
@@ -27,9 +27,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       turnstileSiteKey: env.get('TURNSTILE_SITE_KEY'),
       staffCounts:
         isStaffPage && user
-          ? await ctx.containerResolver
-              .make(StaffSummaryService)
-              .then((summary) => summary.counts(user))
+          ? await ctx.containerResolver.make(TaskService).then((tasks) => tasks.counts(user))
           : null,
     }
   }

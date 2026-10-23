@@ -12,7 +12,7 @@ import { PaymentChannelLabel, PaymentMethodLabel, PaymentStatus } from '#enums/p
 import { Role } from '#enums/role_enum'
 import type ActivityLog from '#models/activity_log'
 import type Order from '#models/order'
-import { formatRupiah } from '#services/notification_service'
+import { formatRupiah } from '#helpers/money'
 import { displayPhone } from '#services/phone_service'
 import { photoUrl } from '#transformers/order_transformer'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'

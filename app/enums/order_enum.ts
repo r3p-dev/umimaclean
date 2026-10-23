@@ -113,9 +113,9 @@ export function orderStatusIndex(status: OrderStatus) {
   return ORDER_STATUS_SEQUENCE.indexOf(status)
 }
 
-export type OrderTone = 'jemput' | 'periksa' | 'bayar' | 'cuci' | 'antar' | 'selesai' | 'batal'
+export type OrderStage = 'jemput' | 'periksa' | 'bayar' | 'cuci' | 'antar' | 'selesai' | 'batal'
 
-export const OrderStatusTone: Record<OrderStatus, OrderTone> = {
+export const OrderStatusStage: Record<OrderStatus, OrderStage> = {
   [OrderStatus.AWAITING_PICKUP]: 'jemput',
   [OrderStatus.COURIER_EN_ROUTE]: 'jemput',
   [OrderStatus.PICKED_UP]: 'periksa',
@@ -127,4 +127,18 @@ export const OrderStatusTone: Record<OrderStatus, OrderTone> = {
   [OrderStatus.READY_FOR_COLLECTION]: 'antar',
   [OrderStatus.COMPLETED]: 'selesai',
   [OrderStatus.CANCELLED]: 'batal',
+}
+
+export const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
+  [OrderStatus.AWAITING_PICKUP]: [OrderStatus.COURIER_EN_ROUTE, OrderStatus.CANCELLED],
+  [OrderStatus.COURIER_EN_ROUTE]: [OrderStatus.PICKED_UP, OrderStatus.AWAITING_PICKUP],
+  [OrderStatus.PICKED_UP]: [OrderStatus.IN_INSPECTION],
+  [OrderStatus.IN_INSPECTION]: [OrderStatus.AWAITING_PAYMENT],
+  [OrderStatus.AWAITING_PAYMENT]: [OrderStatus.IN_CLEANING],
+  [OrderStatus.IN_CLEANING]: [OrderStatus.READY_FOR_DELIVERY, OrderStatus.READY_FOR_COLLECTION],
+  [OrderStatus.READY_FOR_DELIVERY]: [OrderStatus.IN_DELIVERY],
+  [OrderStatus.IN_DELIVERY]: [OrderStatus.COMPLETED, OrderStatus.READY_FOR_DELIVERY],
+  [OrderStatus.READY_FOR_COLLECTION]: [OrderStatus.COMPLETED],
+  [OrderStatus.COMPLETED]: [],
+  [OrderStatus.CANCELLED]: [],
 }

@@ -2,9 +2,9 @@ import {
   ORDER_STATUS_SEQUENCE,
   OrderStatus as OrderStatusKey,
   OrderStatusLabel,
-  OrderStatusTone,
+  OrderStatusStage,
   orderStatusIndex,
-  type OrderTone,
+  type OrderStage,
 } from '@enums/order_enum'
 import { itemsSummary } from '~/lib/order/items'
 import { formatRupiah } from '~/lib/shared/format'
@@ -14,7 +14,7 @@ export const ORDER_STATUSES = ORDER_STATUS_SEQUENCE.map((status) => OrderStatusL
 
 export type OrderStatus = (typeof OrderStatusLabel)[keyof typeof OrderStatusLabel]
 
-export type StatusTone = OrderTone
+export type StatusTone = OrderStage
 
 export type StepState = 'done' | 'current' | 'upcoming'
 
@@ -28,7 +28,7 @@ export const AWAITING_PAYMENT = orderStatusIndex(OrderStatusKey.AWAITING_PAYMENT
 export const IN_CLEANING = orderStatusIndex(OrderStatusKey.IN_CLEANING)
 
 export function statusTone(index: number): StatusTone {
-  return OrderStatusTone[ORDER_STATUS_SEQUENCE[index]]
+  return OrderStatusStage[ORDER_STATUS_SEQUENCE[index]]
 }
 
 export function phaseOf(index: number) {

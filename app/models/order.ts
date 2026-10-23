@@ -1,8 +1,15 @@
 import { belongsTo, hasMany, hasOne, scope } from '@adonisjs/lucid/orm'
 import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations'
+import { DateTime } from 'luxon'
 import { OrderSchema } from '#database/schema'
-import { OrderAddressType } from '#enums/order_enum'
+import {
+  FINISHED_STATUSES,
+  ORDER_TRANSITIONS,
+  OrderAddressType,
+  OrderStatus,
+  OrderStatusStage,
+} from '#enums/order_enum'
 import { PaymentStatus } from '#enums/payment_enum'
 import Bill from '#models/bill'
 import OrderAddress from '#models/order_address'
@@ -12,7 +19,15 @@ import OrderPhoto from '#models/order_photo'
 import Payment from '#models/payment'
 import User from '#models/user'
 
+export const CLAIM_HOURS = 3
+
+export const TASK_TAKEN_MESSAGE = 'Tugas ini sedang ditangani staf lain. Pilih pesanan lain.'
+
 export default class Order extends OrderSchema {
+  static claimFloor() {
+    return DateTime.now().minus({ hours: CLAIM_HOURS })
+  }
+
   static withDetails = scope((query: ModelQueryBuilderContract<typeof Order>) => {
     query.preload('user').preload('pickupAddress').preload('deliveryAddress')
   })
@@ -64,5 +79,39 @@ export default class Order extends OrderSchema {
 
   paidPayment() {
     return this.payments?.find((payment) => payment.status === PaymentStatus.PAID) ?? null
+  }
+
+  canTransitionTo(to: OrderStatus, isOwnerOverride = false) {
+    if (isOwnerOverride && to === OrderStatus.CANCELLED) {
+      return !FINISHED_STATUSES.includes(this.status)
+    }
+    return ORDER_TRANSITIONS[this.status].includes(to)
+  }
+
+  ownerMoves() {
+    return ORDER_TRANSITIONS[this.status].filter(
+      (next) => next !== OrderStatus.IN_CLEANING && next !== OrderStatus.CANCELLED
+    )
+  }
+
+  ownerStages() {
+    return [...new Set(this.ownerMoves().map((next) => OrderStatusStage[next]))]
+  }
+
+  isClaimedBy(user: User) {
+    return this.claimedBy === user.id && !!this.claimedAt && this.claimedAt > Order.claimFloor()
+  }
+
+  isClaimedByOther(user: User) {
+    if (this.claimedBy === null || this.claimedBy === user.id) {
+      return false
+    }
+    return !!this.claimedAt && this.claimedAt > Order.claimFloor()
+  }
+
+  clearClaim() {
+    this.claimedBy = null
+    this.claimedTask = null
+    this.claimedAt = null
   }
 }

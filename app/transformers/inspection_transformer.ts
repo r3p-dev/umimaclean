@@ -4,7 +4,6 @@ import { ServiceType } from '#enums/service_enum'
 import type Order from '#models/order'
 import type User from '#models/user'
 import { maskPhone } from '#services/phone_service'
-import OrderTaskService from '#services/order/order_task_service'
 import { formatEvent, orderStatusLabel, photoUrl } from '#transformers/order_transformer'
 import { countLines, shortName } from '#transformers/task_transformer'
 
@@ -24,7 +23,6 @@ export default class InspectionTransformer extends BaseTransformer<Order> {
 
   toObject() {
     const order = this.resource
-    const tasks = new OrderTaskService()
     const received = order.events.find(
       (event) =>
         event.status === OrderStatus.PICKED_UP || event.status === OrderStatus.IN_INSPECTION
@@ -81,7 +79,7 @@ export default class InspectionTransformer extends BaseTransformer<Order> {
       customerNote: order.note || null,
       isSaved,
       total: order.bill?.total ?? 0,
-      heldBy: tasks.isHeldByOther(this.user, order) ? (order.claimer?.name ?? 'staf lain') : null,
+      heldBy: order.isClaimedByOther(this.user) ? (order.claimer?.name ?? 'staf lain') : null,
       pickupPhoto: pickupPhoto ? photoUrl(pickupPhoto) : null,
       items,
     }

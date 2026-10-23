@@ -4,7 +4,7 @@ import { Dialog, DialogClose, DialogDescription } from '~/components/ui/dialog'
 import { FieldError } from '~/components/ui/field'
 import ChoicePills from '~/components/molecules/choice_pills'
 import DialogTitleBar from '~/components/molecules/dialog_title_bar'
-import { PHASE_FILTERS, PHASE_LABEL, statusNote, type AdminOrder } from '~/lib/orders/admin_orders'
+import { STAGE_FILTERS, STAGE_LABEL, statusNote, type AdminOrder } from '~/lib/orders/admin_orders'
 import type { StatusTone } from '~/lib/tracking/status'
 
 const FOOTER = 'flex flex-col-reverse justify-end gap-2 sm:flex-row sm:items-center'
@@ -43,9 +43,9 @@ export function StatusDialog({
             setTarget(value)
             setError(null)
           }}
-          options={PHASE_FILTERS.filter((phase) => phase !== 'batal').map((phase) => ({
-            value: phase,
-            label: PHASE_LABEL[phase],
+          options={STAGE_FILTERS.filter((stage) => stage !== 'batal').map((stage) => ({
+            value: stage,
+            label: STAGE_LABEL[stage],
           }))}
         />
       </div>

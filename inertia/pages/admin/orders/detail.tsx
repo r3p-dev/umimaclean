@@ -92,7 +92,7 @@ export default function AdminOrderDetail({
   }
 
   const detail = order.detail
-  const isCancelled = order.phase === 'batal'
+  const isCancelled = order.stage === 'batal'
   const itemsTotal = detail.items.reduce(
     (sum, item) => sum + item.services.reduce((total, service) => total + service.price, 0),
     0
@@ -115,7 +115,7 @@ export default function AdminOrderDetail({
         {backLink}
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="font-mono text-[22px] leading-[1.2] font-bold">{order.number}</span>
-          <ToneBadge tone={order.phase} hasDot>
+          <ToneBadge tone={order.stage} hasDot>
             {order.status}
           </ToneBadge>
           <SourceTag isInStore={order.isInStore} />

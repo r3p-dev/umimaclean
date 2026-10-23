@@ -11,7 +11,7 @@ import OrderEvent from '#models/order_event'
 import Payment from '#models/payment'
 import Service from '#models/service'
 import type User from '#models/user'
-import { DEFAULT_SETTINGS } from '#services/settings_service'
+import { DEFAULT_SETTINGS } from '#models/setting'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 import {
   PNG_PIXEL,

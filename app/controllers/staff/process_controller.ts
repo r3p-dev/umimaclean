@@ -3,10 +3,9 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { ItemKindLabel, OrderSource, OrderStatus } from '#enums/order_enum'
 import { ServiceType } from '#enums/service_enum'
 import OrderPolicy from '#policies/order_policy'
-import CatalogService from '#services/catalog_service'
-import { deliveryNote } from '#services/notification_service'
-import { normalizePublicCode } from '#services/order/public_code_service'
-import WorkshopService from '#services/order/workshop_service'
+import BillingService from '#services/billing_service'
+import { deliveryNote, normalizePublicCode } from '#services/order_service'
+import TaskService from '#services/task_service'
 import InspectionTransformer from '#transformers/inspection_transformer'
 import ProcessRowTransformer from '#transformers/process_row_transformer'
 import { shortName } from '#transformers/task_transformer'
@@ -17,14 +16,14 @@ import { fieldError } from '#validators/shared/field_error'
 @inject()
 export default class ProcessController {
   constructor(
-    protected workshop: WorkshopService,
-    protected catalog: CatalogService
+    protected tasks: TaskService,
+    protected billing: BillingService
   ) {}
 
   async queue({ auth, bouncer, inertia }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
     const user = auth.getUserOrFail()
-    const orders = await this.workshop.queue()
+    const orders = await this.tasks.workshopQueue()
     const waiting = orders.filter(
       (order) =>
         order.status === OrderStatus.AWAITING_PAYMENT && order.source === OrderSource.ONLINE
@@ -45,7 +44,7 @@ export default class ProcessController {
   async inspection({ auth, bouncer, inertia, params }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
     const order = await this.#find(params.number)
-    const services = await this.catalog.active()
+    const services = await this.billing.activePriceList()
     const catalog = Object.fromEntries(
       Object.entries(ItemKindLabel).map(([kind, label]) => {
         const matching = services.filter((service) =>
@@ -69,7 +68,7 @@ export default class ProcessController {
   async startInspection({ auth, bouncer, params, response }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
     const code = this.#code(params.number)
-    await this.workshop.startInspection(auth.getUserOrFail(), code)
+    await this.tasks.startInspection(auth.getUserOrFail(), code)
     return response.redirect().toRoute('staff.inspection', { number: code })
   }
 
@@ -77,7 +76,11 @@ export default class ProcessController {
     await bouncer.with(OrderPolicy).authorize('work')
     const code = this.#code(params.number)
     const payload = await request.validateUsing(saveInspectionValidator)
-    const result = await this.workshop.saveInspection(auth.getUserOrFail(), code, payload.items)
+    const result = await this.billing.createFromInspection(
+      auth.getUserOrFail(),
+      code,
+      payload.items
+    )
 
     if (result.order.source === OrderSource.STORE) {
       session.flash('success', 'Pemeriksaan disimpan. Lanjutkan pembayaran di kasir.')
@@ -100,7 +103,7 @@ export default class ProcessController {
     await bouncer.with(OrderPolicy).authorize('work')
     const code = this.#code(params.number)
     const { photo } = await request.validateUsing(washValidator)
-    const result = await this.workshop.completeWash(auth.getUserOrFail(), code, photo)
+    const result = await this.tasks.completeWash(auth.getUserOrFail(), code, photo)
     session.flash(
       'success',
       result.notice
@@ -113,14 +116,14 @@ export default class ProcessController {
   async collect({ auth, bouncer, params, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
     const code = this.#code(params.number)
-    await this.workshop.collect(auth.getUserOrFail(), code)
+    await this.tasks.collect(auth.getUserOrFail(), code)
     session.flash('success', `Pesanan ${code} sudah diambil pelanggan.`)
     return response.redirect().toRoute('staff.process')
   }
 
   async #find(number: unknown) {
     const code = normalizePublicCode(String(number))
-    return code ? this.workshop.find(code) : null
+    return code ? this.tasks.findForWorkshop(code) : null
   }
 
   #code(number: unknown) {

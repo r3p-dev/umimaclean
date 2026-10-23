@@ -3,7 +3,7 @@ import factory from '@adonisjs/lucid/factories'
 import { DateTime } from 'luxon'
 import { OrderStatus } from '#enums/order_enum'
 import Order from '#models/order'
-import { newPublicCode } from '#services/order/public_code_service'
+import { newPublicCode } from '#services/order_service'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 import { OrderAddressFactory } from '#database/factories/order_address_factory'
 

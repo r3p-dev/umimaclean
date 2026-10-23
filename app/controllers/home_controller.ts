@@ -2,18 +2,18 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { ItemKindLabel } from '#enums/order_enum'
 import { ServiceType } from '#enums/service_enum'
-import CatalogService from '#services/catalog_service'
+import BillingService from '#services/billing_service'
 import ServiceAreaService from '#services/service_area_service'
 
 @inject()
 export default class HomeController {
   constructor(
-    protected catalog: CatalogService,
+    protected billing: BillingService,
     protected area: ServiceAreaService
   ) {}
 
   async show({ inertia }: HttpContext) {
-    const services = await this.catalog.active()
+    const services = await this.billing.activePriceList()
     const prices = Object.entries(ItemKindLabel).map(([kind, label]) => {
       const matching = services.filter((service) =>
         service.categories.includes(kind as keyof typeof ItemKindLabel)

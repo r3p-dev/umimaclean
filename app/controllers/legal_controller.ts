@@ -1,19 +1,15 @@
-import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { PHOTO_RETENTION_DAYS } from '#services/proof_photo_service'
-import SettingsService from '#services/settings_service'
+import { PHOTO_RETENTION_DAYS } from '#models/order_photo'
+import Setting from '#models/setting'
 
-@inject()
 export default class LegalController {
-  constructor(protected settings: SettingsService) {}
-
   async terms({ inertia }: HttpContext) {
-    return inertia.render('legal/terms', { store: await this.settings.get('store') })
+    return inertia.render('legal/terms', { store: await Setting.get('store') })
   }
 
   async privacy({ inertia }: HttpContext) {
     return inertia.render('legal/privacy', {
-      store: await this.settings.get('store'),
+      store: await Setting.get('store'),
       photoDays: PHOTO_RETENTION_DAYS,
     })
   }

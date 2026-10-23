@@ -1,9 +1,9 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import OrderPolicy from '#policies/order_policy'
-import FieldTaskService, { SKIP_REASONS } from '#services/order/field_task_service'
-import { normalizePublicCode } from '#services/order/public_code_service'
-import SettingsService from '#services/settings_service'
+import Setting from '#models/setting'
+import { normalizePublicCode } from '#services/order_service'
+import TaskService, { SKIP_REASONS } from '#services/task_service'
 import TaskTransformer from '#transformers/task_transformer'
 import { formatClock } from '#transformers/order_transformer'
 import { completeTaskValidator, skipTaskValidator } from '#validators/staff/task'
@@ -19,10 +19,7 @@ type TaskResult = { kind: KindParameter; code: string; isSkipped: boolean; reaso
 
 @inject()
 export default class TasksController {
-  constructor(
-    protected trips: FieldTaskService,
-    protected settings: SettingsService
-  ) {}
+  constructor(protected tasks: TaskService) {}
 
   async pickups(ctx: HttpContext) {
     return this.#queue(ctx, 'jemput')
@@ -43,21 +40,21 @@ export default class TasksController {
   async start(ctx: HttpContext) {
     const { auth, response } = ctx
     const kind = await this.#authorize(ctx)
-    await this.trips.start(auth.getUserOrFail(), this.#code(ctx), KINDS[kind])
+    await this.tasks.startTrip(auth.getUserOrFail(), this.#code(ctx), KINDS[kind])
     return response.redirect().toRoute(this.#taskRoute(kind))
   }
 
   async arrive(ctx: HttpContext) {
     const { auth, response } = ctx
     const kind = await this.#authorize(ctx)
-    await this.trips.arrive(auth.getUserOrFail(), this.#code(ctx), KINDS[kind])
+    await this.tasks.arrive(auth.getUserOrFail(), this.#code(ctx), KINDS[kind])
     return response.redirect().toRoute(this.#taskRoute(kind))
   }
 
   async release(ctx: HttpContext) {
     const { auth, response, session } = ctx
     const kind = await this.#authorize(ctx)
-    await this.trips.release(auth.getUserOrFail(), this.#code(ctx), KINDS[kind])
+    await this.tasks.releaseTrip(auth.getUserOrFail(), this.#code(ctx), KINDS[kind])
     session.flash('success', 'Tugas dilepas dan kembali ke antrean.')
     return response.redirect().toRoute(kind === 'jemput' ? 'staff.pickups' : 'staff.deliveries')
   }
@@ -70,7 +67,7 @@ export default class TasksController {
       throw fieldError('receiver', 'Isi nama penerima barang.', 'receiver.required')
     }
     const code = this.#code(ctx)
-    await this.trips.complete(
+    await this.tasks.completeTrip(
       auth.getUserOrFail(),
       code,
       KINDS[kind],
@@ -87,7 +84,7 @@ export default class TasksController {
     const payload = await request.validateUsing(skipTaskValidator)
     const code = this.#code(ctx)
     const reason = SKIP_REASONS[payload.reason]
-    await this.trips.skip(auth.getUserOrFail(), code, KINDS[kind], reason, payload.note)
+    await this.tasks.skipTrip(auth.getUserOrFail(), code, KINDS[kind], reason, payload.note)
     session.flash(RESULT_KEY, { kind, code, isSkipped: true, reason } satisfies TaskResult)
     return response.redirect().toRoute(this.#taskRoute(kind))
   }
@@ -96,11 +93,11 @@ export default class TasksController {
     await bouncer.with(OrderPolicy).authorize('work')
     const user = auth.getUserOrFail()
     const trip = KINDS[kind]
-    const slots = await this.settings.get('pickup_slots')
+    const slots = await Setting.get('pickup_slots')
     const [active, queue, handled] = await Promise.all([
-      this.trips.active(user, trip),
-      this.trips.queue(user, trip),
-      this.trips.handledToday(user, trip),
+      this.tasks.activeTrip(user, trip),
+      this.tasks.queue(user, trip),
+      this.tasks.handledToday(user, trip),
     ])
     const tasks = [...(active ? [active] : []), ...queue]
 
@@ -123,19 +120,19 @@ export default class TasksController {
     await bouncer.with(OrderPolicy).authorize('work')
     const user = auth.getUserOrFail()
     const trip = KINDS[kind]
-    const slots = await this.settings.get('pickup_slots')
+    const slots = await Setting.get('pickup_slots')
     const [active, queue] = await Promise.all([
-      this.trips.active(user, trip),
-      this.trips.queue(user, trip),
+      this.tasks.activeTrip(user, trip),
+      this.tasks.queue(user, trip),
     ])
     const result = session.flashMessages.get(RESULT_KEY) as TaskResult | undefined
-    const handledToday = result ? await this.trips.handledToday(user, trip) : []
+    const handledToday = result ? await this.tasks.handledToday(user, trip) : []
     const handled = handledToday.find((entry) => entry.order.publicCode === result?.code)
 
     return inertia.render('staff/tasks/active', {
       kind,
       task: active ? new TaskTransformer(active, trip, slots).toObject() : null,
-      phase: active && (await this.trips.hasArrived(user, active)) ? 'arrived' : 'nav',
+      phase: active && (await this.tasks.hasArrived(user, active)) ? 'arrived' : 'nav',
       next: queue[0] ? new TaskTransformer(queue[0], trip, slots).toObject() : null,
       skipReasons: [...SKIP_REASONS],
       result:

@@ -1,6 +1,6 @@
 import vine from '@vinejs/vine'
 import type { Infer } from '@vinejs/vine/types'
-import { SLOT_CAPACITY } from '#services/settings_service'
+import { SLOT_CAPACITY } from '#models/setting'
 import { phoneField } from '#validators/shared/rules/phone'
 
 export const saveStoreSettingsValidator = vine.create({

@@ -17,12 +17,11 @@ import {
 import Order from '#models/order'
 import Payment from '#models/payment'
 import type User from '#models/user'
-import { afterCommit } from '#services/database_service'
-import LiveUpdateService from '#services/live_update_service'
-import NotificationService, { formatRupiah } from '#services/notification_service'
-import OrderStatusService from '#services/order/order_status_service'
-import { PaymentGateway, type ProviderStatus } from '#services/payment/payment_gateway'
-import SettingsService from '#services/settings_service'
+import { formatRupiah } from '#helpers/money'
+import ActivityLog from '#models/activity_log'
+import Setting from '#models/setting'
+import MidtransGateway, { type ProviderStatus } from '#services/midtrans_gateway'
+import OrderService from '#services/order_service'
 import { fieldError } from '#validators/shared/field_error'
 
 export const QR_LIFETIME_MINUTES = 15
@@ -40,6 +39,13 @@ const PROVIDER_STATUS: Record<string, PaymentStatus> = {
   failure: PaymentStatus.FAILED,
 }
 
+export type PaymentCorrection = {
+  method: PaymentMethod
+  channel: PaymentChannel
+  amount: number
+  reason: string
+}
+
 export type CounterPayment = {
   method: PaymentMethod
   cashReceived?: number | null
@@ -49,11 +55,8 @@ export type CounterPayment = {
 @inject()
 export default class PaymentService {
   constructor(
-    protected gateway: PaymentGateway,
-    protected statuses: OrderStatusService,
-    protected notifications: NotificationService,
-    protected settings: SettingsService,
-    protected live: LiveUpdateService
+    protected gateway: MidtransGateway,
+    protected orders: OrderService
   ) {}
 
   isQrisAvailable() {
@@ -164,7 +167,7 @@ export default class PaymentService {
   async recordCounter(user: User, order: Order, input: CounterPayment) {
     await order.load('bill')
     this.#assertPayable(order)
-    const methods = await this.settings.get('payment_methods')
+    const methods = await Setting.get('payment_methods')
     const isEnabled = input.method === PaymentMethod.CARD ? methods.edc : methods[input.method]
     if (!isEnabled) {
       throw fieldError('method', 'Metode ini sedang dinonaktifkan owner.', 'method.disabled')
@@ -179,7 +182,7 @@ export default class PaymentService {
     }
 
     const payment = await db.transaction(async (transaction) => {
-      const locked = await this.statuses.lock(transaction, order.id)
+      const locked = await this.orders.lock(transaction, order.id)
       if (locked.status !== OrderStatus.AWAITING_PAYMENT) {
         throw fieldError('form', 'Pesanan ini sudah dibayar.', 'payment.done')
       }
@@ -205,6 +208,78 @@ export default class PaymentService {
       return created
     })
     return payment
+  }
+
+  async correct(owner: User, code: string, correction: PaymentCorrection) {
+    return db.transaction(async (transaction) => {
+      const order = await this.orders.lockByCode(transaction, code)
+      const paid = await Payment.query({ client: transaction })
+        .where('order_id', order.id)
+        .where('status', PaymentStatus.PAID)
+        .first()
+      const label = `${PaymentMethodLabel[correction.method]} ${formatRupiah(correction.amount)}`
+
+      if (paid) {
+        const before = `${PaymentMethodLabel[paid.method]} ${formatRupiah(paid.amount)}`
+        paid.useTransaction(transaction)
+        paid.merge({
+          method: correction.method,
+          channel: correction.channel,
+          amount: correction.amount,
+          note: `Koreksi owner: ${correction.reason}`,
+        })
+        await paid.save()
+        await ActivityLog.record(
+          {
+            actor: owner,
+            order,
+            action: ActivityAction.PAYMENT_CORRECTED,
+            detail: `${before} → ${label} · alasan: ${correction.reason}`,
+            isSensitive: true,
+          },
+          transaction
+        )
+        return order
+      }
+
+      if (order.status !== OrderStatus.AWAITING_PAYMENT) {
+        throw fieldError(
+          'form',
+          'Pesanan ini belum punya tagihan atau sudah dibatalkan.',
+          'payment.not_payable'
+        )
+      }
+      await Payment.query({ client: transaction })
+        .where('order_id', order.id)
+        .where('status', PaymentStatus.PENDING)
+        .update({ status: PaymentStatus.CANCELLED })
+      await Payment.create(
+        {
+          orderId: order.id,
+          channel: correction.channel,
+          method: correction.method,
+          status: PaymentStatus.PAID,
+          amount: correction.amount,
+          paidAt: DateTime.now(),
+          recordedBy: owner.id,
+          note: `Dicatat owner: ${correction.reason}`,
+        },
+        { client: transaction }
+      )
+      await this.orders.transition(
+        order,
+        OrderStatus.IN_CLEANING,
+        {
+          actor: owner,
+          note: `Lunas · ${PaymentMethodLabel[correction.method]} (dicatat owner)`,
+          action: ActivityAction.PAYMENT_CORRECTED,
+          detail: `Belum dibayar → ${label} · alasan: ${correction.reason}`,
+          isSensitive: true,
+        },
+        transaction
+      )
+      return order
+    })
   }
 
   async #apply(payment: Payment, notification: ProviderStatus) {
@@ -234,7 +309,7 @@ export default class PaymentService {
       })
       await payment.save()
       if (status === PaymentStatus.PAID) {
-        const order = await this.statuses.lock(transaction, payment.orderId)
+        const order = await this.orders.lock(transaction, payment.orderId)
         if (order.status === OrderStatus.AWAITING_PAYMENT) {
           await this.#settle(order, payment, null, transaction)
         }
@@ -244,7 +319,7 @@ export default class PaymentService {
 
     if (status !== PaymentStatus.PAID) {
       const order = await Order.findOrFail(payment.orderId)
-      this.live.orderChanged(order)
+      this.orders.broadcast(order)
     }
     return updated
   }
@@ -256,7 +331,7 @@ export default class PaymentService {
     transaction: TransactionClientContract
   ) {
     const label = PaymentMethodLabel[payment.method]
-    await this.statuses.transition(
+    await this.orders.transition(
       order,
       OrderStatus.IN_CLEANING,
       {
@@ -267,9 +342,9 @@ export default class PaymentService {
       },
       transaction
     )
-    afterCommit(transaction, () =>
-      this.notifications.toCustomer(order, MessagePurpose.PAID, formatRupiah(payment.amount))
-    )
+    transaction.after('commit', async () => {
+      await this.orders.notify(order, MessagePurpose.PAID, formatRupiah(payment.amount))
+    })
   }
 
   #assertPayable(order: Order) {

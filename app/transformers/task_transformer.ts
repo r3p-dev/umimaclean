@@ -2,7 +2,7 @@ import { BaseTransformer } from '@adonisjs/core/transformers'
 import { ItemKindLabel, OrderSource } from '#enums/order_enum'
 import type Order from '#models/order'
 import { nationalNumber } from '#services/phone_service'
-import { STORE_POINT, type PickupSlotSetting } from '#services/settings_service'
+import { STORE_POINT, type PickupSlotSetting } from '#models/setting'
 
 export type TripKind = 'pickup' | 'delivery'
 

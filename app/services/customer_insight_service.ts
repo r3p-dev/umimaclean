@@ -5,9 +5,9 @@ import { ActivityAction } from '#enums/activity_enum'
 import { MessagePurpose, MessageStatus } from '#enums/message_enum'
 import { PaymentStatus } from '#enums/payment_enum'
 import { Role } from '#enums/role_enum'
+import ActivityLog from '#models/activity_log'
 import User from '#models/user'
 import WhatsappMessage from '#models/whatsapp_message'
-import ActivityService from '#services/activity_service'
 import NotificationService from '#services/notification_service'
 import { maskPhone } from '#services/phone_service'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
@@ -32,10 +32,7 @@ function isoDate(value: Date) {
 
 @inject()
 export default class CustomerInsightService {
-  constructor(
-    protected notifications: NotificationService,
-    protected activity: ActivityService
-  ) {}
+  constructor(protected notifications: NotificationService) {}
 
   async customers() {
     const result = await db.rawQuery<{ rows: CustomerRow[] }>(
@@ -104,7 +101,7 @@ export default class CustomerInsightService {
         result.failed += 1
       }
     }
-    await this.activity.record({
+    await ActivityLog.record({
       actor: owner,
       action: ActivityAction.REMINDER_SENT,
       detail: `${result.sent} terkirim, ${result.failed} gagal, ${result.skipped} dilewati`,

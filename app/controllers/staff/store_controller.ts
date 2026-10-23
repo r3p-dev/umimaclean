@@ -1,20 +1,15 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { ActivityAction } from '#enums/activity_enum'
-import { MessagePurpose } from '#enums/message_enum'
 import { OrderSource } from '#enums/order_enum'
 import { PaymentChannel, PaymentStatus } from '#enums/payment_enum'
 import Order from '#models/order'
+import Setting from '#models/setting'
 import OrderPolicy from '#policies/order_policy'
-import ActivityService from '#services/activity_service'
 import AddressBookService from '#services/address_book_service'
-import NotificationService, { deliveryNote } from '#services/notification_service'
-import { normalizePublicCode } from '#services/order/public_code_service'
-import WalkInService from '#services/order/walk_in_service'
-import PaymentService from '#services/payment/payment_service'
+import OrderService, { deliveryNote, normalizePublicCode } from '#services/order_service'
+import PaymentService from '#services/payment_service'
 import { maskPhone, normalizePhone } from '#services/phone_service'
 import ServiceAreaService from '#services/service_area_service'
-import SettingsService from '#services/settings_service'
 import { qrisOf } from '#transformers/order_transformer'
 import ReceiptTransformer from '#transformers/receipt_transformer'
 import {
@@ -28,19 +23,16 @@ import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 @inject()
 export default class StoreController {
   constructor(
-    protected walkIns: WalkInService,
+    protected orders: OrderService,
     protected payments: PaymentService,
-    protected settings: SettingsService,
     protected addresses: AddressBookService,
-    protected notifications: NotificationService,
-    protected activity: ActivityService,
     protected area: ServiceAreaService
   ) {}
 
   async walkIn({ bouncer, inertia, request }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
     const phone = normalizePhone(String(request.qs().nomor ?? ''))
-    const customer = phone ? await this.walkIns.customerByPhone(phone) : null
+    const customer = phone ? await this.orders.customerByPhone(phone) : null
     let match = null
     if (customer) {
       const [address, orders] = await Promise.all([
@@ -72,7 +64,7 @@ export default class StoreController {
   async store({ auth, bouncer, request, response }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
     const payload = await request.validateUsing(walkInValidator)
-    const order = await this.walkIns.create(auth.getUserOrFail(), payload.phone, payload)
+    const order = await this.orders.createWalkIn(auth.getUserOrFail(), payload.phone, payload)
     return response
       .redirect()
       .withQs({ untuk: 'intake', pesanan: order.publicCode })
@@ -91,7 +83,7 @@ export default class StoreController {
     await bouncer.with(OrderPolicy).authorize('work')
     const order = await this.#order(params.number)
     const { photos } = await request.validateUsing(intakePhotosValidator)
-    await this.walkIns.addPhotos(auth.getUserOrFail(), order, photos)
+    await this.orders.addIntakePhotos(auth.getUserOrFail(), order, photos)
     return response.redirect().toRoute('staff.inspection', { number: order.publicCode })
   }
 
@@ -99,7 +91,7 @@ export default class StoreController {
     await bouncer.with(OrderPolicy).authorize('work')
     const code = normalizePublicCode(String(params.number))
     const order = code ? await this.#load(code) : null
-    const methods = await this.settings.get('payment_methods')
+    const methods = await Setting.get('payment_methods')
     const pending = order ? await this.payments.currentQris(order) : null
 
     return inertia.render('staff/store/payment', {
@@ -154,17 +146,11 @@ export default class StoreController {
     if (!order) {
       throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
     }
-    const status = await this.notifications.toCustomer(
+    const status = await this.orders.sendReceipt(
+      auth.getUserOrFail(),
       order,
-      MessagePurpose.RECEIPT,
       new ReceiptTransformer(order).toText()
     )
-    await this.activity.record({
-      actor: auth.getUserOrFail(),
-      order,
-      action: ActivityAction.RECEIPT_SENT,
-      detail: deliveryNote(status),
-    })
     session.flash(status === 'failed' ? 'error' : 'success', deliveryNote(status))
     return response.redirect().toRoute('staff.store_payment', { number: order.publicCode })
   }
