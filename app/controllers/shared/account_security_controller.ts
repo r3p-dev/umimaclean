@@ -13,7 +13,12 @@ export default class AccountSecurityController {
     const user = auth.getUserOrFail()
     const payload = await request.validateUsing(changePasswordValidator)
 
-    await this.accounts.changePassword(ctx, user, payload.currentPassword, payload.password)
+    await this.accounts.changePasswordWithCurrent(
+      ctx,
+      user,
+      payload.currentPassword,
+      payload.password
+    )
 
     session.flash('success', 'Kata sandi diganti. Perangkat lain sudah dikeluarkan.')
     return response.redirect().toRoute(ProfileRoute[user.role].password)
@@ -23,7 +28,7 @@ export default class AccountSecurityController {
     const { auth, response, session } = ctx
     const user = auth.getUserOrFail()
 
-    await this.accounts.signOutOthers(ctx, user)
+    await this.accounts.signOutOtherDevices(ctx, user)
 
     session.flash('success', 'Perangkat lain sudah dikeluarkan.')
     return response.redirect().toRoute(ProfileRoute[user.role].devices)

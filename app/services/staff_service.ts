@@ -74,7 +74,7 @@ export default class StaffService {
     const password = temporaryPassword()
     user.merge({ password, passwordChangedAt: null })
     await user.save()
-    await this.accounts.endAllSessions(user)
+    await this.accounts.endSessions(user)
     await ActivityLog.record({
       actor: owner,
       action: ActivityAction.STAFF_CHANGED,
@@ -91,7 +91,7 @@ export default class StaffService {
     user.merge({ isActive })
     await user.save()
     if (!isActive) {
-      await this.accounts.endAllSessions(user)
+      await this.accounts.endSessions(user)
     }
     await ActivityLog.record({
       actor: owner,

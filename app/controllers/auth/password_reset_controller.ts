@@ -58,7 +58,12 @@ export default class PasswordResetController {
     const payload = await request.validateUsing(resetPasswordValidator)
     const user = await User.findOrFail(grant.userId)
 
-    await this.accounts.resetPassword(ctx, user, payload.password, payload.logoutOthers !== false)
+    await this.accounts.resetPasswordAfterOtp(
+      ctx,
+      user,
+      payload.password,
+      payload.logoutOthers !== false
+    )
     this.otp.forgetPasswordReset(session)
 
     session.flash('success', 'Kata sandi baru disimpan.')

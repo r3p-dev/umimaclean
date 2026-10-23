@@ -19,7 +19,7 @@ Stack: AdonisJS 7 + Inertia + React 19, PostgreSQL + PostGIS, Lucid, VineJS, Bou
 - Walk-ins (`source = store`) pay at the counter (cash, EDC or counter QRIS); they get no reminders.
 - Midtrans is charged only when the customer presses pay (`PaymentService.startQris`); a QR lives 15 minutes.
 - Addresses: at most 3 per customer, one primary (partial unique index). Orders copy pickup and delivery into `order_addresses`.
-- Order URL `/pesanan/:id`, shown as `UMC-00042` (`Order.numberOf`). The signed-in customer sees it directly; anyone else types the last 4 digits of the order's phone (5 tries per 15 minutes per IP and per order), which unlocks it for that session only.
+- Order URL `/pesanan/:id`, shown as `UMC-00042` (`Order.numberOf`). The signed-in customer sees it directly; anyone else types the last 4 digits of the order's phone (5 wrong tries per 15 minutes per IP and per order, 20 per order per 24 hours), which unlocks it for that session only.
 - Service areas: the 80 BPS kecamatan of Kota Bandung, Kota Cimahi, Kabupaten Bandung and Kabupaten Bandung Barat in `service_areas` (seeded from `database/data/service_areas.geojson`). The owner switches them on/off in Pengaturan → Area layanan. Every pin is checked with `ServiceArea.contains` (PostGIS `ST_Contains` on active areas): address create/update, online order review and placement (saved addresses are re-checked), walk-in delivery. Orders already placed are not re-checked. The map pin asks `GET /area?lat&lng` for instant feedback; Nominatim/Photon run only in the browser for address search and the street label.
 - Order status changes only through `OrderService.transition` (checks `ORDER_TRANSITIONS`, appends `order_events`, logs staff/owner actions in `activity_logs`, broadcasts on Transmit after commit). Pickup slots have an owner-set capacity, re-checked under a Postgres advisory lock.
 
@@ -34,7 +34,7 @@ Stack: AdonisJS 7 + Inertia + React 19, PostgreSQL + PostGIS, Lucid, VineJS, Bou
 
 ## Services
 
-- `AccountService`: sign in/out (login limit), password change and reset, ending other sessions and remember-me tokens.
+- `AccountService`: sign in/out (login limit), `changePasswordWithCurrent` (profile), `resetPasswordAfterOtp` (forgot password), `signOutOtherDevices`, `endSessions` (remember-me tokens and tagged sessions, optionally keeping the current one).
 - `AddressService`: the address book (max 3, primary, area check).
 - `AreaService`: `check` for `GET /area`, owner `search` and `setActive` (logged).
 - `BillingService`: price list (owner CRUD, soft delete) and the bill from an inspection.
@@ -56,7 +56,8 @@ Stack: AdonisJS 7 + Inertia + React 19, PostgreSQL + PostGIS, Lucid, VineJS, Bou
 - Errors: `throw new Exception('…', { status })` from `@adonisjs/core/exceptions` for HTTP errors (404 etc.); `fieldError(field, message, rule)` from `#validators/shared/field_error` for a business rule shown under a form field. No custom exception classes.
 - Migrations: one `create` per table, never `alter`. Each starts with a header comment explaining the table, non-obvious columns, indexes and constraints.
 - Seeders: one file per domain in `database/seeders/`, run in a fixed order from `database/seeders/main/index_seeder.ts` (user, address, service, setting, service_area, order, operating_cost).
-- Rate limits: HTTP endpoint limits are route middleware in `start/limiter.ts` (`GET /area`, 60 per minute per IP). Business limits stay in their service: login (`AccountService`, per phone and IP), OTP (`OtpService`: 60 s resend, 5 per number and 20 per IP per hour), tracking digits (`OrderService`), QRIS charges (`PaymentService`, 5 per order per 15 minutes).
+- Client IP: `request.ip()` reads `X-Forwarded-For` only from `TRUSTED_PROXIES` (default `loopback,uniquelocal`, `config/app.ts`), so per-IP limits see the real client behind Traefik.
+- Rate limits: HTTP endpoint limits are route middleware in `start/limiter.ts` (`GET /area`, 60 per minute per IP). Business limits stay in their service: login (`AccountService`, per phone and IP), OTP (`OtpService`: 60 s resend, 5 per number and 20 per IP per hour), tracking digits (`OrderService`, plus a daily cap per order), QRIS charges (`PaymentService`, 5 per order per 15 minutes).
 - Enums: `app/enums/<name>_enum.ts` exports an `as const` object, a type with the same name and a `<Name>Label` map when the UI shows the value. DB columns are plain strings typed through `database/schema_rules.ts`; validators use `vine.enum(Object.values(X))`; the frontend imports `@enums/<name>_enum`.
 - Style (Harminder Virk): full words (`ctx`, `lat`, `lng`, `db`, `props`, `ref` are fine); booleans `isX`/`hasX`/`canX`/`shouldX`; braces on every `if`; `for...of`; no `get`/`set` accessors; `#private` members (`protected` only for injected dependencies); `override` on every override. Export only what another file uses.
 - Stored and wire names keep their spelling even when they break that style: DB columns, JSON settings (`PickupSlotSetting.on`) and HTTP/props fields (`remember`, `terms`, `logoutOthers`, `q`, `active`).

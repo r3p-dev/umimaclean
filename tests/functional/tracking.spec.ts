@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import limiter from '@adonisjs/limiter/services/main'
 import { UserFactory } from '#database/factories/user_factory'
 import { OrderFactory } from '#database/factories/order_factory'
 import { OrderSource } from '#enums/order_enum'
@@ -78,6 +79,44 @@ test.group('Order tracking without an account', (group) => {
     const blocked = await post(client, `/pesanan/${order.id}/buka`, { digits: '8888' })
     blocked.assertStatus(422)
     blocked.assertBodyContains({ errors: [{ field: 'digits', rule: 'tracking.throttled' }] })
+  })
+
+  test('after 20 wrong tries in a day only the signed-in owner gets in', async ({ client }) => {
+    const owner = await UserFactory.create()
+    const order = await OrderFactory.merge({
+      userId: owner.id,
+      customerName: owner.name,
+      customerPhone: '6281377778888',
+    }).create()
+    const unlock = (digits: string, ip: string) =>
+      post(client, `/pesanan/${order.id}/buka`, { digits }).header('x-forwarded-for', ip)
+
+    for (let round = 1; round <= 4; round++) {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const wrong = await unlock('0000', `203.0.113.${round}`)
+        wrong.assertBodyContains({ errors: [{ rule: 'tracking.mismatch' }] })
+      }
+      await limiter
+        .use({ requests: 5, duration: '15 mins', blockDuration: '15 mins' })
+        .delete(`tracking_order_${order.id}`)
+    }
+
+    const refused = await unlock('8888', '198.51.100.20')
+    refused.assertStatus(422)
+    refused.assertBodyContains({
+      errors: [
+        {
+          field: 'digits',
+          rule: 'tracking.daily_limit',
+          message:
+            'Terlalu banyak percobaan untuk pesanan ini. Coba lagi besok atau masuk ke akun pemesan.',
+        },
+      ],
+    })
+
+    const page = await inertia(client, `/pesanan/${order.id}`).loginAs(owner)
+    page.assertInertiaComponent('customer/orders/show')
+    page.assertInertiaPropsContains({ isOwner: true })
   })
 
   test('the signed-in owner sees the order without the digits', async ({ client }) => {

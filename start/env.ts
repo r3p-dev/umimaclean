@@ -7,6 +7,7 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   LOG_LEVEL: Env.schema.string(),
   APP_KEY: Env.schema.secret(),
+  TRUSTED_PROXIES: Env.schema.string.optional(),
   APP_URL: Env.schema.string({ format: 'url', tld: false }),
 
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),

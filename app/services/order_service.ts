@@ -49,6 +49,10 @@ import type { WalkInPayload } from '#validators/staff/store'
 
 const TRACKING_KEY = 'unlocked_orders'
 
+const TRACKING_TRIES = { requests: 5, duration: '15 mins', blockDuration: '15 mins' }
+
+const TRACKING_DAILY_TRIES = { requests: 20, duration: '24 hours', blockDuration: '24 hours' }
+
 const OUTSIDE_MESSAGES = {
   pickup: 'Alamat jemput ini sekarang di luar area layanan. Pilih alamat lain atau ubah titiknya.',
   delivery: 'Alamat antar ini sekarang di luar area layanan. Pilih alamat lain atau ubah titiknya.',
@@ -221,21 +225,13 @@ export default class OrderService {
   }
 
   async unlockTracking(session: HttpContext['session'], order: Order, digits: string, ip: string) {
+    const dailyKey = `tracking_order_day_${order.id}`
     try {
       const [throttled] = await limiter
         .multi([
-          {
-            key: `tracking_ip_${ip}`,
-            requests: 5,
-            duration: '15 mins',
-            blockDuration: '15 mins',
-          },
-          {
-            key: `tracking_order_${order.id}`,
-            requests: 5,
-            duration: '15 mins',
-            blockDuration: '15 mins',
-          },
+          { key: `tracking_ip_${ip}`, ...TRACKING_TRIES },
+          { key: `tracking_order_${order.id}`, ...TRACKING_TRIES },
+          { key: dailyKey, ...TRACKING_DAILY_TRIES },
         ])
         .penalize(async () => {
           if (lastFourDigits(order.customerPhone) !== digits) {
@@ -250,15 +246,22 @@ export default class OrderService {
         throw throttled
       }
     } catch (error) {
-      if (error instanceof limiterErrors.ThrottleException) {
-        const minutes = Math.max(1, Math.ceil(error.response.availableIn / 60))
+      if (!(error instanceof limiterErrors.ThrottleException)) {
+        throw error
+      }
+      if (await limiter.use({ ...TRACKING_DAILY_TRIES }).isBlocked(dailyKey)) {
         throw fieldError(
           'digits',
-          `Terlalu banyak percobaan. Coba lagi dalam ${minutes} menit.`,
-          'tracking.throttled'
+          'Terlalu banyak percobaan untuk pesanan ini. Coba lagi besok atau masuk ke akun pemesan.',
+          'tracking.daily_limit'
         )
       }
-      throw error
+      const minutes = Math.max(1, Math.ceil(error.response.availableIn / 60))
+      throw fieldError(
+        'digits',
+        `Terlalu banyak percobaan. Coba lagi dalam ${minutes} menit.`,
+        'tracking.throttled'
+      )
     }
 
     const unlocked = (session.get(TRACKING_KEY) as number[] | undefined) ?? []

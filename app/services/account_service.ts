@@ -69,7 +69,7 @@ export default class AccountService {
     await auth.use('web').logout()
   }
 
-  async endOtherSessions({ session }: HttpContext, user: User) {
+  async endSessions(user: User, exceptSessionId?: string) {
     const tokens = await User.rememberMeTokens.all(user)
     await Promise.all(tokens.map((token) => User.rememberMeTokens.delete(user, token.identifier)))
 
@@ -77,19 +77,9 @@ export default class AccountService {
       const tagged = await this.sessions.tagged(String(user.id))
       await Promise.all(
         tagged
-          .filter((taggedSession) => taggedSession.id !== session.sessionId)
+          .filter((taggedSession) => taggedSession.id !== exceptSessionId)
           .map((taggedSession) => this.sessions.destroy(taggedSession.id))
       )
-    }
-  }
-
-  async endAllSessions(user: User) {
-    const tokens = await User.rememberMeTokens.all(user)
-    await Promise.all(tokens.map((token) => User.rememberMeTokens.delete(user, token.identifier)))
-
-    if (this.sessions.supportsTagging()) {
-      const tagged = await this.sessions.tagged(String(user.id))
-      await Promise.all(tagged.map((taggedSession) => this.sessions.destroy(taggedSession.id)))
     }
   }
 
@@ -100,12 +90,12 @@ export default class AccountService {
     return Math.max(1, tokens.filter((token) => token.expiresAt > now).length)
   }
 
-  async updatePassword(user: User, password: string) {
-    user.merge({ password, passwordChangedAt: DateTime.now() })
-    await user.save()
-  }
-
-  async changePassword(ctx: HttpContext, user: User, currentPassword: string, password: string) {
+  async changePasswordWithCurrent(
+    ctx: HttpContext,
+    user: User,
+    currentPassword: string,
+    password: string
+  ) {
     const [throttled, isVerified] = await this.#passwordChangeLimiter().penalize(
       `password_change_${user.id}`,
       async () => {
@@ -125,22 +115,32 @@ export default class AccountService {
       )
     }
 
-    await this.updatePassword(user, password)
-    await this.endOtherSessions(ctx, user)
+    await this.#savePassword(user, password)
+    await this.endSessions(user, ctx.session.sessionId)
     await this.signIn(ctx, user, true)
   }
 
-  async resetPassword(ctx: HttpContext, user: User, password: string, shouldEndOthers: boolean) {
-    await this.updatePassword(user, password)
+  async resetPasswordAfterOtp(
+    ctx: HttpContext,
+    user: User,
+    password: string,
+    shouldEndOthers: boolean
+  ) {
+    await this.#savePassword(user, password)
     if (shouldEndOthers) {
-      await this.endOtherSessions(ctx, user)
+      await this.endSessions(user, ctx.session.sessionId)
     }
     await this.signIn(ctx, user, true)
   }
 
-  async signOutOthers(ctx: HttpContext, user: User) {
-    await this.endOtherSessions(ctx, user)
+  async signOutOtherDevices(ctx: HttpContext, user: User) {
+    await this.endSessions(user, ctx.session.sessionId)
     await this.signIn(ctx, user, true)
+  }
+
+  async #savePassword(user: User, password: string) {
+    user.merge({ password, passwordChangedAt: DateTime.now() })
+    await user.save()
   }
 
   #loginLimiter(phone: string, ip: string) {

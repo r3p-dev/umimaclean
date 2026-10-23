@@ -27,6 +27,15 @@ npm run typecheck
 npm run lint
 ```
 
+## Behind the reverse proxy
+
+In production every request reaches the app through Traefik. The app takes the client IP from `X-Forwarded-For` only when the request comes from a trusted proxy address, set in `TRUSTED_PROXIES` (comma-separated [proxy-addr](https://www.npmjs.com/package/proxy-addr) values). The default `loopback,uniquelocal` trusts 127.0.0.0/8, ::1, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 and fc00::/7, which covers the Podman network Traefik uses; a narrower value such as `10.89.0.0/24` also works. Requests from any other address keep their own IP and the header is ignored.
+
+The per-IP limits (login, OTP, tracking digits, `GET /area`) depend on this. Two things to keep true on the server:
+
+- Do not publish the app container's port; only Traefik should reach it.
+- Traefik itself must see the real client address. Check that its access log shows public client IPs, not a Podman gateway address (rootless Podman with `pasta` keeps the source address).
+
 ## Scheduled jobs
 
 Two ace commands run outside the web server, started by systemd user timers that run them inside the app container (`umimaclean-web`) with `podman exec`.
