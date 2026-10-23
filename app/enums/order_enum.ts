@@ -51,18 +51,6 @@ export const ReturnMethodLabel = {
   [ReturnMethod.STORE]: 'Diambil di toko',
 } as const
 
-export const OrderTask = {
-  PICKUP: 'pickup',
-  INSPECTION: 'inspection',
-  DELIVERY: 'delivery',
-} as const
-
-export const OrderTaskLabel = {
-  [OrderTask.PICKUP]: 'Jemput',
-  [OrderTask.INSPECTION]: 'Periksa',
-  [OrderTask.DELIVERY]: 'Antar',
-} as const
-
 export const ItemKind = {
   SHOE: 'shoe',
   BAG: 'bag',
@@ -98,7 +86,6 @@ export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
 export type OrderAddressType = (typeof OrderAddressType)[keyof typeof OrderAddressType]
 export type OrderSource = (typeof OrderSource)[keyof typeof OrderSource]
 export type ReturnMethod = (typeof ReturnMethod)[keyof typeof ReturnMethod]
-export type OrderTask = (typeof OrderTask)[keyof typeof OrderTask]
 export type ItemKind = (typeof ItemKind)[keyof typeof ItemKind]
 export type PhotoKind = (typeof PhotoKind)[keyof typeof PhotoKind]
 

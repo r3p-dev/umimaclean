@@ -143,8 +143,6 @@ vine.messagesProvider = new SimpleMessagesProvider(
     'payments.edc.required': RELOAD,
     'role.required': 'Pilih peran.',
     'role.enum': 'Pilih peran.',
-    'shift.required': 'Pilih shift.',
-    'shift.enum': 'Pilih shift.',
   },
   {
     name: 'Nama',
@@ -222,6 +220,5 @@ vine.messagesProvider = new SimpleMessagesProvider(
     edc: 'EDC',
     inactiveDays: 'Batas hari',
     role: 'Peran',
-    shift: 'Shift',
   }
 )

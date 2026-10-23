@@ -95,12 +95,11 @@ export default function ActiveTask({
 
   const busy = { onStart: () => setBusy(true), onFinish: () => setBusy(false) }
 
-  function post(action: 'arrive' | 'release', onSuccess?: () => void) {
+  function arrive(onSuccess?: () => void) {
     if (!task) {
       return
     }
-    const route = action === 'arrive' ? 'staff.task.arrive' : 'staff.task.release'
-    router.post(urlFor(route, { kind, code: task.ref }), {}, { ...busy, onSuccess })
+    router.post(urlFor('staff.task.arrive', { kind, code: task.ref }), {}, { ...busy, onSuccess })
   }
 
   if (result) {
@@ -313,7 +312,7 @@ export default function ActiveTask({
 
           {phase === 'nav' && (
             <div className="flex flex-col gap-1">
-              <Button size="cta" onPress={() => post('arrive')} isPending={isBusy}>
+              <Button size="cta" onPress={() => arrive()} isPending={isBusy}>
                 <IconMapPinCheck />
                 Saya Sudah Sampai
               </Button>
@@ -330,15 +329,6 @@ export default function ActiveTask({
                   <IconExternalLink className="size-4.25" />
                 </LinkButton>
               )}
-              <Button
-                variant="ghost"
-                size="desktop"
-                className="text-[14.5px] text-foreground-secondary"
-                onPress={() => post('release')}
-                isDisabled={isBusy}
-              >
-                Lepaskan Tugas
-              </Button>
             </div>
           )}
 

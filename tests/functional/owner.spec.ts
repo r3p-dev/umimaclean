@@ -92,15 +92,13 @@ test.group('Owner tools', (group) => {
     const created = await post(client, '/admin/pengaturan', {
       name: 'Agus Firmansyah',
       phone: '0857 1122 3344',
-      role: 'Kurir & toko',
-      shift: 'Pagi',
+      role: 'Staf',
     }).loginAs(owner)
     const staff = await User.findByOrFail('phone', '6285711223344')
     assert.equal(staff.role, 'staff')
-    assert.equal(staff.staffType, 'courier_store')
     const notice = created.flashMessages().staff_password as { password: string }
     assert.isTrue(await staff.verifyPassword(notice.password))
-    assert.isTrue(state.fonnte.messages.some((message) => message.target === staff.phone))
+    assert.isFalse(state.fonnte.messages.some((message) => message.target === staff.phone))
 
     await User.rememberMeTokens.create(staff, '180 days')
     await post(client, `/admin/pengaturan/${staff.id}/aktif`, { active: false }).loginAs(owner)

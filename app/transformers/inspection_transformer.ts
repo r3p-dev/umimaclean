@@ -2,7 +2,6 @@ import { BaseTransformer } from '@adonisjs/core/transformers'
 import { ItemKind, ItemKindLabel, OrderSource, OrderStatus, PhotoKind } from '#enums/order_enum'
 import { ServiceType } from '#enums/service_enum'
 import type Order from '#models/order'
-import type User from '#models/user'
 import { maskPhone } from '#helpers/phone'
 import { formatEvent, orderStatusLabel, photoUrl } from '#transformers/order_transformer'
 import { countLines, shortName } from '#transformers/task_transformer'
@@ -14,13 +13,6 @@ const KIND_COUNTS: [ItemKind, 'itemsSepatu' | 'itemsTas' | 'itemsHelm'][] = [
 ]
 
 export default class InspectionTransformer extends BaseTransformer<Order> {
-  constructor(
-    resource: Order,
-    protected user: User
-  ) {
-    super(resource)
-  }
-
   toObject() {
     const order = this.resource
     const received = order.events.find(
@@ -79,7 +71,6 @@ export default class InspectionTransformer extends BaseTransformer<Order> {
       customerNote: order.note || null,
       isSaved,
       total: order.bill?.total ?? 0,
-      heldBy: order.isClaimedByOther(this.user) ? (order.claimer?.name ?? 'staf lain') : null,
       pickupPhoto: pickupPhoto ? photoUrl(pickupPhoto) : null,
       items,
     }

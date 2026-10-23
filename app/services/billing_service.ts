@@ -10,7 +10,6 @@ import { formatRupiah } from '#helpers/money'
 import ActivityLog from '#models/activity_log'
 import Bill from '#models/bill'
 import BillLine from '#models/bill_line'
-import { TASK_TAKEN_MESSAGE } from '#models/order'
 import OrderItem from '#models/order_item'
 import Service from '#models/service'
 import type User from '#models/user'
@@ -58,9 +57,6 @@ export default class BillingService {
       const order = await this.orders.lockByCode(transaction, code)
       if (order.status !== OrderStatus.IN_INSPECTION) {
         throw fieldError('form', 'Pemeriksaan pesanan ini sudah disimpan.', 'order.status')
-      }
-      if (order.isClaimedByOther(user)) {
-        throw fieldError('form', TASK_TAKEN_MESSAGE, 'task.taken')
       }
 
       const priced = []
@@ -123,8 +119,6 @@ export default class BillingService {
         },
         transaction
       )
-      order.clearClaim()
-      await order.save()
       return { order, total: bill.total }
     })
 

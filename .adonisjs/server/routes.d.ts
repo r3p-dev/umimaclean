@@ -52,7 +52,6 @@ export type ScannedRoutes = {
     'staff.delivery_task': { paramsTuple?: []; params?: {} }
     'staff.task.start': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
     'staff.task.arrive': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
-    'staff.task.release': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
     'staff.task.complete': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
     'staff.task.skip': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
     'staff.process': { paramsTuple?: []; params?: {} }
@@ -244,7 +243,6 @@ export type ScannedRoutes = {
     'customer.addresses.primary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.task.start': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
     'staff.task.arrive': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
-    'staff.task.release': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
     'staff.task.complete': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
     'staff.task.skip': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'code': ParamValue} }
     'staff.inspection.start': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }

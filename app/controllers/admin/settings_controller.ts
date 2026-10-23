@@ -2,11 +2,9 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { enterAdminArea } from '#abilities/main'
 import { ActivityAction } from '#enums/activity_enum'
-import { MessageStatus } from '#enums/message_enum'
 import ActivityLog from '#models/activity_log'
 import Setting from '#models/setting'
 import User from '#models/user'
-import { deliveryNote } from '#services/order_service'
 import PaymentService from '#services/payment_service'
 import AreaService from '#services/area_service'
 import StaffService from '#services/staff_service'
@@ -39,7 +37,7 @@ export default class SettingsController {
     await bouncer.authorize(enterAdminArea)
     const payload = await request.validateUsing(saveStaffValidator)
     const result = await this.staffAccounts.create(auth.getUserOrFail(), payload)
-    session.flash(PASSWORD_KEY, this.#notice(result.user.name, result.password, result.notice))
+    session.flash(PASSWORD_KEY, this.#notice(result.user.name, result.password))
     return response.redirect().toRoute('admin.staff')
   }
 
@@ -56,7 +54,7 @@ export default class SettingsController {
     await bouncer.authorize(enterAdminArea)
     const user = await this.#account(params.id)
     const result = await this.staffAccounts.resetPassword(auth.getUserOrFail(), user)
-    session.flash(PASSWORD_KEY, this.#notice(user.name, result.password, result.notice))
+    session.flash(PASSWORD_KEY, this.#notice(user.name, result.password))
     return response.redirect().toRoute('admin.staff')
   }
 
@@ -114,14 +112,11 @@ export default class SettingsController {
     return response.redirect().toRoute('admin.store')
   }
 
-  #notice(name: string, password: string, notice: MessageStatus): PasswordNotice {
+  #notice(name: string, password: string): PasswordNotice {
     return {
       name,
       password,
-      notice:
-        notice === MessageStatus.SENT
-          ? `Kata sandi sementara juga dikirim ke WhatsApp ${name}.`
-          : deliveryNote(notice, name),
+      notice: `Berikan kata sandi ini langsung ke ${name}. Kata sandi hanya tampil sekali.`,
     }
   }
 

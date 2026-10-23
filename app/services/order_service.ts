@@ -14,7 +14,6 @@ import {
   OrderStatus,
   OrderStatusLabel,
   OrderStatusStage,
-  OrderTask,
   PhotoKind,
   ReturnMethod,
   type OrderStage,
@@ -533,13 +532,6 @@ export default class OrderService {
         },
         transaction
       )
-      order.useTransaction(transaction)
-      order.merge({
-        claimedBy: staff.id,
-        claimedTask: OrderTask.INSPECTION,
-        claimedAt: DateTime.now(),
-      })
-      await order.save()
       return order
     })
   }
@@ -579,8 +571,6 @@ export default class OrderService {
           { actor: owner, note: 'Diubah owner', isSensitive: true },
           transaction
         )
-        order.clearClaim()
-        await order.save()
         return true
       })
       changed += isChanged ? 1 : 0
@@ -613,8 +603,6 @@ export default class OrderService {
           },
           transaction
         )
-        locked.clearClaim()
-        await locked.save()
         return locked
       })
       if (order) {

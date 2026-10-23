@@ -77,7 +77,6 @@ export interface ApiDefinition {
     task: {
       start: typeof routes['staff.task.start']
       arrive: typeof routes['staff.task.arrive']
-      release: typeof routes['staff.task.release']
       complete: typeof routes['staff.task.complete']
       skip: typeof routes['staff.task.skip']
     }

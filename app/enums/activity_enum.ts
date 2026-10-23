@@ -1,7 +1,6 @@
 export const ActivityAction = {
   STATUS_CHANGED: 'status_changed',
   TASK_STARTED: 'task_started',
-  TASK_RELEASED: 'task_released',
   ARRIVED: 'arrived',
   PICKUP_DONE: 'pickup_done',
   PICKUP_SKIPPED: 'pickup_skipped',
@@ -30,7 +29,6 @@ export type ActivityAction = (typeof ActivityAction)[keyof typeof ActivityAction
 export const ActivityActionLabel: Record<ActivityAction, string> = {
   [ActivityAction.STATUS_CHANGED]: 'Mengubah status',
   [ActivityAction.TASK_STARTED]: 'Mulai tugas',
-  [ActivityAction.TASK_RELEASED]: 'Melepas tugas',
   [ActivityAction.ARRIVED]: 'Tiba di lokasi',
   [ActivityAction.PICKUP_DONE]: 'Menjemput barang',
   [ActivityAction.PICKUP_SKIPPED]: 'Melewati penjemputan',
@@ -60,7 +58,6 @@ export type ActivityCategory =
 export const ActivityCategoryOf: Record<ActivityAction, ActivityCategory> = {
   [ActivityAction.STATUS_CHANGED]: 'status',
   [ActivityAction.TASK_STARTED]: 'status',
-  [ActivityAction.TASK_RELEASED]: 'status',
   [ActivityAction.ARRIVED]: 'status',
   [ActivityAction.PICKUP_DONE]: 'barang',
   [ActivityAction.PICKUP_SKIPPED]: 'status',

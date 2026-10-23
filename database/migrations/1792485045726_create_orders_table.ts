@@ -15,9 +15,6 @@
  * - items_sepatu, items_tas, items_helm: the customer's own count at order time; the real
  *   items are listed in order_items during inspection.
  * - pickup_date, pickup_slot: requested pickup day and slot index; null for walk-ins.
- * - claimed_by, claimed_task, claimed_at: the staff member currently holding a task on
- *   this order (pickup, delivery or inspection) and since when; a claim expires after
- *   3 hours.
  * - cancel_reason: shown to the customer and the owner on a cancelled order.
  * - receiver_name: who accepted the delivery.
  *
@@ -53,15 +50,6 @@ export default class extends BaseSchema {
       table.string('note', 300).notNullable().defaultTo('')
       table.date('pickup_date').nullable()
       table.smallint('pickup_slot').nullable()
-      table
-        .integer('claimed_by')
-        .nullable()
-        .unsigned()
-        .references('id')
-        .inTable('users')
-        .onDelete('SET NULL')
-      table.string('claimed_task').nullable()
-      table.timestamp('claimed_at').nullable()
       table.string('cancel_reason', 200).nullable()
       table.string('receiver_name', 80).nullable()
       table.timestamp('created_at').notNullable()

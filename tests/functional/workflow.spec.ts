@@ -119,13 +119,11 @@ test.group('Order workflow', (group) => {
 
     await post(client, `/staf/jemput/${code}/mulai`).loginAs(courier)
     assert.equal(await statusOf(order), OrderStatus.COURIER_EN_ROUTE)
-    assert.equal(order.claimedBy, courier.id)
 
     await post(client, `/staf/jemput/${code}/tiba`).loginAs(courier)
     const done = await upload(client, `/staf/jemput/${code}/selesai`, courier)
     done.assertHeader('location', '/staf/jemput/tugas')
     assert.equal(await statusOf(order), OrderStatus.PICKED_UP)
-    assert.isNull(order.claimedBy)
 
     await post(client, `/staf/proses/${code}/periksa/mulai`).loginAs(courier)
     assert.equal(await statusOf(order), OrderStatus.IN_INSPECTION)
@@ -196,26 +194,30 @@ test.group('Order workflow', (group) => {
     detail.assertInertiaPropsContains({ order: { number: code, receiver: 'Rina' } })
   })
 
-  test('a task held by one staff member cannot be taken or finished by another', async ({
-    client,
-    assert,
-  }) => {
+  test('two start requests on the same pickup cannot both succeed', async ({ client, assert }) => {
     const customer = await UserFactory.create()
-    const first = await UserFactory.apply('staff').create()
-    const second = await UserFactory.apply('staff').create()
+    const courier = await UserFactory.apply('staff').create()
+    const owner = await UserFactory.apply('admin').create()
     const order = await createOrder(customer, { pickupDate: today() })
 
-    await post(client, `/staf/jemput/${order.publicCode}/mulai`).loginAs(first)
-    const taken = await post(client, `/staf/jemput/${order.publicCode}/mulai`).loginAs(second)
-    taken.assertBodyContains({ errors: [{ rule: 'task.taken' }] })
-    const finish = await upload(client, `/staf/jemput/${order.publicCode}/selesai`, second)
-    finish.assertBodyContains({ errors: [{ rule: 'task.not_held' }] })
+    const responses = await Promise.all([
+      post(client, `/staf/jemput/${order.publicCode}/mulai`).loginAs(courier),
+      post(client, `/staf/jemput/${order.publicCode}/mulai`).loginAs(owner),
+    ])
 
-    await post(client, `/staf/jemput/${order.publicCode}/lepas`).loginAs(first)
-    assert.equal(await statusOf(order), OrderStatus.AWAITING_PICKUP)
-    await post(client, `/staf/jemput/${order.publicCode}/mulai`).loginAs(second)
-    await order.refresh()
-    assert.equal(order.claimedBy, second.id)
+    const statuses = responses.map((response) => response.status()).sort()
+    assert.deepEqual(statuses, [302, 422])
+    const refused = responses.find((response) => response.status() === 422)!
+    refused.assertBodyContains({ errors: [{ rule: 'order.transition' }] })
+    assert.equal(await statusOf(order), OrderStatus.COURIER_EN_ROUTE)
+    const started = await OrderEvent.query()
+      .where('order_id', order.id)
+      .where('status', OrderStatus.COURIER_EN_ROUTE)
+    assert.lengthOf(started, 1)
+    assert.lengthOf(
+      state.fonnte.messages.filter((message) => message.target === customer.phone),
+      1
+    )
   })
 
   test('skipping a pickup records the reason and tells the customer', async ({

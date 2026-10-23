@@ -29,8 +29,6 @@ export default {
     users: {
       columns: {
         role: enumColumn('Role', '#enums/role_enum'),
-        staff_type: enumColumn('StaffType', '#enums/staff_enum', true),
-        shift: enumColumn('StaffShift', '#enums/staff_enum', true),
         password: {
           tsType: 'string',
           decorators: [{ name: '@column', args: { serializeAs: null } }],
@@ -49,7 +47,6 @@ export default {
         status: enumColumn('OrderStatus', ORDER),
         source: enumColumn('OrderSource', ORDER),
         return_method: enumColumn('ReturnMethod', ORDER),
-        claimed_task: enumColumn('OrderTask', ORDER, true),
       },
     },
 

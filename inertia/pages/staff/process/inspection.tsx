@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Head, router } from '@inertiajs/react'
-import { IconClipboardCheck, IconLock, IconPlus } from '@tabler/icons-react'
+import { IconClipboardCheck, IconPlus } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import SourceTag from '~/components/atoms/source_tag'
 import ToneBadge from '~/components/atoms/tone_badge'
@@ -48,7 +48,7 @@ export default function Inspection({
   const summary = inspectionSummary(items, catalog)
   const isInStore = order.source === 'toko'
   const needsStart = order.status === 'Barang Kami Terima'
-  const isLocked = order.isSaved || !!order.heldBy || needsStart
+  const isLocked = order.isSaved || needsStart
   const total = formatRupiah(order.isSaved ? order.total : summary.total)
   const savedText = isInStore
     ? `Tersimpan · total ${total}. Lanjutkan ke pembayaran di kasir: QRIS, tunai, atau EDC.`
@@ -111,12 +111,6 @@ export default function Inspection({
           currentClassName="bg-status-periksa-dot"
           className="grid-cols-5"
         />
-        {order.heldBy && (
-          <p className="flex gap-2 rounded-md bg-attention px-3 py-2.5 text-note leading-[1.45] text-attention-foreground">
-            <IconLock className="mt-0.5 size-4.5 shrink-0" />
-            Sedang diperiksa {order.heldBy}. Anda bisa melihat, tetapi tidak bisa mengubah.
-          </p>
-        )}
         {needsStart && (
           <Button
             size="cta"

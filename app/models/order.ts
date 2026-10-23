@@ -1,7 +1,6 @@
 import { belongsTo, hasMany, hasOne, scope } from '@adonisjs/lucid/orm'
 import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations'
-import { DateTime } from 'luxon'
 import { OrderSchema } from '#database/schema'
 import {
   FINISHED_STATUSES,
@@ -19,15 +18,7 @@ import OrderPhoto from '#models/order_photo'
 import Payment from '#models/payment'
 import User from '#models/user'
 
-export const CLAIM_HOURS = 3
-
-export const TASK_TAKEN_MESSAGE = 'Tugas ini sedang ditangani staf lain. Pilih pesanan lain.'
-
 export default class Order extends OrderSchema {
-  static claimFloor() {
-    return DateTime.now().minus({ hours: CLAIM_HOURS })
-  }
-
   static withDetails = scope((query: ModelQueryBuilderContract<typeof Order>) => {
     query.preload('user').preload('pickupAddress').preload('deliveryAddress')
   })
@@ -43,9 +34,6 @@ export default class Order extends OrderSchema {
 
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
-
-  @belongsTo(() => User, { foreignKey: 'claimedBy' })
-  declare claimer: BelongsTo<typeof User>
 
   @hasMany(() => OrderAddress)
   declare addresses: HasMany<typeof OrderAddress>
@@ -96,22 +84,5 @@ export default class Order extends OrderSchema {
 
   ownerStages() {
     return [...new Set(this.ownerMoves().map((next) => OrderStatusStage[next]))]
-  }
-
-  isClaimedBy(user: User) {
-    return this.claimedBy === user.id && !!this.claimedAt && this.claimedAt > Order.claimFloor()
-  }
-
-  isClaimedByOther(user: User) {
-    if (this.claimedBy === null || this.claimedBy === user.id) {
-      return false
-    }
-    return !!this.claimedAt && this.claimedAt > Order.claimFloor()
-  }
-
-  clearClaim() {
-    this.claimedBy = null
-    this.claimedTask = null
-    this.claimedAt = null
   }
 }

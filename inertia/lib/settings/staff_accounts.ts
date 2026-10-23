@@ -3,13 +3,9 @@ import type { Data } from '@generated/data'
 import { urlFor } from '~/client'
 import { nameError, phoneError } from '~/lib/shared/validation'
 
-export type StaffRole = 'Kurir & toko' | 'Workshop' | 'Owner'
+export type StaffRole = 'Staf' | 'Owner'
 
-export type StaffShift = 'Pagi' | 'Siang' | 'Fleksibel'
-
-export const STAFF_ROLES: StaffRole[] = ['Kurir & toko', 'Workshop', 'Owner']
-
-export const STAFF_SHIFTS: StaffShift[] = ['Pagi', 'Siang', 'Fleksibel']
+export const STAFF_ROLES: StaffRole[] = ['Staf', 'Owner']
 
 export type StaffAccount = Data.StaffAccount
 
@@ -21,13 +17,12 @@ export function initialsOf(name: string) {
     .join('')
 }
 
-export type StaffForm = { name: string; phone: string; role: StaffRole; shift: StaffShift }
+export type StaffForm = { name: string; phone: string; role: StaffRole }
 
 export const EMPTY_STAFF_FORM: StaffForm = {
   name: '',
   phone: '',
-  role: 'Kurir & toko',
-  shift: 'Pagi',
+  role: 'Staf',
 }
 
 export function staffFormErrors(form: StaffForm) {
@@ -50,7 +45,7 @@ type Callbacks = {
 }
 
 export function saveStaff(form: StaffForm, id: string | null, callbacks: Callbacks = {}) {
-  const body = { name: form.name.trim(), phone: form.phone, role: form.role, shift: form.shift }
+  const body = { name: form.name.trim(), phone: form.phone, role: form.role }
   if (id) {
     router.put(urlFor('admin.staff.update', { id }), body, { preserveScroll: true, ...callbacks })
   } else {

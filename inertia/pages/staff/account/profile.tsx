@@ -81,7 +81,7 @@ export default function StaffProfile({
               </dl>
               <p className="flex items-start gap-2 text-caption leading-[1.45] text-muted-foreground">
                 <IconLock className="size-4 shrink-0" />
-                Nama, peran, dan shift diatur owner di Pengaturan.
+                Nama dan peran diatur owner di Pengaturan.
               </p>
             </Panel>
             <Panel title="Navigasi">

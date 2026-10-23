@@ -20,9 +20,8 @@ export default class ProcessController {
     protected billing: BillingService
   ) {}
 
-  async queue({ auth, bouncer, inertia }: HttpContext) {
+  async queue({ bouncer, inertia }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const user = auth.getUserOrFail()
     const orders = await this.tasks.workshopQueue()
     const waiting = orders.filter(
       (order) =>
@@ -30,18 +29,16 @@ export default class ProcessController {
     )
     const rows = orders
       .filter((order) => !waiting.includes(order))
-      .map((order) => new ProcessRowTransformer(order, user).toObject())
+      .map((order) => new ProcessRowTransformer(order).toObject())
 
     return inertia.render('staff/process/queue', {
-      periksa: rows.filter((row) =>
-        ['inspect', 'continue', 'locked', 'collect'].includes(row.action)
-      ),
+      periksa: rows.filter((row) => ['inspect', 'continue', 'collect'].includes(row.action)),
       cuci: rows.filter((row) => ['open', 'handover'].includes(row.action)),
       waiting: waiting.map((order) => shortName(order.customerName)),
     })
   }
 
-  async inspection({ auth, bouncer, inertia, params }: HttpContext) {
+  async inspection({ bouncer, inertia, params }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
     const order = await this.#find(params.number)
     const services = await this.billing.activePriceList()
@@ -60,7 +57,7 @@ export default class ProcessController {
 
     return inertia.render('staff/process/inspection', {
       number: String(params.number),
-      order: order ? new InspectionTransformer(order, auth.getUserOrFail()).toObject() : null,
+      order: order ? new InspectionTransformer(order).toObject() : null,
       catalog,
     })
   }

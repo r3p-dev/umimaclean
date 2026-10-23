@@ -18,7 +18,6 @@ export const MessagePurpose = {
   ORDER_CANCELLED: 'order_cancelled',
   CUSTOMER_CANCELLED: 'customer_cancelled',
   REMINDER: 'reminder',
-  STAFF_PASSWORD: 'staff_password',
 } as const
 
 export type MessageStatus = (typeof MessageStatus)[keyof typeof MessageStatus]

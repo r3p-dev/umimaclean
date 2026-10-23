@@ -3,7 +3,6 @@ import logger from '@adonisjs/core/services/logger'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { DateTime } from 'luxon'
 import { Role } from '#enums/role_enum'
-import { StaffShift, StaffType } from '#enums/staff_enum'
 import User from '#models/user'
 
 export const DEMO_PHONE = '6281223456789'
@@ -12,20 +11,7 @@ export const ACCOUNTS = [
   { role: Role.CUSTOMER, name: 'Rina Kartika', phone: DEMO_PHONE },
   { role: Role.CUSTOMER, name: 'Budi Santoso', phone: '6281234500000' },
   { role: Role.ADMIN, name: 'Umi Maryam', phone: '6281122001100' },
-  {
-    role: Role.STAFF,
-    name: 'Dedi Supriadi',
-    phone: '6281234567801',
-    staffType: StaffType.COURIER_STORE,
-    shift: StaffShift.MORNING,
-  },
-  {
-    role: Role.STAFF,
-    name: 'Sari Wulandari',
-    phone: '6281322334455',
-    staffType: StaffType.WORKSHOP,
-    shift: StaffShift.MORNING,
-  },
+  { role: Role.STAFF, name: 'Dedi Supriadi', phone: '6281234567801' },
 ]
 
 export const DEMO_CUSTOMERS = [
@@ -48,8 +34,6 @@ export default class extends BaseSeeder {
       const user = await User.findBy('phone', account.phone)
       await (user ?? new User())
         .merge({
-          staffType: null,
-          shift: null,
           ...account,
           password,
           isActive: true,

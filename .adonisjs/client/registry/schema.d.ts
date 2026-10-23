@@ -583,18 +583,6 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['arrive']>>>
     }
   }
-  'staff.task.release': {
-    methods: ["POST"]
-    pattern: '/staf/:kind/:code/lepas'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue, ParamValue]
-      params: { kind: ParamValue; code: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['release']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['release']>>>
-    }
-  }
   'staff.task.complete': {
     methods: ["POST"]
     pattern: '/staf/:kind/:code/selesai'

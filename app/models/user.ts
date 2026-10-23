@@ -7,7 +7,6 @@ import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 import { UserSchema } from '#database/schema'
 import { Role, RoleLabel } from '#enums/role_enum'
-import { StaffShiftLabel, StaffTypeLabel } from '#enums/staff_enum'
 import CustomerAddress from '#models/customer_address'
 import Order from '#models/order'
 
@@ -52,13 +51,6 @@ export default class User extends compose(UserSchema, AuthFinder) {
   }
 
   roleLabel() {
-    const parts: string[] = [RoleLabel[this.role]]
-    if (this.staffType) {
-      parts.push(StaffTypeLabel[this.staffType].toLowerCase())
-    }
-    if (this.shift) {
-      parts.push(`shift ${StaffShiftLabel[this.shift].toLowerCase()}`)
-    }
-    return parts.join(' · ')
+    return RoleLabel[this.role]
   }
 }

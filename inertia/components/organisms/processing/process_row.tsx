@@ -4,7 +4,6 @@ import {
   IconCash,
   IconClipboardCheck,
   IconEdit,
-  IconLock,
   IconPackage,
 } from '@tabler/icons-react'
 import { urlFor } from '~/client'
@@ -19,7 +18,6 @@ const ACTIONS: Record<ProcessAction, { label: string; icon: typeof IconEdit; isP
     collect: { label: 'Terima Pembayaran', icon: IconCash, isPrimary: true },
     open: { label: 'Buka', icon: IconCamera, isPrimary: false },
     handover: { label: 'Serahkan', icon: IconPackage, isPrimary: false },
-    locked: { label: 'Lihat', icon: IconLock, isPrimary: false },
   }
 
 function target(row: Row) {

@@ -11,7 +11,6 @@ import {
   OrderAddressType,
   OrderSource,
   OrderStatus,
-  OrderTask,
   PhotoKind,
   ReturnMethod,
 } from '#enums/order_enum'
@@ -48,7 +47,7 @@ const COURIER_STEPS = [
   OrderStatus.COMPLETED,
 ] as const
 
-type Staff = { courier: User; workshop: User; owner: User }
+type Staff = { courier: User; owner: User }
 
 type Spec = {
   customer: User | null
@@ -82,7 +81,6 @@ export default class extends BaseSeeder {
     }
     const staff = {
       courier: await User.findByOrFail('phone', '6281234567801'),
-      workshop: await User.findByOrFail('phone', '6281322334455'),
       owner: await User.query().where('role', Role.ADMIN).firstOrFail(),
     }
     const rina = await User.findByOrFail('phone', DEMO_PHONE)
@@ -277,9 +275,9 @@ export default class extends BaseSeeder {
         )
       }
       if (status === OrderStatus.AWAITING_PAYMENT) {
-        total = await this.#bill(order, services, staff.workshop, at)
+        total = await this.#bill(order, services, staff.courier, at)
         await this.#log(
-          staff.workshop,
+          staff.courier,
           order,
           ActivityAction.BILL_CREATED,
           `${order.itemCount()} barang · Rp${total.toLocaleString('id-ID')}`,
@@ -318,9 +316,9 @@ export default class extends BaseSeeder {
         status === OrderStatus.READY_FOR_DELIVERY ||
         status === OrderStatus.READY_FOR_COLLECTION
       ) {
-        await this.#photo(order, PhotoKind.WASHING, staff.workshop, at)
+        await this.#photo(order, PhotoKind.WASHING, staff.courier, at)
         await OrderItem.query().where('order_id', order.id).update({ washed_at: at.toJSDate() })
-        await this.#log(staff.workshop, order, ActivityAction.WASH_DONE, 'Foto hasil cuci', at)
+        await this.#log(staff.courier, order, ActivityAction.WASH_DONE, 'Foto hasil cuci', at)
       }
       if (status === OrderStatus.COMPLETED) {
         if (order.returnMethod === ReturnMethod.DELIVERY) {
@@ -339,21 +337,6 @@ export default class extends BaseSeeder {
       }
     }
 
-    if (spec.status === OrderStatus.COURIER_EN_ROUTE || spec.status === OrderStatus.IN_DELIVERY) {
-      order.merge({
-        claimedBy: staff.courier.id,
-        claimedTask:
-          spec.status === OrderStatus.IN_DELIVERY ? OrderTask.DELIVERY : OrderTask.PICKUP,
-        claimedAt: DateTime.now(),
-      })
-    }
-    if (spec.status === OrderStatus.IN_INSPECTION) {
-      order.merge({
-        claimedBy: staff.workshop.id,
-        claimedTask: OrderTask.INSPECTION,
-        claimedAt: DateTime.now(),
-      })
-    }
     order.updatedAt = at
     await order.save()
   }
@@ -368,7 +351,7 @@ export default class extends BaseSeeder {
     if (status === OrderStatus.IN_CLEANING || status === OrderStatus.CANCELLED) {
       return status === OrderStatus.CANCELLED ? customer : null
     }
-    return staff.workshop
+    return staff.courier
   }
 
   async #bill(order: Order, services: Service[], staff: User, at: DateTime) {

@@ -51,14 +51,6 @@ export default class TasksController {
     return response.redirect().toRoute(this.#taskRoute(kind))
   }
 
-  async release(ctx: HttpContext) {
-    const { auth, response, session } = ctx
-    const kind = await this.#authorize(ctx)
-    await this.tasks.releaseTrip(auth.getUserOrFail(), this.#code(ctx), KINDS[kind])
-    session.flash('success', 'Tugas dilepas dan kembali ke antrean.')
-    return response.redirect().toRoute(kind === 'jemput' ? 'staff.pickups' : 'staff.deliveries')
-  }
-
   async complete(ctx: HttpContext) {
     const { auth, request, response, session } = ctx
     const kind = await this.#authorize(ctx)
@@ -95,8 +87,8 @@ export default class TasksController {
     const trip = KINDS[kind]
     const slots = await Setting.get('pickup_slots')
     const [active, queue, handled] = await Promise.all([
-      this.tasks.activeTrip(user, trip),
-      this.tasks.queue(user, trip),
+      this.tasks.activeTrip(trip),
+      this.tasks.queue(trip),
       this.tasks.handledToday(user, trip),
     ])
     const tasks = [...(active ? [active] : []), ...queue]
@@ -121,10 +113,7 @@ export default class TasksController {
     const user = auth.getUserOrFail()
     const trip = KINDS[kind]
     const slots = await Setting.get('pickup_slots')
-    const [active, queue] = await Promise.all([
-      this.tasks.activeTrip(user, trip),
-      this.tasks.queue(user, trip),
-    ])
+    const [active, queue] = await Promise.all([this.tasks.activeTrip(trip), this.tasks.queue(trip)])
     const result = session.flashMessages.get(RESULT_KEY) as TaskResult | undefined
     const handledToday = result ? await this.tasks.handledToday(user, trip) : []
     const handled = handledToday.find((entry) => entry.order.publicCode === result?.code)
@@ -132,7 +121,7 @@ export default class TasksController {
     return inertia.render('staff/tasks/active', {
       kind,
       task: active ? new TaskTransformer(active, trip, slots).toObject() : null,
-      phase: active && (await this.tasks.hasArrived(user, active)) ? 'arrived' : 'nav',
+      phase: active && (await this.tasks.hasArrived(active)) ? 'arrived' : 'nav',
       next: queue[0] ? new TaskTransformer(queue[0], trip, slots).toObject() : null,
       skipReasons: [...SKIP_REASONS],
       result:

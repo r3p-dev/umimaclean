@@ -13,7 +13,6 @@ router
       .group(() => {
         router.post('/mulai', [controllers.staff.Tasks, 'start']).as('start')
         router.post('/tiba', [controllers.staff.Tasks, 'arrive']).as('arrive')
-        router.post('/lepas', [controllers.staff.Tasks, 'release']).as('release')
         router.post('/selesai', [controllers.staff.Tasks, 'complete']).as('complete')
         router.post('/lewati', [controllers.staff.Tasks, 'skip']).as('skip')
       })

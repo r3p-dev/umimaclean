@@ -1,21 +1,13 @@
 import { inject } from '@adonisjs/core'
 import type { MultipartFile } from '@adonisjs/core/bodyparser'
 import db from '@adonisjs/lucid/services/db'
-import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 import { DateTime } from 'luxon'
 import { ActivityAction } from '#enums/activity_enum'
 import { MessagePurpose } from '#enums/message_enum'
-import {
-  OrderSource,
-  OrderStatus,
-  OrderTask,
-  OrderTaskLabel,
-  PhotoKind,
-  ReturnMethod,
-} from '#enums/order_enum'
+import { OrderSource, OrderStatus, PhotoKind, ReturnMethod } from '#enums/order_enum'
 import ActivityLog from '#models/activity_log'
-import Order, { TASK_TAKEN_MESSAGE } from '#models/order'
+import Order from '#models/order'
 import OrderItem from '#models/order_item'
 import OrderPhoto from '#models/order_photo'
 import type User from '#models/user'
@@ -51,7 +43,7 @@ const TRIP = {
     queued: OrderStatus.AWAITING_PICKUP,
     active: OrderStatus.COURIER_EN_ROUTE,
     done: OrderStatus.PICKED_UP,
-    task: OrderTask.PICKUP,
+    startDetail: 'Jemput dimulai',
     photo: PhotoKind.PICKUP,
     doneAction: ActivityAction.PICKUP_DONE,
     skipAction: ActivityAction.PICKUP_SKIPPED,
@@ -63,7 +55,7 @@ const TRIP = {
     queued: OrderStatus.READY_FOR_DELIVERY,
     active: OrderStatus.IN_DELIVERY,
     done: OrderStatus.COMPLETED,
-    task: OrderTask.DELIVERY,
+    startDetail: 'Antar dimulai',
     photo: PhotoKind.DELIVERY,
     doneAction: ActivityAction.DELIVERY_DONE,
     skipAction: ActivityAction.DELIVERY_SKIPPED,
@@ -109,22 +101,12 @@ function startOfToday() {
 export default class TaskService {
   constructor(protected orders: OrderService) {}
 
-  activeTrip(user: User, kind: TripKind) {
-    return this.#tripQuery()
-      .where('status', TRIP[kind].active)
-      .where('claimed_by', user.id)
-      .orderBy('claimed_at', 'asc')
-      .first()
+  activeTrip(kind: TripKind) {
+    return this.#tripQuery().where('status', TRIP[kind].active).orderBy('updated_at', 'asc').first()
   }
 
-  async queue(user: User, kind: TripKind) {
-    const floor = Order.claimFloor().toJSDate()
-    const query = this.#tripQuery().where((builder) => {
-      builder.where('status', TRIP[kind].queued).orWhere((expired) => {
-        expired.where('status', TRIP[kind].active).where('claimed_at', '<', floor)
-      })
-    })
-    this.#available(user, query)
+  async queue(kind: TripKind) {
+    const query = this.#tripQuery().where('status', TRIP[kind].queued)
     if (kind === 'pickup') {
       query
         .where('pickup_date', '<=', startOfToday().toISODate()!)
@@ -134,7 +116,7 @@ export default class TaskService {
       query.orderBy('updated_at', 'asc')
     }
     const orders = await query.orderBy('id', 'asc')
-    const skipped = await this.#skippedToday(user, kind)
+    const skipped = await this.#skippedToday(kind)
     return [
       ...orders.filter((order) => !skipped.has(order.id)),
       ...orders.filter((order) => skipped.has(order.id)),
@@ -153,22 +135,26 @@ export default class TaskService {
       .orderBy('id', 'desc')
   }
 
-  async hasArrived(user: User, order: Order) {
-    if (!order.claimedAt) {
+  async hasArrived(order: Order) {
+    const started = await ActivityLog.query()
+      .where('order_id', order.id)
+      .where('action', ActivityAction.TASK_STARTED)
+      .orderBy('id', 'desc')
+      .first()
+    if (!started) {
       return false
     }
     const arrival = await ActivityLog.query()
       .where('order_id', order.id)
-      .where('actor_id', user.id)
       .where('action', ActivityAction.ARRIVED)
-      .where('created_at', '>=', order.claimedAt.toJSDate())
+      .where('id', '>', started.id)
       .first()
     return !!arrival
   }
 
   async startTrip(user: User, code: string, kind: TripKind) {
     const trip = TRIP[kind]
-    const current = await this.activeTrip(user, kind)
+    const current = await this.activeTrip(kind)
     if (current && current.publicCode !== code) {
       throw fieldError(
         'form',
@@ -179,25 +165,12 @@ export default class TaskService {
 
     const order = await db.transaction(async (transaction) => {
       const locked = await this.orders.lockByCode(transaction, code)
-      if (locked.isClaimedBy(user) && locked.status === trip.active) {
-        return locked
-      }
-      this.#assertAvailable(user, locked)
-      const detail = `${OrderTaskLabel[trip.task]} dimulai`
-      if (locked.status === trip.active) {
-        await ActivityLog.record(
-          { actor: user, order: locked, action: ActivityAction.TASK_STARTED, detail },
-          transaction
-        )
-      } else {
-        await this.orders.transition(
-          locked,
-          trip.active,
-          { actor: user, action: ActivityAction.TASK_STARTED, detail },
-          transaction
-        )
-      }
-      await this.#claim(user, locked, trip.task, transaction)
+      await this.orders.transition(
+        locked,
+        trip.active,
+        { actor: user, action: ActivityAction.TASK_STARTED, detail: trip.startDetail },
+        transaction
+      )
       return locked
     })
 
@@ -210,24 +183,8 @@ export default class TaskService {
     if (!order) {
       throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
     }
-    this.#assertHeld(user, order, kind)
+    this.#assertActive(order, kind)
     await ActivityLog.record({ actor: user, order, action: ActivityAction.ARRIVED })
-  }
-
-  async releaseTrip(user: User, code: string, kind: TripKind) {
-    const trip = TRIP[kind]
-    await db.transaction(async (transaction) => {
-      const order = await this.orders.lockByCode(transaction, code)
-      this.#assertHeld(user, order, kind)
-      await this.orders.transition(
-        order,
-        trip.queued,
-        { actor: user, action: ActivityAction.TASK_RELEASED, note: 'Tugas dilepas staf' },
-        transaction
-      )
-      order.clearClaim()
-      await order.save()
-    })
   }
 
   async completeTrip(
@@ -240,7 +197,7 @@ export default class TaskService {
     const trip = TRIP[kind]
     const order = await db.transaction(async (transaction) => {
       const locked = await this.orders.lockByCode(transaction, code)
-      this.#assertHeld(user, locked, kind)
+      this.#assertActive(locked, kind)
       await OrderPhoto.store(photo, locked, trip.photo, user, transaction)
       if (receiver) {
         locked.receiverName = receiver
@@ -259,8 +216,6 @@ export default class TaskService {
         },
         transaction
       )
-      locked.clearClaim()
-      await locked.save()
       return locked
     })
 
@@ -275,15 +230,13 @@ export default class TaskService {
     const text = note ? `${reason} · ${note}` : reason
     const order = await db.transaction(async (transaction) => {
       const locked = await this.orders.lockByCode(transaction, code)
-      this.#assertHeld(user, locked, kind)
+      this.#assertActive(locked, kind)
       await this.orders.transition(
         locked,
         trip.queued,
         { actor: user, action: trip.skipAction, note: text, detail: text },
         transaction
       )
-      locked.clearClaim()
-      await locked.save()
       return locked
     })
 
@@ -296,7 +249,6 @@ export default class TaskService {
       .whereIn('status', WORKSHOP_STATUSES)
       .preload('items', (items) => items.orderBy('position', 'asc'))
       .preload('bill')
-      .preload('claimer')
       .preload('payments')
       .preload('events', (events) => events.preload('actor').orderBy('id', 'asc'))
       .orderBy('updated_at', 'asc')
@@ -307,7 +259,6 @@ export default class TaskService {
       .where('public_code', code)
       .preload('items', (items) => items.orderBy('position', 'asc'))
       .preload('bill', (bill) => bill.preload('lines'))
-      .preload('claimer')
       .preload('payments')
       .preload('photos', (photos) => photos.preload('taker').orderBy('id', 'asc'))
       .preload('events', (events) => events.preload('actor').orderBy('id', 'asc'))
@@ -328,7 +279,6 @@ export default class TaskService {
       } else if (order.status !== OrderStatus.IN_INSPECTION) {
         throw fieldError('form', 'Pesanan ini tidak menunggu pemeriksaan.', 'order.status')
       }
-      await this.#claim(user, order, OrderTask.INSPECTION, transaction)
       return order
     })
   }
@@ -377,25 +327,31 @@ export default class TaskService {
     })
   }
 
-  async counts(user: User): Promise<StaffCounts> {
-    const [pickupActive, pickups, deliveryActive, deliveries, workshop] = await Promise.all([
-      this.activeTrip(user, 'pickup'),
-      this.queue(user, 'pickup'),
-      this.activeTrip(user, 'delivery'),
-      this.queue(user, 'delivery'),
-      Order.query()
-        .whereIn('status', WORKSHOP_STATUSES)
-        .whereNot((query) => {
-          query.where('status', OrderStatus.AWAITING_PAYMENT).where('source', OrderSource.ONLINE)
+  async counts(): Promise<StaffCounts> {
+    const [jemput, antar, proses] = await Promise.all([
+      this.#count(
+        Order.query().where((query) => {
+          query
+            .where((waiting) => {
+              waiting
+                .where('status', OrderStatus.AWAITING_PICKUP)
+                .where('pickup_date', '<=', startOfToday().toISODate()!)
+            })
+            .orWhere('status', OrderStatus.COURIER_EN_ROUTE)
         })
-        .count('* as total'),
+      ),
+      this.#count(
+        Order.query().whereIn('status', [OrderStatus.READY_FOR_DELIVERY, OrderStatus.IN_DELIVERY])
+      ),
+      this.#count(
+        Order.query()
+          .whereIn('status', WORKSHOP_STATUSES)
+          .whereNot((query) => {
+            query.where('status', OrderStatus.AWAITING_PAYMENT).where('source', OrderSource.ONLINE)
+          })
+      ),
     ])
-
-    return {
-      jemput: pickups.length + (pickupActive ? 1 : 0),
-      antar: deliveries.length + (deliveryActive ? 1 : 0),
-      proses: Number(workshop[0].$extras.total),
-    }
+    return { jemput, antar, proses }
   }
 
   async history(user: User, days = 7) {
@@ -432,44 +388,26 @@ export default class TaskService {
       .preload('bill', (bill) => bill.preload('lines'))
   }
 
-  async #skippedToday(user: User, kind: TripKind) {
+  async #skippedToday(kind: TripKind) {
     const rows = await ActivityLog.query()
-      .where('actor_id', user.id)
       .where('action', TRIP[kind].skipAction)
       .where('created_at', '>=', startOfToday().toJSDate())
       .select('order_id')
     return new Set(rows.map((row) => row.orderId))
   }
 
-  #assertAvailable(user: User, order: Order) {
-    if (order.isClaimedByOther(user)) {
-      throw fieldError('form', TASK_TAKEN_MESSAGE, 'task.taken')
-    }
+  async #count(query: ModelQueryBuilderContract<typeof Order>) {
+    const [row] = await query.count('* as total')
+    return Number(row.$extras.total)
   }
 
-  #assertHeld(user: User, order: Order, kind: TripKind) {
-    if (order.status !== TRIP[kind].active || !order.isClaimedBy(user)) {
+  #assertActive(order: Order, kind: TripKind) {
+    if (order.status !== TRIP[kind].active) {
       throw fieldError(
         'form',
-        'Tugas ini tidak sedang Anda pegang. Buka lagi dari antrean.',
-        'task.not_held'
+        'Tugas ini tidak sedang berjalan. Buka lagi dari antrean.',
+        'task.not_active'
       )
     }
-  }
-
-  async #claim(user: User, order: Order, task: OrderTask, transaction: TransactionClientContract) {
-    this.#assertAvailable(user, order)
-    order.useTransaction(transaction)
-    order.merge({ claimedBy: user.id, claimedTask: task, claimedAt: DateTime.now() })
-    await order.save()
-  }
-
-  #available(user: User, query: ModelQueryBuilderContract<typeof Order>) {
-    return query.where((builder) => {
-      builder
-        .whereNull('claimed_by')
-        .orWhere('claimed_by', user.id)
-        .orWhere('claimed_at', '<', Order.claimFloor().toJSDate())
-    })
   }
 }

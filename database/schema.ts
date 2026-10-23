@@ -14,14 +14,12 @@ import {
   OrderStatus,
   ItemKind,
   PhotoKind,
-  OrderTask,
   ReturnMethod,
   OrderSource,
 } from '#enums/order_enum'
 import { OtpPurpose } from '#enums/otp_enum'
 import { PaymentChannel, PaymentMethod, PaymentStatus } from '#enums/payment_enum'
 import { Role } from '#enums/role_enum'
-import { StaffShift, StaffType } from '#enums/staff_enum'
 import { MessagePurpose, MessageStatus } from '#enums/message_enum'
 
 export class ActivityLogSchema extends BaseModel {
@@ -290,9 +288,6 @@ export class OrderPhotoSchema extends BaseModel {
 export class OrderSchema extends BaseModel {
   static $columns = [
     'cancelReason',
-    'claimedAt',
-    'claimedBy',
-    'claimedTask',
     'createdAt',
     'customerName',
     'customerPhone',
@@ -315,12 +310,6 @@ export class OrderSchema extends BaseModel {
   $columns = OrderSchema.$columns
   @column()
   declare cancelReason: string | null
-  @column.dateTime()
-  declare claimedAt: DateTime | null
-  @column()
-  declare claimedBy: number | null
-  @column()
-  declare claimedTask: OrderTask | null | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
@@ -568,8 +557,6 @@ export class UserSchema extends BaseModel {
     'phone',
     'phoneVerifiedAt',
     'role',
-    'shift',
-    'staffType',
     'updatedAt',
   ] as const
   $columns = UserSchema.$columns
@@ -593,10 +580,6 @@ export class UserSchema extends BaseModel {
   declare phoneVerifiedAt: DateTime | null
   @column()
   declare role: Role
-  @column()
-  declare shift: StaffShift | null | null
-  @column()
-  declare staffType: StaffType | null | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }

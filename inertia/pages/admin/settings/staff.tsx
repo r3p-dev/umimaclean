@@ -83,7 +83,6 @@ export default function AdminStaffSettings({
                 name: account.name,
                 phone: account.phone,
                 role: account.role,
-                shift: account.shift,
               },
             })
           }
@@ -137,7 +136,6 @@ export default function AdminStaffSettings({
             <tr className={TABLE_HEAD_ROW}>
               <TableHead className="px-4.5 first:pl-4.5">Staf</TableHead>
               <TableHead>Peran</TableHead>
-              <TableHead>Shift</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="max-lg:hidden">Terakhir aktif</TableHead>
               <TableHead className="pr-4.5 last:pr-4.5">
@@ -160,7 +158,6 @@ export default function AdminStaffSettings({
                   </div>
                 </TableCell>
                 <TableCell className="py-3">{account.role}</TableCell>
-                <TableCell className="py-3 text-foreground-secondary">{account.shift}</TableCell>
                 <TableCell className="py-3">
                   <ToneBadge tone={account.active ? 'ok' : 'off'}>
                     {account.active ? 'Aktif' : 'Nonaktif'}
@@ -190,7 +187,7 @@ export default function AdminStaffSettings({
                     {account.name}
                   </span>
                   <span className="block text-meta leading-[1.3] text-muted-foreground">
-                    {account.role} · {account.shift}
+                    {account.role}
                   </span>
                 </span>
                 <ToneBadge tone={account.active ? 'ok' : 'off'}>

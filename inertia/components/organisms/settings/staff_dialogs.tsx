@@ -6,12 +6,7 @@ import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import ChoicePills from '~/components/molecules/choice_pills'
 import DialogTitleBar from '~/components/molecules/dialog_title_bar'
-import {
-  STAFF_ROLES,
-  STAFF_SHIFTS,
-  staffFormErrors,
-  type StaffForm,
-} from '~/lib/settings/staff_accounts'
+import { STAFF_ROLES, staffFormErrors, type StaffForm } from '~/lib/settings/staff_accounts'
 
 const FOOTER = 'flex flex-col-reverse justify-end gap-2 sm:flex-row sm:items-center'
 
@@ -33,7 +28,6 @@ export function StaffFormDialog({
   const nameId = useId()
   const phoneId = useId()
   const roleId = useId()
-  const shiftId = useId()
 
   return (
     <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
@@ -82,8 +76,7 @@ export function StaffFormDialog({
           </FieldError>
         ) : (
           <FieldDescription id={`${phoneId}-note`} className="text-caption leading-[1.4]">
-            Setelah disimpan, kata sandi sementara ditampilkan sekali dan dikirim ke WhatsApp nomor
-            ini.
+            Setelah disimpan, kata sandi sementara ditampilkan sekali.
           </FieldDescription>
         )}
       </div>
@@ -100,17 +93,6 @@ export function StaffFormDialog({
         <FieldDescription className="text-caption leading-[1.4]">
           Peran menentukan halaman awal dan akses. Owner bisa melihat laporan &amp; pengaturan.
         </FieldDescription>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <span id={shiftId} className="text-note leading-[1.2] font-semibold">
-          Shift
-        </span>
-        <ChoicePills
-          labelledBy={shiftId}
-          value={form.shift}
-          onChange={(shift) => setForm({ ...form, shift })}
-          options={STAFF_SHIFTS.map((shift) => ({ value: shift, label: shift }))}
-        />
       </div>
       <div className={FOOTER}>
         <DialogClose variant="outline" size="desktop">

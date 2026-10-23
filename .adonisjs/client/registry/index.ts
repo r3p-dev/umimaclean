@@ -294,12 +294,6 @@ const routes = {
     tokens: [{"old":"/staf/:kind/:code/tiba","type":0,"val":"staf","end":""},{"old":"/staf/:kind/:code/tiba","type":1,"val":"kind","end":""},{"old":"/staf/:kind/:code/tiba","type":1,"val":"code","end":""},{"old":"/staf/:kind/:code/tiba","type":0,"val":"tiba","end":""}],
     types: placeholder as Registry['staff.task.arrive']['types'],
   },
-  'staff.task.release': {
-    methods: ["POST"],
-    pattern: '/staf/:kind/:code/lepas',
-    tokens: [{"old":"/staf/:kind/:code/lepas","type":0,"val":"staf","end":""},{"old":"/staf/:kind/:code/lepas","type":1,"val":"kind","end":""},{"old":"/staf/:kind/:code/lepas","type":1,"val":"code","end":""},{"old":"/staf/:kind/:code/lepas","type":0,"val":"lepas","end":""}],
-    types: placeholder as Registry['staff.task.release']['types'],
-  },
   'staff.task.complete': {
     methods: ["POST"],
     pattern: '/staf/:kind/:code/selesai',
