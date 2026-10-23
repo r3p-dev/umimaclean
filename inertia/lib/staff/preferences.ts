@@ -1,7 +1,7 @@
 import type { PickupPoint } from '~/lib/location/point'
 import { createSharedStore } from '~/lib/shared/shared_store'
 
-export type MapApp = 'Google Maps' | 'Waze'
+type MapApp = 'Google Maps' | 'Waze'
 
 export const MAP_APPS: MapApp[] = ['Google Maps', 'Waze']
 

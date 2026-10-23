@@ -2,7 +2,7 @@ import vine from '@vinejs/vine'
 import { DateTime } from 'luxon'
 
 export const SERVICE_ZONE = 'Asia/Jakarta'
-export const PICKUP_DAYS_AHEAD = 7
+const PICKUP_DAYS_AHEAD = 7
 
 export const pickupDateRule = vine.createRule((value, _options, field) => {
   if (typeof value !== 'string') {

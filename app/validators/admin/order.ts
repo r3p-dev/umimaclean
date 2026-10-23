@@ -1,5 +1,4 @@
 import vine from '@vinejs/vine'
-import type { Infer } from '@vinejs/vine/types'
 
 const STAGES = ['jemput', 'periksa', 'bayar', 'cuci', 'antar', 'selesai', 'batal'] as const
 
@@ -18,5 +17,3 @@ export const correctPaymentValidator = vine.create({
   amount: vine.number().withoutDecimals().min(1).max(100_000_000),
   correctionReason: reason(),
 })
-
-export type CorrectPaymentPayload = Infer<typeof correctPaymentValidator>

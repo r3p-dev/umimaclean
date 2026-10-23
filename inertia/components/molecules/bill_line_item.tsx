@@ -1,4 +1,4 @@
-export type BillRow = {
+type BillRow = {
   name: string
   meta: string
   services: { name: string; price: string }[]

@@ -1,4 +1,4 @@
-export const LIMITS = {
+const LIMITS = {
   name: { min: 2, max: 80 },
   phone: { min: 9, max: 13 },
   address: { min: 10, max: 300 },
@@ -30,7 +30,7 @@ function compactPhone(value: string) {
     .replace(/^\+/, '')
 }
 
-export function nationalPhone(value: string) {
+function nationalPhone(value: string) {
   return compactPhone(value).replace(/^(62|0)/, '')
 }
 

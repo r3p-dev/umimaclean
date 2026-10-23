@@ -55,7 +55,6 @@ export default function TaskQueue({
             <span>
               <strong className="font-semibold">Urutan disarankan sistem</strong> ·{' '}
               {kind === 'jemput' ? 'jadwal jemput paling awal dulu' : 'yang paling lama menunggu'}.
-              Tugas yang Anda mulai ditahan untuk Anda selama 3 jam.
             </span>
           </div>
           {tasks.length > 0 && (

@@ -3,7 +3,7 @@ import type { Infer } from '@vinejs/vine/types'
 import { itemsRule, pickupDateRule } from '#validators/shared/rules/pickup'
 
 export const MAX_ITEMS_PER_KIND = 20
-export const PICKUP_SLOT_COUNT = 3
+const PICKUP_SLOT_COUNT = 3
 
 function itemCount() {
   return vine.number().withoutDecimals().range([0, MAX_ITEMS_PER_KIND])

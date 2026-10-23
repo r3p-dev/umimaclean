@@ -35,7 +35,7 @@ export type DayRow = [
 
 export type ReportData = { start: string; end: string; days: DayRow[] }
 
-export function reportDays(data: ReportData): Day[] {
+function reportDays(data: ReportData): Day[] {
   return data.days.map(([date, revenue, transactions, items, online, storeQris, cash, edc]) => ({
     date: fromIso(date),
     revenue,
@@ -61,7 +61,7 @@ export function dataRange(data: ReportData) {
   }
 }
 
-export type Totals = Omit<Day, 'date'> & { average: number }
+type Totals = Omit<Day, 'date'> & { average: number }
 
 function totals(days: Day[]): Totals {
   const sum = (key: keyof Omit<Day, 'date'>) => days.reduce((total, day) => total + day[key], 0)
@@ -136,8 +136,6 @@ export function reportPeriod(
     toIso: toIso(to),
   }
 }
-
-export type ReportPeriod = ReturnType<typeof reportPeriod>
 
 export type Delta = { trend: 'up' | 'down' | 'none'; text: string; sub: string }
 

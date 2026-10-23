@@ -2,9 +2,9 @@ import { useState } from 'react'
 
 export type SortDirection = 'asc' | 'desc'
 
-export type SortState = { key: string; direction: SortDirection }
+type SortState = { key: string; direction: SortDirection }
 
-export type TableColumn<T> = {
+type TableColumn<T> = {
   key: string
   value: (row: T) => string | number
   direction?: SortDirection

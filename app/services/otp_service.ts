@@ -18,14 +18,14 @@ import { fieldError } from '#validators/shared/field_error'
 
 export const OTP_LENGTH = 6
 export const OTP_TTL_MINUTES = 5
-export const OTP_RESEND_SECONDS = 60
-export const OTP_PHONE_HOURLY_LIMIT = 5
-export const OTP_IP_HOURLY_LIMIT = 20
+const OTP_RESEND_SECONDS = 60
+const OTP_PHONE_HOURLY_LIMIT = 5
+const OTP_IP_HOURLY_LIMIT = 20
 
-export type OtpIssueResult =
+type OtpIssueResult =
   { status: 'sent' } | { status: 'failed' } | { status: 'cooldown' | 'limited'; retryIn: number }
 
-export type OtpCheckResult = 'valid' | 'invalid' | 'locked'
+type OtpCheckResult = 'valid' | 'invalid' | 'locked'
 
 export const OTP_LOCKED_MESSAGE = 'Kode salah 5 kali. Minta kode baru.'
 export const OTP_INVALID_MESSAGE = 'Kode salah atau sudah kedaluwarsa.'
@@ -35,7 +35,7 @@ const FLOW_KEY = 'otp_flow'
 const PASSWORD_RESET_KEY = 'password_reset'
 const PASSWORD_RESET_MINUTES = 10
 
-export type PasswordResetGrant = { userId: number; phone: string; expiresAt: string }
+type PasswordResetGrant = { userId: number; phone: string; expiresAt: string }
 
 export type OtpFlow = {
   purpose: OtpPurpose

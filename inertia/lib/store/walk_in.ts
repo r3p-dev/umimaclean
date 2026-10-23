@@ -48,7 +48,7 @@ export function sanitizePhone(value: string) {
   return value.replace(/[^\d+ ]/g, '').slice(0, 16)
 }
 
-export function phoneKey(value: string) {
+function phoneKey(value: string) {
   const digits = value.replace(/\D/g, '').replace(/^(62|0)/, '')
   return digits.length >= 9 ? `62${digits}` : null
 }
@@ -63,7 +63,7 @@ export function lookupCustomer(value: string, lookup: CustomerLookup) {
   }
 }
 
-export type WalkInDraft = {
+type WalkInDraft = {
   phone: string
   name: string
   customer: KnownCustomer | null
@@ -117,7 +117,7 @@ export function walkInPayload(draft: WalkInDraft) {
   }
 }
 
-export type WalkInForm = {
+type WalkInForm = {
   phone: string
   name: string
   isPicked: boolean

@@ -9,7 +9,7 @@ export type ExportSpec = {
   sheets: Sheet[]
 }
 
-export type ExportResult =
+type ExportResult =
   | { status: 'saved'; message: string }
   | { status: 'empty'; message: string }
   | { status: 'failed'; message: string }

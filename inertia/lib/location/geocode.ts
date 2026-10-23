@@ -3,7 +3,7 @@ import type { PickupPoint } from '~/lib/location/point'
 const NOMINATIM = 'https://nominatim.openstreetmap.org'
 const BANDUNG_RAYA_VIEWBOX = '107.35,-6.70,107.95,-7.20'
 
-export type GeocodedAddress = {
+type GeocodedAddress = {
   road?: string
   house_number?: string
   neighbourhood?: string
@@ -18,7 +18,7 @@ export type GeocodedAddress = {
   postcode?: string
 }
 
-export async function searchAddress(query: string, signal?: AbortSignal) {
+async function searchAddress(query: string, signal?: AbortSignal) {
   const params = new URLSearchParams({
     'q': query,
     'format': 'jsonv2',

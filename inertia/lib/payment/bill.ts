@@ -9,7 +9,7 @@ export function billTotal(bill: Bill) {
   return bill.total
 }
 
-export function lineTotal(line: BillLine) {
+function lineTotal(line: BillLine) {
   return line.services.reduce((sum, service) => sum + service.price, 0)
 }
 

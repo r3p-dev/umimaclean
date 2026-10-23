@@ -1,5 +1,4 @@
 import vine from '@vinejs/vine'
-import type { Infer } from '@vinejs/vine/types'
 import { SLOT_CAPACITY } from '#models/setting'
 import { phoneField } from '#validators/shared/rules/phone'
 
@@ -20,8 +19,6 @@ export const saveStoreSettingsValidator = vine.create({
   payments: vine.object({ qris: vine.boolean(), cash: vine.boolean(), edc: vine.boolean() }),
   inactiveDays: vine.number().withoutDecimals().range([7, 365]),
 })
-
-export type StoreSettingsPayload = Infer<typeof saveStoreSettingsValidator>
 
 export const searchAreasValidator = vine.create({
   q: vine.string().trim().maxLength(60).optional(),

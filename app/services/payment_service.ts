@@ -23,9 +23,9 @@ import MidtransGateway, { type ProviderStatus } from '#services/midtrans_gateway
 import OrderService from '#services/order_service'
 import { fieldError } from '#validators/shared/field_error'
 
-export const QR_LIFETIME_MINUTES = 15
+const QR_LIFETIME_MINUTES = 15
 
-export const PAYMENT_UNAVAILABLE_MESSAGE =
+const PAYMENT_UNAVAILABLE_MESSAGE =
   'Pembayaran QRIS belum tersedia. Bayar di toko atau hubungi kami via WhatsApp.'
 
 const PROVIDER_STATUS: Record<string, PaymentStatus> = {
@@ -38,14 +38,14 @@ const PROVIDER_STATUS: Record<string, PaymentStatus> = {
   failure: PaymentStatus.FAILED,
 }
 
-export type PaymentCorrection = {
+type PaymentCorrection = {
   method: PaymentMethod
   channel: PaymentChannel
   amount: number
   reason: string
 }
 
-export type CounterPayment = {
+type CounterPayment = {
   method: PaymentMethod
   cashReceived?: number | null
   reference?: string | null

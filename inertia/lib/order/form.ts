@@ -2,7 +2,7 @@ import { EMPTY_ITEMS, type ItemCounts } from '~/lib/order/items'
 import { firstOpenSlot, type PickupDay } from '~/lib/order/schedule'
 import type { SavedAddress } from '~/lib/order/addresses'
 
-export type OrderDraft = {
+type OrderDraft = {
   key: string
   items: ItemCounts
   note: string

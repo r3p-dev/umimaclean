@@ -3,7 +3,7 @@ import CustomerAddress from '#models/customer_address'
 import User from '#models/user'
 import { DEMO_PHONE } from '#database/seeders/user_seeder'
 
-export const ADDRESSES = [
+const ADDRESSES = [
   {
     label: 'Rumah',
     addressText: 'Jl. Cisitu Indah III No. 12, RT 03/RW 05, Dago, Coblong, Kota Bandung',

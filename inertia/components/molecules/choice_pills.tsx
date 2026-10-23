@@ -1,9 +1,9 @@
 import { cn } from '~/lib/shared/utils'
 
-export const PILL =
+const PILL =
   'inline-flex h-btn-compact shrink-0 items-center gap-1.5 rounded-pill border px-3.25 text-[13.5px] leading-none whitespace-nowrap'
 
-export function pillState(isSelected: boolean) {
+function pillState(isSelected: boolean) {
   return isSelected
     ? 'border-foreground bg-surface-inverse font-semibold text-surface-inverse-foreground'
     : 'border-input bg-card font-medium text-foreground hover:bg-accent'

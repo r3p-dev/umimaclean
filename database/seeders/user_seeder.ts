@@ -7,7 +7,7 @@ import User from '#models/user'
 
 export const DEMO_PHONE = '6281223456789'
 
-export const ACCOUNTS = [
+const ACCOUNTS = [
   { role: Role.CUSTOMER, name: 'Rina Kartika', phone: DEMO_PHONE },
   { role: Role.CUSTOMER, name: 'Budi Santoso', phone: '6281234500000' },
   { role: Role.ADMIN, name: 'Umi Maryam', phone: '6281122001100' },

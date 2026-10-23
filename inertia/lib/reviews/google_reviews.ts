@@ -1,4 +1,4 @@
-export type GoogleReview = {
+type GoogleReview = {
   name: string
   rating: number
   text: string

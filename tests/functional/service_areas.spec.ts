@@ -240,4 +240,14 @@ test.group('Service areas', (group) => {
     const cileunyi = await ServiceArea.contains({ lat: -6.9387, lng: 107.7495 })
     assert.isNull(cileunyi)
   })
+
+  test('resetting the database between tests keeps PostGIS spatial_ref_sys', async ({ assert }) => {
+    const [row] = await db.from('spatial_ref_sys').count('* as total')
+    assert.isAbove(Number(row.total), 0)
+
+    const result = await db.rawQuery(
+      'select round(ST_X(ST_Transform(ST_SetSRID(ST_MakePoint(107.61, -6.89), 4326), 32748))) as x'
+    )
+    assert.equal(Number(result.rows[0].x), 788442)
+  })
 })

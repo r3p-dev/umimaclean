@@ -1,8 +1,8 @@
-export type CellType = 'text' | 'int' | 'rp' | 'date' | 'pct'
+type CellType = 'text' | 'int' | 'rp' | 'date' | 'pct'
 
-export type SheetColumn = { label: string; width?: number; type?: CellType }
+type SheetColumn = { label: string; width?: number; type?: CellType }
 
-export type SheetValue = string | number | Date | null | undefined
+type SheetValue = string | number | Date | null | undefined
 
 export type Sheet = { name: string; columns: SheetColumn[]; rows: SheetValue[][] }
 

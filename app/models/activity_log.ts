@@ -6,7 +6,7 @@ import type { ActivityAction } from '#enums/activity_enum'
 import Order from '#models/order'
 import User from '#models/user'
 
-export type ActivityEntry = {
+type ActivityEntry = {
   actor: User | null
   action: ActivityAction
   order?: Order | null

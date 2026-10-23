@@ -8,7 +8,7 @@ import { Checkbox } from '~/components/ui/checkbox'
 import { Dialog, DialogTitle } from '~/components/ui/dialog'
 import type { SavedAddress } from '~/lib/order/addresses'
 
-export type AddressSelection = { pickupId: number; deliveryId: number | null }
+type AddressSelection = { pickupId: number; deliveryId: number | null }
 
 const ADD_LINK =
   'flex h-13 items-center gap-2.5 rounded-md border border-dashed border-border-strong px-3.5 text-[15px] leading-none font-semibold text-primary hover:bg-accent'

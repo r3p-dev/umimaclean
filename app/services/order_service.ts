@@ -59,12 +59,12 @@ const OUTSIDE_MESSAGES = {
 export const STAFF_QUEUES_CHANNEL = 'staff/queues'
 export const ADMIN_ORDERS_CHANNEL = 'admin/orders'
 
-export function orderChannel(id: number) {
+function orderChannel(id: number) {
   return `orders/${id}`
 }
 
 export const ORDER_FILTERS = ['semua', 'berjalan', 'selesai', 'dibatalkan'] as const
-export const ORDERS_PER_PAGE = 10
+const ORDERS_PER_PAGE = 10
 
 export type OrderFilter = (typeof ORDER_FILTERS)[number]
 
@@ -91,7 +91,7 @@ export function snapshotOf(user: User, address: CustomerAddress) {
   }
 }
 
-export const SLOT_FULL_MESSAGE = 'Jam penjemputan ini sudah penuh. Pilih jam atau tanggal lain.'
+const SLOT_FULL_MESSAGE = 'Jam penjemputan ini sudah penuh. Pilih jam atau tanggal lain.'
 
 export type SlotAvailability = {
   slot: number
@@ -104,7 +104,7 @@ export type SlotAvailability = {
 
 type CustomerMessage = 'created' | 'courierOnTheWay' | 'bill' | 'cancelled'
 
-export type TransitionOptions = {
+type TransitionOptions = {
   actor: User | null
   note?: string | null
   action?: ActivityAction

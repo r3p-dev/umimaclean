@@ -2,14 +2,39 @@
 
 Shoe, bag and helmet cleaning service with pickup and delivery in Bandung Raya, built with AdonisJS, Inertia and React.
 
+## Setup
+
+Needs Node.js 24 and PostgreSQL 17 with PostGIS 3 (for example the `docker.io/postgis/postgis:17-3.5` image). The database user must be allowed to run `CREATE EXTENSION postgis`; the `service_areas` migration does it.
+
+```
+npm install
+cp .env.example .env
+node ace generate:key
+```
+
+Fill in `DB_USER`, `DB_PASSWORD` and `DB_DATABASE` in `.env`, and create that database plus `umimaclean_test` (used by `npm test`, see `.env.test`). Then:
+
+```
+node ace migration:fresh --seed
+npm run dev
+```
+
+The seeder logs the demo accounts and their one shared random password. Without `FONNTE_TOKEN` WhatsApp messages are written to the log instead of sent; without `MIDTRANS_SERVER_KEY` QRIS is shown as unavailable. The Turnstile keys in `.env.example` are Cloudflare's test keys.
+
+```
+npm test
+npm run typecheck
+npm run lint
+```
+
 ## Scheduled jobs
 
 Two ace commands run outside the web server, started by systemd user timers that run them inside the app container (`umimaclean-web`) with `podman exec`.
 
-| Timer | When | What it does |
-| --- | --- | --- |
+| Timer                             | When             | What it does                                                                                                                                                                                                                                                                     |
+| --------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `umimaclean-remind-payment.timer` | every 15 minutes | `node ace orders:remind-payment`: sends due WhatsApp payment reminders for unpaid online orders (24 hours after the bill, then every 2 days, only between 10:00 and 15:00 Asia/Jakarta). Safe to run repeatedly; a failed send is retried on the next run. Never calls Midtrans. |
-| `umimaclean-prune-proofs.timer` | daily | `node ace proofs:prune`: deletes proof photos older than 90 days. |
+| `umimaclean-prune-proofs.timer`   | daily            | `node ace proofs:prune`: deletes proof photos older than 90 days.                                                                                                                                                                                                                |
 
 The unit files are in [`deploy/systemd/`](deploy/systemd/). Install them on the server as user units:
 

@@ -1,55 +1,83 @@
 # Umima Clean (skripsi)
 
-Shoe, bag and helmet cleaning service with pickup and delivery in Bandung Raya. Three roles (`Role` enum): Pelanggan (`customer`, own account), Staf (`staff`), Owner (`admin`). Everyone signs in with WhatsApp number + password. UI language is Indonesian.
+Shoe, bag and helmet cleaning with pickup and delivery in Bandung Raya. UI language is Indonesian.
 
-Stack: AdonisJS 7 + Inertia + React 19, Tailwind CSS v4, shadcn/ui (React Aria base, `aria-vega` style, `react-aria-components`), Tabler icons (`@tabler/icons-react`).
+Stack: AdonisJS 7 + Inertia + React 19, PostgreSQL + PostGIS, Lucid, VineJS, Bouncer, Transmit, Fonnte (WhatsApp), Midtrans Core API (QRIS), Cloudflare Turnstile, npm. Frontend: Tailwind CSS v4, shadcn/ui on React Aria (`aria-vega`), Tabler icons.
 
-## Building a page
+## Agent rules
 
-Read `docs/design-system.md` before writing any UI. It holds the tokens, components, patterns and the recipe for porting a `.dc.html` artboard (box-model fixes, `data-r` → Tailwind table, verification).
+- Git: only read-only commands (`status`, `diff`, `log`, `show`). Never `add`, `rm`, `reset`, `restore`, `checkout`, `stash`, `commit`, `push`; ask the user to do it.
+- Never send personal or identifying data (email, name, phone, tokens) to an outside service without asking first. Use a neutral User-Agent (`UmimaClean-skripsi/1.0`) and say which service and what is sent before any new kind of outside request.
+- Stop and ask when something turns out different from the agreed plan.
+- `database/schema.ts` is generated: rebuild it with `NODE_ENV=test node ace migration:fresh` and format it with Prettier; never edit or restore it by hand.
 
-Artboard exports live in `docs/design/` (one folder per page and width, with the canvas runtime). Serve that folder with `python3 -m http.server` to view the original and compare it with the page.
+## Business rules
 
-- Tokens live only in `inertia/css/app.css`. Use token utilities (`bg-primary`, `text-muted-foreground`, `h-cta`, `rounded-md`, `text-title`); the default Tailwind palette is removed, so no raw colors.
-- shadcn primitives live in `inertia/components/ui/` (the CLI writes there through `components.json`; answer **No** when it offers to overwrite existing files) and are restyled per section 4 of the design doc. Everything else follows atomic design: `inertia/components/{atoms,molecules,organisms,templates}`; layouts are templates. Pages own state and navigation and compose organisms.
-- Logic lives in `inertia/lib/<feature>/` (customer: shared, order, location, navigation, verification, tracking, payment, reviews; staff: staff, tasks, processing, store, proof, history; owner: orders, customers, activity, reports, catalog, settings, export), never in components.
-- Pages from `docs/design/` live by role: auth pages (P-01, P-02, OTP, forgot, P-04b, staff login) in `inertia/pages/auth/`, customer pages (P-05 to P-13) in `inertia/pages/customer/<feature>/` (only the landing `pages/home.tsx` stays at the root), staff pages (S-xx) in `inertia/pages/staff/`, owner pages (A-xx) in `inertia/pages/admin/`. Routes are split per role in `start/routes/{auth,customer,staff,admin}.ts`: auth pages are named `auth.*`, customer pages `customer.*` (behind `auth` + `area('customer')`), `/staf/*` `staff.*` (`area('staff')`: staff and owner), `/admin/*` `admin.*` (`area('admin')`).
-- Controllers and validators are grouped by role: `app/{controllers,validators}/{auth,customer,staff,admin,shared}/`. Services are grouped by business domain, never by role: a folder when a domain has sub-context services (`services/account/{account,account_session,staff_account}_service.ts`, `services/order/{order,order_history,order_status,order_task,field_task,workshop,walk_in,order_monitor,order_correction,staff_summary,staff_history,public_code}_service.ts`, `services/payment/{payment_gateway,payment}_service.ts`, `services/otp/{otp,otp_flow}_service.ts`), a flat file otherwise (`address_book`, `phone`, `fonnte`, `notification`, `turnstile`, `geocoder`, `service_area`, `settings`, `catalog`, `billing`, `activity`, `live_update`, `proof_photo`, `report`, `customer_insight`, `database`). Split a growing service into sub-context services named by what they do (`OrderHistoryService`), never `AdminOrderService` or one class per action.
-- Role and ownership rules live only in Bouncer: area abilities in `app/abilities/main.ts` (`enterCustomerArea`, `enterStaffArea`, `enterAdminArea`, used by the `area` middleware, both login pages and logout) and policies in `app/policies/` (`OrderPolicy`, `CustomerAddressPolicy`, `OtpFlowPolicy`). Services never check roles: when a service needs an access decision mid-operation, the controller passes it in (`AccountSessionService.authenticate(..., canSignIn)`).
-- Controllers stay thin (validate, authorize with Bouncer, call a service, render or redirect); queries, transactions and rate limits live in services. Resource controllers are plural (`AddressesController`, `OrdersController`). Routes reference controllers through `controllers` from `#generated/controllers`. Validators are named `<action><Resource>Validator` (`createOrderValidator`, `saveAddressValidator`). Not-found errors are exception classes in `app/exceptions/`.
-- Enums follow the `route` project: `app/enums/<name>_enum.ts` exports an `as const` object, a type with the same name and a `<Name>Label` map. DB columns are plain strings (no Postgres enum, no check constraint), typed through `database/schema_rules.ts`; validators use `vine.enum(Object.values(X))`; the frontend imports them as `@enums/<name>_enum`. Order status is stored as the enum string; the transformer sends its index in `ORDER_STATUS_SEQUENCE` because the frontend status logic is positional.
-- Icons: `import { IconSearch } from '@tabler/icons-react'` (`IconXxxFilled` for filled; `components.json` has `iconLibrary: "tabler"`). Artboards name Material Symbols: map them with the table in section 7 of the design doc. Never lucide or Material.
-- Breakpoints: base = Ponsel, `sm:` = Tablet (600px), `lg:` = Desktop (1024px). Do not use `md:` for layout.
-- Every customer page uses the landing's container, `mx-auto box-content max-w-page px-5`, for its header, content and footer. The landing and error pages use `CustomerLayout` (`components/templates/customer_layout.tsx`). Signed-in customer pages use `AccountLayout` (desktop header nav + account menu, phone bottom tab bar Beranda · Pesan · Riwayat · Profil); profile pages wrap their content in `ProfileShell` (desktop "Akun Saya" side menu). Auth pages use `AuthLayout` (dark brand panel from `lg:`). Payment, staff task and camera screens use `FlowLayout` with `FlowHeader`. The back control never sits in the header before the logo: use `BackLink` above the title or next to the page's main action. Staff pages use `StaffLayout` + `StaffTopBar`; owner pages use `AdminLayout` + `AdminPageHeader`; owner tables use `useDataTable` with the parts in `organisms/data_table/`.
-- Database: PostgreSQL (`pg`) in every environment, tests use `DB_DATABASE` from `.env.test`. Sessions use the database store (`SESSION_DRIVER=database`), so the pending sign-up (name, phone, password hash) never sits in a cookie; sessions are tagged with the user id so "log out other devices" can destroy them.
-- Auth: one `web` session guard over `User` (`withAuthFinder`, uid `phone` normalized to `628…`), remember-me tokens for 180 days ("Ingat saya" checked by default). Login is rate limited per phone and per IP (`limiter.multi(...).penalize`) and answers "Nomor atau kata sandi salah." for every failure; the customer page only accepts customers, `/staf/masuk` only staff/admin. After login: `toIntendedRoute(LoginRedirect[role])`. Password reset/change deletes the user's remember-me tokens and other tagged sessions, then signs in again (rotation).
-- WhatsApp OTP (`OtpService`, purposes `register`, `reset_password`, `change_phone`): 6 digits, HMAC hash only, 5-minute expiry, 5 wrong attempts kill the code, resend after 60 s replaces the old code, 5 codes per number per hour plus a per-IP limit. Limits are keyed on the number before the account lookup, so forgot password behaves the same for unknown numbers. `FonnteService.send` is the only HTTP call to Fonnte (checks the JSON `status`); without `FONNTE_TOKEN` outside production it writes the message to the log and returns `logged` (production returns `failed`). The user is created only after the code is verified (`User.createQuietly` with the stored hash). The flow state lives in the session (`OtpFlowService`); the shared screen is `/verifikasi`.
-- Cloudflare Turnstile is on by default (`TURNSTILE_ENABLED`, test keys in `.env.example`) for login, sign up, forgot password, change phone and every send/resend; it is checked before anything else. Swap `TurnstileService` in tests.
-- Orders: P-06 posts the draft to `/pesan/tinjau` (validated, stored in the session), P-07 `/pesan/konfirmasi` shows it, `POST /pesan` re-validates and creates it in one transaction (idempotent `request_key`). Addresses live in `customer_addresses` (max 5, one primary enforced by a partial unique index, soft delete, the first is primary, deleting the primary promotes the most recently used); orders copy them into `order_addresses` (pickup + delivery) and every reader uses the snapshot. `orders.public_code` (`UMC-` + 6 Crockford Base32) is the only public order id; other customers' orders and addresses answer 404 (Bouncer policies in `app/policies/`). The free-pickup area is the `service_districts` table (`district = null` means the whole city), edited in A-09 and read through `ServiceAreaService.coverage()` (falls back to `DEFAULT_COVERAGE`); pages that check pins get it as a `coverage` prop and `lib/location/service_area.ts` repeats the same `pointArea` logic (a unit test keeps them equal); the server re-checks every pin through `Geocoder` (Nominatim zoom 12, swapped in tests). Each slot has an owner-set capacity (`settings.pickup_slots`); `OrderService` re-checks it under a Postgres advisory lock. Client validation in `lib/shared/validation.ts` mirrors the server rules.
-- Order workflow: `OrderStatusService.transition` is the only way to change `orders.status`. It checks `ORDER_TRANSITIONS`, appends an `order_events` row (append-only timeline, never updated), writes `activity_logs` for staff/owner actors and broadcasts on Transmit after commit. Field tasks (`FieldTaskService`) and inspection claim the order for 3 hours (`OrderTaskService`, `claimed_by/claimed_at`). Inspection prices items from the live `services` table into `bills`/`bill_lines` (name and price are snapshots). Payments live in `payments`: QRIS through `PaymentGateway` (`MidtransGateway`, Core API over `fetch`, swapped in tests by `FakePaymentGateway`), the signed webhook `POST /webhooks/midtrans` (CSRF-exempt), counter cash/EDC through `PaymentService.recordCounter`. Every WhatsApp goes through `NotificationService` and is recorded in `whatsapp_messages`; UI copy only claims a message was sent when the result is `sent`. Proof photos are files under `PROOF_STORAGE_PATH`, served by `/foto-bukti/:id` (policy-checked) and deleted after 90 days by `node ace proofs:prune`. Live updates: Transmit channels `orders/:code`, `staff/queues`, `admin/orders` (`start/transmit.ts`); pages call `useLiveReload` (`lib/shared/live.ts`), which reloads as an async visit.
-- Sample data: `node ace db:seed` runs only `database/seeders/main/index_seeder.ts`, which calls one seeder per domain in a fixed order: `user` (accounts with one printed random password), `address`, `service` (price list), `setting`, `service_area`, `order` (≈100 orders in every status plus four months of history, bills, payments, photos and activity) and `operating_cost`. The only browser stores left are per-viewer conveniences: the staff map-app preference and the unsent walk-in form draft.
-- After `node ace migration:run`, format the regenerated `database/schema.ts` with Prettier.
-- Adding a scale token (`--text-*`, `--radius-*`, `--shadow-*`, `--spacing-*`): also add its name to `inertia/lib/shared/utils.ts`.
+- Roles (`Role` enum): `customer` (Pelanggan), `staff` (Staf, one courier who also works the store) and `admin` (Owner). Everyone signs in with WhatsApp number + password; `/masuk` accepts only customers, `/staf/masuk` staff and owner.
+- WhatsApp to customers: exactly five messages, all built in `app/helpers/whatsapp_text.ts` and sent by `OrderService`/`ReminderService` through `FonnteService`: order received, courier on the way, bill (walk-ins: "Rincian: …", online: "Rincian dan pembayaran: …"), payment reminder, cancelled by the store. Staff and owner get none. OTP codes are separate (`OtpService`). A failed or crashing send is logged and never fails the action.
+- Payment reminders (`node ace orders:remind-payment`, every 15 minutes): online orders awaiting payment with no paid payment, first 24 hours after the bill, then every 2 days, only 10:00–15:00 Asia/Jakarta, until paid. Only a sent message is counted. Never calls Midtrans.
+- Walk-ins (`source = store`) pay at the counter (cash, EDC or counter QRIS); they get no reminders.
+- Midtrans is charged only when the customer presses pay (`PaymentService.startQris`); a QR lives 15 minutes.
+- Addresses: at most 3 per customer, one primary (partial unique index). Orders copy pickup and delivery into `order_addresses`.
+- Order URL `/pesanan/:id`, shown as `UMC-00042` (`Order.numberOf`). The signed-in customer sees it directly; anyone else types the last 4 digits of the order's phone (5 tries per 15 minutes per IP and per order), which unlocks it for that session only.
+- Service areas: the 80 BPS kecamatan of Kota Bandung, Kota Cimahi, Kabupaten Bandung and Kabupaten Bandung Barat in `service_areas` (seeded from `database/data/service_areas.geojson`). The owner switches them on/off in Pengaturan → Area layanan. Every pin is checked with `ServiceArea.contains` (PostGIS `ST_Contains` on active areas): address create/update, online order review and placement (saved addresses are re-checked), walk-in delivery. Orders already placed are not re-checked. The map pin asks `GET /area?lat&lng` for instant feedback; Nominatim/Photon run only in the browser for address search and the street label.
+- Order status changes only through `OrderService.transition` (checks `ORDER_TRANSITIONS`, appends `order_events`, logs staff/owner actions in `activity_logs`, broadcasts on Transmit after commit). Pickup slots have an owner-set capacity, re-checked under a Postgres advisory lock.
+
+## Layers
+
+- **Controller**: HTTP only. Validate, authorize with Bouncer, call one service or a model's static query, render or redirect. No business logic, no transactions.
+- **Service**: a business process across models, transactions and outside APIs. One per domain, flat in `app/services/`.
+- **Model**: entity rules (`order.canTransitionTo`) and simple static queries or scopes (`ServiceArea.contains`, `Order.findForOwner`).
+- Chain rule: a service calls at most one other domain service (`TaskService`, `BillingService`, `PaymentService` → `OrderService`; `StaffService` → `AccountService`). The outside-API clients `FonnteService`, `MidtransGateway` and `TurnstileService` call nothing else.
+- No abstract base classes, no repositories, no interfaces with one implementation.
+- Role and ownership rules live in Bouncer: abilities in `app/abilities/main.ts`, policies `OrderPolicy`, `CustomerAddressPolicy`, `OtpFlowPolicy`.
+
+## Services
+
+- `AccountService`: sign in/out (login limit), password change and reset, ending other sessions and remember-me tokens.
+- `AddressService`: the address book (max 3, primary, area check).
+- `AreaService`: `check` for `GET /area`, owner `search` and `setActive` (logged).
+- `BillingService`: price list (owner CRUD, soft delete) and the bill from an inspection.
+- `FonnteService`: the only HTTP call to Fonnte; without `FONNTE_TOKEN` it logs the message (outside production).
+- `MidtransGateway`: Midtrans Core API over `fetch` (charge, status, webhook signature).
+- `OrderService`: order lifecycle (place, walk-in, cancel, owner bulk move/cancel), transitions, slots, guest tracking unlock, customer WhatsApp messages.
+- `OtpService`: WhatsApp OTP codes, their limits and the OTP flow state in the session.
+- `PaymentService`: QRIS start/refresh/webhook, counter payments, owner corrections.
+- `ReminderService`: `sendDue(now)` for the payment reminders.
+- `ReportService`: owner reports, costs, activity log, customer list.
+- `StaffService`: owner-managed staff accounts.
+- `TaskService`: courier trips (pickup and delivery), inspection start, washing, collection, staff counts and history.
+- `TurnstileService`: Cloudflare Turnstile check.
 
 ## Conventions
 
-- No comments in any file (code, CSS, config, JSON, dotfiles).
-- AdonisJS / TypeScript style (Harminder Virk): full words, no abbreviations (`ctx`, `lat`, `lng`, `db`, `props`, `ref` are fine); booleans read `isX`, `hasX`, `canX`, `shouldX`, `wasX`, `showX`; braces on every `if`; `for...of`, never `forEach`; methods, never `get`/`set` accessors; native `#private` members (`protected` only for injected dependencies); `override` on every override (`noImplicitOverride`). ESLint enforces most of it.
-- Stored and wire names keep their spelling even when they break that style: DB columns, the `orders.progress` JSON, HTTP field names (`remember`, `terms`, `logoutOthers`, `q`) and the `localStorage` shapes (`Service.active`, `StaffAccount.active`, `PickupSlotSetting.on`, `AuditEntry.sensitive`). Renaming them loses saved data or breaks the server contract.
-- File names snake_case; shadcn files in `inertia/components/ui/` stay kebab-case.
-- When copying artboard sizes, check the tag: `<button>` is border-box, `<a>`/`<span>` add their border (see section 7 of the design doc).
-- Prettier (AdonisJS config: single quotes, no semicolons). Format touched files with `npx prettier --write`.
+- No comments in any file, except the header comment of each migration.
+- Validation messages live only in `start/validator.ts`: one generic message per rule plus `fields` labels; add a `field.rule` key only when the generic text would confuse the user. Validators are named `<action><Resource>Validator`.
+- Errors: `throw new Exception('…', { status })` from `@adonisjs/core/exceptions` for HTTP errors (404 etc.); `fieldError(field, message, rule)` from `#validators/shared/field_error` for a business rule shown under a form field. No custom exception classes.
+- Migrations: one `create` per table, never `alter`. Each starts with a header comment explaining the table, non-obvious columns, indexes and constraints.
+- Seeders: one file per domain in `database/seeders/`, run in a fixed order from `database/seeders/main/index_seeder.ts` (user, address, service, setting, service_area, order, operating_cost).
+- Rate limits: HTTP endpoint limits are route middleware in `start/limiter.ts` (`GET /area`, 60 per minute per IP). Business limits stay in their service: login (`AccountService`, per phone and IP), OTP (`OtpService`: 60 s resend, 5 per number and 20 per IP per hour), tracking digits (`OrderService`), QRIS charges (`PaymentService`, 5 per order per 15 minutes).
+- Enums: `app/enums/<name>_enum.ts` exports an `as const` object, a type with the same name and a `<Name>Label` map when the UI shows the value. DB columns are plain strings typed through `database/schema_rules.ts`; validators use `vine.enum(Object.values(X))`; the frontend imports `@enums/<name>_enum`.
+- Style (Harminder Virk): full words (`ctx`, `lat`, `lng`, `db`, `props`, `ref` are fine); booleans `isX`/`hasX`/`canX`/`shouldX`; braces on every `if`; `for...of`; no `get`/`set` accessors; `#private` members (`protected` only for injected dependencies); `override` on every override. Export only what another file uses.
+- Stored and wire names keep their spelling even when they break that style: DB columns, JSON settings (`PickupSlotSetting.on`) and HTTP/props fields (`remember`, `terms`, `logoutOthers`, `q`, `active`).
+- File names snake_case; shadcn files in `inertia/components/ui/` stay kebab-case. Prettier (single quotes, no semicolons) on touched files.
+- Tests: `tests/support/app.ts` swaps `FonnteService`, `TurnstileService` and `MidtransGateway` for fakes, resets the database before each test (keeping `spatial_ref_sys`) and seeds two fixture service areas.
 
-## Dependencies
+## Frontend
 
-- Keep packages at their latest versions (`npm outdated`). TypeScript stays on 6.x: `@adonisjs/assembler` and `typescript-eslint` don't accept 7 yet.
-- After adding or renaming routes, run `node ace codegen` so `urlFor` and `<Link route>` stay typed.
+- Read `docs/design-system.md` (git-ignored, local) before writing UI; artboards are in `docs/design/`.
+- Tokens only in `inertia/css/app.css`; use token utilities, no raw colors. New scale tokens (`--text-*`, `--radius-*`, `--shadow-*`, `--spacing-*`) also go in `inertia/lib/shared/utils.ts`.
+- Components: shadcn primitives in `inertia/components/ui/`, the rest in `inertia/components/{atoms,molecules,organisms,templates}`. Pages own state and navigation; logic lives in `inertia/lib/<feature>/`, never in components.
+- Pages by role: `inertia/pages/{auth,customer,staff,admin}/` (landing `pages/home.tsx`). Routes per role in `start/routes/{auth,customer,staff,admin}.ts`; shared ones in `start/routes.ts`. Run `node ace codegen` after changing routes.
+- Layouts: `CustomerLayout`, `AccountLayout` (+ `ProfileShell`), `AuthLayout`, `FlowLayout`, `StaffLayout` + `StaffTopBar`, `AdminLayout` + `AdminPageHeader`; owner tables use `useDataTable`.
+- Breakpoints: base, `sm:` (600px), `lg:` (1024px); no `md:` for layout. Icons from `@tabler/icons-react` only.
+- Live updates: Transmit channels `orders/:id`, `staff/queues`, `admin/orders` (`start/transmit.ts`); pages call `useLiveReload`.
+- Browser storage only for conveniences: the staff map-app preference and the unsent walk-in draft.
 
 ## Commands
 
 - `npm run dev` (http://localhost:3333)
-- `node ace migration:run` (regenerates `database/schema.ts`), `node ace db:seed`
-- `node ace proofs:prune` (daily from cron: deletes proof photos older than 90 days)
-- `npm test` (unit, functional, browser; uses the `DB_DATABASE` and port 3334 from `.env.test`)
-- `npm run typecheck`
-- `npm run lint`
+- `node ace migration:fresh --seed` (dev database), `node ace db:seed`
+- `node ace orders:remind-payment`, `node ace proofs:prune` (systemd timers, see `README.md`)
+- `npm test` (unit, functional, browser; `.env.test`, port 3334), `npm run typecheck`, `npm run lint`
+- TypeScript stays on 6.x (`@adonisjs/assembler` and `typescript-eslint` don't accept 7 yet).

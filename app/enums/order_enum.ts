@@ -36,19 +36,9 @@ export const OrderSource = {
   STORE: 'store',
 } as const
 
-export const OrderSourceLabel = {
-  [OrderSource.ONLINE]: 'Online',
-  [OrderSource.STORE]: 'Offline · Toko',
-} as const
-
 export const ReturnMethod = {
   DELIVERY: 'delivery',
   STORE: 'store',
-} as const
-
-export const ReturnMethodLabel = {
-  [ReturnMethod.DELIVERY]: 'Diantar',
-  [ReturnMethod.STORE]: 'Diambil di toko',
 } as const
 
 export const ItemKind = {
@@ -68,18 +58,6 @@ export const PhotoKind = {
   INTAKE: 'intake',
   WASHING: 'washing',
   DELIVERY: 'delivery',
-} as const
-
-export const PhotoKindLabel = {
-  [PhotoKind.PICKUP]: 'Bukti penjemputan',
-  [PhotoKind.INTAKE]: 'Foto barang diterima',
-  [PhotoKind.WASHING]: 'Bukti selesai dicuci',
-  [PhotoKind.DELIVERY]: 'Bukti pengantaran',
-} as const
-
-export const OrderAddressTypeLabel = {
-  [OrderAddressType.PICKUP]: 'Penjemputan',
-  [OrderAddressType.DELIVERY]: 'Pengantaran',
 } as const
 
 export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]

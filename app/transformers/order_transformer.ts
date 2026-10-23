@@ -28,7 +28,7 @@ export function photoUrl(photo: OrderPhoto) {
   return photo.path ? `/foto-bukti/${photo.id}` : null
 }
 
-export function addressOf(address: OrderAddress) {
+function addressOf(address: OrderAddress) {
   return {
     label: address.label,
     recipientName: address.recipientName,
@@ -39,7 +39,7 @@ export function addressOf(address: OrderAddress) {
   }
 }
 
-export function billOf(order: Order) {
+function billOf(order: Order) {
   const bill = order.bill
   if (!bill) {
     return null

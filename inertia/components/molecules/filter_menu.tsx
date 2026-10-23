@@ -5,7 +5,7 @@ import { CheckboxMark } from '~/components/ui/checkbox'
 import { Popover, PopoverTrigger } from '~/components/ui/popover'
 import { cn } from '~/lib/shared/utils'
 
-export type FilterOption<T extends string | number> = { value: T; label: string; count?: number }
+type FilterOption<T extends string | number> = { value: T; label: string; count?: number }
 
 const TRIGGER =
   'h-btn-desktop gap-1.5 pr-2.5 pl-3 text-[13.5px] font-medium data-[active=true]:border-primary data-[active=true]:bg-accent data-[active=true]:text-accent-foreground'

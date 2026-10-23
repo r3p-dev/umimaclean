@@ -16,7 +16,7 @@ import env from '#start/env'
 
 export const PHOTO_RETENTION_DAYS = 90
 
-export function proofRoot() {
+function proofRoot() {
   const configured = env.get('PROOF_STORAGE_PATH') ?? 'storage/proofs'
   return isAbsolute(configured) ? configured : app.makePath(configured)
 }

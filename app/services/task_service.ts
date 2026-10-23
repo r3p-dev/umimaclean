@@ -29,7 +29,7 @@ export const SKIP_REASONS = [
   'Lainnya',
 ] as const
 
-export const WORKSHOP_STATUSES = [
+const WORKSHOP_STATUSES = [
   OrderStatus.PICKED_UP,
   OrderStatus.IN_INSPECTION,
   OrderStatus.AWAITING_PAYMENT,

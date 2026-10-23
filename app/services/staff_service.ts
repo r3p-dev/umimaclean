@@ -9,7 +9,7 @@ import AccountService from '#services/account_service'
 import type { StaffPayload } from '#validators/admin/staff'
 import { fieldError } from '#validators/shared/field_error'
 
-export function temporaryPassword() {
+function temporaryPassword() {
   return randomBytes(9).toString('base64url')
 }
 

@@ -30,7 +30,7 @@ function stepsOf(order: OrderRecord): Step[] {
   ]
 }
 
-export type TimelineStep = { label: string; state: StepState; time: string }
+type TimelineStep = { label: string; state: StepState; time: string }
 
 export function orderTimeline(order: OrderRecord): TimelineStep[] {
   if (order.status === CANCELLED) {

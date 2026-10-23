@@ -8,7 +8,7 @@ const { MAIN, ADDON } = ServiceType
 
 type ServiceSeed = [string, ServiceType, ItemKind[], number, number, string, boolean?]
 
-export const CATALOGUE: ServiceSeed[] = [
+const CATALOGUE: ServiceSeed[] = [
   [
     'Mild',
     MAIN,

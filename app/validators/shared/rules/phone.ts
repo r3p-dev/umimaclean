@@ -9,7 +9,7 @@ const RULES: Record<PhoneProblem, string> = {
   maxLength: 'phoneTooLong',
 }
 
-export const phoneRule = vine.createRule((value, _options, field) => {
+const phoneRule = vine.createRule((value, _options, field) => {
   if (typeof value !== 'string') {
     return
   }

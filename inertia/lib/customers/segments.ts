@@ -10,9 +10,6 @@ export const SEGMENT_TABS: { key: Segment; label: string }[] = [
 
 export const THRESHOLDS = [30, 60, 90, 180]
 
-export const DEFAULT_REMINDER =
-  'Halo {nama}, sudah lama sepatu, tas, atau helmnya tidak dirawat di Umima. Mau dijemput minggu ini? Balas “JEMPUT” untuk pesan. 🙏'
-
 export type CustomerRow = {
   id: string
   label: string

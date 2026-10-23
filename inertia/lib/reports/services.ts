@@ -11,7 +11,7 @@ export type ServiceDayRow = [
 
 export type ServiceRank = 'items' | 'revenue'
 
-export const TOP_SERVICE_COUNT = 6
+const TOP_SERVICE_COUNT = 6
 
 export function topServices(rows: ServiceDayRow[], from: Date, to: Date, rank: ServiceRank) {
   const start = toIso(from)

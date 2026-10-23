@@ -19,7 +19,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   DB_PASSWORD: Env.schema.secret(),
   DB_DATABASE: Env.schema.string(),
 
-  FONNTE_DEVICE_NUMBER: Env.schema.string(),
   FONNTE_TOKEN: Env.schema.secret.optional(),
 
   MIDTRANS_SERVER_KEY: Env.schema.secret.optional(),
@@ -27,7 +26,6 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   PROOF_STORAGE_PATH: Env.schema.string.optional(),
 
-  TURNSTILE_ENABLED: Env.schema.boolean.optional(),
   TURNSTILE_SITE_KEY: Env.schema.string(),
   TURNSTILE_SECRET_KEY: Env.schema.secret(),
 })

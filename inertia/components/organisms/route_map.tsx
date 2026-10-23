@@ -8,11 +8,11 @@ import { cn } from '~/lib/shared/utils'
 const TILES =
   'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
 
-export type QueuePin = { point: PickupPoint; label: string; state: 'done' | 'current' | 'upcoming' }
+type QueuePin = { point: PickupPoint; label: string; state: 'done' | 'current' | 'upcoming' }
 
 export type RouteMapHandle = { recenter: () => void }
 
-export type MapInset = { top: number; right: number; bottom: number; left: number }
+type MapInset = { top: number; right: number; bottom: number; left: number }
 
 function fitOptions(map: L.Map, inset?: MapInset): L.FitBoundsOptions {
   const size = map.getSize()

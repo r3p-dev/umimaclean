@@ -1,8 +1,8 @@
 import vine from '@vinejs/vine'
 
-export const SERVICE_FORM_TYPES = ['utama', 'tambahan'] as const
+const SERVICE_FORM_TYPES = ['utama', 'tambahan'] as const
 
-export const SERVICE_FORM_CATEGORIES = ['Sepatu', 'Tas', 'Helm'] as const
+const SERVICE_FORM_CATEGORIES = ['Sepatu', 'Tas', 'Helm'] as const
 
 export const saveServiceValidator = vine.create({
   serviceName: vine.string().trim().minLength(2).maxLength(60),

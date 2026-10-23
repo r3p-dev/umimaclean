@@ -1,6 +1,6 @@
-export const PHONE_LIMITS = { min: 9, max: 13 } as const
+const PHONE_LIMITS = { min: 9, max: 13 } as const
 
-export const PHONE_COUNTRY_CODE = '62'
+const PHONE_COUNTRY_CODE = '62'
 
 export type PhoneProblem = 'required' | 'format' | 'prefix' | 'minLength' | 'maxLength'
 

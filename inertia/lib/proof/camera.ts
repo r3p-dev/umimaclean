@@ -4,7 +4,7 @@ import { shortName } from '~/lib/shared/format'
 
 export type CameraStatus = 'starting' | 'live' | 'denied' | 'unavailable'
 
-export type Facing = 'environment' | 'user'
+type Facing = 'environment' | 'user'
 
 const MAX_WIDTH = 1024
 

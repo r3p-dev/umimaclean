@@ -3,7 +3,7 @@ import logger from '@adonisjs/core/services/logger'
 import { MessageStatus } from '#enums/message_enum'
 import env from '#start/env'
 
-export const FONNTE_SEND_URL = 'https://api.fonnte.com/send'
+const FONNTE_SEND_URL = 'https://api.fonnte.com/send'
 
 type FonnteResponse = { status?: boolean; Status?: boolean; reason?: string }
 

@@ -20,18 +20,18 @@ export type StepState = 'done' | 'current' | 'upcoming'
 
 const TONES: StatusTone[] = ['jemput', 'periksa', 'bayar', 'cuci', 'antar', 'selesai', 'batal']
 
-export const PHASES = ['Jemput', 'Periksa', 'Bayar', 'Cuci', 'Antar']
+const PHASES = ['Jemput', 'Periksa', 'Bayar', 'Cuci', 'Antar']
 
 export const CANCELLED = orderStatusIndex(OrderStatusKey.CANCELLED)
 export const COMPLETED = orderStatusIndex(OrderStatusKey.COMPLETED)
 export const AWAITING_PAYMENT = orderStatusIndex(OrderStatusKey.AWAITING_PAYMENT)
 export const IN_CLEANING = orderStatusIndex(OrderStatusKey.IN_CLEANING)
 
-export function statusTone(index: number): StatusTone {
+function statusTone(index: number): StatusTone {
   return OrderStatusStage[ORDER_STATUS_SEQUENCE[index]]
 }
 
-export function phaseOf(index: number) {
+function phaseOf(index: number) {
   return TONES.indexOf(statusTone(index))
 }
 

@@ -9,7 +9,6 @@ import {
   OrderStatus,
   OrderStatusStage,
 } from '#enums/order_enum'
-import { PaymentStatus } from '#enums/payment_enum'
 import Bill from '#models/bill'
 import OrderAddress from '#models/order_address'
 import OrderEvent from '#models/order_event'
@@ -122,10 +121,6 @@ export default class Order extends OrderSchema {
 
   itemCount() {
     return this.itemsSepatu + this.itemsTas + this.itemsHelm
-  }
-
-  paidPayment() {
-    return this.payments?.find((payment) => payment.status === PaymentStatus.PAID) ?? null
   }
 
   canTransitionTo(to: OrderStatus, isOwnerOverride = false) {

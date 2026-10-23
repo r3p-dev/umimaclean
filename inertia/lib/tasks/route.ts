@@ -5,7 +5,7 @@ import { formatKm } from '~/lib/tasks/location'
 
 const OSRM = 'https://router.project-osrm.org/route/v1/driving'
 
-export type DrivingRoute = {
+type DrivingRoute = {
   path: PickupPoint[]
   distanceText: string
   durationText: string
@@ -18,7 +18,7 @@ function routeKey(from: PickupPoint, to: PickupPoint) {
   return [from.lat.toFixed(3), from.lng.toFixed(3), to.lat.toFixed(5), to.lng.toFixed(5)].join(',')
 }
 
-export async function fetchRoute(from: PickupPoint, to: PickupPoint, signal: AbortSignal) {
+async function fetchRoute(from: PickupPoint, to: PickupPoint, signal: AbortSignal) {
   const url = `${OSRM}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson`
   const response = await fetch(url, { signal })
   if (!response.ok) {

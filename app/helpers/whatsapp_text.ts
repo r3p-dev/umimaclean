@@ -1,7 +1,7 @@
 import { formatRupiah } from '#helpers/money'
 import env from '#start/env'
 
-export type BillTextLine = { item: string; services: string[]; total: number }
+type BillTextLine = { item: string; services: string[]; total: number }
 
 function greeting(customerName: string) {
   return `Halo ${customerName.split(' ')[0] || 'Kak'},`

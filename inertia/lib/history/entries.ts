@@ -25,7 +25,7 @@ export const HISTORY_KINDS: { key: HistoryKind; label: string }[] = [
   { key: 'toko', label: 'Toko' },
 ]
 
-export const HISTORY_TILES: { key: HistoryKind; label: string }[] = [
+const HISTORY_TILES: { key: HistoryKind; label: string }[] = [
   { key: 'jemput', label: 'Jemput selesai' },
   { key: 'antar', label: 'Antar selesai' },
   { key: 'proses', label: 'Diperiksa & dicuci' },
@@ -38,7 +38,7 @@ export const HISTORY_PERIODS: { key: HistoryPeriod; label: string }[] = [
   { key: 'week', label: '7 hari' },
 ]
 
-export function kindOf(entry: HistoryEntry): HistoryKind {
+function kindOf(entry: HistoryEntry): HistoryKind {
   return entry.icon === 'skip' ? 'jemput' : entry.icon
 }
 
@@ -47,7 +47,7 @@ function inPeriod(entry: HistoryEntry, period: HistoryPeriod) {
   return period === 'week' ? age <= 6 : age === (period === 'today' ? 0 : 1)
 }
 
-export function dayLabel(iso: string) {
+function dayLabel(iso: string) {
   const age = -daysFromToday(iso)
   const date = fromIso(iso)
   const prefix = age === 0 ? 'Hari ini · ' : age === 1 ? 'Kemarin · ' : ''

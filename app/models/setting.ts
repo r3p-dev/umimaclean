@@ -1,13 +1,13 @@
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { SettingSchema } from '#database/schema'
 
-export type StoreInfo = { name: string; whatsapp: string; address: string; hours: string }
+type StoreInfo = { name: string; whatsapp: string; address: string; hours: string }
 
 export type PickupSlotSetting = { label: string; capacity: number; on: boolean }
 
-export type PaymentMethodSettings = { qris: boolean; cash: boolean; edc: boolean }
+type PaymentMethodSettings = { qris: boolean; cash: boolean; edc: boolean }
 
-export type SettingValues = {
+type SettingValues = {
   store: StoreInfo
   pickup_slots: PickupSlotSetting[]
   payment_methods: PaymentMethodSettings

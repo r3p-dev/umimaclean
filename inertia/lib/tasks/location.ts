@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { PickupPoint } from '~/lib/location/point'
 import { STORE_LOCATION } from '~/lib/staff/profile'
 
-export type DeviceLocation = { point: PickupPoint; isLive: boolean }
+type DeviceLocation = { point: PickupPoint; isLive: boolean }
 
 export function useDeviceLocation(shouldWatch = false): DeviceLocation {
   const [location, setLocation] = useState<DeviceLocation>({ point: STORE_LOCATION, isLive: false })

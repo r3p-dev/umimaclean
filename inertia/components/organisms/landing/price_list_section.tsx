@@ -5,7 +5,7 @@ import { Card, CardTitle } from '~/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { formatRupiah } from '~/lib/shared/format'
 
-export type PriceEntry = {
+type PriceEntry = {
   name: string
   price: number
   isStartingPrice: boolean

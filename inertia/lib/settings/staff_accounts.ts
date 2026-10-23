@@ -3,7 +3,7 @@ import type { Data } from '@generated/data'
 import { urlFor } from '~/client'
 import { nameError, phoneError } from '~/lib/shared/validation'
 
-export type StaffRole = 'staff' | 'admin'
+type StaffRole = 'staff' | 'admin'
 
 export const STAFF_ROLES: StaffRole[] = ['staff', 'admin']
 

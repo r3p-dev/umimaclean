@@ -1,4 +1,4 @@
-export type ProofKind = 'pickup' | 'clean' | 'deliver' | 'intake'
+type ProofKind = 'pickup' | 'clean' | 'deliver' | 'intake'
 
 export const PROOF_KINDS: Record<ProofKind, { name: string; hint: string; cta: string }> = {
   pickup: {

@@ -2,7 +2,7 @@ import { type ReactNode } from 'react'
 import type { StatusTone } from '~/lib/tracking/status'
 import { cn } from '~/lib/shared/utils'
 
-export type BadgeTone = StatusTone | 'ok' | 'off' | 'warn' | 'info'
+type BadgeTone = StatusTone | 'ok' | 'off' | 'warn' | 'info'
 
 const TONES: Record<BadgeTone, string> = {
   jemput: 'bg-status-jemput-bg text-status-jemput-fg',

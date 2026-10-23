@@ -5,7 +5,7 @@ import { Role } from '#enums/role_enum'
 import type Order from '#models/order'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
-export function areaOf(order: Order) {
+function areaOf(order: Order) {
   if (order.source === OrderSource.STORE && !order.deliveryAddress) {
     return 'Toko'
   }
@@ -14,7 +14,7 @@ export function areaOf(order: Order) {
   return parts.length >= 2 ? parts[parts.length - 2] : parts[0] || '—'
 }
 
-export function paymentLabelOf(order: Order) {
+function paymentLabelOf(order: Order) {
   const paid = order.payments?.find((payment) => payment.status === PaymentStatus.PAID)
   if (order.status === OrderStatus.CANCELLED) {
     return paid ? `Lunas · ${PaymentMethodLabel[paid.method]} · perlu refund` : 'Tidak ada tagihan'

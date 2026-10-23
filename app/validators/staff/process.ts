@@ -1,5 +1,4 @@
 import vine from '@vinejs/vine'
-import type { Infer } from '@vinejs/vine/types'
 import { ItemKind } from '#enums/order_enum'
 import { proofPhoto } from '#validators/staff/task'
 
@@ -21,7 +20,5 @@ export const saveInspectionValidator = vine.create({
     .minLength(1)
     .maxLength(60),
 })
-
-export type InspectionPayload = Infer<typeof saveInspectionValidator>
 
 export const washValidator = vine.create({ photo: proofPhoto() })

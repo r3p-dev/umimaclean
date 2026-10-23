@@ -10,7 +10,7 @@ export type ChargeInput = {
   expiryMinutes: number
 }
 
-export type ChargeResult = { transactionId: string | null; qrUrl: string | null }
+type ChargeResult = { transactionId: string | null; qrUrl: string | null }
 
 export type ProviderStatus = {
   orderId: string

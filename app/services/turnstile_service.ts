@@ -2,7 +2,7 @@ import logger from '@adonisjs/core/services/logger'
 import env from '#start/env'
 import { fieldError } from '#validators/shared/field_error'
 
-export const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
 export default class TurnstileService {
   async verify(token: unknown, ip: string) {

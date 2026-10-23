@@ -15,16 +15,16 @@ import type User from '#models/user'
 import OrderService from '#services/order_service'
 import { fieldError } from '#validators/shared/field_error'
 
-export type ItemSelection = { main: number; addons: number[] }
+type ItemSelection = { main: number; addons: number[] }
 
-export type InspectedItem = {
+type InspectedItem = {
   kind: ItemKind
   itemName: string
   note?: string | null
   services: ItemSelection
 }
 
-export type ServiceInput = {
+type ServiceInput = {
   serviceName: string
   type: 'utama' | 'tambahan'
   categories: ('Sepatu' | 'Tas' | 'Helm')[]

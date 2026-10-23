@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import type { ApiClient } from '@japa/api-client'
 import app from '@adonisjs/core/services/app'
-import testUtils from '@adonisjs/core/services/test_utils'
 import limiter from '@adonisjs/limiter/services/main'
+import db from '@adonisjs/lucid/services/db'
 import type { SessionData } from '@adonisjs/session/types'
 import type { Group } from '@japa/runner/core'
 import { DateTime } from 'luxon'
@@ -89,7 +89,7 @@ export class FakeTurnstile extends TurnstileService {
   }
 }
 
-export class FakePaymentGateway extends MidtransGateway {
+export class FakeMidtrans extends MidtransGateway {
   isAvailable = true
   charges: ChargeInput[] = []
   providerStatus: ProviderStatus | null = null
@@ -110,6 +110,12 @@ export class FakePaymentGateway extends MidtransGateway {
   override verify(notification: ProviderStatus) {
     return notification.signatureKey === 'valid-signature'
   }
+}
+
+const KEPT_TABLES = ['adonis_schema', 'adonis_schema_versions', 'spatial_ref_sys']
+
+function truncate() {
+  return db.connection().truncateAllTables(KEPT_TABLES)
 }
 
 export const TURNSTILE_TOKEN = 'XXXX.DUMMY.TOKEN.XXXX'
@@ -133,17 +139,16 @@ export function useApp(group: Group) {
     areas: {} as Awaited<ReturnType<typeof serviceAreaFixtures>>,
     fonnte: new FakeFonnte(),
     turnstile: new FakeTurnstile(),
-    gateway: new FakePaymentGateway(),
+    gateway: new FakeMidtrans(),
   }
   group.each.setup(async () => {
     state.fonnte = new FakeFonnte()
     state.turnstile = new FakeTurnstile()
-    state.gateway = new FakePaymentGateway()
+    state.gateway = new FakeMidtrans()
     app.container.swap(FonnteService, () => state.fonnte)
     app.container.swap(TurnstileService, () => state.turnstile)
     app.container.swap(MidtransGateway, () => state.gateway)
     await limiter.clear()
-    const truncate = await testUtils.db().truncate()
     await truncate()
     state.areas = await serviceAreaFixtures()
     return truncate

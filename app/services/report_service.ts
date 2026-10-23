@@ -12,7 +12,7 @@ import OperatingCost from '#models/operating_cost'
 import type User from '#models/user'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
-export const REPORT_MAX_DAYS = 400
+const REPORT_MAX_DAYS = 400
 
 type DayRow = [
   date: string,
