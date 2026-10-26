@@ -9,6 +9,7 @@ import { maskPhone } from '#helpers/phone'
 import { formatRupiah } from '#helpers/money'
 import ActivityLog from '#models/activity_log'
 import OperatingCost from '#models/operating_cost'
+import Setting from '#models/setting'
 import type User from '#models/user'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
@@ -50,12 +51,12 @@ const CATEGORY_OF = Object.fromEntries(
 ) as Record<string, CostCategory>
 
 export default class ReportService {
-  today() {
+  reportToday() {
     return DateTime.now().setZone(SERVICE_ZONE).startOf('day')
   }
 
-  async range() {
-    const today = this.today()
+  async reportRange() {
+    const today = this.reportToday()
     const earliest = await db
       .from('payments as p')
       .where('p.status', 'paid')
@@ -67,8 +68,8 @@ export default class ReportService {
     return { start: DateTime.max(start, floor), end: today }
   }
 
-  async days(): Promise<{ start: string; end: string; days: DayRow[] }> {
-    const { start, end } = await this.range()
+  async dailyReport(): Promise<{ start: string; end: string; days: DayRow[] }> {
+    const { start, end } = await this.reportRange()
     const result = await db.rawQuery<{ rows: Record<string, string>[] }>(
       `with series as (
         select generate_series(?::date, ?::date, interval '1 day')::date as day
@@ -104,7 +105,7 @@ export default class ReportService {
     }
   }
 
-  async services(start: string): Promise<ServiceRow[]> {
+  async serviceReport(start: string): Promise<ServiceRow[]> {
     const result = await db.rawQuery<{ rows: Record<string, string>[] }>(
       `select to_char(${LOCAL_DAY}, 'YYYY-MM-DD') as day, l.name, i.kind,
         count(*) as items, sum(l.price) as revenue
@@ -125,7 +126,7 @@ export default class ReportService {
     ])
   }
 
-  async costs() {
+  async listCosts() {
     const costs = await OperatingCost.query().orderBy('spent_on', 'desc').orderBy('id', 'desc')
     return costs.map((cost) => ({
       id: String(cost.id),
@@ -136,9 +137,9 @@ export default class ReportService {
     }))
   }
 
-  async activity(limit?: number) {
+  async listActivity(limit?: number) {
     const query = ActivityLog.query()
-      .where('created_at', '>=', this.today().minus({ days: 90 }).toJSDate())
+      .where('created_at', '>=', this.reportToday().minus({ days: 90 }).toJSDate())
       .preload('actor')
       .preload('order')
       .orderBy('id', 'desc')
@@ -162,7 +163,15 @@ export default class ReportService {
     })
   }
 
-  async customers() {
+  async customerOverview() {
+    const [customers, inactiveDays] = await Promise.all([
+      this.#listCustomers(),
+      Setting.get('inactive_days'),
+    ])
+    return { customers, inactiveDays }
+  }
+
+  async #listCustomers() {
     const result = await db.rawQuery<{ rows: CustomerRow[] }>(
       `select u.id, u.name, u.phone, u.created_at,
         max(p.paid_at) as last_paid, min(p.paid_at) as first_paid,
@@ -203,6 +212,10 @@ export default class ReportService {
         hasPaid: row.last_paid !== null,
       }
     })
+  }
+
+  findCostById(id: number) {
+    return OperatingCost.findOrFail(id)
   }
 
   async saveCost(

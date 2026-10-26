@@ -69,7 +69,7 @@ export default class MidtransGateway {
     return this.#serverKey().length > 0
   }
 
-  async charge(input: ChargeInput): Promise<ChargeResult> {
+  async chargeQris(input: ChargeInput): Promise<ChargeResult> {
     const response = await fetch(`${this.#baseUrl()}/v2/charge`, {
       method: 'POST',
       headers: this.#headers(),
@@ -93,7 +93,7 @@ export default class MidtransGateway {
     }
   }
 
-  async status(orderId: string): Promise<ProviderStatus | null> {
+  async fetchTransactionStatus(orderId: string): Promise<ProviderStatus | null> {
     const response = await fetch(`${this.#baseUrl()}/v2/${encodeURIComponent(orderId)}/status`, {
       headers: this.#headers(),
       signal: AbortSignal.timeout(10000),
@@ -105,7 +105,7 @@ export default class MidtransGateway {
     return midtransStatus(body)
   }
 
-  verify(notification: ProviderStatus) {
+  verifySignature(notification: ProviderStatus) {
     if (!this.isConfigured() || !notification.signatureKey) {
       return false
     }

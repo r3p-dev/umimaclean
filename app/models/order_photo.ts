@@ -40,7 +40,7 @@ export default class OrderPhoto extends OrderPhotoSchema {
   @belongsTo(() => User, { foreignKey: 'takenBy' })
   declare taker: BelongsTo<typeof User>
 
-  static async store(
+  static async storePhoto(
     file: MultipartFile,
     order: Order,
     kind: PhotoKind,
@@ -57,7 +57,7 @@ export default class OrderPhoto extends OrderPhotoSchema {
     )
   }
 
-  static async prune(days = PHOTO_RETENTION_DAYS) {
+  static async prunePhotos(days = PHOTO_RETENTION_DAYS) {
     const expired = await OrderPhoto.query()
       .whereNotNull('path')
       .where('created_at', '<', DateTime.now().minus({ days }).toJSDate())

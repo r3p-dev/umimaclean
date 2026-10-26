@@ -10,7 +10,7 @@ export default class RemindPayment extends BaseCommand {
 
   override async run() {
     const reminders = await this.app.container.make(ReminderService)
-    const sent = await reminders.sendDue()
+    const sent = await reminders.sendDueReminders()
     this.logger.info(`${sent} payment reminder(s) sent`)
   }
 }

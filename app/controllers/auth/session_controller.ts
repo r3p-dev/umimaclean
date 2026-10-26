@@ -20,7 +20,7 @@ export default class SessionController {
 
   async store(ctx: HttpContext) {
     const { request, response } = ctx
-    await this.turnstile.assert(request.input('turnstile'), request.ip())
+    await this.turnstile.assertToken(request.input('turnstile'), request.ip())
     const payload = await request.validateUsing(loginValidator)
 
     const user = await this.accounts.authenticate(

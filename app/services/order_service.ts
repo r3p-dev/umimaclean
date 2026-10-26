@@ -37,7 +37,7 @@ import Order from '#models/order'
 import OrderAddress from '#models/order_address'
 import OrderEvent from '#models/order_event'
 import OrderItem from '#models/order_item'
-import OrderPhoto from '#models/order_photo'
+import OrderPhoto, { proofPath } from '#models/order_photo'
 import ServiceArea, { type Point } from '#models/service_area'
 import Setting from '#models/setting'
 import User from '#models/user'
@@ -121,7 +121,7 @@ type TransitionOptions = {
 export default class OrderService {
   constructor(protected fonnte: FonnteService) {}
 
-  async lock(transaction: TransactionClientContract, id: number) {
+  async lockOrder(transaction: TransactionClientContract, id: number) {
     const order = await Order.query({ client: transaction }).where('id', id).forUpdate().first()
     if (!order) {
       throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
@@ -129,7 +129,7 @@ export default class OrderService {
     return order
   }
 
-  async transition(
+  async transitionOrder(
     order: Order,
     to: OrderStatus,
     options: TransitionOptions,
@@ -169,7 +169,7 @@ export default class OrderService {
     return order
   }
 
-  broadcast(order: Order) {
+  broadcastOrder(order: Order) {
     const payload = { id: order.id, status: order.status }
     transmit.broadcast(orderChannel(order.id), payload)
     transmit.broadcast(STAFF_QUEUES_CHANNEL, payload)
@@ -206,7 +206,7 @@ export default class OrderService {
       })
   }
 
-  async upcomingAvailability(days = 7) {
+  async upcomingSlotAvailability(days = 7) {
     const today = DateTime.now().setZone(SERVICE_ZONE).startOf('day')
     const from = today.plus({ days: 1 }).toISODate()!
     const to = today.plus({ days }).toISODate()!
@@ -268,7 +268,7 @@ export default class OrderService {
     session.put(TRACKING_KEY, [...new Set([...unlocked, order.id])])
   }
 
-  async listForCustomer(
+  async listOrdersForCustomer(
     user: User,
     options: { filter: OrderFilter; search: string; page: number }
   ) {
@@ -299,7 +299,7 @@ export default class OrderService {
     }
   }
 
-  listForOwner() {
+  listOrdersForOwner() {
     return Order.query()
       .preload('pickupAddress')
       .preload('deliveryAddress')
@@ -309,8 +309,8 @@ export default class OrderService {
       .orderBy('created_at', 'desc')
   }
 
-  historyOf(order: Order) {
-    return this.listForOwner()
+  #customerOrderHistory(order: Order) {
+    return this.listOrdersForOwner()
       .where((query) => {
         query.where('customer_phone', order.customerPhone)
         if (order.userId) {
@@ -320,7 +320,67 @@ export default class OrderService {
       .limit(20)
   }
 
-  async check(user: User, payload: OrderPayload) {
+  findOrderById(id: number) {
+    return Order.find(id)
+  }
+
+  findOrderWithHistory(id: number) {
+    return Order.query()
+      .where('id', id)
+      .withScopes((scopes) => {
+        scopes.withDetails()
+        scopes.withHistory()
+      })
+      .first()
+  }
+
+  async findOrderDetailForOwner(id: number) {
+    const order = await Order.findForOwner(id)
+    if (!order) {
+      return null
+    }
+
+    const [logs, history] = await Promise.all([
+      ActivityLog.forOrder(order),
+      this.#customerOrderHistory(order),
+    ])
+    return { order, logs, history }
+  }
+
+  async customerHomeOrders(user: User) {
+    if (!(await Order.hasAnyFor(user))) {
+      return null
+    }
+
+    const [active, completed] = await Promise.all([
+      Order.latestActiveFor(user),
+      Order.recentCompletedFor(user),
+    ])
+    return { active, completed }
+  }
+
+  async lookupWalkInCustomer(phone: string) {
+    const customer = await User.findCustomerByPhone(phone)
+    if (!customer) {
+      return null
+    }
+
+    const [address, orders] = await Promise.all([
+      CustomerAddress.findPrimaryFor(customer.id),
+      Order.query().where('user_id', customer.id).orderBy('created_at', 'desc'),
+    ])
+    return { customer, address, orders }
+  }
+
+  findProofPhoto(id: number) {
+    return OrderPhoto.query().where('id', id).preload('order').first()
+  }
+
+  proofPhotoPath(relative: string) {
+    return proofPath(relative)
+  }
+
+  async checkOrder(user: User, payload: OrderPayload) {
     await this.#assertSlotOpen(payload)
     const pickup = await this.#resolveAddress(user, payload.pickupAddressId, 'pickupAddressId')
     await this.#assertServiceable(pickup, 'pickupAddressId', OUTSIDE_MESSAGES.pickup)
@@ -333,8 +393,8 @@ export default class OrderService {
     return { pickup, delivery }
   }
 
-  async place(user: User, payload: OrderPayload) {
-    await this.check(user, payload)
+  async placeOrder(user: User, payload: OrderPayload) {
+    await this.checkOrder(user, payload)
     const result = await db.transaction(async (transaction) => {
       const existing = await Order.query({ client: transaction })
         .where('user_id', user.id)
@@ -397,9 +457,9 @@ export default class OrderService {
     return result.order
   }
 
-  async cancelByCustomer(user: User, order: Order, reason: string) {
+  async cancelOrderByCustomer(user: User, order: Order, reason: string) {
     return db.transaction(async (transaction) => {
-      const locked = await this.lock(transaction, order.id)
+      const locked = await this.lockOrder(transaction, order.id)
       if (locked.status !== OrderStatus.AWAITING_PICKUP) {
         throw fieldError(
           'form',
@@ -408,7 +468,7 @@ export default class OrderService {
         )
       }
       locked.cancelReason = reason
-      await this.transition(
+      await this.transitionOrder(
         locked,
         OrderStatus.CANCELLED,
         { actor: user, note: `Dibatalkan pelanggan: ${reason}` },
@@ -418,7 +478,7 @@ export default class OrderService {
     })
   }
 
-  async createWalkIn(staff: User, phone: string, payload: WalkInPayload) {
+  async createWalkInOrder(staff: User, phone: string, payload: WalkInPayload) {
     const customer = await User.findCustomerByPhone(phone)
     const name = customer?.name ?? payload.name?.trim()
     if (!name) {
@@ -429,10 +489,7 @@ export default class OrderService {
     if (payload.returnMethod === ReturnMethod.DELIVERY) {
       const saved =
         customer && payload.useSavedAddress
-          ? await CustomerAddress.query()
-              .where('user_id', customer.id)
-              .where('is_primary', true)
-              .first()
+          ? await CustomerAddress.findPrimaryFor(customer.id)
           : null
       if (saved) {
         await this.#assertServiceable(saved, 'address', OUTSIDE_MESSAGES.saved)
@@ -500,7 +557,7 @@ export default class OrderService {
   async addIntakePhotos(staff: User, order: Order, files: MultipartFile[]) {
     await db.transaction(async (transaction) => {
       for (const file of files) {
-        await OrderPhoto.store(file, order, PhotoKind.INTAKE, staff, transaction)
+        await OrderPhoto.storePhoto(file, order, PhotoKind.INTAKE, staff, transaction)
       }
       await ActivityLog.record(
         {
@@ -514,7 +571,7 @@ export default class OrderService {
     })
   }
 
-  async moveToStage(owner: User, ids: number[], stage: OrderStage) {
+  async moveOrdersToStage(owner: User, ids: number[], stage: OrderStage) {
     let changed = 0
     for (const id of ids) {
       const isChanged = await db.transaction(async (transaction) => {
@@ -523,7 +580,7 @@ export default class OrderService {
         if (!order || !next) {
           return false
         }
-        await this.transition(
+        await this.transitionOrder(
           order,
           next,
           { actor: owner, note: 'Diubah owner', isSensitive: true },
@@ -536,7 +593,7 @@ export default class OrderService {
     return { changed, skipped: ids.length - changed }
   }
 
-  async cancelByOwner(owner: User, ids: number[], reason: string) {
+  async cancelOrdersByOwner(owner: User, ids: number[], reason: string) {
     let cancelled = 0
     for (const id of ids) {
       const isCancelled = await db.transaction(async (transaction) => {
@@ -548,7 +605,7 @@ export default class OrderService {
           return false
         }
         locked.cancelReason = reason
-        await this.transition(
+        await this.transitionOrder(
           locked,
           OrderStatus.CANCELLED,
           {
@@ -579,7 +636,7 @@ export default class OrderService {
       { client: transaction }
     )
     transaction.after('commit', async () => {
-      this.broadcast(order)
+      this.broadcastOrder(order)
     })
   }
 
@@ -654,7 +711,7 @@ export default class OrderService {
       return MessageStatus.FAILED
     }
     try {
-      const status = await this.fonnte.send(
+      const status = await this.fonnte.sendMessage(
         order.customerPhone,
         await this.#text(order, message, actor)
       )

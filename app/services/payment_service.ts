@@ -45,6 +45,9 @@ type PaymentCorrection = {
   reason: string
 }
 
+type ReconciliationFlag =
+  'ok' | 'paid_not_advanced' | 'expired_pending' | 'amount_mismatch' | 'waiting'
+
 type CounterPayment = {
   method: PaymentMethod
   cashReceived?: number | null
@@ -57,6 +60,52 @@ export default class PaymentService {
     protected gateway: MidtransGateway,
     protected orders: OrderService
   ) {}
+
+  async counterCheckout(id: number) {
+    const order = await Order.query()
+      .where('id', id)
+      .preload('items', (items) => items.orderBy('position', 'asc'))
+      .preload('bill', (bill) => bill.preload('lines'))
+      .preload('payments')
+      .first()
+    const methods = await Setting.get('payment_methods')
+    const pending = order ? await this.currentQris(order) : null
+    return { order, methods, pending }
+  }
+
+  findPaymentById(id: number) {
+    return Payment.findOrFail(id)
+  }
+
+  async listQrisReconciliation() {
+    // shortcut: shows the latest 300 QRIS charges; add date paging when volume grows
+    const payments = await Payment.query()
+      .whereNotNull('provider_order_id')
+      .preload('order', (order) => order.preload('bill'))
+      .orderBy('id', 'desc')
+      .limit(300)
+    const now = DateTime.now()
+
+    return payments.map((payment) => ({ payment, flag: this.#reconciliationFlag(payment, now) }))
+  }
+
+  #reconciliationFlag(payment: Payment, now: DateTime): ReconciliationFlag {
+    const order = payment.order
+    const billTotal = order.bill?.total ?? null
+    if (payment.status === PaymentStatus.PAID && order.status === OrderStatus.AWAITING_PAYMENT) {
+      return 'paid_not_advanced'
+    }
+    if (
+      (billTotal !== null && payment.amount !== billTotal) ||
+      (payment.note ?? '').includes('tidak cocok')
+    ) {
+      return 'amount_mismatch'
+    }
+    if (payment.status === PaymentStatus.PENDING) {
+      return payment.expiresAt && payment.expiresAt < now ? 'expired_pending' : 'waiting'
+    }
+    return 'ok'
+  }
 
   isQrisAvailable() {
     return this.gateway.isConfigured()
@@ -104,7 +153,7 @@ export default class PaymentService {
 
     let charge
     try {
-      charge = await this.gateway.charge({
+      charge = await this.gateway.chargeQris({
         orderId: providerOrderId,
         amount,
         customerName: order.customerName,
@@ -142,7 +191,7 @@ export default class PaymentService {
     })
   }
 
-  async handleNotification(notification: ProviderStatus) {
+  async handlePaymentNotification(notification: ProviderStatus) {
     const payment = await Payment.findBy('provider_order_id', notification.orderId)
     if (!payment) {
       logger.warn({ orderId: notification.orderId }, 'Payment notification for an unknown order')
@@ -151,18 +200,18 @@ export default class PaymentService {
     return this.#apply(payment, notification)
   }
 
-  async refresh(payment: Payment) {
+  async refreshPayment(payment: Payment) {
     if (!payment.providerOrderId || !this.isQrisAvailable()) {
       return payment
     }
-    const status = await this.gateway.status(payment.providerOrderId)
+    const status = await this.gateway.fetchTransactionStatus(payment.providerOrderId)
     if (!status) {
       return payment
     }
     return (await this.#apply(payment, status)) ?? payment
   }
 
-  async recordCounter(user: User, order: Order, input: CounterPayment) {
+  async recordCounterPayment(user: User, order: Order, input: CounterPayment) {
     await order.load('bill')
     this.#assertPayable(order)
     const methods = await Setting.get('payment_methods')
@@ -180,7 +229,7 @@ export default class PaymentService {
     }
 
     const payment = await db.transaction(async (transaction) => {
-      const locked = await this.orders.lock(transaction, order.id)
+      const locked = await this.orders.lockOrder(transaction, order.id)
       if (locked.status !== OrderStatus.AWAITING_PAYMENT) {
         throw fieldError('form', 'Pesanan ini sudah dibayar.', 'payment.done')
       }
@@ -208,9 +257,9 @@ export default class PaymentService {
     return payment
   }
 
-  async correct(owner: User, id: number, correction: PaymentCorrection) {
+  async correctPayment(owner: User, id: number, correction: PaymentCorrection) {
     return db.transaction(async (transaction) => {
-      const order = await this.orders.lock(transaction, id)
+      const order = await this.orders.lockOrder(transaction, id)
       const paid = await Payment.query({ client: transaction })
         .where('order_id', order.id)
         .where('status', PaymentStatus.PAID)
@@ -264,7 +313,7 @@ export default class PaymentService {
         },
         { client: transaction }
       )
-      await this.orders.transition(
+      await this.orders.transitionOrder(
         order,
         OrderStatus.IN_CLEANING,
         {
@@ -307,7 +356,7 @@ export default class PaymentService {
       })
       await payment.save()
       if (status === PaymentStatus.PAID) {
-        const order = await this.orders.lock(transaction, payment.orderId)
+        const order = await this.orders.lockOrder(transaction, payment.orderId)
         if (order.status === OrderStatus.AWAITING_PAYMENT) {
           await this.#settle(order, payment, null, transaction)
         }
@@ -317,7 +366,7 @@ export default class PaymentService {
 
     if (status !== PaymentStatus.PAID) {
       const order = await Order.findOrFail(payment.orderId)
-      this.orders.broadcast(order)
+      this.orders.broadcastOrder(order)
     }
     return updated
   }
@@ -329,7 +378,7 @@ export default class PaymentService {
     transaction: TransactionClientContract
   ) {
     const label = PaymentMethodLabel[payment.method]
-    await this.orders.transition(
+    await this.orders.transitionOrder(
       order,
       OrderStatus.IN_CLEANING,
       {

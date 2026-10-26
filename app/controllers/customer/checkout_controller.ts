@@ -1,9 +1,8 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { MAX_ADDRESSES } from '#models/customer_address'
-import Order from '#models/order'
 import OrderPolicy from '#policies/order_policy'
 import AddressService from '#services/address_service'
+import { MAX_ADDRESSES } from '#services/constants'
 import OrderService from '#services/order_service'
 import AddressTransformer from '#transformers/address_transformer'
 import UserTransformer from '#transformers/user_transformer'
@@ -20,10 +19,10 @@ export default class CheckoutController {
 
   async create({ inertia, auth, request, session, bouncer }: HttpContext) {
     const user = auth.getUserOrFail()
-    const addresses = await this.addresses.list(user)
+    const addresses = await this.addresses.listAddresses(user)
     const draft = (session.get(DRAFT_KEY) as OrderPayload | undefined) ?? null
     const repeatId = Number(request.qs().ulang) || null
-    const repeat = repeatId ? await Order.findWithHistory(repeatId) : null
+    const repeat = repeatId ? await this.orders.findOrderWithHistory(repeatId) : null
     const repeatItems =
       repeat && (await bouncer.with(OrderPolicy).allows('own', repeat))
         ? { sepatu: repeat.itemsSepatu, tas: repeat.itemsTas, helm: repeat.itemsHelm }
@@ -43,13 +42,13 @@ export default class CheckoutController {
           }
         : null,
       repeatItems,
-      availability: await this.orders.upcomingAvailability(),
+      availability: await this.orders.upcomingSlotAvailability(),
     })
   }
 
   async review({ request, response, auth, session }: HttpContext) {
     const payload = await request.validateUsing(createOrderValidator)
-    await this.orders.check(auth.getUserOrFail(), payload)
+    await this.orders.checkOrder(auth.getUserOrFail(), payload)
     session.put(DRAFT_KEY, payload)
     return response.redirect().toRoute('customer.order.confirm')
   }
@@ -60,12 +59,12 @@ export default class CheckoutController {
     if (!draft) {
       return response.redirect().toRoute('customer.order.create')
     }
-    const pickup = await this.addresses.find(user, draft.pickupAddressId)
+    const pickup = await this.addresses.findAddress(user, draft.pickupAddressId)
     if (!pickup) {
       return response.redirect().toRoute('customer.order.create')
     }
     const delivery = draft.deliveryAddressId
-      ? await this.addresses.find(user, draft.deliveryAddressId)
+      ? await this.addresses.findAddress(user, draft.deliveryAddressId)
       : null
     return inertia.render('customer/order/confirm', {
       draft: { items: draft.items, note: draft.note ?? '', date: draft.date, slot: draft.slot },
@@ -81,7 +80,7 @@ export default class CheckoutController {
       return response.redirect().toRoute('customer.order.create')
     }
     const payload = await createOrderValidator.validate(draft)
-    const order = await this.orders.place(auth.getUserOrFail(), payload)
+    const order = await this.orders.placeOrder(auth.getUserOrFail(), payload)
     session.forget(DRAFT_KEY)
     session.flash('success', 'Pesanan dibuat. Kurir menghubungi via WhatsApp sebelum datang.')
     return response.redirect().toRoute('customer.orders.show', { id: order.id })

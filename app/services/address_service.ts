@@ -1,41 +1,37 @@
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
-import CustomerAddress, { MAX_ADDRESSES } from '#models/customer_address'
-import ServiceArea, { type Point } from '#models/service_area'
+import CustomerAddress from '#models/customer_address'
 import User from '#models/user'
 import type { AddressInput } from '#validators/customer/address'
 import { fieldError } from '#validators/shared/field_error'
+import ServiceArea, { type Point } from '#models/service_area'
+import { MAX_ADDRESSES } from '#services/constants'
 
 export default class AddressService {
-  list(user: User, transaction?: TransactionClientContract) {
+  listAddresses(user: User, transaction?: TransactionClientContract) {
     return CustomerAddress.query({ client: transaction })
       .where('user_id', user.id)
       .withScopes((scopes) => scopes.primaryFirst())
   }
 
-  find(user: User, id: number, transaction?: TransactionClientContract) {
+  findAddressById(id: number) {
+    return CustomerAddress.find(id)
+  }
+
+  findAddress(user: User, id: number, transaction?: TransactionClientContract) {
     return CustomerAddress.query({ client: transaction })
       .where('user_id', user.id)
       .where('id', id)
       .first()
   }
 
-  primary(user: User) {
-    return this.list(user).where('is_primary', true).first()
-  }
-
-  async #assertServiceable(point: Point) {
-    if (!(await ServiceArea.contains(point))) {
-      throw fieldError('point', 'Titik jemput di luar area antar-jemput gratis.', 'area.outside')
-    }
-  }
-
-  async create(user: User, input: AddressInput) {
+  async createAddress(user: User, input: AddressInput) {
     await this.#assertServiceable(input.point)
+
     return db.transaction(async (transaction) => {
       await this.#lockOwner(user, transaction)
 
-      const count = await CustomerAddress.countFor(user, transaction)
+      const count = await CustomerAddress.countForUser(user, transaction)
       if (count >= MAX_ADDRESSES) {
         throw fieldError(
           'addressText',
@@ -56,8 +52,9 @@ export default class AddressService {
     })
   }
 
-  async update(address: CustomerAddress, input: AddressInput) {
+  async updateAddress(address: CustomerAddress, input: AddressInput) {
     await this.#assertServiceable(input.point)
+
     return db.transaction(async (transaction) => {
       address.useTransaction(transaction)
       const owner = await this.#lockOwner(address.userId, transaction)
@@ -67,14 +64,13 @@ export default class AddressService {
         address.isPrimary = true
       }
 
-      address.merge(this.#columns(input))
-      await address.save()
+      await address.merge(this.#columns(input)).save()
 
       return address
     })
   }
 
-  async makePrimary(address: CustomerAddress) {
+  async makeAddressPrimary(address: CustomerAddress) {
     if (address.isPrimary) {
       return
     }
@@ -84,12 +80,11 @@ export default class AddressService {
       const owner = await this.#lockOwner(address.userId, transaction)
 
       await this.#clearPrimary(owner, transaction)
-      address.isPrimary = true
-      await address.save()
+      await address.merge({ isPrimary: true }).save()
     })
   }
 
-  async remove(address: CustomerAddress) {
+  async deleteAddress(address: CustomerAddress) {
     await db.transaction(async (transaction) => {
       address.useTransaction(transaction)
       const owner = await this.#lockOwner(address.userId, transaction)
@@ -110,6 +105,12 @@ export default class AddressService {
         await next.save()
       }
     })
+  }
+
+  async #assertServiceable(point: Point) {
+    if (!(await ServiceArea.contains(point))) {
+      throw fieldError('point', 'Titik jemput di luar area antar-jemput gratis.', 'area.outside')
+    }
   }
 
   #lockOwner(user: User | number, transaction: TransactionClientContract) {

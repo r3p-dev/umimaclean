@@ -9,6 +9,7 @@ import ActivityLog from '#models/activity_log'
 import Order from '#models/order'
 import OrderItem from '#models/order_item'
 import OrderPhoto from '#models/order_photo'
+import Setting from '#models/setting'
 import type User from '#models/user'
 import OrderService from '#services/order_service'
 import { formatClock } from '#transformers/order_transformer'
@@ -92,11 +93,20 @@ function startOfToday() {
 export default class TaskService {
   constructor(protected orders: OrderService) {}
 
-  activeTrip(kind: TripKind) {
+  async tripBoard(kind: TripKind) {
+    const [active, queue, slots] = await Promise.all([
+      this.#activeTrip(kind),
+      this.#tripQueue(kind),
+      Setting.get('pickup_slots'),
+    ])
+    return { active, queue, slots }
+  }
+
+  #activeTrip(kind: TripKind) {
     return this.#tripQuery().where('status', TRIP[kind].active).orderBy('updated_at', 'asc').first()
   }
 
-  async queue(kind: TripKind) {
+  async #tripQueue(kind: TripKind) {
     const query = this.#tripQuery().where('status', TRIP[kind].queued)
     if (kind === 'pickup') {
       query
@@ -114,7 +124,7 @@ export default class TaskService {
     ]
   }
 
-  handledToday(user: User, kind: TripKind) {
+  tripsHandledToday(user: User, kind: TripKind) {
     return ActivityLog.query()
       .where('actor_id', user.id)
       .whereIn('action', [TRIP[kind].doneAction, TRIP[kind].skipAction])
@@ -145,7 +155,7 @@ export default class TaskService {
 
   async startTrip(user: User, id: number, kind: TripKind) {
     const trip = TRIP[kind]
-    const current = await this.activeTrip(kind)
+    const current = await this.#activeTrip(kind)
     if (current && current.id !== id) {
       throw fieldError(
         'form',
@@ -155,8 +165,8 @@ export default class TaskService {
     }
 
     return db.transaction(async (transaction) => {
-      const locked = await this.orders.lock(transaction, id)
-      await this.orders.transition(
+      const locked = await this.orders.lockOrder(transaction, id)
+      await this.orders.transitionOrder(
         locked,
         trip.active,
         { actor: user, action: ActivityAction.TASK_STARTED, detail: trip.startDetail },
@@ -166,7 +176,7 @@ export default class TaskService {
     })
   }
 
-  async arrive(user: User, id: number, kind: TripKind) {
+  async arriveAtTrip(user: User, id: number, kind: TripKind) {
     const order = await Order.find(id)
     if (!order) {
       throw fieldError('form', 'Pesanan tidak ditemukan.', 'order.missing')
@@ -184,13 +194,13 @@ export default class TaskService {
   ) {
     const trip = TRIP[kind]
     return db.transaction(async (transaction) => {
-      const locked = await this.orders.lock(transaction, id)
+      const locked = await this.orders.lockOrder(transaction, id)
       this.#assertActive(locked, kind)
-      await OrderPhoto.store(photo, locked, trip.photo, user, transaction)
+      await OrderPhoto.storePhoto(photo, locked, trip.photo, user, transaction)
       if (receiver) {
         locked.receiverName = receiver
       }
-      await this.orders.transition(
+      await this.orders.transitionOrder(
         locked,
         trip.done,
         {
@@ -212,9 +222,9 @@ export default class TaskService {
     const trip = TRIP[kind]
     const text = note ? `${reason} · ${note}` : reason
     return db.transaction(async (transaction) => {
-      const locked = await this.orders.lock(transaction, id)
+      const locked = await this.orders.lockOrder(transaction, id)
       this.#assertActive(locked, kind)
-      await this.orders.transition(
+      await this.orders.transitionOrder(
         locked,
         trip.queued,
         { actor: user, action: trip.skipAction, note: text, detail: text },
@@ -234,7 +244,7 @@ export default class TaskService {
       .orderBy('updated_at', 'asc')
   }
 
-  findForWorkshop(id: number) {
+  findOrderForWorkshop(id: number) {
     return Order.query()
       .where('id', id)
       .preload('items', (items) => items.orderBy('position', 'asc'))
@@ -248,9 +258,9 @@ export default class TaskService {
 
   async startInspection(user: User, id: number) {
     return db.transaction(async (transaction) => {
-      const order = await this.orders.lock(transaction, id)
+      const order = await this.orders.lockOrder(transaction, id)
       if (order.status === OrderStatus.PICKED_UP) {
-        await this.orders.transition(
+        await this.orders.transitionOrder(
           order,
           OrderStatus.IN_INSPECTION,
           { actor: user, action: ActivityAction.INSPECTION_STARTED },
@@ -265,11 +275,11 @@ export default class TaskService {
 
   async completeWash(user: User, id: number, photo: MultipartFile) {
     return db.transaction(async (transaction) => {
-      const locked = await this.orders.lock(transaction, id)
+      const locked = await this.orders.lockOrder(transaction, id)
       if (locked.status !== OrderStatus.IN_CLEANING) {
         throw fieldError('form', 'Pesanan ini tidak sedang dicuci.', 'order.status')
       }
-      await OrderPhoto.store(photo, locked, PhotoKind.WASHING, user, transaction)
+      await OrderPhoto.storePhoto(photo, locked, PhotoKind.WASHING, user, transaction)
       await OrderItem.query({ client: transaction })
         .where('order_id', locked.id)
         .whereNull('washed_at')
@@ -278,7 +288,7 @@ export default class TaskService {
         locked.returnMethod === ReturnMethod.STORE
           ? OrderStatus.READY_FOR_COLLECTION
           : OrderStatus.READY_FOR_DELIVERY
-      await this.orders.transition(
+      await this.orders.transitionOrder(
         locked,
         next,
         { actor: user, action: ActivityAction.WASH_DONE, detail: 'Foto hasil cuci' },
@@ -288,10 +298,10 @@ export default class TaskService {
     })
   }
 
-  async collect(user: User, id: number) {
+  async collectOrder(user: User, id: number) {
     return db.transaction(async (transaction) => {
-      const order = await this.orders.lock(transaction, id)
-      await this.orders.transition(
+      const order = await this.orders.lockOrder(transaction, id)
+      await this.orders.transitionOrder(
         order,
         OrderStatus.COMPLETED,
         { actor: user, action: ActivityAction.COLLECTED, note: 'Diambil di toko' },
@@ -301,7 +311,7 @@ export default class TaskService {
     })
   }
 
-  async counts(): Promise<StaffCounts> {
+  async staffCounts(): Promise<StaffCounts> {
     const [jemput, antar, proses] = await Promise.all([
       this.#count(
         Order.query().where((query) => {
@@ -328,7 +338,7 @@ export default class TaskService {
     return { jemput, antar, proses }
   }
 
-  async history(user: User, days = 7) {
+  async staffHistory(user: User, days = 7) {
     const since = startOfToday().minus({ days: days - 1 })
     const logs = await ActivityLog.query()
       .where('actor_id', user.id)

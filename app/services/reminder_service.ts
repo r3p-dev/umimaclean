@@ -15,7 +15,7 @@ import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 export default class ReminderService {
   constructor(protected fonnte: FonnteService) {}
 
-  async sendDue(now: DateTime = DateTime.now()) {
+  async sendDueReminders(now: DateTime = DateTime.now()) {
     const hour = now.setZone(SERVICE_ZONE).hour
     if (hour < 10 || hour >= 15) {
       return 0
@@ -83,7 +83,7 @@ export default class ReminderService {
       return MessageStatus.FAILED
     }
     try {
-      const status = await this.fonnte.send(phone, text)
+      const status = await this.fonnte.sendMessage(phone, text)
       if (status === MessageStatus.FAILED) {
         logger.warn({ order: orderId }, 'Payment reminder was not sent')
       }

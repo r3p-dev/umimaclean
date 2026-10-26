@@ -22,7 +22,7 @@ export default class StaffSessionController {
 
   async store(ctx: HttpContext) {
     const { request, response } = ctx
-    await this.turnstile.assert(request.input('turnstile'), request.ip())
+    await this.turnstile.assertToken(request.input('turnstile'), request.ip())
     const payload = await request.validateUsing(loginValidator)
 
     const user = await this.accounts.authenticate(
@@ -32,7 +32,7 @@ export default class StaffSessionController {
       (candidate) => new Bouncer(candidate).allows(enterStaffArea)
     )
     await this.accounts.signIn(ctx, user, payload.remember ?? false)
-    await this.staff.touch(user)
+    await this.staff.recordStaffSignIn(user)
 
     return response.redirect().toIntendedRoute(LoginRedirect[user.role])
   }

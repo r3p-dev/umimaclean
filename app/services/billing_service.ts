@@ -51,9 +51,9 @@ export default class BillingService {
     return this.priceList().where('is_active', true)
   }
 
-  async createFromInspection(user: User, id: number, items: InspectedItem[]) {
+  async createBillFromInspection(user: User, id: number, items: InspectedItem[]) {
     return db.transaction(async (transaction) => {
-      const order = await this.orders.lock(transaction, id)
+      const order = await this.orders.lockOrder(transaction, id)
       if (order.status !== OrderStatus.IN_INSPECTION) {
         throw fieldError('form', 'Pemeriksaan pesanan ini sudah disimpan.', 'order.status')
       }
@@ -107,7 +107,7 @@ export default class BillingService {
         )
       }
 
-      await this.orders.transition(
+      await this.orders.transitionOrder(
         order,
         OrderStatus.AWAITING_PAYMENT,
         {

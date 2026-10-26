@@ -7,12 +7,31 @@ import { SessionCollection } from '@adonisjs/session'
 import { DateTime } from 'luxon'
 import User from '#models/user'
 import { fieldError } from '#validators/shared/field_error'
-
-export const LOGIN_FAILED_MESSAGE = 'Nomor atau kata sandi salah.'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
+import { Role } from '#enums/role_enum'
+import type { OtpFlow } from '#services/types'
+import { LOGIN_FAILED_MESSAGE } from '#services/constants'
 
 @inject()
 export default class AccountService {
   constructor(protected sessions: SessionCollection) {}
+
+  async createCustomer(flow: OtpFlow, transaction: TransactionClientContract) {
+    if (await User.isPhoneTaken(flow.phone, { transaction })) {
+      return null
+    }
+
+    return User.createQuietly(
+      {
+        role: Role.CUSTOMER,
+        name: flow.name!,
+        phone: flow.phone,
+        password: flow.passwordHash!,
+        phoneVerifiedAt: DateTime.now(),
+      },
+      { client: transaction }
+    )
+  }
 
   async authenticate(
     phone: string,
@@ -53,6 +72,13 @@ export default class AccountService {
     }
   }
 
+  #loginLimiter(phone: string, ip: string) {
+    return limiter.multi([
+      { key: `login_phone_${phone}`, requests: 5, duration: '15 mins', blockDuration: '15 mins' },
+      { key: `login_ip_${ip}`, requests: 20, duration: '15 mins', blockDuration: '30 mins' },
+    ])
+  }
+
   async signIn({ auth, session }: HttpContext, user: User, shouldRemember: boolean) {
     await auth.use('web').login(user, shouldRemember)
     if (session.supportsTagging()) {
@@ -69,6 +95,13 @@ export default class AccountService {
     await auth.use('web').logout()
   }
 
+  async activeDeviceCount(user: User) {
+    const now = DateTime.now().toJSDate()
+    const tokens = await User.rememberMeTokens.all(user)
+
+    return Math.max(1, tokens.filter((token) => token.expiresAt > now).length)
+  }
+
   async endSessions(user: User, exceptSessionId?: string) {
     const tokens = await User.rememberMeTokens.all(user)
     await Promise.all(tokens.map((token) => User.rememberMeTokens.delete(user, token.identifier)))
@@ -83,11 +116,13 @@ export default class AccountService {
     }
   }
 
-  async activeDeviceCount(user: User) {
-    const now = DateTime.now().toJSDate()
-    const tokens = await User.rememberMeTokens.all(user)
+  async signOutOtherDevices(ctx: HttpContext, user: User) {
+    await this.endSessions(user, ctx.session.sessionId)
+    await this.signIn(ctx, user, true)
+  }
 
-    return Math.max(1, tokens.filter((token) => token.expiresAt > now).length)
+  async updateProfileName(user: User, name: string) {
+    await user.merge({ name }).save()
   }
 
   async changePasswordWithCurrent(
@@ -96,16 +131,13 @@ export default class AccountService {
     currentPassword: string,
     password: string
   ) {
-    const [throttled, isVerified] = await this.#passwordChangeLimiter().penalize(
-      `password_change_${user.id}`,
-      async () => {
-        if (!(await user.verifyPassword(currentPassword))) {
-          throw fieldError('currentPassword', 'Kata sandi saat ini salah.', 'password.current')
-        }
-
-        return true
+    const [throttled, isVerified] = await this.#passwordChangeLimiter(user).penalize(async () => {
+      if (!(await user.verifyPassword(currentPassword))) {
+        throw fieldError('currentPassword', 'Kata sandi saat ini salah.', 'password.current')
       }
-    )
+
+      return true
+    })
 
     if (throttled || !isVerified) {
       throw fieldError(
@@ -120,37 +152,65 @@ export default class AccountService {
     await this.signIn(ctx, user, true)
   }
 
-  async resetPasswordAfterOtp(
-    ctx: HttpContext,
-    user: User,
-    password: string,
-    shouldEndOthers: boolean
-  ) {
-    await this.#savePassword(user, password)
-    if (shouldEndOthers) {
-      await this.endSessions(user, ctx.session.sessionId)
-    }
-    await this.signIn(ctx, user, true)
-  }
-
-  async signOutOtherDevices(ctx: HttpContext, user: User) {
-    await this.endSessions(user, ctx.session.sessionId)
-    await this.signIn(ctx, user, true)
-  }
-
-  async #savePassword(user: User, password: string) {
-    user.merge({ password, passwordChangedAt: DateTime.now() })
-    await user.save()
-  }
-
-  #loginLimiter(phone: string, ip: string) {
+  #passwordChangeLimiter(user: User) {
     return limiter.multi([
-      { key: `login_phone_${phone}`, requests: 5, duration: '15 mins', blockDuration: '15 mins' },
-      { key: `login_ip_${ip}`, requests: 20, duration: '15 mins', blockDuration: '30 mins' },
+      {
+        key: `password_change_${user.id}`,
+        requests: 5,
+        duration: '15 mins',
+        blockDuration: '15 mins',
+      },
     ])
   }
 
-  #passwordChangeLimiter() {
-    return limiter.use({ requests: 5, duration: '15 mins', blockDuration: '15 mins' })
+  async resetPasswordAfterOtp(
+    ctx: HttpContext,
+    userId: number,
+    password: string,
+    shouldEndOthers: boolean
+  ) {
+    const user = await User.findOrFail(userId)
+    await this.#savePassword(user, password)
+
+    if (shouldEndOthers) {
+      await this.endSessions(user, ctx.session.sessionId)
+    }
+
+    await this.signIn(ctx, user, true)
+    return user
+  }
+
+  async #savePassword(user: User, password: string) {
+    await user.merge({ password, passwordChangedAt: DateTime.now() }).save()
+  }
+
+  async changePhone(userId: number, phone: string, transaction: TransactionClientContract) {
+    const user = await User.query({ client: transaction })
+      .where('id', userId)
+      .forUpdate()
+      .firstOrFail()
+
+    if (await User.isPhoneTaken(phone, { exceptUserId: user.id, transaction })) {
+      return null
+    }
+
+    user.merge({ phone, phoneVerifiedAt: DateTime.now() })
+
+    try {
+      await user.save()
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        String(error.code) === '23505'
+      ) {
+        return null
+      }
+
+      throw error
+    }
+
+    return user
   }
 }

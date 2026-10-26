@@ -9,6 +9,7 @@ import {
   OrderStatus,
   OrderStatusStage,
 } from '#enums/order_enum'
+import { orderNumber } from '#helpers/order'
 import Bill from '#models/bill'
 import OrderAddress from '#models/order_address'
 import OrderEvent from '#models/order_event'
@@ -30,16 +31,6 @@ export default class Order extends OrderSchema {
       .preload('payments', (payments) => payments.orderBy('id', 'asc'))
       .preload('photos', (photos) => photos.preload('taker').orderBy('id', 'asc'))
   })
-
-  static findWithHistory(id: number) {
-    return Order.query()
-      .where('id', id)
-      .withScopes((scopes) => {
-        scopes.withDetails()
-        scopes.withHistory()
-      })
-      .first()
-  }
 
   static latestActiveFor(user: User) {
     return Order.query()
@@ -111,12 +102,8 @@ export default class Order extends OrderSchema {
   @hasMany(() => OrderPhoto)
   declare photos: HasMany<typeof OrderPhoto>
 
-  static numberOf(id: number) {
-    return `UMC-${String(id).padStart(5, '0')}`
-  }
-
   number() {
-    return Order.numberOf(this.id)
+    return orderNumber(this.id)
   }
 
   itemCount() {

@@ -4,11 +4,12 @@ import { OtpPurpose } from '#enums/otp_enum'
 import { LoginRedirect, Role } from '#enums/role_enum'
 import OtpFlowPolicy from '#policies/otp_flow_policy'
 import AccountService from '#services/account_service'
-import OtpService, { OTP_LOCKED_MESSAGE, OTP_TTL_MINUTES } from '#services/otp_service'
+import OtpService from '#services/otp_service'
 import { maskPhone } from '#helpers/phone'
 import TurnstileService from '#services/turnstile_service'
 import { verifyOtpValidator } from '#validators/auth/otp'
 import { fieldError } from '#validators/shared/field_error'
+import { OTP_TTL_MINUTES, OTP_LOCKED_MESSAGE } from '#services/constants'
 
 @inject()
 export default class OtpController {
@@ -27,9 +28,9 @@ export default class OtpController {
     return inertia.render('auth/otp', {
       purpose: flow.purpose,
       maskedPhone: maskPhone(flow.phone),
-      resendIn: await this.otp.cooldownRemaining(flow.phone),
+      resendIn: await this.otp.otpCooldownRemaining(flow.phone),
       ttlMinutes: OTP_TTL_MINUTES,
-      isLocked: this.otp.isLocked(flow),
+      isLocked: this.otp.isOtpLocked(flow),
     })
   }
 
@@ -41,17 +42,17 @@ export default class OtpController {
     }
 
     const { code } = await request.validateUsing(verifyOtpValidator)
-    if (this.otp.isLocked(flow)) {
+    if (this.otp.isOtpLocked(flow)) {
       throw fieldError('code', OTP_LOCKED_MESSAGE, 'otp.locked')
     }
 
-    const { result, user } = await this.otp.verify(flow, code)
+    const { result, user } = await this.otp.verifyOtp(flow, code)
     if (!user) {
-      const message = this.otp.recordFailure(session, flow, result === 'locked')
+      const message = this.otp.recordOtpFailure(session, flow, result === 'locked')
       throw fieldError('code', message, 'otp.invalid')
     }
 
-    this.otp.clear(session)
+    this.otp.clearOtpFlow(session)
 
     if (flow.purpose === OtpPurpose.REGISTER) {
       await this.accounts.signIn(ctx, user, true)
@@ -74,15 +75,15 @@ export default class OtpController {
       return response.redirect().toRoute('auth.login')
     }
 
-    await this.turnstile.assert(request.input('turnstile'), request.ip())
-    await this.otp.resend(session, flow, request.ip())
+    await this.turnstile.assertToken(request.input('turnstile'), request.ip())
+    await this.otp.resendOtp(session, flow, request.ip())
 
     session.flash('success', 'Kode baru dikirim via WhatsApp.')
     return response.redirect().toRoute('auth.otp')
   }
 
   async #flow(session: HttpContext['session'], bouncer: HttpContext['bouncer']) {
-    const flow = this.otp.current(session)
+    const flow = this.otp.currentOtpFlow(session)
     if (!flow || (await bouncer.with(OtpFlowPolicy).denies('continue', flow))) {
       return null
     }

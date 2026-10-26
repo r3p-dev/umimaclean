@@ -1,7 +1,6 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import OrderPolicy from '#policies/order_policy'
-import Setting from '#models/setting'
 import TaskService, { SKIP_REASONS } from '#services/task_service'
 import TaskTransformer from '#transformers/task_transformer'
 import { formatClock } from '#transformers/order_transformer'
@@ -46,7 +45,7 @@ export default class TasksController {
   async arrive(ctx: HttpContext) {
     const { auth, response } = ctx
     const kind = await this.#authorize(ctx)
-    await this.tasks.arrive(auth.getUserOrFail(), Number(ctx.params.id), KINDS[kind])
+    await this.tasks.arriveAtTrip(auth.getUserOrFail(), Number(ctx.params.id), KINDS[kind])
     return response.redirect().toRoute(this.#taskRoute(kind))
   }
 
@@ -84,11 +83,9 @@ export default class TasksController {
     await bouncer.with(OrderPolicy).authorize('work')
     const user = auth.getUserOrFail()
     const trip = KINDS[kind]
-    const slots = await Setting.get('pickup_slots')
-    const [active, queue, handled] = await Promise.all([
-      this.tasks.activeTrip(trip),
-      this.tasks.queue(trip),
-      this.tasks.handledToday(user, trip),
+    const [{ active, queue, slots }, handled] = await Promise.all([
+      this.tasks.tripBoard(trip),
+      this.tasks.tripsHandledToday(user, trip),
     ])
     const tasks = [...(active ? [active] : []), ...queue]
 
@@ -111,10 +108,9 @@ export default class TasksController {
     await bouncer.with(OrderPolicy).authorize('work')
     const user = auth.getUserOrFail()
     const trip = KINDS[kind]
-    const slots = await Setting.get('pickup_slots')
-    const [active, queue] = await Promise.all([this.tasks.activeTrip(trip), this.tasks.queue(trip)])
+    const { active, queue, slots } = await this.tasks.tripBoard(trip)
     const result = session.flashMessages.get(RESULT_KEY) as TaskResult | undefined
-    const handledToday = result ? await this.tasks.handledToday(user, trip) : []
+    const handledToday = result ? await this.tasks.tripsHandledToday(user, trip) : []
     const handled = handledToday.find((entry) => entry.order.id === result?.id)
 
     return inertia.render('staff/tasks/active', {

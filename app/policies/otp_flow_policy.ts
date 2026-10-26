@@ -2,7 +2,7 @@ import { allowGuest, BasePolicy } from '@adonisjs/bouncer'
 import type { AuthorizerResponse } from '@adonisjs/bouncer/types'
 import { OtpPurpose } from '#enums/otp_enum'
 import type User from '#models/user'
-import type { OtpFlow } from '#services/otp_service'
+import type { OtpFlow } from '#services/types'
 
 export default class OtpFlowPolicy extends BasePolicy {
   @allowGuest()

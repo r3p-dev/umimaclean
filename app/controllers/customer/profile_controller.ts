@@ -16,7 +16,7 @@ export default class ProfileController {
     const user = auth.getUserOrFail()
 
     const [addresses, deviceCount] = await Promise.all([
-      this.addresses.list(user),
+      this.addresses.listAddresses(user),
       this.accounts.activeDeviceCount(user),
     ])
 
@@ -37,9 +37,7 @@ export default class ProfileController {
   async update({ auth, request, response, session }: HttpContext) {
     const { name } = await request.validateUsing(updateProfileValidator)
 
-    const user = auth.getUserOrFail()
-    user.merge({ name })
-    await user.save()
+    await this.accounts.updateProfileName(auth.getUserOrFail(), name)
 
     session.flash('success', 'Profil disimpan.')
     return response.redirect().toRoute('customer.profile.edit')

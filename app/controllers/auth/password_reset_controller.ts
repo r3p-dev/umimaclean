@@ -1,15 +1,12 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { OtpPurpose } from '#enums/otp_enum'
 import { LoginRedirect } from '#enums/role_enum'
-import User from '#models/user'
 import AccountService from '#services/account_service'
+import { FORGOT_PASSWORD_NOTICE } from '#services/constants'
 import OtpService from '#services/otp_service'
 import { maskPhone } from '#helpers/phone'
 import TurnstileService from '#services/turnstile_service'
 import { forgotPasswordValidator, resetPasswordValidator } from '#validators/auth/password'
-
-export const FORGOT_PASSWORD_NOTICE = 'Jika nomor terdaftar, kode dikirim via WhatsApp.'
 
 @inject()
 export default class PasswordResetController {
@@ -24,15 +21,10 @@ export default class PasswordResetController {
   }
 
   async store({ request, response, session }: HttpContext) {
-    await this.turnstile.assert(request.input('turnstile'), request.ip())
+    await this.turnstile.assertToken(request.input('turnstile'), request.ip())
     const { phone } = await request.validateUsing(forgotPasswordValidator)
 
-    await this.otp.start(
-      session,
-      { purpose: OtpPurpose.RESET_PASSWORD, phone, failures: 0 },
-      request.ip(),
-      await User.isPhoneTaken(phone)
-    )
+    await this.otp.startPasswordReset(session, phone, request.ip())
 
     session.flash('success', FORGOT_PASSWORD_NOTICE)
     return response.redirect().toRoute('auth.otp')
@@ -56,11 +48,9 @@ export default class PasswordResetController {
     }
 
     const payload = await request.validateUsing(resetPasswordValidator)
-    const user = await User.findOrFail(grant.userId)
-
-    await this.accounts.resetPasswordAfterOtp(
+    const user = await this.accounts.resetPasswordAfterOtp(
       ctx,
-      user,
+      grant.userId,
       payload.password,
       payload.logoutOthers !== false
     )

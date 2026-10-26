@@ -27,6 +27,19 @@ npm run typecheck
 npm run lint
 ```
 
+## Production image
+
+There is no Containerfile yet. When one is added, it must be multi-stage:
+
+1. Build stage: a full `npm ci` (dev dependencies included), then `node ace build`. Vite, the Tailwind build (which reads `shadcn/tailwind.css`) and `@adonisjs/assembler` need the dev dependencies.
+2. Final stage: copy `build/` and run only `npm ci --omit=dev` inside it, then `node bin/server.js`.
+
+`shadcn`, `vite`, `@adonisjs/assembler` and the other build tools are dev dependencies and must not be needed at runtime. Don't add `--omit=optional` without a build and boot test: it also drops platform-specific optional packages.
+
+### Known audit finding
+
+`npm audit` reports the braces advisory [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) (stack exhaustion on deeply nested glob patterns), through `fast-glob` and `micromatch`. It is only used by build and dev tooling (`@adonisjs/assembler`, `hot-hook`, ESLint, the shadcn CLI) on their own patterns, never on request data, so it is not reachable at runtime. No fixed braces version exists yet; re-check with `npm audit` later. Don't run `npm audit fix --force`: it downgrades AdonisJS to 5.x.
+
 ## Behind the reverse proxy
 
 In production every request reaches the app through Traefik. The app takes the client IP from `X-Forwarded-For` only when the request comes from a trusted proxy address, set in `TRUSTED_PROXIES` (comma-separated [proxy-addr](https://www.npmjs.com/package/proxy-addr) values). The default `loopback,uniquelocal` trusts 127.0.0.0/8, ::1, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 and fc00::/7, which covers the Podman network Traefik uses; a narrower value such as `10.89.0.0/24` also works. Requests from any other address keep their own IP and the header is ignored.

@@ -11,7 +11,7 @@ export default class PruneProofPhotos extends BaseCommand {
   declare days?: number
 
   override async run() {
-    const pruned = await OrderPhoto.prune(this.days ?? PHOTO_RETENTION_DAYS)
+    const pruned = await OrderPhoto.prunePhotos(this.days ?? PHOTO_RETENTION_DAYS)
     this.logger.info(`${pruned} proof photo(s) deleted`)
   }
 }

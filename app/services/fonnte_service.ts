@@ -8,7 +8,7 @@ const FONNTE_SEND_URL = 'https://api.fonnte.com/send'
 type FonnteResponse = { status?: boolean; Status?: boolean; reason?: string }
 
 export default class FonnteService {
-  async send(target: string, message: string): Promise<MessageStatus> {
+  async sendMessage(target: string, message: string): Promise<MessageStatus> {
     const token = env.get('FONNTE_TOKEN')
     if (!token) {
       if (app.inProduction) {

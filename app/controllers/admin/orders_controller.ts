@@ -1,8 +1,7 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
+import { orderNumber } from '#helpers/order'
 import { PaymentChannel, PaymentMethod } from '#enums/payment_enum'
-import ActivityLog from '#models/activity_log'
-import Order from '#models/order'
 import OrderPolicy from '#policies/order_policy'
 import OrderService from '#services/order_service'
 import PaymentService from '#services/payment_service'
@@ -31,7 +30,7 @@ export default class OrdersController {
   async index({ bouncer, inertia }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('manage')
     // shortcut: loads every order for client-side filtering; page on the server past a few thousand orders
-    const orders = await this.orders.listForOwner()
+    const orders = await this.orders.listOrdersForOwner()
     return inertia.render('admin/orders/list', {
       orders: orders.map((order) => new AdminOrderTransformer(order).toObject()),
     })
@@ -39,18 +38,15 @@ export default class OrdersController {
 
   async show({ bouncer, inertia, params }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('manage')
-    const order = await Order.findForOwner(params.id)
-    if (!order) {
+    const detail = await this.orders.findOrderDetailForOwner(params.id)
+    if (!detail) {
       return inertia.render('admin/orders/detail', {
         id: Number(params.id),
-        number: Order.numberOf(params.id),
+        number: orderNumber(params.id),
         order: null,
       })
     }
-    const [logs, history] = await Promise.all([
-      ActivityLog.forOrder(order),
-      this.orders.historyOf(order),
-    ])
+    const { order, logs, history } = detail
     return inertia.render('admin/orders/detail', {
       id: order.id,
       number: order.number(),
@@ -65,7 +61,11 @@ export default class OrdersController {
   async move({ auth, bouncer, request, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('manage')
     const payload = await request.validateUsing(moveOrdersValidator)
-    const result = await this.orders.moveToStage(auth.getUserOrFail(), payload.ids, payload.stage)
+    const result = await this.orders.moveOrdersToStage(
+      auth.getUserOrFail(),
+      payload.ids,
+      payload.stage
+    )
     session.flash(
       result.changed ? 'success' : 'error',
       `${result.changed} pesanan diubah${result.skipped ? `, ${result.skipped} dilewati karena tidak bisa ke status ini` : ''}. Tercatat di Aktivitas Staf.`
@@ -76,7 +76,7 @@ export default class OrdersController {
   async cancel({ auth, bouncer, request, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('manage')
     const payload = await request.validateUsing(cancelOrdersValidator)
-    const result = await this.orders.cancelByOwner(
+    const result = await this.orders.cancelOrdersByOwner(
       auth.getUserOrFail(),
       payload.ids,
       payload.reason
@@ -91,7 +91,7 @@ export default class OrdersController {
   async correctPayment({ auth, bouncer, params, request, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('manage')
     const payload = await request.validateUsing(correctPaymentValidator)
-    await this.payments.correct(auth.getUserOrFail(), params.id, {
+    await this.payments.correctPayment(auth.getUserOrFail(), params.id, {
       ...FIX_METHOD[payload.method],
       amount: payload.amount,
       reason: payload.correctionReason,

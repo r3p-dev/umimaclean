@@ -6,7 +6,7 @@ import { OtpPurpose } from '#enums/otp_enum'
 import { Role } from '#enums/role_enum'
 import OtpCode from '#models/otp_code'
 import User from '#models/user'
-import { OTP_INVALID_MESSAGE, OTP_LOCKED_MESSAGE } from '#services/otp_service'
+import { OTP_INVALID_MESSAGE, OTP_LOCKED_MESSAGE } from '#services/constants'
 import { post, TURNSTILE_TOKEN, useApp } from '#tests/support/app'
 
 const PHONE = '6281234567890'

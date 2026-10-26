@@ -5,7 +5,7 @@ import { fieldError } from '#validators/shared/field_error'
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
 export default class TurnstileService {
-  async verify(token: unknown, ip: string) {
+  async verifyToken(token: unknown, ip: string) {
     if (typeof token !== 'string' || !token) {
       return false
     }
@@ -30,8 +30,8 @@ export default class TurnstileService {
     }
   }
 
-  async assert(token: unknown, ip: string) {
-    if (!(await this.verify(token, ip))) {
+  async assertToken(token: unknown, ip: string) {
+    if (!(await this.verifyToken(token, ip))) {
       throw fieldError('turnstile', 'Selesaikan verifikasi keamanan, lalu coba lagi.', 'turnstile')
     }
   }

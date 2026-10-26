@@ -1,8 +1,8 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
+import { orderNumber } from '#helpers/order'
 import { ItemKindLabel, OrderSource, OrderStatus } from '#enums/order_enum'
 import { ServiceType } from '#enums/service_enum'
-import Order from '#models/order'
 import OrderPolicy from '#policies/order_policy'
 import BillingService from '#services/billing_service'
 import TaskService from '#services/task_service'
@@ -39,7 +39,7 @@ export default class ProcessController {
 
   async inspection({ bouncer, inertia, params }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const order = await this.tasks.findForWorkshop(params.id)
+    const order = await this.tasks.findOrderForWorkshop(params.id)
     const services = await this.billing.activePriceList()
     const catalog = Object.fromEntries(
       Object.entries(ItemKindLabel).map(([kind, label]) => {
@@ -56,7 +56,7 @@ export default class ProcessController {
 
     return inertia.render('staff/process/inspection', {
       id: Number(params.id),
-      number: Order.numberOf(params.id),
+      number: orderNumber(params.id),
       order: order ? new InspectionTransformer(order).toObject() : null,
       catalog,
     })
@@ -73,7 +73,11 @@ export default class ProcessController {
     await bouncer.with(OrderPolicy).authorize('work')
     const id = Number(params.id)
     const payload = await request.validateUsing(saveInspectionValidator)
-    const result = await this.billing.createFromInspection(auth.getUserOrFail(), id, payload.items)
+    const result = await this.billing.createBillFromInspection(
+      auth.getUserOrFail(),
+      id,
+      payload.items
+    )
 
     if (result.order.source === OrderSource.STORE) {
       session.flash('success', 'Pemeriksaan disimpan. Lanjutkan pembayaran di kasir.')
@@ -85,10 +89,10 @@ export default class ProcessController {
 
   async washing({ bouncer, inertia, params }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
-    const order = await this.tasks.findForWorkshop(params.id)
+    const order = await this.tasks.findOrderForWorkshop(params.id)
     return inertia.render('staff/process/washing', {
       id: Number(params.id),
-      number: Order.numberOf(params.id),
+      number: orderNumber(params.id),
       order: order ? new WashTransformer(order).toObject() : null,
     })
   }
@@ -110,7 +114,7 @@ export default class ProcessController {
   async collect({ auth, bouncer, params, response, session }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
     const id = Number(params.id)
-    const order = await this.tasks.collect(auth.getUserOrFail(), id)
+    const order = await this.tasks.collectOrder(auth.getUserOrFail(), id)
     session.flash('success', `Pesanan ${order.number()} sudah diambil pelanggan.`)
     return response.redirect().toRoute('staff.process')
   }

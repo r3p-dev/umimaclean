@@ -13,7 +13,7 @@ export default class AccountController {
 
   async history({ auth, inertia }: HttpContext) {
     return inertia.render('staff/account/history', {
-      entries: await this.tasks.history(auth.getUserOrFail()),
+      entries: await this.tasks.staffHistory(auth.getUserOrFail()),
     })
   }
 

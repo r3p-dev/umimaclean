@@ -9,6 +9,6 @@ export default class AreasController {
 
   async show({ request }: HttpContext) {
     const point = await request.validateUsing(checkAreaValidator, { data: request.qs() })
-    return this.area.check(point)
+    return this.area.checkAreaCoverage(point)
   }
 }

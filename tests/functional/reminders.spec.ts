@@ -28,7 +28,7 @@ test.group('Automatic payment reminders', (group) => {
   const state = useApp(group)
   const remind = async (now: string) => {
     const reminders = await app.container.make(ReminderService)
-    return reminders.sendDue(at(now))
+    return reminders.sendDueReminders(at(now))
   }
 
   test('the first reminder comes after 24 hours, then one every 2 days', async ({ assert }) => {

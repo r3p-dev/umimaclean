@@ -27,7 +27,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       turnstileSiteKey: env.get('TURNSTILE_SITE_KEY'),
       staffCounts:
         isStaffPage && user
-          ? await ctx.containerResolver.make(TaskService).then((tasks) => tasks.counts())
+          ? await ctx.containerResolver.make(TaskService).then((tasks) => tasks.staffCounts())
           : null,
     }
   }

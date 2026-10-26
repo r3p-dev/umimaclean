@@ -12,11 +12,11 @@ export default class PaymentNotificationsController {
 
   async store({ request, response }: HttpContext) {
     const notification = midtransStatus(request.body())
-    if (!this.gateway.verify(notification)) {
+    if (!this.gateway.verifySignature(notification)) {
       return response.forbidden({ message: 'Invalid signature' })
     }
 
-    await this.payments.handleNotification(notification)
+    await this.payments.handlePaymentNotification(notification)
     return response.ok({ message: 'OK' })
   }
 }

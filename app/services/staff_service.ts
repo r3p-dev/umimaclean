@@ -17,14 +17,18 @@ function temporaryPassword() {
 export default class StaffService {
   constructor(protected accounts: AccountService) {}
 
-  list() {
+  listStaff() {
     return User.query()
       .whereIn('role', [...STAFF_ROLES])
       .orderBy('role', 'asc')
       .orderBy('name')
   }
 
-  async create(owner: User, payload: StaffPayload) {
+  findStaffAccount(id: number) {
+    return User.query().where('id', id).whereIn('role', ['staff', 'admin']).firstOrFail()
+  }
+
+  async createStaff(owner: User, payload: StaffPayload) {
     if (await User.isPhoneTaken(payload.phone)) {
       throw fieldError('phone', 'Nomor ini sudah dipakai akun lain.', 'phone.taken')
     }
@@ -46,7 +50,7 @@ export default class StaffService {
     return { user, password }
   }
 
-  async update(owner: User, user: User, payload: StaffPayload) {
+  async updateStaff(owner: User, user: User, payload: StaffPayload) {
     if (await User.isPhoneTaken(payload.phone, { exceptUserId: user.id })) {
       throw fieldError('phone', 'Nomor ini sudah dipakai akun lain.', 'phone.taken')
     }
@@ -67,7 +71,7 @@ export default class StaffService {
     })
   }
 
-  async resetPassword(owner: User, user: User) {
+  async resetStaffPassword(owner: User, user: User) {
     if (user.id === owner.id) {
       throw fieldError('form', 'Ganti kata sandi Anda sendiri di halaman Profil.', 'staff.self')
     }
@@ -84,7 +88,7 @@ export default class StaffService {
     return { password }
   }
 
-  async setActive(owner: User, user: User, isActive: boolean) {
+  async setStaffActive(owner: User, user: User, isActive: boolean) {
     if (user.id === owner.id) {
       throw fieldError('form', 'Anda tidak bisa menonaktifkan akun sendiri.', 'staff.self')
     }
@@ -101,7 +105,7 @@ export default class StaffService {
     })
   }
 
-  async touch(user: User) {
+  async recordStaffSignIn(user: User) {
     user.lastSeenAt = DateTime.now()
     await user.save()
     await ActivityLog.record({ actor: user, action: ActivityAction.SIGNED_IN })

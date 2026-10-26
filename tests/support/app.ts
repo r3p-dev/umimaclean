@@ -55,7 +55,7 @@ export class FakeFonnte extends FonnteService {
   shouldFail = false
   shouldThrow = false
 
-  override async send(target: string, message: string) {
+  override async sendMessage(target: string, message: string) {
     if (this.shouldThrow) {
       throw new Error('Fonnte is down')
     }
@@ -80,7 +80,7 @@ export class FakeTurnstile extends TurnstileService {
   shouldPass = true
   hasWidget = true
 
-  override async verify(token: unknown) {
+  override async verifyToken(token: unknown) {
     if (!this.hasWidget) {
       return this.shouldPass
     }
@@ -98,16 +98,16 @@ export class FakeMidtrans extends MidtransGateway {
     return this.isAvailable
   }
 
-  override async charge(input: ChargeInput) {
+  override async chargeQris(input: ChargeInput) {
     this.charges.push(input)
     return { transactionId: `tx-${input.orderId}`, qrUrl: `https://qr.test/${input.orderId}.png` }
   }
 
-  override async status() {
+  override async fetchTransactionStatus() {
     return this.providerStatus
   }
 
-  override verify(notification: ProviderStatus) {
+  override verifySignature(notification: ProviderStatus) {
     return notification.signatureKey === 'valid-signature'
   }
 }

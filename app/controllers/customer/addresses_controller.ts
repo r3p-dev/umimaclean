@@ -1,11 +1,11 @@
 import { inject } from '@adonisjs/core'
 import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
-import CustomerAddress, { MAX_ADDRESSES } from '#models/customer_address'
 import CustomerAddressPolicy from '#policies/customer_address_policy'
 import AddressService from '#services/address_service'
 import AddressTransformer from '#transformers/address_transformer'
 import { saveAddressValidator } from '#validators/customer/address'
+import { MAX_ADDRESSES } from '#services/constants'
 
 type Origin = 'order' | 'addresses'
 
@@ -14,7 +14,7 @@ export default class AddressesController {
   constructor(protected addresses: AddressService) {}
 
   async index({ inertia, auth }: HttpContext) {
-    const addresses = await this.addresses.list(auth.getUserOrFail())
+    const addresses = await this.addresses.listAddresses(auth.getUserOrFail())
 
     return inertia.render('customer/addresses/index', {
       addresses: addresses.map((address) => new AddressTransformer(address).toObject()),
@@ -25,7 +25,7 @@ export default class AddressesController {
   async create({ inertia, auth, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
 
-    const saved = await this.addresses.list(user)
+    const saved = await this.addresses.listAddresses(user)
     if (saved.length >= MAX_ADDRESSES) {
       session.flash('error', 'Maksimal 3 alamat tersimpan. Hapus salah satu dulu.')
       return response.redirect().toRoute('customer.addresses.index')
@@ -42,7 +42,7 @@ export default class AddressesController {
   async store({ auth, request, response, session }: HttpContext) {
     const payload = await request.validateUsing(saveAddressValidator)
 
-    await this.addresses.create(auth.getUserOrFail(), payload)
+    await this.addresses.createAddress(auth.getUserOrFail(), payload)
 
     session.flash('success', 'Alamat disimpan.')
     return this.#originOf(request.qs().dari) === 'order'
@@ -65,7 +65,7 @@ export default class AddressesController {
     const address = await this.#owned(bouncer, params.id)
     const payload = await request.validateUsing(saveAddressValidator)
 
-    await this.addresses.update(address, payload)
+    await this.addresses.updateAddress(address, payload)
 
     session.flash('success', 'Perubahan alamat disimpan.')
     return response.redirect().toRoute('customer.addresses.index')
@@ -73,21 +73,22 @@ export default class AddressesController {
 
   async makePrimary({ bouncer, params, response, session }: HttpContext) {
     const address = await this.#owned(bouncer, params.id)
-    await this.addresses.makePrimary(address)
+    await this.addresses.makeAddressPrimary(address)
+
     session.flash('success', `${address.label} jadi alamat utama.`)
     return response.redirect().toRoute('customer.addresses.index')
   }
 
   async destroy({ bouncer, params, response, session }: HttpContext) {
     const address = await this.#owned(bouncer, params.id)
-    await this.addresses.remove(address)
+    await this.addresses.deleteAddress(address)
 
     session.flash('success', 'Alamat dihapus.')
     return response.redirect().toRoute('customer.addresses.index')
   }
 
   async #owned(bouncer: HttpContext['bouncer'], id: unknown) {
-    const address = await CustomerAddress.find(Number(id) || 0)
+    const address = await this.addresses.findAddressById(Number(id) || 0)
     if (!address || !(await bouncer.with(CustomerAddressPolicy).allows('manage', address))) {
       throw new Exception('Alamat tidak ditemukan', { status: 404 })
     }

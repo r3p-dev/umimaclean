@@ -1,13 +1,9 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { enterAdminArea } from '#abilities/main'
-import { ActivityAction } from '#enums/activity_enum'
-import ActivityLog from '#models/activity_log'
-import ServiceArea from '#models/service_area'
-import Setting from '#models/setting'
-import User from '#models/user'
 import AreaService from '#services/area_service'
 import PaymentService from '#services/payment_service'
+import SettingService from '#services/setting_service'
 import StaffService from '#services/staff_service'
 import ServiceAreaTransformer from '#transformers/service_area_transformer'
 import StaffAccountTransformer from '#transformers/staff_account_transformer'
@@ -27,11 +23,12 @@ export default class SettingsController {
   constructor(
     protected staffAccounts: StaffService,
     protected area: AreaService,
-    protected payments: PaymentService
+    protected payments: PaymentService,
+    protected settings: SettingService
   ) {}
 
   async staff({ auth, inertia, session }: HttpContext) {
-    const accounts = await this.staffAccounts.list()
+    const accounts = await this.staffAccounts.listStaff()
     const current = auth.getUserOrFail()
     return inertia.render('admin/settings/staff', {
       accounts: accounts.map((user) => new StaffAccountTransformer(user, current.id).toObject()),
@@ -42,7 +39,7 @@ export default class SettingsController {
   async storeStaff({ auth, bouncer, request, response, session }: HttpContext) {
     await bouncer.authorize(enterAdminArea)
     const payload = await request.validateUsing(saveStaffValidator)
-    const result = await this.staffAccounts.create(auth.getUserOrFail(), payload)
+    const result = await this.staffAccounts.createStaff(auth.getUserOrFail(), payload)
     session.flash(PASSWORD_KEY, this.#notice(result.user.name, result.password))
     return response.redirect().toRoute('admin.staff')
   }
@@ -51,7 +48,7 @@ export default class SettingsController {
     await bouncer.authorize(enterAdminArea)
     const user = await this.#account(params.id)
     const payload = await request.validateUsing(saveStaffValidator)
-    await this.staffAccounts.update(auth.getUserOrFail(), user, payload)
+    await this.staffAccounts.updateStaff(auth.getUserOrFail(), user, payload)
     session.flash('success', `Akun ${payload.name} diperbarui.`)
     return response.redirect().toRoute('admin.staff')
   }
@@ -59,7 +56,7 @@ export default class SettingsController {
   async resetStaff({ auth, bouncer, params, response, session }: HttpContext) {
     await bouncer.authorize(enterAdminArea)
     const user = await this.#account(params.id)
-    const result = await this.staffAccounts.resetPassword(auth.getUserOrFail(), user)
+    const result = await this.staffAccounts.resetStaffPassword(auth.getUserOrFail(), user)
     session.flash(PASSWORD_KEY, this.#notice(user.name, result.password))
     return response.redirect().toRoute('admin.staff')
   }
@@ -68,7 +65,7 @@ export default class SettingsController {
     await bouncer.authorize(enterAdminArea)
     const user = await this.#account(params.id)
     const { active } = await request.validateUsing(staffActiveValidator)
-    await this.staffAccounts.setActive(auth.getUserOrFail(), user, active)
+    await this.staffAccounts.setStaffActive(auth.getUserOrFail(), user, active)
     session.flash(
       'success',
       active
@@ -79,7 +76,7 @@ export default class SettingsController {
   }
 
   async store({ inertia }: HttpContext) {
-    const values = await Setting.values()
+    const values = await this.settings.allSettings()
     return inertia.render('admin/settings/store', {
       settings: {
         name: values.store.name,
@@ -96,22 +93,8 @@ export default class SettingsController {
 
   async saveStore({ auth, bouncer, request, response, session }: HttpContext) {
     await bouncer.authorize(enterAdminArea)
-    const owner = auth.getUserOrFail()
     const payload = await request.validateUsing(saveStoreSettingsValidator)
-    await Setting.put('store', {
-      name: payload.storeName,
-      whatsapp: payload.whatsapp,
-      address: payload.storeAddress,
-      hours: payload.hours,
-    })
-    await Setting.put('pickup_slots', payload.slots)
-    await Setting.put('payment_methods', payload.payments)
-    await Setting.put('inactive_days', payload.inactiveDays)
-    await ActivityLog.record({
-      actor: owner,
-      action: ActivityAction.SETTINGS_CHANGED,
-      detail: `Profil toko, slot (${payload.slots.map((slot) => (slot.on ? slot.capacity : 'tutup')).join('/')}), metode bayar`,
-    })
+    await this.settings.saveStoreSettings(auth.getUserOrFail(), payload)
     session.flash('success', 'Pengaturan disimpan · tercatat di Aktivitas Staf.')
     return response.redirect().toRoute('admin.store')
   }
@@ -119,10 +102,7 @@ export default class SettingsController {
   async areas({ inertia, request }: HttpContext) {
     const { q } = await request.validateUsing(searchAreasValidator, { data: request.qs() })
     const query = q ?? ''
-    const [active, results] = await Promise.all([
-      ServiceArea.active(),
-      query ? this.area.search(query) : [],
-    ])
+    const { active, results } = await this.area.listAreasForOwner(query)
     return inertia.render('admin/settings/areas', {
       q: query,
       active: active.map((area) => new ServiceAreaTransformer(area).toObject()),
@@ -133,7 +113,7 @@ export default class SettingsController {
   async toggleArea({ auth, bouncer, params, request, response, session }: HttpContext) {
     await bouncer.authorize(enterAdminArea)
     const { isActive } = await request.validateUsing(toggleAreaValidator)
-    const area = await this.area.setActive(auth.getUserOrFail(), params.id, isActive)
+    const area = await this.area.setAreaActive(auth.getUserOrFail(), params.id, isActive)
     session.flash(
       'success',
       isActive
@@ -152,9 +132,6 @@ export default class SettingsController {
   }
 
   async #account(id: unknown) {
-    return User.query()
-      .where('id', Number(id) || 0)
-      .whereIn('role', ['staff', 'admin'])
-      .firstOrFail()
+    return this.staffAccounts.findStaffAccount(Number(id) || 0)
   }
 }

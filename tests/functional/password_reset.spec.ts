@@ -2,7 +2,7 @@ import { test } from '@japa/runner'
 import { UserFactory, USER_PASSWORD } from '#database/factories/user_factory'
 import OtpCode from '#models/otp_code'
 import User from '#models/user'
-import { FORGOT_PASSWORD_NOTICE } from '#controllers/auth/password_reset_controller'
+import { FORGOT_PASSWORD_NOTICE } from '#services/constants'
 import { post, send, TURNSTILE_TOKEN, useApp } from '#tests/support/app'
 
 test.group('Forgot password', (group) => {

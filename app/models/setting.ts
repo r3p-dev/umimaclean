@@ -7,7 +7,7 @@ export type PickupSlotSetting = { label: string; capacity: number; on: boolean }
 
 type PaymentMethodSettings = { qris: boolean; cash: boolean; edc: boolean }
 
-type SettingValues = {
+export type SettingValues = {
   store: StoreInfo
   pickup_slots: PickupSlotSetting[]
   payment_methods: PaymentMethodSettings
@@ -45,12 +45,6 @@ export default class Setting extends SettingSchema {
   ): Promise<SettingValues[Key]> {
     const row = await Setting.query({ client: transaction }).where('key', key).first()
     return (row?.value as SettingValues[Key] | undefined) ?? DEFAULT_SETTINGS[key]
-  }
-
-  static async values(): Promise<SettingValues> {
-    const rows = await Setting.query()
-    const stored = Object.fromEntries(rows.map((row) => [row.key, row.value]))
-    return { ...DEFAULT_SETTINGS, ...stored } as SettingValues
   }
 
   static async put<Key extends SettingKey>(
