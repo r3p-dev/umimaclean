@@ -1,0 +1,97 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  APP_NAME: ${{ github.event.repository.name }}
+  COMPOSE_FILE: compose.yaml
+  REF: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+jobs:
+  build:
+    name: Build & push image
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.push.outputs.image }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.REF }}
+
+      - id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s\n' "$REGISTRY_TOKEN" | podman login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+      - name: Build
+        env:
+          IMAGE: ${{ steps.name.outputs.image }}
+          SOURCE: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          podman build --platform linux/amd64 \
+            --label "org.opencontainers.image.source=$SOURCE" \
+            -t "$IMAGE:$REF" -t "$IMAGE:latest" .
+
+      - id: push
+        name: Push
+        env:
+          IMAGE: ${{ steps.name.outputs.image }}
+        run: |
+          podman push --digestfile digest "$IMAGE:$REF"
+          podman push "$IMAGE:latest"
+          echo "image=${IMAGE}@$(cat digest)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy to the server
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.REF }}
+          sparse-checkout: ${{ env.COMPOSE_FILE }}
+          sparse-checkout-cone-mode: false
+
+      - name: Deploy
+        env:
+          IMAGE: ${{ needs.build.outputs.image }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          test -f "$COMPOSE_FILE" || { echo "::error::$COMPOSE_FILE not found in the repo"; exit 1; }
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          { printf '%s\n' "$REGISTRY_TOKEN"; cat "$COMPOSE_FILE"; } |
+            ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" -o BatchMode=yes -o IdentitiesOnly=yes \
+              -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" \
+              deploy "$APP_NAME" "$IMAGE" "$GITHUB_ACTOR"

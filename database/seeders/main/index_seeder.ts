@@ -1,4 +1,5 @@
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
+import AdminSeeder from '#database/seeders/admin_seeder'
 import AddressSeeder from '#database/seeders/address_seeder'
 import OperatingCostSeeder from '#database/seeders/operating_cost_seeder'
 import OrderSeeder from '#database/seeders/order_seeder'
@@ -12,6 +13,7 @@ export default class extends BaseSeeder {
 
   override async run() {
     for (const Seeder of [
+      AdminSeeder,
       UserSeeder,
       AddressSeeder,
       ServiceSeeder,

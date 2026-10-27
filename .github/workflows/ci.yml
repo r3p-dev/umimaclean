@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: docker.io/postgis/postgis:17-3.5
+        env:
+          POSTGRES_USER: umimaclean
+          POSTGRES_PASSWORD: umimaclean
+          POSTGRES_DB: umimaclean_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - name: Create .env
+        run: |
+          cp .env.example .env
+          sed -i 's/^DB_USER=.*/DB_USER=umimaclean/; s/^DB_PASSWORD=.*/DB_PASSWORD=umimaclean/' .env
+          node ace generate:key
+
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - run: npm run build

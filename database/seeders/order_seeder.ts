@@ -80,7 +80,7 @@ export default class extends BaseSeeder {
       return
     }
     const staff = {
-      courier: await User.findByOrFail('phone', '6281234567801'),
+      courier: await User.query().where('role', Role.STAFF).firstOrFail(),
       owner: await User.query().where('role', Role.ADMIN).firstOrFail(),
     }
     const rina = await User.findByOrFail('phone', DEMO_PHONE)
@@ -100,7 +100,7 @@ export default class extends BaseSeeder {
         await this.#build(
           {
             customer: isWalkIn && this.#random() < 0.5 ? null : customer,
-            walkIn: { name: 'Andi Pratama', phone: '6281377778888' },
+            walkIn: { name: 'Andi Pratama', phone: '6281910384627' },
             source: isWalkIn ? OrderSource.STORE : OrderSource.ONLINE,
             returnMethod:
               isWalkIn && this.#random() < 0.6 ? ReturnMethod.STORE : ReturnMethod.DELIVERY,

@@ -82,6 +82,6 @@ Stack: AdonisJS 7 + Inertia + React 19, PostgreSQL + PostGIS, Lucid, VineJS, Bou
 
 - `npm run dev` (http://localhost:3333)
 - `node ace migration:fresh --seed` (dev database), `node ace db:seed`
-- `node ace orders:remind-payment`, `node ace proofs:prune` (systemd timers, see `README.md`)
+- `node ace orders:remind-payment`, `node ace proofs:prune` (the `scheduler` service in `compose.yaml`, see `README.md`)
 - `npm test` (unit, functional, browser; `.env.test`, port 3334), `npm run typecheck`, `npm run lint`
 - TypeScript stays on 6.x (`@adonisjs/assembler` and `typescript-eslint` don't accept 7 yet).

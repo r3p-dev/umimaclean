@@ -1,0 +1,75 @@
+x-app-env: &app-env
+  TZ: UTC
+  NODE_ENV: production
+  HOST: 0.0.0.0
+  PORT: 3333
+  LOG_LEVEL: info
+  APP_URL: https://umimaclean.r3p.dev
+  SESSION_DRIVER: database
+  LIMITER_STORE: database
+  DB_CONNECTION: pg
+  DB_HOST: db
+  DB_PORT: 5432
+  DB_USER: umimaclean
+  DB_DATABASE: umimaclean
+
+services:
+  web:
+    image: ${IMAGE}
+    command:
+      ['sh', '-c', 'node ace migration:run --force && node ace db:seed && exec node bin/server.js']
+    labels:
+      vps.domain: umimaclean.r3p.dev
+      vps.port: '3333'
+      vps.headers.Permissions-Policy: camera=(self), geolocation=(self), microphone=(), payment=()
+    environment: *app-env
+    depends_on: [db]
+    cap_drop: [ALL]
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3333/site.webmanifest').then((res) => process.exit(res.ok ? 0 : 1), () => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    mem_limit: 512m
+    volumes:
+      - proofs:/app/storage/proofs
+
+  scheduler:
+    image: ${IMAGE}
+    command:
+      [
+        'sh',
+        '-c',
+        'n=0; while :; do node ace orders:remind-payment; if [ $$((n % 96)) -eq 0 ]; then node ace proofs:prune; fi; n=$$((n + 1)); sleep 900; done',
+      ]
+    init: true
+    environment: *app-env
+    depends_on: [web]
+    cap_drop: [ALL]
+    mem_limit: 384m
+    volumes:
+      - proofs:/app/storage/proofs
+
+  db:
+    image: docker.io/postgis/postgis:17-3.5
+    environment:
+      POSTGRES_USER: umimaclean
+      POSTGRES_DB: umimaclean
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U umimaclean -d umimaclean']
+      interval: 5s
+      retries: 10
+    mem_limit: 512m
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  proofs:
+  pgdata:

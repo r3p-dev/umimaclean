@@ -27,6 +27,8 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   PROOF_STORAGE_PATH: Env.schema.string.optional(),
 
+  ADMIN_PHONE: Env.schema.string.optional(),
+
   TURNSTILE_SITE_KEY: Env.schema.string(),
   TURNSTILE_SECRET_KEY: Env.schema.secret(),
 })

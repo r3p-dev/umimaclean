@@ -1,41 +1,40 @@
-import { randomBytes, randomUUID } from 'node:crypto'
 import logger from '@adonisjs/core/services/logger'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { DateTime } from 'luxon'
 import { Role } from '#enums/role_enum'
 import User from '#models/user'
 
-export const DEMO_PHONE = '6281223456789'
+const PASSWORD = 'password'
+
+export const DEMO_PHONE = '6281221847305'
 
 const ACCOUNTS = [
   { role: Role.CUSTOMER, name: 'Rina Kartika', phone: DEMO_PHONE },
-  { role: Role.CUSTOMER, name: 'Budi Santoso', phone: '6281234500000' },
-  { role: Role.ADMIN, name: 'Umi Maryam', phone: '6281122001100' },
-  { role: Role.STAFF, name: 'Dedi Supriadi', phone: '6281234567801' },
+  { role: Role.CUSTOMER, name: 'Budi Santoso', phone: '6285720419836' },
+  { role: Role.STAFF, name: 'Dedi Supriadi', phone: '6287823561940' },
 ]
 
 export const DEMO_CUSTOMERS = [
-  ['Laras Putri', '6281223456701'],
-  ['Fajar Nugraha', '6281223456702'],
-  ['Siti Aminah', '6281223456703'],
-  ['Dewi Lestari', '6281223456704'],
-  ['Hendra Wijaya', '6281223456705'],
-  ['Maya Sari', '6281223456706'],
-  ['Indra Kusuma', '6281223456707'],
-  ['Rudi Hartono', '6281223456708'],
-  ['Nadia Putri', '6281223456709'],
-  ['Teguh Prasetyo', '6281223456710'],
+  ['Laras Putri', '6281394027716'],
+  ['Fajar Nugraha', '6289652318047'],
+  ['Siti Aminah', '6285295104483'],
+  ['Dewi Lestari', '6281802736591'],
+  ['Hendra Wijaya', '6282118450267'],
+  ['Maya Sari', '6287731629054'],
+  ['Indra Kusuma', '6281572903318'],
+  ['Rudi Hartono', '6285861247790'],
+  ['Nadia Putri', '6281214695082'],
+  ['Teguh Prasetyo', '6283820571436'],
 ] as const
 
 export default class extends BaseSeeder {
   override async run() {
-    const password = randomBytes(9).toString('base64url')
     for (const account of ACCOUNTS) {
       const user = await User.findBy('phone', account.phone)
       await (user ?? new User())
         .merge({
           ...account,
-          password,
+          password: PASSWORD,
           isActive: true,
           phoneVerifiedAt: user?.phoneVerifiedAt ?? DateTime.now(),
         })
@@ -48,13 +47,13 @@ export default class extends BaseSeeder {
         {
           role: Role.CUSTOMER,
           name,
-          password: randomUUID(),
+          password: PASSWORD,
           phoneVerifiedAt: DateTime.now(),
         }
       )
     }
 
     const list = ACCOUNTS.map((account) => `${account.role} ${account.phone} (${account.name})`)
-    logger.info(`Demo accounts, password "${password}": ${list.join(', ')}`)
+    logger.info(`Demo accounts, password "${PASSWORD}": ${list.join(', ')}`)
   }
 }

@@ -19,7 +19,7 @@ node ace migration:fresh --seed
 npm run dev
 ```
 
-The seeder logs the demo accounts and their one shared random password. Without `FONNTE_TOKEN` WhatsApp messages are written to the log instead of sent; without `MIDTRANS_SERVER_KEY` QRIS is shown as unavailable. The Turnstile keys in `.env.example` are Cloudflare's test keys.
+The seeder logs the demo accounts; every one has the password `password` (the owner uses `ADMIN_PHONE` when it is set). Without `FONNTE_TOKEN` WhatsApp messages are written to the log instead of sent; without `MIDTRANS_SERVER_KEY` QRIS is shown as unavailable. The Turnstile keys in `.env.example` are Cloudflare's test keys.
 
 ```
 npm test
@@ -29,12 +29,20 @@ npm run lint
 
 ## Production image
 
-There is no Containerfile yet. When one is added, it must be multi-stage:
+[`Containerfile`](Containerfile) is multi-stage: the build stage runs a full `npm ci` (Vite, the Tailwind build that reads `shadcn/tailwind.css` and `@adonisjs/assembler` are dev dependencies) and `node ace build`; the final stage copies `build/` and runs `npm ci --omit=dev` inside it. Don't add `--omit=optional` without a build and boot test: it also drops platform-specific optional packages. `.adonisjs/` is part of the build context because Vite imports its generated registry.
 
-1. Build stage: a full `npm ci` (dev dependencies included), then `node ace build`. Vite, the Tailwind build (which reads `shadcn/tailwind.css`) and `@adonisjs/assembler` need the dev dependencies.
-2. Final stage: copy `build/` and run only `npm ci --omit=dev` inside it, then `node bin/server.js`.
+## Deploying
 
-`shadcn`, `vite`, `@adonisjs/assembler` and the other build tools are dev dependencies and must not be needed at runtime. Don't add `--omit=optional` without a build and boot test: it also drops platform-specific optional packages.
+Every push to `main` runs [CI](.github/workflows/ci.yml) (typecheck, lint, tests against PostGIS, build). When it passes, [CD](.github/workflows/cd.yml) builds the image with Podman, pushes it to `ghcr.io/r3p-dev/umimaclean` and sends [`compose.yaml`](compose.yaml) over SSH to the server (`vps-setup.sh`), which turns it into Quadlet units, waits for the health checks and rolls back if they fail.
+
+`compose.yaml` runs three services: `web` (runs `node ace migration:run --force` and `node ace db:seed`, then the server, on `umimaclean.r3p.dev`), `scheduler` (the jobs below) and `db` (`docker.io/postgis/postgis`). Proof photos and the database live in the named volumes `umimaclean-proofs` and `umimaclean-pgdata`.
+
+One-time setup on the server, as the deploy user:
+
+1. Allow the PostGIS image: add `ALLOWED_IMAGES="ghcr.io/r3p-dev/ docker.io/library/ docker.io/postgis/"` to `/etc/vps/vps.conf`, then `sudo vps init`.
+2. Secrets (one `.env` for every service): `vps env umimaclean ADMIN_PHONE=… APP_KEY=… DB_PASSWORD=… POSTGRES_PASSWORD=… TURNSTILE_SITE_KEY=… TURNSTILE_SECRET_KEY=… FONNTE_TOKEN=… MIDTRANS_SERVER_KEY=… MIDTRANS_IS_PRODUCTION=…` (`DB_PASSWORD` and `POSTGRES_PASSWORD` are the same value).
+3. `vps ci-key umimaclean` and put the 5 values it prints in the repo's `production` environment secrets; point the DNS of `umimaclean.r3p.dev` at the server.
+4. Push. On its first start `web` seeds production (`database/seeders/main/production_seeder.ts`): the owner account, the store settings and the kecamatan. The owner signs in with `ADMIN_PHONE` and the password `password`, and changes it in Profil right away. Once an owner exists the seeder does nothing, so later deploys never touch the owner's settings or areas; without `ADMIN_PHONE` the first start fails and the deploy rolls back.
 
 ### Known audit finding
 
@@ -51,30 +59,14 @@ The per-IP limits (login, OTP, tracking digits, `GET /area`) depend on this. Two
 
 ## Scheduled jobs
 
-Two ace commands run outside the web server, started by systemd user timers that run them inside the app container (`umimaclean-web`) with `podman exec`.
+The `scheduler` service in `compose.yaml` runs two ace commands in a loop, every 15 minutes:
 
-| Timer                             | When             | What it does                                                                                                                                                                                                                                                                     |
-| --------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `umimaclean-remind-payment.timer` | every 15 minutes | `node ace orders:remind-payment`: sends due WhatsApp payment reminders for unpaid online orders (24 hours after the bill, then every 2 days, only between 10:00 and 15:00 Asia/Jakarta). Safe to run repeatedly; a failed send is retried on the next run. Never calls Midtrans. |
-| `umimaclean-prune-proofs.timer`   | daily            | `node ace proofs:prune`: deletes proof photos older than 90 days.                                                                                                                                                                                                                |
+| Command                          | When                                         | What it does                                                                                                                                                                                                                                   |
+| -------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node ace orders:remind-payment` | every 15 minutes                             | Sends due WhatsApp payment reminders for unpaid online orders (24 hours after the bill, then every 2 days, only between 10:00 and 15:00 Asia/Jakarta). Safe to run repeatedly; a failed send is retried on the next run. Never calls Midtrans. |
+| `node ace proofs:prune`          | when the service starts, then every 24 hours | Deletes proof photos older than 90 days.                                                                                                                                                                                                       |
 
-The unit files are in [`deploy/systemd/`](deploy/systemd/). Install them on the server as user units:
-
-```
-cp deploy/systemd/umimaclean-* ~/.config/systemd/user/
-systemctl --user daemon-reload
-systemctl --user enable --now umimaclean-remind-payment.timer umimaclean-prune-proofs.timer
-systemctl --user list-timers 'umimaclean-*'
-```
-
-Read their logs:
-
-```
-journalctl --user -u umimaclean-remind-payment.service -n 50
-journalctl --user -u umimaclean-prune-proofs.service -n 50
-```
-
-`Persistent=true` runs a missed job once after the server was down. The reminder command checks the 10:00–15:00 window itself, so its timer runs around the clock.
+The reminder command checks the 10:00–15:00 window itself, so the loop runs around the clock. Read their output with `vps logs umimaclean`.
 
 ## Data sources
 

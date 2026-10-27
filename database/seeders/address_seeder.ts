@@ -31,31 +31,31 @@ const ADDRESSES = [
 ]
 
 const DEMO_ADDRESSES = [
-  ['6281223456701', 'Jl. Cisitu Indah III No. 20, Dago, Coblong, Kota Bandung', -6.8806, 107.6113],
-  ['6281223456702', 'Jl. Sukajadi No. 140, Sukagalih, Sukajadi, Kota Bandung', -6.889, 107.596],
+  ['6281394027716', 'Jl. Cisitu Indah III No. 20, Dago, Coblong, Kota Bandung', -6.8806, 107.6113],
+  ['6289652318047', 'Jl. Sukajadi No. 140, Sukagalih, Sukajadi, Kota Bandung', -6.889, 107.596],
   [
-    '6281223456703',
+    '6285295104483',
     'Jl. Gegerkalong Hilir No. 41, Sukarasa, Sukasari, Kota Bandung',
     -6.872,
     107.589,
   ],
   [
-    '6281223456704',
+    '6281802736591',
     'Jl. Tubagus Ismail VIII No. 7, Sekeloa, Coblong, Kota Bandung',
     -6.886,
     107.621,
   ],
   [
-    '6281223456705',
+    '6282118450267',
     'Jl. Gegerkalong Girang No. 18, Isola, Sukasari, Kota Bandung',
     -6.864,
     107.593,
   ],
-  ['6281223456706', 'Jl. Cipaganti No. 102, Pasteur, Sukajadi, Kota Bandung', -6.889, 107.604],
-  ['6281223456707', 'Jl. Dipatiukur No. 66, Lebakgede, Coblong, Kota Bandung', -6.8898, 107.6158],
-  ['6281223456708', 'Jl. Terusan Jakarta No. 12, Antapani, Kota Bandung', -6.913, 107.66],
-  ['6281223456709', 'Jl. Margahayu Raya No. 5, Margahayu, Kab. Bandung', -6.97, 107.58],
-  ['6281223456710', 'Jl. Amir Machmud No. 300, Cimahi Tengah, Kota Cimahi', -6.872, 107.542],
+  ['6287731629054', 'Jl. Cipaganti No. 102, Pasteur, Sukajadi, Kota Bandung', -6.889, 107.604],
+  ['6281572903318', 'Jl. Dipatiukur No. 66, Lebakgede, Coblong, Kota Bandung', -6.8898, 107.6158],
+  ['6285861247790', 'Jl. Terusan Jakarta No. 12, Antapani, Kota Bandung', -6.913, 107.66],
+  ['6281214695082', 'Jl. Margahayu Raya No. 5, Margahayu, Kab. Bandung', -6.97, 107.58],
+  ['6283820571436', 'Jl. Amir Machmud No. 300, Cimahi Tengah, Kota Cimahi', -6.872, 107.542],
 ] as const
 
 export default class extends BaseSeeder {
