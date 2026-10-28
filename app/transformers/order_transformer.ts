@@ -20,6 +20,10 @@ export function formatEvent(date: DateTime) {
   return date.setZone(SERVICE_ZONE).setLocale('id').toFormat('ccc, d LLL · HH.mm')
 }
 
+export function slipDate(date: DateTime) {
+  return date.setZone(SERVICE_ZONE).setLocale('id').toFormat('d LLL yyyy · HH.mm')
+}
+
 export function formatClock(date: DateTime) {
   return date.setZone(SERVICE_ZONE).toFormat('HH.mm')
 }
@@ -28,11 +32,11 @@ export function photoUrl(photo: OrderPhoto) {
   return photo.path ? `/foto-bukti/${photo.id}` : null
 }
 
-function addressOf(address: OrderAddress) {
+function addressOf(address: OrderAddress, canSeePhones: boolean) {
   return {
     label: address.label,
     recipientName: address.recipientName,
-    recipientPhone: displayPhone(address.recipientPhone),
+    recipientPhone: canSeePhones ? displayPhone(address.recipientPhone) : undefined,
     addressText: address.addressText,
     landmark: address.landmark ?? '',
     point: { lat: address.lat, lng: address.lng },
@@ -94,6 +98,13 @@ export function orderRoute(source: string, returnMethod: ReturnMethod) {
 }
 
 export default class OrderTransformer extends BaseTransformer<Order> {
+  constructor(
+    resource: Order,
+    protected canSeePhones = true
+  ) {
+    super(resource)
+  }
+
   toObject() {
     const order = this.resource
     const events: Partial<Record<number, string>> = { 0: formatEvent(order.createdAt) }
@@ -114,7 +125,9 @@ export default class OrderTransformer extends BaseTransformer<Order> {
       (!pickup ||
         delivery.addressText !== pickup.addressText ||
         delivery.lat !== pickup.lat ||
-        delivery.lng !== pickup.lng)
+        delivery.lng !== pickup.lng ||
+        delivery.recipientName !== pickup.recipientName ||
+        delivery.recipientPhone !== pickup.recipientPhone)
     const firstName = order.customerName.trim().split(/\s+/)[0] ?? ''
 
     return {
@@ -127,7 +140,7 @@ export default class OrderTransformer extends BaseTransformer<Order> {
       contact: {
         name: order.customerName,
         firstName,
-        phone: order.customerPhone ? displayPhone(order.customerPhone) : '',
+        phone: this.canSeePhones ? displayPhone(order.customerPhone) : undefined,
         maskedPhone: order.customerPhone ? maskPhone(order.customerPhone) : '',
       },
       createdOn: order.createdAt.setZone(SERVICE_ZONE).toISODate() ?? '',
@@ -154,8 +167,9 @@ export default class OrderTransformer extends BaseTransformer<Order> {
             deliver: proofOf(order, PhotoKind.DELIVERY),
           }
         : undefined,
-      pickupAddress: pickup ? addressOf(pickup) : null,
-      deliveryAddress: hasSeparateDelivery && delivery ? addressOf(delivery) : null,
+      pickupAddress: pickup ? addressOf(pickup, this.canSeePhones) : null,
+      deliveryAddress:
+        hasSeparateDelivery && delivery ? addressOf(delivery, this.canSeePhones) : null,
     }
   }
 }

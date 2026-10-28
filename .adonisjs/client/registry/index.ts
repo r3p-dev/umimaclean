@@ -408,6 +408,24 @@ const routes = {
     tokens: [{"old":"/staf/foto","type":0,"val":"staf","end":""},{"old":"/staf/foto","type":0,"val":"foto","end":""}],
     types: placeholder as Registry['staff.photo']['types'],
   },
+  'staff.print.intake': {
+    methods: ["GET","HEAD"],
+    pattern: '/staf/cetak/:id/tanda-terima',
+    tokens: [{"old":"/staf/cetak/:id/tanda-terima","type":0,"val":"staf","end":""},{"old":"/staf/cetak/:id/tanda-terima","type":0,"val":"cetak","end":""},{"old":"/staf/cetak/:id/tanda-terima","type":1,"val":"id","end":""},{"old":"/staf/cetak/:id/tanda-terima","type":0,"val":"tanda-terima","end":""}],
+    types: placeholder as Registry['staff.print.intake']['types'],
+  },
+  'staff.print.label': {
+    methods: ["GET","HEAD"],
+    pattern: '/staf/cetak/:id/label',
+    tokens: [{"old":"/staf/cetak/:id/label","type":0,"val":"staf","end":""},{"old":"/staf/cetak/:id/label","type":0,"val":"cetak","end":""},{"old":"/staf/cetak/:id/label","type":1,"val":"id","end":""},{"old":"/staf/cetak/:id/label","type":0,"val":"label","end":""}],
+    types: placeholder as Registry['staff.print.label']['types'],
+  },
+  'staff.print.receipt': {
+    methods: ["GET","HEAD"],
+    pattern: '/staf/cetak/:id/struk',
+    tokens: [{"old":"/staf/cetak/:id/struk","type":0,"val":"staf","end":""},{"old":"/staf/cetak/:id/struk","type":0,"val":"cetak","end":""},{"old":"/staf/cetak/:id/struk","type":1,"val":"id","end":""},{"old":"/staf/cetak/:id/struk","type":0,"val":"struk","end":""}],
+    types: placeholder as Registry['staff.print.receipt']['types'],
+  },
   'staff.history': {
     methods: ["GET","HEAD"],
     pattern: '/staf/riwayat',

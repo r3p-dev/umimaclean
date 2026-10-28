@@ -43,6 +43,7 @@ export default function OrderDetail({ order, isOwner }: { order: OrderRecord; is
   const rows = order.bill && view.servicesKnown ? billRows(order.bill) : null
   const pickup = order.pickupAddress
   const delivery = order.deliveryAddress
+  const recipient = order.returnMethod === 'store' ? null : (delivery ?? pickup)
 
   const payCard = view.total && !view.cancelled && (
     <section className="flex flex-col gap-3.5 rounded-lg border border-border bg-card p-5">
@@ -165,6 +166,12 @@ export default function OrderDetail({ order, isOwner }: { order: OrderRecord; is
                         ? shortStreet(delivery.addressText)
                         : 'Ke alamat yang sama'}
                   </span>
+                  {recipient && (
+                    <span className="text-meta leading-[1.4] text-muted-foreground">
+                      Penerima: {recipient.recipientName}
+                      {recipient.recipientPhone && ` · ${recipient.recipientPhone}`}
+                    </span>
+                  )}
                 </span>
               </section>
             </div>

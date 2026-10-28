@@ -7,6 +7,7 @@ import {
   IconCheck,
   IconCloudOff,
   IconLoader2,
+  IconPrinter,
   IconRotate,
   IconSend,
   IconShieldCheck,
@@ -34,10 +35,12 @@ export default function ProofPhoto({
   kind: rawKind,
   id,
   number,
+  canPrintIntake,
 }: {
   kind: string
   id: number | null
   number: string
+  canPrintIntake: boolean
 }) {
   const account = useAccount()
   const kind = isProofKind(rawKind) ? rawKind : 'intake'
@@ -340,6 +343,17 @@ export default function ProofPhoto({
             </div>
           )}
 
+          {kind === 'intake' && id && canPrintIntake && (
+            <LinkButton
+              variant="outline"
+              size="desktop"
+              className="self-center"
+              href={urlFor('staff.print.intake', { id })}
+            >
+              <IconPrinter />
+              Cetak tanda terima
+            </LinkButton>
+          )}
           {phase !== 'done' && (
             <LinkButton
               variant="ghost"

@@ -101,6 +101,11 @@ export interface ApiDefinition {
       qrisCheck: typeof routes['staff.store_payment.qris_check']
     }
     photo: typeof routes['staff.photo']
+    print: {
+      intake: typeof routes['staff.print.intake']
+      label: typeof routes['staff.print.label']
+      receipt: typeof routes['staff.print.receipt']
+    }
     history: typeof routes['staff.history']
     profile: typeof routes['staff.profile']
     password: {

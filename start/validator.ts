@@ -160,6 +160,7 @@ vine.messagesProvider = new SimpleMessagesProvider(
     digits: '4 digit terakhir',
     label: 'Label',
     recipientName: 'Nama penerima',
+    recipientPhone: 'Nomor WhatsApp',
     addressText: 'Alamat',
     landmark: 'Patokan',
     point: 'Titik di peta',

@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { Head, router } from '@inertiajs/react'
-import { IconCheck, IconRefresh, IconWashMachine } from '@tabler/icons-react'
+import { IconCheck, IconPrinter, IconRefresh, IconWashMachine } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { Button, LinkButton } from '~/components/ui/button'
 import { FieldDescription, FieldError } from '~/components/ui/field'
@@ -226,6 +226,10 @@ export default function StorePayment({
               Pesanan langsung masuk Dalam Pencucian. Bila pelanggan minta diantar, pesanan masuk
               antrean Antar setelah selesai dicuci.
             </p>
+            <LinkButton className="text-[15px]" href={urlFor('staff.print.receipt', { id })}>
+              <IconPrinter />
+              Cetak struk
+            </LinkButton>
             <LinkButton variant="outline" className="text-[15px]" href={back.href}>
               Selesai
             </LinkButton>

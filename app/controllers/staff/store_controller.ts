@@ -59,10 +59,13 @@ export default class StoreController {
 
   async photo({ bouncer, inertia, request }: HttpContext) {
     await bouncer.with(OrderPolicy).authorize('work')
+    const id = Number(request.qs().pesanan) || null
+    const order = id ? await this.orders.findOrderById(id) : null
     return inertia.render('staff/store/photo', {
       kind: String(request.qs().untuk ?? 'intake'),
-      id: Number(request.qs().pesanan) || null,
-      number: Number(request.qs().pesanan) ? orderNumber(Number(request.qs().pesanan)) : '',
+      id,
+      number: id ? orderNumber(id) : '',
+      canPrintIntake: order?.canPrintIntakeSlip() ?? false,
     })
   }
 

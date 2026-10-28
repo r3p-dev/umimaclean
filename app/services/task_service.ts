@@ -131,7 +131,11 @@ export default class TaskService {
       .where('created_at', '>=', startOfToday().toJSDate())
       .whereNotNull('order_id')
       .preload('order', (order) => {
-        order.preload('pickupAddress').preload('deliveryAddress').preload('items')
+        order
+          .preload('pickupAddress')
+          .preload('deliveryAddress')
+          .preload('items')
+          .preload('payments')
       })
       .orderBy('id', 'desc')
   }
@@ -370,6 +374,7 @@ export default class TaskService {
       .preload('deliveryAddress')
       .preload('items', (items) => items.orderBy('position', 'asc'))
       .preload('bill', (bill) => bill.preload('lines'))
+      .preload('payments')
   }
 
   async #skippedToday(kind: TripKind) {

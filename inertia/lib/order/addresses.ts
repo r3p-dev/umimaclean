@@ -6,6 +6,7 @@ export type SavedAddress = Data.Address
 export type AddressInput = {
   label: string
   recipientName: string
+  recipientPhone: string
   addressText: string
   landmark: string
   point: PickupPoint

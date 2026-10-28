@@ -71,6 +71,9 @@ export type ScannedRoutes = {
     'staff.store_payment.qris_check': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.walk_in.photos': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.photo': { paramsTuple?: []; params?: {} }
+    'staff.print.intake': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.print.label': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.print.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.history': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
     'staff.password.update': { paramsTuple?: []; params?: {} }
@@ -151,6 +154,9 @@ export type ScannedRoutes = {
     'staff.walk_in': { paramsTuple?: []; params?: {} }
     'staff.store_payment': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.photo': { paramsTuple?: []; params?: {} }
+    'staff.print.intake': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.print.label': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.print.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.history': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
     'admin.summary': { paramsTuple?: []; params?: {} }
@@ -207,6 +213,9 @@ export type ScannedRoutes = {
     'staff.walk_in': { paramsTuple?: []; params?: {} }
     'staff.store_payment': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.photo': { paramsTuple?: []; params?: {} }
+    'staff.print.intake': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.print.label': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'staff.print.receipt': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.history': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
     'admin.summary': { paramsTuple?: []; params?: {} }

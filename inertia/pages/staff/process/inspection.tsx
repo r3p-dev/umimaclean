@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Head, router } from '@inertiajs/react'
-import { IconClipboardCheck, IconPlus } from '@tabler/icons-react'
+import { IconClipboardCheck, IconPlus, IconPrinter } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import SourceTag from '~/components/atoms/source_tag'
 import ToneBadge from '~/components/atoms/tone_badge'
@@ -10,7 +10,7 @@ import InspectionItemCard from '~/components/organisms/processing/inspection_ite
 import StaffMissingOrder from '~/components/organisms/staff_missing_order'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
 import StaffLayout from '~/components/templates/staff_layout'
-import { Button } from '~/components/ui/button'
+import { Button, LinkButton } from '~/components/ui/button'
 import type { Catalog } from '~/lib/processing/catalog'
 import {
   INSPECTION_FLOW,
@@ -116,6 +116,17 @@ export default function Inspection({
           currentClassName="bg-status-periksa-dot"
           className="grid-cols-5"
         />
+        {order.canPrintIntake && (
+          <LinkButton
+            variant="outline"
+            size="desktop"
+            className="self-start"
+            href={urlFor('staff.print.intake', { id: orderId })}
+          >
+            <IconPrinter />
+            Cetak tanda terima
+          </LinkButton>
+        )}
         {needsStart && (
           <Button
             size="cta"

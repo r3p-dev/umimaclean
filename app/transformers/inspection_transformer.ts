@@ -71,6 +71,7 @@ export default class InspectionTransformer extends BaseTransformer<Order> {
       estimate: countLines(order).join(', '),
       itemCount: order.itemCount(),
       customerNote: order.note || null,
+      canPrintIntake: order.canPrintIntakeSlip(),
       isSaved,
       total: order.bill?.total ?? 0,
       pickupPhoto: pickupPhoto ? photoUrl(pickupPhoto) : null,

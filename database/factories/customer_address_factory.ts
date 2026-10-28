@@ -5,6 +5,7 @@ export const CustomerAddressFactory = factory
   .define(CustomerAddress, ({ faker }) => ({
     label: 'Rumah',
     recipientName: faker.person.fullName(),
+    recipientPhone: '628' + faker.string.numeric(9),
     addressText: `Jl. ${faker.location.street()} No. ${faker.number.int({ min: 1, max: 99 })}, Coblong`,
     landmark: null,
     lat: -6.8848,

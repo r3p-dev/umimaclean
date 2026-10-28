@@ -21,6 +21,8 @@ export default class WashTransformer extends BaseTransformer<Order> {
       isDone,
       isCollected: order.status === OrderStatus.COMPLETED,
       isWaitingCollection: order.status === OrderStatus.READY_FOR_COLLECTION,
+      canPrintLabel: order.canPrintLabel(),
+      canPrintReceipt: order.canPrintReceipt(),
       statusSub: paid?.paidAt
         ? `${shortName(order.customerName)} · Lunas ${PaymentMethodLabel[paid.method]} · dicuci sejak ${formatEvent(paid.paidAt)}`
         : shortName(order.customerName),

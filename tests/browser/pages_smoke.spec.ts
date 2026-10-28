@@ -1,9 +1,12 @@
 import { test } from '@japa/runner'
 import db from '@adonisjs/lucid/services/db'
 import { OrderSource, OrderStatus } from '#enums/order_enum'
+import { Role } from '#enums/role_enum'
+import { displayPhone, lastFourDigits } from '#helpers/phone'
 import Order from '#models/order'
 import User from '#models/user'
 import IndexSeeder from '#database/seeders/main/index_seeder'
+import { DEMO_PHONE, DEMO_STAFF_PHONE } from '#database/seeders/user_seeder'
 import { useApp } from '#tests/support/app'
 
 async function code(status: OrderStatus, source?: OrderSource) {
@@ -24,9 +27,9 @@ test.group('Every page renders with seeded data', (group) => {
   }) => {
     await new IndexSeeder(db.connection()).run()
 
-    const rina = await User.findByOrFail('phone', '6281223456789')
-    const staff = await User.findByOrFail('phone', '6281234567801')
-    const owner = await User.findByOrFail('phone', '6281122001100')
+    const rina = await User.findByOrFail('phone', DEMO_PHONE)
+    const staff = await User.findByOrFail('phone', DEMO_STAFF_PHONE)
+    const owner = await User.query().where('role', Role.ADMIN).firstOrFail()
     const awaiting = await code(OrderStatus.AWAITING_PAYMENT, OrderSource.ONLINE)
     const completed = await Order.query()
       .where('user_id', rina.id)
@@ -62,6 +65,9 @@ test.group('Every page renders with seeded data', (group) => {
           `/staf/proses/${await code(OrderStatus.IN_CLEANING)}/cuci`,
           '/staf/transaksi',
           `/staf/transaksi/${await code(OrderStatus.AWAITING_PAYMENT, OrderSource.STORE)}/bayar`,
+          `/staf/cetak/${await code(OrderStatus.IN_INSPECTION, OrderSource.STORE)}/tanda-terima`,
+          `/staf/cetak/${await code(OrderStatus.READY_FOR_DELIVERY)}/label`,
+          `/staf/cetak/${await code(OrderStatus.IN_CLEANING, OrderSource.STORE)}/struk`,
           '/staf/riwayat',
           '/staf/profil',
           '/staf/lainnya',
@@ -86,6 +92,14 @@ test.group('Every page renders with seeded data', (group) => {
       ],
     ]
 
+    const rinaRecipient = `Penerima: ${rina.name} · ${displayPhone(rina.phone)}`
+    const shows: Record<string, string | RegExp> = {
+      '/profil/alamat': rinaRecipient,
+      [`/pesanan/${awaiting}`]: rinaRecipient,
+      '/staf/jemput/tugas': /^Kontak: .+ · \+62 8[\d-]+$/,
+      '/staf/antar/tugas': /^Penerima: .+ · \+62 8[\d-]+$/,
+    }
+
     const failures: string[] = []
     for (const [user, urls] of roles) {
       await browserContext.clearCookies()
@@ -108,12 +122,49 @@ test.group('Every page renders with seeded data', (group) => {
         if ((response?.status() ?? 500) >= 400) {
           errors.push(`HTTP ${response?.status()}`)
         }
+        const expected = user ? shows[url] : undefined
+        if (expected) {
+          await page
+            .getByText(expected)
+            .first()
+            .waitFor({ timeout: 10_000 })
+            .catch(() => {
+              errors.push(`missing ${expected}`)
+            })
+        }
         if (errors.length) {
           failures.push(`${url}: ${errors.join(' | ')}`)
         }
         await page.close()
       }
     }
+
+    await browserContext.clearCookies()
+    await browserContext.loginAs(staff)
+    const packed = await code(OrderStatus.READY_FOR_DELIVERY)
+    for (const url of [`/staf/proses/${packed}/cuci`, '/staf/antar/tugas']) {
+      const page = await browserContext.newPage()
+      await page.goto(url)
+      for (const name of ['Label', 'Struk']) {
+        await page
+          .getByRole('link', { name, exact: true })
+          .waitFor({ timeout: 10_000 })
+          .catch(() => {
+            failures.push(`${url}: missing ${name} print button`)
+          })
+      }
+      await page.close()
+    }
+
+    await browserContext.clearCookies()
+    const guest = await browserContext.newPage()
+    await guest.goto(`/pesanan/${awaiting}`)
+    await guest.getByLabel('Digit 1 dari 4').click()
+    await guest.keyboard.type(lastFourDigits(rina.phone))
+    await guest.getByText(`Penerima: ${rina.name}`).first().waitFor({ timeout: 10_000 })
+    assert.notInclude(await guest.content(), displayPhone(rina.phone))
+    await guest.close()
+
     assert.deepEqual(failures, [])
   }).timeout(240_000)
 })

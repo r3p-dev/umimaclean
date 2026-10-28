@@ -5,7 +5,7 @@
  * order must still show where it was picked up and where it goes. Walk-in deliveries
  * have no saved address at all.
  * - type: 'pickup' or 'delivery' (OrderAddressType enum).
- * - recipient_phone: the customer's phone at order time, or the phone typed for a walk-in.
+ * - recipient_phone: the saved address's recipient phone at order time, or the phone typed for a walk-in.
  *
  * Unique (order_id, type): an order has at most one pickup and one delivery address.
  */

@@ -7,10 +7,13 @@ import {
   IconMapPinFilled,
   IconMessage,
   IconPhone,
+  IconPrinter,
   IconShoe,
 } from '@tabler/icons-react'
+import { urlFor } from '~/client'
 import { LinkButton } from '~/components/ui/button'
 import SourceTag from '~/components/atoms/source_tag'
+import { displayPhone } from '~/lib/shared/phone'
 import {
   TASK_COPY,
   itemLineIcon,
@@ -42,6 +45,13 @@ export default function TaskDetails({ task, kind }: { task: Task; kind: TaskKind
             {task.ref}
           </span>
         </div>
+        <p className="text-[14.5px] leading-[1.45]">
+          <span className="text-foreground-secondary">
+            {kind === 'antar' ? 'Penerima' : 'Kontak'}:{' '}
+          </span>
+          <span className="font-semibold">{task.receiver ?? task.full}</span> ·{' '}
+          {displayPhone(task.tel)}
+        </p>
         <div className="grid grid-cols-2 gap-2">
           <LinkButton
             variant="outline"
@@ -101,6 +111,30 @@ export default function TaskDetails({ task, kind }: { task: Task; kind: TaskKind
           </ul>
         </div>
       </div>
+      {kind === 'antar' && (task.canPrintLabel || task.canPrintReceipt) && (
+        <div className="grid grid-cols-2 gap-2">
+          {task.canPrintLabel && (
+            <LinkButton
+              variant="outline"
+              className="h-12.5 gap-1.5 border-border-strong text-[14.5px]"
+              href={urlFor('staff.print.label', { id: task.id })}
+            >
+              <IconPrinter className="text-info-foreground" />
+              Label
+            </LinkButton>
+          )}
+          {task.canPrintReceipt && (
+            <LinkButton
+              variant="outline"
+              className="h-12.5 gap-1.5 border-border-strong text-[14.5px]"
+              href={urlFor('staff.print.receipt', { id: task.id })}
+            >
+              <IconPrinter className="text-info-foreground" />
+              Struk
+            </LinkButton>
+          )}
+        </div>
+      )}
     </>
   )
 }

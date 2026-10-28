@@ -46,9 +46,10 @@ export default class OrdersController {
       return this.#unlockPage(ctx, order)
     }
 
+    const isOwner = await ctx.bouncer.with(OrderPolicy).allows('own', order)
     return ctx.inertia.render('customer/orders/show', {
-      order: new OrderTransformer(order).toObject(),
-      isOwner: await ctx.bouncer.with(OrderPolicy).allows('own', order),
+      order: new OrderTransformer(order, isOwner).toObject(),
+      isOwner,
     })
   }
 
@@ -58,11 +59,12 @@ export default class OrdersController {
       return this.#unlockPage(ctx, order)
     }
 
+    const isOwner = await ctx.bouncer.with(OrderPolicy).allows('own', order)
     return ctx.inertia.render('customer/payment/bill', {
       id: order.id,
       number: order.number(),
-      order: new OrderTransformer(order).toObject(),
-      isOwner: await ctx.bouncer.with(OrderPolicy).allows('own', order),
+      order: new OrderTransformer(order, isOwner).toObject(),
+      isOwner,
     })
   }
 

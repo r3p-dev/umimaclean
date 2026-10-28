@@ -7,7 +7,7 @@ type ClientRule = (value: string) => string | null
 
 const clientModule = new URL('../../inertia/lib/shared/validation.ts', import.meta.url).href
 
-type Field = 'name' | 'phone' | 'address' | 'label' | 'recipient'
+type Field = 'name' | 'phone' | 'address' | 'label' | 'recipient' | 'recipientPhone'
 
 const client: Record<Field, ClientRule> = await import(clientModule).then(
   (rules: Record<string, ClientRule>) => ({
@@ -16,6 +16,7 @@ const client: Record<Field, ClientRule> = await import(clientModule).then(
     address: rules.addressError,
     label: rules.labelError,
     recipient: rules.recipientError,
+    recipientPhone: rules.phoneError,
   })
 )
 
@@ -23,6 +24,7 @@ const ADDRESS_FIELDS = {
   address: 'addressText',
   label: 'label',
   recipient: 'recipientName',
+  recipientPhone: 'recipientPhone',
 } as const
 
 const account = {
@@ -35,6 +37,7 @@ const account = {
 const address = {
   label: 'Rumah',
   recipientName: 'Budi Santoso',
+  recipientPhone: '81234567890',
   addressText: 'Jl. Dipati Ukur No. 35, Coblong, Bandung',
   point: { lat: -6.8848, lng: 107.6152 },
 }
@@ -88,6 +91,9 @@ test.group('Client and server validation agree', () => {
       { field: 'recipient', value: ' A ' },
       { field: 'recipient', value: 'x'.repeat(80) },
       { field: 'recipient', value: 'x'.repeat(81) },
+      { field: 'recipientPhone', value: '' },
+      { field: 'recipientPhone', value: '0212345678' },
+      { field: 'recipientPhone', value: '81234567' },
     ] as const)
     .run(async ({ assert }, { field, value }) => {
       assert.equal(client[field](value), await serverError(field, value))

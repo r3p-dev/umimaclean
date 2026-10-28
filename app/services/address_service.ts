@@ -131,6 +131,7 @@ export default class AddressService {
     return {
       label: input.label,
       recipientName: input.recipientName,
+      recipientPhone: input.recipientPhone,
       addressText: input.addressText,
       landmark: input.landmark || null,
       lat: input.point.lat,

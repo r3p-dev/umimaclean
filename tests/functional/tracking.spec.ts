@@ -2,8 +2,10 @@ import { test } from '@japa/runner'
 import limiter from '@adonisjs/limiter/services/main'
 import { UserFactory } from '#database/factories/user_factory'
 import { OrderFactory } from '#database/factories/order_factory'
-import { OrderSource } from '#enums/order_enum'
-import { inertia, post, useApp } from '#tests/support/app'
+import { OrderAddressType, OrderSource } from '#enums/order_enum'
+import { displayPhone, lastFourDigits, nationalNumber } from '#helpers/phone'
+import OrderAddress from '#models/order_address'
+import { createOrder, inertia, post, useApp } from '#tests/support/app'
 
 function walkInOrder() {
   return OrderFactory.merge({
@@ -130,6 +132,45 @@ test.group('Order tracking without an account', (group) => {
     const page = await inertia(client, `/pesanan/${order.id}`).loginAs(owner)
     page.assertInertiaComponent('customer/orders/show')
     page.assertInertiaPropsContains({ isOwner: true })
+  })
+
+  test('a guest who unlocked the order gets no full phone numbers', async ({ client, assert }) => {
+    const user = await UserFactory.create()
+    const order = await createOrder(user)
+    const recipientPhone = '6281399990000'
+    await OrderAddress.query()
+      .where('order_id', order.id)
+      .where('type', OrderAddressType.DELIVERY)
+      .update({ recipient_phone: recipientPhone })
+    const unlocked = await post(client, `/pesanan/${order.id}/buka`, {
+      digits: lastFourDigits(user.phone),
+    })
+
+    for (const url of [`/pesanan/${order.id}`, `/pesanan/${order.id}/tagihan`]) {
+      const guest = await inertia(client, url, unlocked.session())
+      guest.assertInertiaPropsContains({
+        isOwner: false,
+        order: {
+          pickupAddress: { recipientName: user.name },
+          deliveryAddress: { recipientName: user.name },
+        },
+      })
+      const props = JSON.stringify(guest.inertiaProps)
+      for (const phone of [user.phone, recipientPhone]) {
+        assert.notInclude(props, displayPhone(phone))
+        assert.notInclude(props, nationalNumber(phone))
+      }
+    }
+
+    const own = await inertia(client, `/pesanan/${order.id}`).loginAs(user)
+    own.assertInertiaPropsContains({
+      isOwner: true,
+      order: {
+        contact: { phone: displayPhone(user.phone) },
+        pickupAddress: { recipientPhone: displayPhone(user.phone) },
+        deliveryAddress: { recipientPhone: displayPhone(recipientPhone) },
+      },
+    })
   })
 
   test('an order that does not exist answers 404', async ({ client }) => {

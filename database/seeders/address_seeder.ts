@@ -24,6 +24,8 @@ const ADDRESSES = [
     label: 'Rumah Ibu',
     addressText: 'Jl. Kopo Permai II Blok 3A No. 7, Margahayu, Kab. Bandung',
     landmark: 'Depan masjid',
+    recipientName: 'Sri Wahyuni',
+    recipientPhone: '6281320574619',
     lat: -6.9663,
     lng: 107.5742,
     isPrimary: false,
@@ -58,6 +60,17 @@ const DEMO_ADDRESSES = [
   ['6283820571436', 'Jl. Amir Machmud No. 300, Cimahi Tengah, Kota Cimahi', -6.872, 107.542],
 ] as const
 
+const SECOND_ADDRESS = {
+  phone: '6281394027716',
+  label: 'Kos Adik',
+  recipientName: 'Dimas Putra',
+  recipientPhone: '6285624081739',
+  addressText: 'Jl. Ciumbuleuit No. 94, Hegarmanah, Cidadap, Kota Bandung',
+  landmark: 'Kos pagar hijau, titip ke penjaga',
+  lat: -6.8745,
+  lng: 107.6041,
+}
+
 export default class extends BaseSeeder {
   override async run() {
     const customer = await User.findByOrFail('phone', DEMO_PHONE)
@@ -65,9 +78,10 @@ export default class extends BaseSeeder {
       await CustomerAddress.updateOrCreate(
         { userId: customer.id, label: address.label },
         {
+          recipientName: customer.name,
+          recipientPhone: customer.phone,
           ...address,
           userId: customer.id,
-          recipientName: customer.name,
         }
       )
     }
@@ -78,6 +92,7 @@ export default class extends BaseSeeder {
         { userId: user.id, label: 'Rumah' },
         {
           recipientName: user.name,
+          recipientPhone: user.phone,
           addressText,
           landmark: null,
           lat,
@@ -86,5 +101,12 @@ export default class extends BaseSeeder {
         }
       )
     }
+
+    const { phone, label, ...address } = SECOND_ADDRESS
+    const user = await User.findByOrFail('phone', phone)
+    await CustomerAddress.firstOrCreate(
+      { userId: user.id, label },
+      { ...address, isPrimary: false }
+    )
   }
 }

@@ -9,7 +9,9 @@ import type { InferSharedProps, InferFlashData } from '@adonisjs/inertia/types'
 import type AddressTransformer from '#transformers/address_transformer'
 import type AdminOrderDetailTransformer from '#transformers/admin_order_detail_transformer'
 import type AdminOrderTransformer from '#transformers/admin_order_transformer'
+import type DeliveryLabelTransformer from '#transformers/delivery_label_transformer'
 import type InspectionTransformer from '#transformers/inspection_transformer'
+import type IntakeSlipTransformer from '#transformers/intake_slip_transformer'
 import type OrderTransformer from '#transformers/order_transformer'
 import type ProcessRowTransformer from '#transformers/process_row_transformer'
 import type ReceiptTransformer from '#transformers/receipt_transformer'
@@ -34,9 +36,17 @@ export namespace Data {
   export namespace AdminOrder {
     export type Variants = InferVariants<AdminOrderTransformer>
   }
+  export type DeliveryLabel = InferData<DeliveryLabelTransformer>
+  export namespace DeliveryLabel {
+    export type Variants = InferVariants<DeliveryLabelTransformer>
+  }
   export type Inspection = InferData<InspectionTransformer>
   export namespace Inspection {
     export type Variants = InferVariants<InspectionTransformer>
+  }
+  export type IntakeSlip = InferData<IntakeSlipTransformer>
+  export namespace IntakeSlip {
+    export type Variants = InferVariants<IntakeSlipTransformer>
   }
   export type Order = InferData<OrderTransformer>
   export namespace Order {

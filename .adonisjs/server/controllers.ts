@@ -39,6 +39,7 @@ export const controllers = {
   staff: {
     Account: () => import('#controllers/staff/account_controller'),
     Dashboard: () => import('#controllers/staff/dashboard_controller'),
+    Prints: () => import('#controllers/staff/prints_controller'),
     Process: () => import('#controllers/staff/process_controller'),
     Store: () => import('#controllers/staff/store_controller'),
     Tasks: () => import('#controllers/staff/tasks_controller'),

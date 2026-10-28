@@ -8,6 +8,7 @@ import ProfileShell from '~/components/organisms/profile/profile_shell'
 import AccountLayout from '~/components/templates/account_layout'
 import { Button, LinkButton } from '~/components/ui/button'
 import type { SavedAddress } from '~/lib/order/addresses'
+import { displayPhone } from '~/lib/shared/phone'
 
 export default function AddressIndex({
   addresses,
@@ -92,6 +93,9 @@ export default function AddressIndex({
                         Patokan: {address.landmark}
                       </span>
                     )}
+                    <span className="text-meta leading-[1.4] text-muted-foreground">
+                      Penerima: {address.recipientName} · {displayPhone(address.recipientPhone)}
+                    </span>
                   </div>
                 </div>
                 <div className="flex gap-2 border-t border-border pt-3">

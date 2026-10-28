@@ -83,11 +83,11 @@ export function orderSearchTerm(value: unknown) {
     .slice(0, 9)
 }
 
-export function snapshotOf(user: User, address: CustomerAddress) {
+export function snapshotOf(address: CustomerAddress) {
   return {
     label: address.label,
     recipientName: address.recipientName,
-    recipientPhone: user.phone,
+    recipientPhone: address.recipientPhone,
     addressText: address.addressText,
     landmark: address.landmark,
     lat: address.lat,
@@ -442,8 +442,8 @@ export default class OrderService {
       )
       await OrderAddress.createMany(
         [
-          { ...snapshotOf(user, pickup), orderId: order.id, type: OrderAddressType.PICKUP },
-          { ...snapshotOf(user, delivery), orderId: order.id, type: OrderAddressType.DELIVERY },
+          { ...snapshotOf(pickup), orderId: order.id, type: OrderAddressType.PICKUP },
+          { ...snapshotOf(delivery), orderId: order.id, type: OrderAddressType.DELIVERY },
         ],
         { client: transaction }
       )
@@ -493,7 +493,7 @@ export default class OrderService {
           : null
       if (saved) {
         await this.#assertServiceable(saved, 'address', OUTSIDE_MESSAGES.saved)
-        delivery = snapshotOf(customer!, saved)
+        delivery = snapshotOf(saved)
       } else {
         if (!payload.address || !payload.point) {
           throw fieldError('address', 'Isi alamat dan titik antar di peta.', 'address.required')

@@ -54,6 +54,9 @@ declare module '@adonisjs/inertia/types' {
     'staff/account/profile': ExtractProps<(typeof import('../../inertia/pages/staff/account/profile.tsx'))['default']>
     'staff/home': ExtractProps<(typeof import('../../inertia/pages/staff/home.tsx'))['default']>
     'staff/more': ExtractProps<(typeof import('../../inertia/pages/staff/more.tsx'))['default']>
+    'staff/print/intake': ExtractProps<(typeof import('../../inertia/pages/staff/print/intake.tsx'))['default']>
+    'staff/print/label': ExtractProps<(typeof import('../../inertia/pages/staff/print/label.tsx'))['default']>
+    'staff/print/receipt': ExtractProps<(typeof import('../../inertia/pages/staff/print/receipt.tsx'))['default']>
     'staff/process/inspection': ExtractProps<(typeof import('../../inertia/pages/staff/process/inspection.tsx'))['default']>
     'staff/process/queue': ExtractProps<(typeof import('../../inertia/pages/staff/process/queue.tsx'))['default']>
     'staff/process/washing': ExtractProps<(typeof import('../../inertia/pages/staff/process/washing.tsx'))['default']>

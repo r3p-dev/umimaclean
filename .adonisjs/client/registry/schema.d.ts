@@ -811,6 +811,42 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/store_controller').default['photo']>>>
     }
   }
+  'staff.print.intake': {
+    methods: ["GET","HEAD"]
+    pattern: '/staf/cetak/:id/tanda-terima'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/prints_controller').default['intake']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/prints_controller').default['intake']>>>
+    }
+  }
+  'staff.print.label': {
+    methods: ["GET","HEAD"]
+    pattern: '/staf/cetak/:id/label'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/prints_controller').default['label']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/prints_controller').default['label']>>>
+    }
+  }
+  'staff.print.receipt': {
+    methods: ["GET","HEAD"]
+    pattern: '/staf/cetak/:id/struk'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/prints_controller').default['receipt']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/prints_controller').default['receipt']>>>
+    }
+  }
   'staff.history': {
     methods: ["GET","HEAD"]
     pattern: '/staf/riwayat'

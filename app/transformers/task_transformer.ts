@@ -84,6 +84,8 @@ export default class TaskTransformer extends BaseTransformer<Order> {
       count:
         this.kind === 'delivery' && order.items?.length ? order.items.length : order.itemCount(),
       isFresh: false,
+      canPrintLabel: order.canPrintLabel(),
+      canPrintReceipt: order.canPrintReceipt(),
     }
   }
 }

@@ -1,6 +1,7 @@
 import { inject } from '@adonisjs/core'
 import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
+import { nationalNumber } from '#helpers/phone'
 import CustomerAddressPolicy from '#policies/customer_address_policy'
 import AddressService from '#services/address_service'
 import AddressTransformer from '#transformers/address_transformer'
@@ -35,6 +36,7 @@ export default class AddressesController {
       address: null,
       origin: this.#originOf(request.qs().dari),
       recipientName: user.name,
+      recipientPhone: nationalNumber(user.phone),
       isFirstAddress: saved.length === 0,
     })
   }
@@ -51,12 +53,14 @@ export default class AddressesController {
   }
 
   async edit({ auth, bouncer, inertia, params }: HttpContext) {
+    const user = auth.getUserOrFail()
     const address = await this.#owned(bouncer, params.id)
 
     return inertia.render('customer/addresses/form', {
       address: new AddressTransformer(address).toObject(),
       origin: 'addresses' as Origin,
-      recipientName: auth.getUserOrFail().name,
+      recipientName: user.name,
+      recipientPhone: nationalNumber(user.phone),
       isFirstAddress: false,
     })
   }

@@ -94,6 +94,26 @@ test.group('Address book', (group) => {
     assert.isFalse(older.isPrimary)
   })
 
+  test('requires a recipient phone and stores it normalized', async ({ client, assert }) => {
+    const user = await UserFactory.create()
+
+    const missing = await post(
+      client,
+      '/profil/alamat',
+      addressPayload({ recipientPhone: '' })
+    ).loginAs(user)
+    missing.assertBodyContains({ errors: [{ field: 'recipientPhone', rule: 'required' }] })
+    assert.lengthOf(await CustomerAddress.all(), 0)
+
+    await post(
+      client,
+      '/profil/alamat',
+      addressPayload({ recipientPhone: '0813 9999 0000' })
+    ).loginAs(user)
+    const address = await CustomerAddress.firstOrFail()
+    assert.equal(address.recipientPhone, '6281399990000')
+  })
+
   test('rejects a pin outside the free pickup area', async ({ client, assert }) => {
     const user = await UserFactory.create()
 

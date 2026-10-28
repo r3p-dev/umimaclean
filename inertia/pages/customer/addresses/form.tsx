@@ -27,11 +27,21 @@ import { SERVICE_CENTER } from '~/lib/location/service_area'
 import { suggestNearby, useAddressSuggestions } from '~/lib/location/suggest'
 import type { PickupPoint } from '~/lib/location/point'
 import { ADDRESS_LABELS, type AddressInput, type SavedAddress } from '~/lib/order/addresses'
-import { addressError, labelError, pickErrors, recipientError } from '~/lib/shared/validation'
+import {
+  addressError,
+  labelError,
+  phoneError,
+  pickErrors,
+  recipientError,
+} from '~/lib/shared/validation'
 
-const FIELDS: AddressField[] = ['label', 'addressText', 'recipientName']
+const FIELDS: AddressField[] = ['label', 'addressText', 'recipientName', 'recipientPhone']
 
-function initialValues(address: SavedAddress | null, recipientName: string): AddressFormValues {
+function initialValues(
+  address: SavedAddress | null,
+  recipientName: string,
+  recipientPhone: string
+): AddressFormValues {
   const preset = ADDRESS_LABELS.find((label) => label === address?.label)
   return {
     labelChoice: address ? (preset ?? 'Lainnya') : 'Rumah',
@@ -39,6 +49,7 @@ function initialValues(address: SavedAddress | null, recipientName: string): Add
     addressText: address?.addressText ?? '',
     landmark: address?.landmark ?? '',
     recipientName: address?.recipientName ?? recipientName,
+    recipientPhone: address?.recipientPhone ?? recipientPhone,
   }
 }
 
@@ -50,15 +61,17 @@ export default function AddressForm({
   address,
   origin,
   recipientName,
+  recipientPhone,
   isFirstAddress,
 }: {
   address: SavedAddress | null
   origin: 'order' | 'addresses'
   recipientName: string
+  recipientPhone: string
   isFirstAddress: boolean
 }) {
   const isEditing = address !== null
-  const [values, setValues] = useState(() => initialValues(address, recipientName))
+  const [values, setValues] = useState(() => initialValues(address, recipientName, recipientPhone))
   const [isPrimary, setPrimary] = useState(isFirstAddress || (address?.isPrimary ?? false))
   const isPrimaryLocked = isFirstAddress || (address?.isPrimary ?? false)
   const [errors, setErrors] = useState<Partial<Record<AddressField, string>>>({})
@@ -66,6 +79,7 @@ export default function AddressForm({
   const [isConfirmingDelete, setConfirmDelete] = useState(false)
   const addressRef = useRef<HTMLTextAreaElement>(null)
   const recipientRef = useRef<HTMLInputElement>(null)
+  const recipientPhoneRef = useRef<HTMLInputElement>(null)
   const labelRef = useRef<HTMLInputElement>(null)
   const mapRef = useRef<LocationMapHandle>(null)
   const [start] = useState<PickupPoint>(() => address?.point ?? SERVICE_CENTER)
@@ -116,6 +130,7 @@ export default function AddressForm({
     const label = labelError(labelOf(values))
     const text = addressError(values.addressText)
     const recipient = recipientError(values.recipientName)
+    const phone = phoneError(values.recipientPhone)
     if (label) {
       found.label = label
     }
@@ -125,6 +140,9 @@ export default function AddressForm({
     if (recipient) {
       found.recipientName = recipient
     }
+    if (phone) {
+      found.recipientPhone = phone
+    }
     return found
   }
 
@@ -133,7 +151,12 @@ export default function AddressForm({
     if (!first) {
       return false
     }
-    const refs = { label: labelRef, addressText: addressRef, recipientName: recipientRef }
+    const refs = {
+      label: labelRef,
+      addressText: addressRef,
+      recipientName: recipientRef,
+      recipientPhone: recipientPhoneRef,
+    }
     refs[first].current?.focus()
     return true
   }
@@ -160,6 +183,7 @@ export default function AddressForm({
     const input: AddressInput = {
       label: labelOf(values),
       recipientName: values.recipientName.trim(),
+      recipientPhone: values.recipientPhone,
       addressText: values.addressText.trim(),
       landmark: values.landmark.trim(),
       point,
@@ -219,6 +243,7 @@ export default function AddressForm({
               errors={errors}
               addressRef={addressRef}
               recipientRef={recipientRef}
+              recipientPhoneRef={recipientPhoneRef}
               labelRef={labelRef}
               suggestions={suggestions}
               onChange={change}

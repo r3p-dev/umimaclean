@@ -49,6 +49,9 @@ router
       .post('/transaksi/:id/foto', [controllers.staff.Store, 'storePhotos'])
       .as('walk_in.photos')
     router.get('/foto', [controllers.staff.Store, 'photo']).as('photo')
+    router.get('/cetak/:id/tanda-terima', [controllers.staff.Prints, 'intake']).as('print.intake')
+    router.get('/cetak/:id/label', [controllers.staff.Prints, 'label']).as('print.label')
+    router.get('/cetak/:id/struk', [controllers.staff.Prints, 'receipt']).as('print.receipt')
     router.get('/riwayat', [controllers.staff.Account, 'history']).as('history')
     router.get('/profil', [controllers.staff.Account, 'profile']).as('profile')
     router

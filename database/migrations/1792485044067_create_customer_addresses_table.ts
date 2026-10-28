@@ -4,6 +4,8 @@
  * At most 3 per customer (checked in AddressService). Rows are deleted for real: every
  * order keeps its own copy in order_addresses, so nothing points back here.
  * - label: "Rumah", "Kantor" or a custom name.
+ * - recipient_phone: who the courier calls at this address, normalized like users.phone
+ *   (62…); prefilled with the account phone but may belong to someone else.
  * - lat, lng: the pin dropped on the map, checked against the service area.
  * - is_primary: the address preselected on the order form; deleting it promotes the
  *   newest remaining address.
@@ -29,6 +31,7 @@ export default class extends BaseSchema {
         .onDelete('CASCADE')
       table.string('label', 30).notNullable()
       table.string('recipient_name', 80).notNullable()
+      table.string('recipient_phone', 15).notNullable()
       table.string('address_text', 300).notNullable()
       table.string('landmark', 120).nullable()
       table.double('lat').notNullable()

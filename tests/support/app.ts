@@ -208,6 +208,7 @@ export function addressPayload(overrides: Record<string, unknown> = {}) {
   return {
     label: 'Kantor',
     recipientName: 'Budi Santoso',
+    recipientPhone: '81234567890',
     addressText: 'Jl. Asia Afrika No. 8, Lt. 3, Braga, Sumur Bandung',
     landmark: 'Resepsionis',
     point: { lat: -6.9215, lng: 107.6094 },
@@ -219,6 +220,7 @@ export function savedAddress(user: User, overrides: Record<string, unknown> = {}
   return CustomerAddressFactory.merge({
     userId: user.id,
     recipientName: user.name,
+    recipientPhone: user.phone,
     ...overrides,
   }).create()
 }

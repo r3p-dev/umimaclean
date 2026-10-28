@@ -6,9 +6,11 @@ import {
   FINISHED_STATUSES,
   ORDER_TRANSITIONS,
   OrderAddressType,
+  OrderSource,
   OrderStatus,
   OrderStatusStage,
 } from '#enums/order_enum'
+import { PaymentStatus } from '#enums/payment_enum'
 import { orderNumber } from '#helpers/order'
 import Bill from '#models/bill'
 import OrderAddress from '#models/order_address'
@@ -17,6 +19,12 @@ import OrderItem from '#models/order_item'
 import OrderPhoto from '#models/order_photo'
 import Payment from '#models/payment'
 import User from '#models/user'
+
+const PACKED_STATUSES: readonly OrderStatus[] = [
+  OrderStatus.READY_FOR_DELIVERY,
+  OrderStatus.IN_DELIVERY,
+  OrderStatus.COMPLETED,
+]
 
 export default class Order extends OrderSchema {
   static withDetails = scope((query: ModelQueryBuilderContract<typeof Order>) => {
@@ -108,6 +116,22 @@ export default class Order extends OrderSchema {
 
   itemCount() {
     return this.itemsSepatu + this.itemsTas + this.itemsHelm
+  }
+
+  isPackedForDelivery() {
+    return PACKED_STATUSES.includes(this.status)
+  }
+
+  canPrintIntakeSlip() {
+    return this.source === OrderSource.STORE
+  }
+
+  canPrintLabel() {
+    return !!this.deliveryAddress && this.isPackedForDelivery()
+  }
+
+  canPrintReceipt() {
+    return this.payments.some((payment) => payment.status === PaymentStatus.PAID)
   }
 
   canTransitionTo(to: OrderStatus, isOwnerOverride = false) {

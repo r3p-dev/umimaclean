@@ -55,12 +55,18 @@ test.group('Orders', (group) => {
     const office = await savedAddress(user, {
       label: 'Kantor',
       addressText: 'Jl. Braga No. 1, Bandung',
+      recipientPhone: '6281399990000',
     })
 
     await placeOrder(client, user, orderPayload(home.id, { deliveryAddressId: office.id }))
 
+    const order = await Order.firstOrFail()
+    const pickup = await OrderAddress.findByOrFail('type', OrderAddressType.PICKUP)
     const delivery = await OrderAddress.findByOrFail('type', OrderAddressType.DELIVERY)
     assert.equal(delivery.addressText, 'Jl. Braga No. 1, Bandung')
+    assert.equal(delivery.recipientPhone, '6281399990000')
+    assert.equal(pickup.recipientPhone, user.phone)
+    assert.equal(order.customerPhone, user.phone)
   })
 
   test('editing or deleting a saved address never changes past orders', async ({

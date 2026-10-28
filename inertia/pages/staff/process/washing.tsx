@@ -8,6 +8,7 @@ import {
   IconCheck,
   IconCircleCheck,
   IconHelmet,
+  IconPrinter,
   IconRotate,
   IconShoe,
 } from '@tabler/icons-react'
@@ -286,6 +287,31 @@ export default function Washing({
                   <IconCircleCheck />
                   Serahkan ke Pelanggan
                 </Button>
+              )}
+              {(order.canPrintLabel || order.canPrintReceipt) && (
+                <div className="grid grid-cols-2 gap-2.5">
+                  {order.canPrintLabel && (
+                    <LinkButton
+                      size="cta"
+                      className="text-[15px]"
+                      href={urlFor('staff.print.label', { id })}
+                    >
+                      <IconPrinter />
+                      Label
+                    </LinkButton>
+                  )}
+                  {order.canPrintReceipt && (
+                    <LinkButton
+                      variant="outline"
+                      size="cta"
+                      className="text-[15px]"
+                      href={urlFor('staff.print.receipt', { id })}
+                    >
+                      <IconPrinter />
+                      Struk
+                    </LinkButton>
+                  )}
+                </div>
               )}
               <LinkButton
                 variant="ghost"

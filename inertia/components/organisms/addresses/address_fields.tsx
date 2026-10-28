@@ -1,6 +1,7 @@
 import { type Ref } from 'react'
 import AddressCombobox, { type AddressSuggestions } from '~/components/molecules/address_combobox'
 import ChoicePills from '~/components/molecules/choice_pills'
+import PhoneInput from '~/components/molecules/phone_input'
 import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import type { AddressSuggestion } from '~/lib/location/suggest'
@@ -12,15 +13,17 @@ export type AddressFormValues = {
   addressText: string
   landmark: string
   recipientName: string
+  recipientPhone: string
 }
 
-export type AddressField = 'label' | 'addressText' | 'recipientName'
+export type AddressField = 'label' | 'addressText' | 'recipientName' | 'recipientPhone'
 
 export default function AddressFields({
   values,
   errors,
   addressRef,
   recipientRef,
+  recipientPhoneRef,
   labelRef,
   suggestions,
   onChange,
@@ -32,6 +35,7 @@ export default function AddressFields({
   errors: Partial<Record<AddressField, string>>
   addressRef: Ref<HTMLTextAreaElement>
   recipientRef: Ref<HTMLInputElement>
+  recipientPhoneRef: Ref<HTMLInputElement>
   labelRef: Ref<HTMLInputElement>
   suggestions: AddressSuggestions
   onChange: (patch: Partial<AddressFormValues>) => void
@@ -104,6 +108,26 @@ export default function AddressFields({
         ) : (
           <FieldDescription id="address-recipient-help">
             Ganti bila yang menyerahkan barang orang lain.
+          </FieldDescription>
+        )}
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="address-recipient-phone">Nomor WhatsApp penerima</FieldLabel>
+        <PhoneInput
+          ref={recipientPhoneRef}
+          id="address-recipient-phone"
+          value={values.recipientPhone}
+          onChange={(recipientPhone) => onChange({ recipientPhone })}
+          isInvalid={!!errors.recipientPhone}
+          describedBy={
+            errors.recipientPhone ? 'address-recipient-phone-error' : 'address-recipient-phone-help'
+          }
+        />
+        {errors.recipientPhone ? (
+          <FieldError id="address-recipient-phone-error">{errors.recipientPhone}</FieldError>
+        ) : (
+          <FieldDescription id="address-recipient-phone-help">
+            Dihubungi kurir saat menjemput dan mengantar.
           </FieldDescription>
         )}
       </Field>

@@ -8,13 +8,21 @@ import { ActivityAction } from '#enums/activity_enum'
 import {
   ItemKind,
   ItemKindLabel,
+  ORDER_STATUS_SEQUENCE,
   OrderAddressType,
   OrderSource,
   OrderStatus,
+  OrderStatusLabel,
   PhotoKind,
   ReturnMethod,
 } from '#enums/order_enum'
-import { PaymentChannel, PaymentMethod, PaymentStatus } from '#enums/payment_enum'
+import {
+  PaymentChannel,
+  PaymentMethod,
+  PaymentMethodLabel,
+  PaymentStatus,
+} from '#enums/payment_enum'
+import { formatRupiah } from '#helpers/money'
 import { Role } from '#enums/role_enum'
 import { ServiceType } from '#enums/service_enum'
 import ActivityLog from '#models/activity_log'
@@ -31,7 +39,6 @@ import Service from '#models/service'
 import User from '#models/user'
 import { snapshotOf } from '#services/order_service'
 import { orderRoute } from '#transformers/order_transformer'
-import { ORDER_STATUS_SEQUENCE } from '#enums/order_enum'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 import { DEMO_CUSTOMERS, DEMO_PHONE } from '#database/seeders/user_seeder'
 
@@ -39,13 +46,6 @@ const PLACEHOLDER = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
   'base64'
 )
-
-const COURIER_STEPS = [
-  OrderStatus.COURIER_EN_ROUTE,
-  OrderStatus.PICKED_UP,
-  OrderStatus.IN_DELIVERY,
-  OrderStatus.COMPLETED,
-] as const
 
 type Staff = { courier: User; owner: User }
 
@@ -56,11 +56,26 @@ type Spec = {
   returnMethod: ReturnMethod
   status: OrderStatus
   items: [number, number, number]
-  createdAt: DateTime
+  createdAt?: DateTime
+  endsAt?: DateTime
+  stepMinutes?: number
+  pickupDate?: DateTime
   pickupSlot?: number
   method?: PaymentMethod
   note?: string
   cancelReason?: string
+  ownerCancelsAt?: OrderStatus
+  isMovedByOwner?: boolean
+  deliveryLabel?: string
+  manualAddress?: { addressText: string; lat: number; lng: number }
+}
+
+type Step = {
+  actor: User | null
+  note?: string | null
+  action?: ActivityAction
+  detail?: string
+  isSensitive?: boolean
 }
 
 function rng(seed: number) {
@@ -122,57 +137,184 @@ export default class extends BaseSeeder {
       }
     }
 
-    const active: [OrderStatus, OrderSource, ReturnMethod, number][] = [
-      [OrderStatus.AWAITING_PICKUP, OrderSource.ONLINE, ReturnMethod.DELIVERY, 2],
-      [OrderStatus.AWAITING_PICKUP, OrderSource.ONLINE, ReturnMethod.DELIVERY, 3],
-      [OrderStatus.AWAITING_PICKUP, OrderSource.ONLINE, ReturnMethod.DELIVERY, 4],
-      [OrderStatus.COURIER_EN_ROUTE, OrderSource.ONLINE, ReturnMethod.DELIVERY, 5],
-      [OrderStatus.PICKED_UP, OrderSource.ONLINE, ReturnMethod.DELIVERY, 6],
-      [OrderStatus.IN_INSPECTION, OrderSource.STORE, ReturnMethod.STORE, 7],
-      [OrderStatus.AWAITING_PAYMENT, OrderSource.STORE, ReturnMethod.STORE, 1],
-      [OrderStatus.IN_CLEANING, OrderSource.ONLINE, ReturnMethod.DELIVERY, 2],
-      [OrderStatus.IN_CLEANING, OrderSource.STORE, ReturnMethod.STORE, 3],
-      [OrderStatus.READY_FOR_DELIVERY, OrderSource.ONLINE, ReturnMethod.DELIVERY, 4],
-      [OrderStatus.READY_FOR_DELIVERY, OrderSource.ONLINE, ReturnMethod.DELIVERY, 5],
-      [OrderStatus.IN_DELIVERY, OrderSource.ONLINE, ReturnMethod.DELIVERY, 6],
-      [OrderStatus.READY_FOR_COLLECTION, OrderSource.STORE, ReturnMethod.STORE, 7],
-      [OrderStatus.CANCELLED, OrderSource.ONLINE, ReturnMethod.DELIVERY, 8],
+    const [, laras, fajar, , dewi, hendra, , indra, rudi, nadia] = customers
+    const now = DateTime.now().setZone(SERVICE_ZONE)
+    let workDay = now.minus({ hours: 12, minutes: 5 }).startOf('day')
+    if (workDay.weekday === 7) {
+      workDay = workDay.minus({ days: 1 })
+    }
+    const clock = DateTime.min(now.minus({ minutes: 5 }), workDay.plus({ hours: 18 }))
+    const pickupDay = today.weekday === 7 ? today.minus({ days: 1 }) : today
+    const evenBefore = (day: DateTime) => day.minus({ days: 1 }).plus({ hours: 19 })
+    const online = (
+      customer: User,
+      status: OrderStatus,
+      items: Spec['items'],
+      spec: Partial<Spec> = {}
+    ): Spec => ({
+      customer,
+      source: OrderSource.ONLINE,
+      returnMethod: ReturnMethod.DELIVERY,
+      status,
+      items,
+      createdAt: evenBefore(workDay),
+      endsAt: clock,
+      pickupDate: workDay,
+      stepMinutes: 20,
+      method: PaymentMethod.QRIS,
+      ...spec,
+    })
+    const store = (
+      customer: User | null,
+      status: OrderStatus,
+      returnMethod: ReturnMethod,
+      items: Spec['items'],
+      spec: Partial<Spec> = {}
+    ): Spec => ({
+      customer,
+      source: OrderSource.STORE,
+      returnMethod,
+      status,
+      items,
+      endsAt: clock,
+      stepMinutes: 20,
+      method: PaymentMethod.CASH,
+      ...spec,
+    })
+    const upcoming = { createdAt: evenBefore(pickupDay), endsAt: undefined, pickupDate: pickupDay }
+
+    const showcase: [string, Spec][] = [
+      [
+        'online, same pickup and delivery address',
+        online(rina, OrderStatus.AWAITING_PICKUP, [2, 0, 0], { ...upcoming, pickupSlot: 0 }),
+      ],
+      [
+        'online, delivery to another recipient',
+        online(laras, OrderStatus.AWAITING_PICKUP, [1, 1, 1], {
+          ...upcoming,
+          pickupSlot: 1,
+          deliveryLabel: 'Kos Adik',
+        }),
+      ],
+      [
+        'online, 09.00 slot, started by courier',
+        online(rina, OrderStatus.COURIER_EN_ROUTE, [1, 0, 0], { pickupSlot: 0 }),
+      ],
+      [
+        'online, 12.00 slot, moved by owner',
+        online(hendra, OrderStatus.COURIER_EN_ROUTE, [2, 0, 1], {
+          pickupSlot: 1,
+          isMovedByOwner: true,
+        }),
+      ],
+      ['online', online(rina, OrderStatus.PICKED_UP, [1, 1, 0])],
+      [
+        'online, with order note',
+        online(fajar, OrderStatus.PICKED_UP, [2, 0, 0], {
+          note: 'Sepatu putih ada noda kopi di bagian depan.',
+        }),
+      ],
+      ['online', online(rina, OrderStatus.IN_INSPECTION, [2, 1, 0])],
+      [
+        'walk-in guest, return at store',
+        store(null, OrderStatus.IN_INSPECTION, ReturnMethod.STORE, [1, 0, 1], {
+          walkIn: { name: 'Yoga Firmansyah', phone: '6281277403158' },
+        }),
+      ],
+      [
+        'online, unpaid, no QRIS yet, 5 items',
+        online(rina, OrderStatus.AWAITING_PAYMENT, [3, 1, 1]),
+      ],
+      [
+        'walk-in guest, bill saved, unpaid',
+        store(null, OrderStatus.AWAITING_PAYMENT, ReturnMethod.STORE, [2, 0, 0], {
+          walkIn: { name: 'Putri Ayu', phone: '6285793160284' },
+        }),
+      ],
+      ['online, paid with QRIS', online(rina, OrderStatus.IN_CLEANING, [1, 0, 0])],
+      [
+        'walk-in, paid cash with change',
+        store(dewi, OrderStatus.IN_CLEANING, ReturnMethod.STORE, [2, 1, 0]),
+      ],
+      [
+        'online, delivery to another recipient',
+        online(rina, OrderStatus.READY_FOR_DELIVERY, [2, 0, 1], { deliveryLabel: 'Rumah Ibu' }),
+      ],
+      [
+        'walk-in guest, typed address, EDC',
+        store(null, OrderStatus.READY_FOR_DELIVERY, ReturnMethod.DELIVERY, [4, 0, 0], {
+          walkIn: { name: 'Wulan Sari', phone: '6281563290817' },
+          method: PaymentMethod.CARD,
+          manualAddress: {
+            addressText: 'Jl. Riau No. 23, Citarum, Bandung Wetan, Kota Bandung',
+            lat: -6.9056,
+            lng: 107.6178,
+          },
+        }),
+      ],
+      [
+        'walk-in, saved address, started by courier',
+        store(indra, OrderStatus.IN_DELIVERY, ReturnMethod.DELIVERY, [1, 0, 0]),
+      ],
+      [
+        'online, moved by owner',
+        online(rina, OrderStatus.IN_DELIVERY, [1, 1, 0], {
+          pickupSlot: 1,
+          isMovedByOwner: true,
+        }),
+      ],
+      [
+        'walk-in, registered customer',
+        store(rina, OrderStatus.READY_FOR_COLLECTION, ReturnMethod.STORE, [2, 0, 0]),
+      ],
+      [
+        'walk-in, unregistered guest',
+        store(null, OrderStatus.READY_FOR_COLLECTION, ReturnMethod.STORE, [1, 1, 1], {
+          walkIn: { name: 'Agus Salim', phone: '6289520637741' },
+        }),
+      ],
+      [
+        'online, delivered, receiver and photo',
+        online(rina, OrderStatus.COMPLETED, [2, 1, 0], { pickupSlot: 2 }),
+      ],
+      [
+        'walk-in, collected, paid cash',
+        store(rudi, OrderStatus.COMPLETED, ReturnMethod.STORE, [1, 0, 0]),
+      ],
+      [
+        'online, cancelled by customer',
+        online(rina, OrderStatus.CANCELLED, [1, 0, 0], {
+          ...upcoming,
+          pickupSlot: 2,
+          cancelReason: 'Salah jadwal, mau pesan ulang minggu depan',
+        }),
+      ],
+      [
+        'online, cancelled by owner in inspection',
+        online(nadia, OrderStatus.CANCELLED, [2, 0, 1], {
+          ownerCancelsAt: OrderStatus.IN_INSPECTION,
+          cancelReason: 'Bahan helm retak, tidak bisa dicuci',
+        }),
+      ],
     ]
-    for (const [position, [status, source, returnMethod, customerIndex]] of active.entries()) {
-      await this.#build(
+
+    const table: string[] = []
+    for (const [position, [variant, spec]] of showcase.entries()) {
+      const order = await this.#build(
         {
-          customer: customers[customerIndex],
-          source,
-          returnMethod,
-          status,
-          items: [1 + (position % 2), position % 3 === 0 ? 1 : 0, position % 4 === 0 ? 1 : 0],
-          createdAt:
-            status === OrderStatus.AWAITING_PICKUP
-              ? today.minus({ days: 1 }).plus({ hours: 19 })
-              : today.plus({ hours: 7, minutes: position * 10 }),
-          pickupSlot: position % 3,
-          method: source === OrderSource.STORE ? PaymentMethod.CASH : PaymentMethod.QRIS,
-          cancelReason: status === OrderStatus.CANCELLED ? 'Salah jadwal' : undefined,
+          ...spec,
+          createdAt: spec.createdAt?.plus({ minutes: position * 3 }),
+          endsAt: spec.endsAt?.minus({ minutes: (showcase.length - 1 - position) * 3 }),
+          pickupSlot: spec.pickupSlot ?? position % 3,
         },
         staff,
         services
       )
+      table.push(
+        [order.status.padEnd(20), order.number(), order.customerName.padEnd(16), variant].join('  ')
+      )
     }
-
-    await this.#build(
-      {
-        customer: rina,
-        source: OrderSource.ONLINE,
-        returnMethod: ReturnMethod.DELIVERY,
-        status: OrderStatus.AWAITING_PAYMENT,
-        items: [2, 1, 0],
-        createdAt: today.minus({ days: 1 }).plus({ hours: 14 }),
-        pickupSlot: 0,
-        note: 'Sepatu putih ada noda kopi di bagian depan.',
-      },
-      staff,
-      services
-    )
+    logger.info(`Showcase orders:\n${table.join('\n')}`)
 
     logger.info(
       `Demo orders created: ${await Order.query()
@@ -186,11 +328,49 @@ export default class extends BaseSeeder {
     const name = customer?.name ?? spec.walkIn?.name ?? 'Pelanggan toko'
     const phone = customer?.phone ?? spec.walkIn?.phone ?? ''
     const isOnline = spec.source === OrderSource.ONLINE
+    const primary = customer ? await CustomerAddress.findPrimaryFor(customer.id) : null
+    const saved =
+      customer && spec.deliveryLabel
+        ? await CustomerAddress.query()
+            .where('user_id', customer.id)
+            .where('label', spec.deliveryLabel)
+            .firstOrFail()
+        : primary
+    const delivery = spec.manualAddress
+      ? {
+          label: 'Alamat antar',
+          recipientName: name,
+          recipientPhone: phone,
+          landmark: null,
+          ...spec.manualAddress,
+        }
+      : saved && snapshotOf(saved)
+    const returnMethod = delivery ? spec.returnMethod : ReturnMethod.STORE
+    const route = orderRoute(spec.source, returnMethod).map((index) => ORDER_STATUS_SEQUENCE[index])
+    const isCancelled = spec.status === OrderStatus.CANCELLED
+    const last = isCancelled ? (spec.ownerCancelsAt ?? OrderStatus.AWAITING_PICKUP) : spec.status
+    const steps = [
+      ...route.slice(0, route.indexOf(last) + 1),
+      ...(isCancelled ? [OrderStatus.CANCELLED] : []),
+    ]
+    const stepMinutes = spec.stepMinutes ?? 120
+    const times: DateTime[] = []
+    for (const [position, status] of steps.entries()) {
+      times.push(
+        position === 0 && spec.createdAt
+          ? spec.createdAt
+          : spec.endsAt
+            ? spec.endsAt.minus({ minutes: (steps.length - 1 - position) * stepMinutes })
+            : times[position - 1].plus(
+                status === OrderStatus.COURIER_EN_ROUTE ? { hours: 13 } : { minutes: stepMinutes }
+              )
+      )
+    }
     const order = await Order.create({
       userId: customer?.id ?? null,
       requestKey: randomUUID(),
       source: spec.source,
-      returnMethod: spec.returnMethod,
+      returnMethod,
       customerName: name,
       customerPhone: phone,
       status: spec.status,
@@ -198,118 +378,59 @@ export default class extends BaseSeeder {
       itemsTas: spec.items[1],
       itemsHelm: spec.items[2],
       note: spec.note ?? '',
-      pickupDate: isOnline ? spec.createdAt.plus({ days: 1 }).startOf('day') : null,
+      pickupDate: isOnline ? (spec.pickupDate ?? times[0].plus({ days: 1 }).startOf('day')) : null,
       pickupSlot: isOnline ? (spec.pickupSlot ?? 0) : null,
       cancelReason: spec.cancelReason ?? null,
-      createdAt: spec.createdAt,
-      updatedAt: spec.createdAt,
+      receiverName:
+        spec.status === OrderStatus.COMPLETED && returnMethod === ReturnMethod.DELIVERY
+          ? name.split(' ')[0]
+          : null,
+      createdAt: times[0],
+      updatedAt: times[0],
     })
 
-    const address = customer
-      ? await CustomerAddress.query()
-          .where('user_id', customer.id)
-          .where('is_primary', true)
-          .first()
-      : null
-    if (address && customer) {
-      const types = isOnline
-        ? Object.values(OrderAddressType)
-        : spec.returnMethod === ReturnMethod.DELIVERY
-          ? [OrderAddressType.DELIVERY]
-          : []
-      for (const type of types) {
-        await OrderAddress.create({ ...snapshotOf(customer, address), orderId: order.id, type })
-      }
-    } else if (spec.returnMethod === ReturnMethod.DELIVERY) {
-      order.returnMethod = ReturnMethod.STORE
-      await order.save()
+    if (isOnline && primary) {
+      await OrderAddress.create({
+        ...snapshotOf(primary),
+        orderId: order.id,
+        type: OrderAddressType.PICKUP,
+      })
+    }
+    if (order.returnMethod === ReturnMethod.DELIVERY && delivery) {
+      await OrderAddress.create({ ...delivery, orderId: order.id, type: OrderAddressType.DELIVERY })
     }
 
-    const route = orderRoute(order.source, order.returnMethod).map(
-      (index) => ORDER_STATUS_SEQUENCE[index]
-    )
-    const steps =
-      spec.status === OrderStatus.CANCELLED
-        ? [OrderStatus.AWAITING_PICKUP, OrderStatus.CANCELLED]
-        : route.slice(0, route.indexOf(spec.status) + 1)
-    let at = isOnline ? spec.createdAt : spec.createdAt
+    const method = spec.method ?? PaymentMethod.QRIS
+    const isCounter = !isOnline || method !== PaymentMethod.QRIS
     let total = 0
 
     for (const [position, status] of steps.entries()) {
-      if (position > 0) {
-        at = at.plus({ hours: status === OrderStatus.COURIER_EN_ROUTE ? 13 : 2 })
-      }
-      const actor = this.#actorFor(status, staff, customer, position === 0)
-      await OrderEvent.create({
-        orderId: order.id,
-        status,
-        actorId: actor?.id ?? null,
-        note:
-          status === OrderStatus.COMPLETED && order.returnMethod === ReturnMethod.DELIVERY
-            ? `Diterima oleh ${name.split(' ')[0]}`
-            : status === OrderStatus.CANCELLED
-              ? `Dibatalkan pelanggan: ${spec.cancelReason}`
-              : null,
-        createdAt: at,
-      })
+      const at = times[position]
 
       if (status === OrderStatus.PICKED_UP) {
         await this.#photo(order, PhotoKind.PICKUP, staff.courier, at)
-        await this.#log(
-          staff.courier,
-          order,
-          ActivityAction.PICKUP_DONE,
-          `${order.itemCount()} barang dijemput · foto bukti`,
-          at
-        )
-      }
-      if (status === OrderStatus.IN_INSPECTION && !isOnline) {
-        await this.#photo(order, PhotoKind.INTAKE, staff.courier, at)
-        await this.#log(
-          staff.courier,
-          order,
-          ActivityAction.WALK_IN_CREATED,
-          `${order.itemCount()} barang · ${name}`,
-          at
-        )
       }
       if (status === OrderStatus.AWAITING_PAYMENT) {
         total = await this.#bill(order, services, staff.courier, at)
-        await this.#log(
-          staff.courier,
-          order,
-          ActivityAction.BILL_CREATED,
-          `${order.itemCount()} barang · Rp${total.toLocaleString('id-ID')}`,
-          at
-        )
       }
       if (status === OrderStatus.IN_CLEANING) {
-        const method = spec.method ?? PaymentMethod.QRIS
-        const isCounter = !isOnline || method !== PaymentMethod.QRIS
         await Payment.create({
           orderId: order.id,
           channel: isOnline ? PaymentChannel.ONLINE : PaymentChannel.COUNTER,
           method,
           status: PaymentStatus.PAID,
           amount: total,
-          cashReceived: method === PaymentMethod.CASH ? Math.ceil(total / 50000) * 50000 : null,
+          cashReceived:
+            method === PaymentMethod.CASH ? (Math.floor(total / 50000) + 1) * 50000 : null,
           reference: method === PaymentMethod.CARD ? `APR${order.id}` : null,
           providerOrderId: isOnline ? `UMC-${order.id}-${at.toMillis()}` : null,
           providerTransactionId: isOnline ? randomUUID() : null,
+          expiresAt: isCounter ? null : at.plus({ minutes: 3 }),
           paidAt: at,
           recordedBy: isCounter ? staff.courier.id : null,
-          createdAt: at,
+          createdAt: isCounter ? at : at.minus({ minutes: 12 }),
           updatedAt: at,
         })
-        if (isCounter) {
-          await this.#log(
-            staff.courier,
-            order,
-            ActivityAction.PAYMENT_RECORDED,
-            `${method} · Rp${total.toLocaleString('id-ID')}`,
-            at
-          )
-        }
       }
       if (
         status === OrderStatus.READY_FOR_DELIVERY ||
@@ -317,40 +438,119 @@ export default class extends BaseSeeder {
       ) {
         await this.#photo(order, PhotoKind.WASHING, staff.courier, at)
         await OrderItem.query().where('order_id', order.id).update({ washed_at: at.toJSDate() })
-        await this.#log(staff.courier, order, ActivityAction.WASH_DONE, 'Foto hasil cuci', at)
       }
-      if (status === OrderStatus.COMPLETED) {
-        if (order.returnMethod === ReturnMethod.DELIVERY) {
-          await this.#photo(order, PhotoKind.DELIVERY, staff.courier, at)
-          order.receiverName = name.split(' ')[0]
-          await this.#log(
-            staff.courier,
-            order,
-            ActivityAction.DELIVERY_DONE,
-            `Foto bukti · diterima oleh “${order.receiverName}”`,
-            at
-          )
-        } else {
-          await this.#log(staff.courier, order, ActivityAction.COLLECTED, 'Diambil di toko', at)
-        }
+      if (status === OrderStatus.COMPLETED && order.returnMethod === ReturnMethod.DELIVERY) {
+        await this.#photo(order, PhotoKind.DELIVERY, staff.courier, at)
+      }
+
+      const from = steps[position - 1]
+      const step: Step =
+        spec.isMovedByOwner && position === steps.length - 1
+          ? { actor: staff.owner, note: 'Diubah owner', isSensitive: true }
+          : this.#stepFor(order, status, spec, staff, { total, isCounter, method })
+      await OrderEvent.create({
+        orderId: order.id,
+        status,
+        actorId: step.actor?.id ?? null,
+        note: step.note ?? null,
+        createdAt: at,
+      })
+      if (step.actor && !step.actor.isCustomer()) {
+        await this.#log(
+          step.actor,
+          order,
+          step.action ?? ActivityAction.STATUS_CHANGED,
+          step.detail ?? `${OrderStatusLabel[from]} → ${OrderStatusLabel[status]}`,
+          at,
+          step.isSensitive
+        )
+      }
+
+      if (status === OrderStatus.IN_INSPECTION && !isOnline) {
+        await this.#photo(order, PhotoKind.INTAKE, staff.courier, at)
+        await this.#log(
+          staff.courier,
+          order,
+          ActivityAction.ITEMS_PHOTOGRAPHED,
+          '1 foto barang diterima',
+          at
+        )
       }
     }
 
-    order.updatedAt = at
-    await order.save()
+    await Order.query()
+      .where('id', order.id)
+      .update({ updated_at: times[times.length - 1].toJSDate() })
+    return order
   }
 
-  #actorFor(status: OrderStatus, staff: Staff, customer: User | null, isFirst: boolean) {
-    if (isFirst) {
-      return customer && status === OrderStatus.AWAITING_PICKUP ? customer : staff.courier
+  #stepFor(
+    order: Order,
+    status: OrderStatus,
+    spec: Spec,
+    staff: Staff,
+    payment: { total: number; isCounter: boolean; method: PaymentMethod }
+  ): Step {
+    const courier = staff.courier
+    const count = order.itemCount()
+    const label = PaymentMethodLabel[payment.method]
+    switch (status) {
+      case OrderStatus.AWAITING_PICKUP:
+        return { actor: spec.customer }
+      case OrderStatus.COURIER_EN_ROUTE:
+        return { actor: courier, action: ActivityAction.TASK_STARTED, detail: 'Jemput dimulai' }
+      case OrderStatus.PICKED_UP:
+        return {
+          actor: courier,
+          action: ActivityAction.PICKUP_DONE,
+          detail: `${count} barang dijemput · foto bukti`,
+        }
+      case OrderStatus.IN_INSPECTION:
+        return order.source === OrderSource.ONLINE
+          ? { actor: courier, action: ActivityAction.INSPECTION_STARTED }
+          : {
+              actor: courier,
+              action: ActivityAction.WALK_IN_CREATED,
+              detail: `${count} barang · ${order.customerName}`,
+            }
+      case OrderStatus.AWAITING_PAYMENT:
+        return {
+          actor: courier,
+          action: ActivityAction.BILL_CREATED,
+          detail: `${count} barang · ${formatRupiah(payment.total)}`,
+        }
+      case OrderStatus.IN_CLEANING:
+        return {
+          actor: payment.isCounter ? courier : null,
+          note: `Lunas · ${label}`,
+          action: ActivityAction.PAYMENT_RECORDED,
+          detail: `${label} · ${formatRupiah(payment.total)}`,
+        }
+      case OrderStatus.READY_FOR_DELIVERY:
+      case OrderStatus.READY_FOR_COLLECTION:
+        return { actor: courier, action: ActivityAction.WASH_DONE, detail: 'Foto hasil cuci' }
+      case OrderStatus.IN_DELIVERY:
+        return { actor: courier, action: ActivityAction.TASK_STARTED, detail: 'Antar dimulai' }
+      case OrderStatus.COMPLETED:
+        return order.returnMethod === ReturnMethod.DELIVERY
+          ? {
+              actor: courier,
+              action: ActivityAction.DELIVERY_DONE,
+              note: `Diterima oleh ${order.receiverName}`,
+              detail: `Foto bukti · diterima oleh “${order.receiverName}”`,
+            }
+          : { actor: courier, action: ActivityAction.COLLECTED, note: 'Diambil di toko' }
+      case OrderStatus.CANCELLED:
+        return spec.ownerCancelsAt
+          ? {
+              actor: staff.owner,
+              note: spec.cancelReason,
+              action: ActivityAction.ORDER_CANCELLED,
+              detail: `${OrderStatusLabel[spec.ownerCancelsAt]} → Dibatalkan · ${spec.cancelReason}`,
+              isSensitive: true,
+            }
+          : { actor: spec.customer, note: `Dibatalkan pelanggan: ${spec.cancelReason}` }
     }
-    if ((COURIER_STEPS as readonly OrderStatus[]).includes(status)) {
-      return staff.courier
-    }
-    if (status === OrderStatus.IN_CLEANING || status === OrderStatus.CANCELLED) {
-      return status === OrderStatus.CANCELLED ? customer : null
-    }
-    return staff.courier
   }
 
   async #bill(order: Order, services: Service[], staff: User, at: DateTime) {
@@ -396,8 +596,7 @@ export default class extends BaseSeeder {
         total += service.price
       }
     }
-    bill.total = total
-    await bill.save()
+    await Bill.query().where('id', bill.id).update({ total })
     return total
   }
 
@@ -408,13 +607,20 @@ export default class extends BaseSeeder {
     await OrderPhoto.create({ orderId: order.id, kind, path, takenBy: staff.id, createdAt: at })
   }
 
-  async #log(actor: User, order: Order, action: ActivityAction, detail: string, at: DateTime) {
+  async #log(
+    actor: User,
+    order: Order,
+    action: ActivityAction,
+    detail: string,
+    at: DateTime,
+    isSensitive = false
+  ) {
     await ActivityLog.create({
       actorId: actor.id,
       orderId: order.id,
       action,
       detail,
-      isSensitive: false,
+      isSensitive,
       createdAt: at,
     })
   }

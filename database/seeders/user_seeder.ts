@@ -8,10 +8,12 @@ const PASSWORD = 'password'
 
 export const DEMO_PHONE = '6281221847305'
 
+export const DEMO_STAFF_PHONE = '6287823561940'
+
 const ACCOUNTS = [
   { role: Role.CUSTOMER, name: 'Rina Kartika', phone: DEMO_PHONE },
   { role: Role.CUSTOMER, name: 'Budi Santoso', phone: '6285720419836' },
-  { role: Role.STAFF, name: 'Dedi Supriadi', phone: '6287823561940' },
+  { role: Role.STAFF, name: 'Dedi Supriadi', phone: DEMO_STAFF_PHONE },
 ]
 
 export const DEMO_CUSTOMERS = [
