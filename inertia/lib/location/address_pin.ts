@@ -1,10 +1,14 @@
 import { useCallback, useRef } from 'react'
-import { searchFirst, searchTerms } from '~/lib/location/geocode'
+import { searchFirst } from '~/lib/location/geocode'
 import type { AddressSuggestion } from '~/lib/location/suggest'
 import type { PickupPoint } from '~/lib/location/point'
 
 export function addressKey(text: string) {
-  return searchTerms(text)[0]?.toLowerCase() ?? ''
+  return (text.split(',')[0] ?? '')
+    .replace(/\bno\.?\s*\S+/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
 }
 
 export function useAddressPin(initialKey: string, move: (point: PickupPoint) => void) {

@@ -13,6 +13,7 @@ import type DeliveryLabelTransformer from '#transformers/delivery_label_transfor
 import type InspectionTransformer from '#transformers/inspection_transformer'
 import type IntakeSlipTransformer from '#transformers/intake_slip_transformer'
 import type OrderTransformer from '#transformers/order_transformer'
+import type PlaceTransformer from '#transformers/place_transformer'
 import type ProcessRowTransformer from '#transformers/process_row_transformer'
 import type ReceiptTransformer from '#transformers/receipt_transformer'
 import type ServiceAreaTransformer from '#transformers/service_area_transformer'
@@ -51,6 +52,10 @@ export namespace Data {
   export type Order = InferData<OrderTransformer>
   export namespace Order {
     export type Variants = InferVariants<OrderTransformer>
+  }
+  export type Place = InferData<PlaceTransformer>
+  export namespace Place {
+    export type Variants = InferVariants<PlaceTransformer>
   }
   export type ProcessRow = InferData<ProcessRowTransformer>
   export namespace ProcessRow {

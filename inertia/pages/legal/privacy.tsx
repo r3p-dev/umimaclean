@@ -30,21 +30,29 @@ export default function Privacy({ store, photoDays }: { store: Store; photoDays:
           <li>Menjemput, memproses, dan mengantar pesanan Anda.</li>
           <li>Mengirim kode verifikasi dan kabar pesanan lewat WhatsApp.</li>
           <li>Membuat tagihan dan menerima pembayaran QRIS lewat penyedia pembayaran.</li>
-          <li>
-            Mengingatkan pelanggan yang lama tidak memesan, paling banyak sekali dalam 7 hari.
-          </li>
         </ul>
       </section>
       <section className="flex flex-col gap-2">
         <h2>Pihak lain</h2>
         <ul>
           <li>Fonnte, untuk mengirim pesan WhatsApp.</li>
-          <li>Midtrans, untuk pembayaran QRIS (nama, nomor, dan nominal tagihan).</li>
           <li>
-            Cloudflare Turnstile (pemeriksaan anti-bot) serta OpenStreetMap/Nominatim untuk peta dan
-            pengecekan area layanan.
+            Midtrans, untuk pembayaran QRIS (nama, nomor WhatsApp, nomor pesanan, dan total
+            tagihan).
+          </li>
+          <li>Cloudflare Turnstile, untuk pemeriksaan anti-bot.</li>
+          <li>
+            Google Maps atau Waze, saat kurir membuka navigasi. Koordinat titik tujuan dikirim ke
+            aplikasi tersebut.
           </li>
         </ul>
+        <p>
+          Gambar peta disiapkan oleh Protomaps dari data OpenStreetMap dan disajikan dari server
+          kami sendiri. Pencarian alamat, saran lokasi, nama jalan untuk titik di peta, pengecekan
+          area layanan, serta rute dan perkiraan jarak untuk kurir juga diproses di server kami
+          dengan data OpenStreetMap (© kontributor OpenStreetMap). Area peta yang Anda lihat, teks
+          pencarian, titik lokasi, dan posisi kurir untuk fitur ini tidak dikirim ke pihak lain.
+        </p>
       </section>
       <section className="flex flex-col gap-2">
         <h2>Hak Anda</h2>

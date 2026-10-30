@@ -1,9 +1,23 @@
+import app from '@adonisjs/core/services/app'
+import logger from '@adonisjs/core/services/logger'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import { STAFF_ROLES } from '#enums/role_enum'
+import { findBaseMapFiles } from '#helpers/base_map'
 import TaskService from '#services/task_service'
 import env from '#start/env'
+
+let announcedBaseMap: string | undefined
+
+function findBaseMapUrl() {
+  const [newest, ...older] = findBaseMapFiles(app.publicPath('tiles'))
+  if (older.length && announcedBaseMap !== newest) {
+    logger.warn({ older }, `Several base map files in public/tiles, serving ${newest}`)
+    announcedBaseMap = newest
+  }
+  return newest ? `/tiles/${newest}` : null
+}
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
   async share(ctx: HttpContext) {
@@ -25,6 +39,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
           }
         : null,
       turnstileSiteKey: env.get('TURNSTILE_SITE_KEY'),
+      baseMapUrl: findBaseMapUrl(),
       staffCounts:
         isStaffPage && user
           ? await ctx.containerResolver.make(TaskService).then((tasks) => tasks.staffCounts())

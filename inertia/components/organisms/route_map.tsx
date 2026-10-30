@@ -2,11 +2,9 @@ import { useEffect, useImperativeHandle, useRef, type ReactNode, type Ref } from
 import L from 'leaflet'
 import locationSvg from '@tabler/icons/filled/map-pin.svg?raw'
 import navigationSvg from '@tabler/icons/filled/navigation.svg?raw'
+import { MAP_ATTRIBUTION, addBaseMap, useBaseMapUrl } from '~/lib/location/base_map'
 import type { PickupPoint } from '~/lib/location/point'
 import { cn } from '~/lib/shared/utils'
-
-const TILES =
-  'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
 
 type QueuePin = { point: PickupPoint; label: string; state: 'done' | 'current' | 'upcoming' }
 
@@ -73,6 +71,7 @@ export default function RouteMap({
   inset,
   isInteractive = true,
   className,
+  attributionClassName = 'right-1.5 bottom-1',
   children,
 }: {
   ref?: Ref<RouteMapHandle>
@@ -84,9 +83,11 @@ export default function RouteMap({
   inset?: MapInset
   isInteractive?: boolean
   className?: string
+  attributionClassName?: string
   children?: ReactNode
 }) {
   const element = useRef<HTMLDivElement>(null)
+  const baseMapUrl = useBaseMapUrl()
   const map = useRef<L.Map | null>(null)
   const layers = useRef<L.LayerGroup | null>(null)
   const bounds = useRef<L.LatLngBounds | null>(null)
@@ -110,7 +111,7 @@ export default function RouteMap({
       scrollWheelZoom: isInteractive,
       doubleClickZoom: isInteractive,
     })
-    L.tileLayer(TILES, { maxNativeZoom: 16, maxZoom: 18 }).addTo(instance)
+    addBaseMap(instance, baseMapUrl)
     layers.current = L.layerGroup().addTo(instance)
     map.current = instance
     const observer = new ResizeObserver(() => {
@@ -127,7 +128,7 @@ export default function RouteMap({
       map.current = null
       layers.current = null
     }
-  }, [isInteractive])
+  }, [isInteractive, baseMapUrl])
 
   const signature = JSON.stringify({ me, pins, destination, route, inset })
 
@@ -241,8 +242,13 @@ export default function RouteMap({
         className="absolute inset-0 z-0"
       />
       {children}
-      <span className="pointer-events-none absolute right-1.5 bottom-1 z-10 rounded-xs bg-surface-glass px-[5px] py-px text-[10px] leading-[1.4] font-medium text-foreground-secondary">
-        Esri, HERE, Garmin, © OpenStreetMap contributors
+      <span
+        className={cn(
+          'pointer-events-none absolute z-10 rounded-xs bg-surface-glass px-[5px] py-px text-[10px] leading-[1.4] font-medium text-foreground-secondary',
+          attributionClassName
+        )}
+      >
+        {MAP_ATTRIBUTION}
       </span>
     </div>
   )

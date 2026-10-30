@@ -312,6 +312,12 @@ const routes = {
     tokens: [{"old":"/staf/:kind/:id/lewati","type":0,"val":"staf","end":""},{"old":"/staf/:kind/:id/lewati","type":1,"val":"kind","end":""},{"old":"/staf/:kind/:id/lewati","type":1,"val":"id","end":""},{"old":"/staf/:kind/:id/lewati","type":0,"val":"lewati","end":""}],
     types: placeholder as Registry['staff.task.skip']['types'],
   },
+  'staff.route': {
+    methods: ["GET","HEAD"],
+    pattern: '/staf/rute',
+    tokens: [{"old":"/staf/rute","type":0,"val":"staf","end":""},{"old":"/staf/rute","type":0,"val":"rute","end":""}],
+    types: placeholder as Registry['staff.route']['types'],
+  },
   'staff.process': {
     methods: ["GET","HEAD"],
     pattern: '/staf/proses',
@@ -671,6 +677,18 @@ const routes = {
     pattern: '/area',
     tokens: [{"old":"/area","type":0,"val":"area","end":""}],
     types: placeholder as Registry['area.check']['types'],
+  },
+  'places.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/lokasi',
+    tokens: [{"old":"/lokasi","type":0,"val":"lokasi","end":""}],
+    types: placeholder as Registry['places.index']['types'],
+  },
+  'places.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/lokasi/titik',
+    tokens: [{"old":"/lokasi/titik","type":0,"val":"lokasi","end":""},{"old":"/lokasi/titik","type":0,"val":"titik","end":""}],
+    types: placeholder as Registry['places.show']['types'],
   },
   'webhooks.midtrans': {
     methods: ["POST"],

@@ -8,7 +8,7 @@ import HandledList from '~/components/organisms/tasks/handled_list'
 import QueueMap from '~/components/organisms/tasks/queue_map'
 import StaffLayout from '~/components/templates/staff_layout'
 import { useLiveReload } from '~/lib/shared/live'
-import { useDeviceLocation } from '~/lib/tasks/location'
+import { useCourierPosition, useDeviceLocation } from '~/lib/tasks/location'
 import { TASK_COPY, type QueueState, type Task, type TaskKind } from '~/lib/tasks/queue'
 
 type Handled = { task: Task; wasSkipped: boolean; reason: string | null; time: string }
@@ -16,15 +16,20 @@ type Handled = { task: Task; wasSkipped: boolean; reason: string | null; time: s
 export default function TaskQueue({
   kind,
   tasks,
+  total,
   hasActive,
+  isOptimized,
   handled,
 }: {
   kind: TaskKind
   tasks: Task[]
+  total: { km: string; eta: string } | null
   hasActive: boolean
+  isOptimized: boolean
   handled: Handled[]
 }) {
   const me = useDeviceLocation()
+  useCourierPosition(me)
   const [isStarting, setStarting] = useState(false)
   const copy = TASK_COPY[kind]
   const taskHref = urlFor(kind === 'jemput' ? 'staff.pickup_task' : 'staff.delivery_task')
@@ -34,7 +39,7 @@ export default function TaskQueue({
     (kind === 'jemput' ? ` · ${tasks.reduce((sum, task) => sum + task.count, 0)} barang` : '') +
     (skipped ? ` · ${skipped} dilewati` : '')
 
-  useLiveReload('staff/queues', ['tasks', 'hasActive', 'handled'])
+  useLiveReload('staff/queues', ['tasks', 'total', 'hasActive', 'isOptimized', 'handled'])
 
   function start(task: Task) {
     router.post(
@@ -52,11 +57,31 @@ export default function TaskQueue({
         <div className="flex min-w-0 flex-col gap-2.5 px-4 pt-3.5 pb-5">
           <div className="flex items-start gap-2.5 rounded-md bg-accent px-3.5 py-3 text-note leading-[1.45] text-accent-foreground">
             <IconRoute className="mt-px size-4.75 shrink-0" />
-            <span>
-              <strong className="font-semibold">Urutan disarankan sistem</strong> ·{' '}
-              {kind === 'jemput' ? 'jadwal jemput paling awal dulu' : 'yang paling lama menunggu'}.
-            </span>
+            {isOptimized ? (
+              <span>
+                <strong className="font-semibold">Urutan disarankan sistem</strong> ·{' '}
+                {kind === 'jemput'
+                  ? 'jadwal jemput paling awal dulu, lalu titik terdekat dalam tiap slot'
+                  : 'titik terdekat lebih dulu'}
+                .
+              </span>
+            ) : (
+              <span>
+                <strong className="font-semibold">Urutan belum dioptimasi</strong> ·{' '}
+                {kind === 'jemput' ? 'jadwal jemput paling awal dulu' : 'yang paling lama menunggu'}
+                .
+              </span>
+            )}
           </div>
+          {total && (
+            <p className="mx-1 text-meta leading-[1.4] text-foreground-secondary">
+              Sisa rute{' '}
+              <strong className="font-semibold text-foreground">
+                {total.km} · {total.eta}
+              </strong>{' '}
+              perjalanan, {tasks.length} titik
+            </p>
+          )}
           {tasks.length > 0 && (
             <ol
               aria-label={`Antrean ${copy.title.toLowerCase()}`}

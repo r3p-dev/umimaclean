@@ -34,6 +34,7 @@ export const controllers = {
     AccountSecurity: () => import('#controllers/shared/account_security_controller'),
     Areas: () => import('#controllers/shared/areas_controller'),
     PaymentNotifications: () => import('#controllers/shared/payment_notifications_controller'),
+    Places: () => import('#controllers/shared/places_controller'),
     ProofPhotos: () => import('#controllers/shared/proof_photos_controller'),
   },
   staff: {
@@ -41,6 +42,7 @@ export const controllers = {
     Dashboard: () => import('#controllers/staff/dashboard_controller'),
     Prints: () => import('#controllers/staff/prints_controller'),
     Process: () => import('#controllers/staff/process_controller'),
+    Routes: () => import('#controllers/staff/routes_controller'),
     Store: () => import('#controllers/staff/store_controller'),
     Tasks: () => import('#controllers/staff/tasks_controller'),
   },

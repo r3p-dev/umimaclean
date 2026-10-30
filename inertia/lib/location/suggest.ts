@@ -1,11 +1,9 @@
+import { urlFor } from '~/client'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { locateDevice } from '~/lib/location/point_lookup'
 import { SERVICE_CENTER } from '~/lib/location/service_area'
 import type { PickupPoint } from '~/lib/location/point'
 
-const PHOTON = 'https://photon.komoot.io'
-const BANDUNG_RAYA_BBOX = '107.35,-7.20,107.95,-6.70'
-const SUGGESTION_LIMIT = 5
 const MIN_QUERY = 3
 
 export type AddressSuggestion = {
@@ -14,55 +12,6 @@ export type AddressSuggestion = {
   detail: string
   value: string
   point: PickupPoint
-}
-
-type PhotonFeature = {
-  geometry: { coordinates: [number, number] }
-  properties: {
-    osm_type?: string
-    osm_id?: number
-    name?: string
-    street?: string
-    housenumber?: string
-    locality?: string
-    district?: string
-    county?: string
-    city?: string
-    state?: string
-  }
-}
-
-function unique(parts: (string | undefined | null)[], exclude: string[]) {
-  const seen = new Set(exclude.map((part) => part.toLowerCase()))
-  return parts.filter((part): part is string => {
-    if (!part || seen.has(part.toLowerCase())) {
-      return false
-    }
-    seen.add(part.toLowerCase())
-    return true
-  })
-}
-
-function toSuggestion({ geometry, properties: p }: PhotonFeature): AddressSuggestion | null {
-  const street = p.street && (p.housenumber ? `${p.street} No. ${p.housenumber}` : p.street)
-  const title = p.name ?? street
-  if (!title) {
-    return null
-  }
-  const kecamatan = p.county && !/^(kota|kabupaten|kab\.)\s/i.test(p.county) ? p.county : null
-  const city = p.city ?? p.state
-  const detail = unique(
-    [p.name ? street : null, p.locality, p.district, kecamatan && `Kec. ${kecamatan}`, city],
-    [title]
-  )
-  const value = unique([title, p.name ? street : null, p.district, kecamatan, city], [])
-  return {
-    id: `${p.osm_type ?? ''}${p.osm_id ?? title}`,
-    title,
-    detail: detail.join(', '),
-    value: value.join(', '),
-    point: { lat: geometry.coordinates[1], lng: geometry.coordinates[0] },
-  }
 }
 
 const REQUEST_TIMEOUT = 12000
@@ -76,46 +25,28 @@ async function fetchSuggestions(url: string, signal?: AbortSignal) {
   const timeout = AbortSignal.timeout(REQUEST_TIMEOUT)
   const response = await fetch(url, {
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
+    headers: { accept: 'application/json' },
   })
   if (!response.ok) {
     throw new Error('suggest failed')
   }
-  const body = (await response.json()) as { features?: PhotonFeature[] }
-  const seen = new Set<string>()
-  const suggestions: AddressSuggestion[] = []
-  for (const feature of body.features ?? []) {
-    const suggestion = toSuggestion(feature)
-    const key = suggestion && `${suggestion.title}|${suggestion.detail}`.toLowerCase()
-    if (!suggestion || !key || seen.has(key)) {
-      continue
-    }
-    seen.add(key)
-    suggestions.push(suggestion)
-  }
-  const found = suggestions.slice(0, SUGGESTION_LIMIT)
+  const found = (await response.json()) as AddressSuggestion[]
   cache.set(url, found)
   return found
 }
 
 function nearbyUrl(point: PickupPoint) {
-  const params = new URLSearchParams({
-    lat: point.lat.toFixed(5),
-    lon: point.lng.toFixed(5),
-    limit: '12',
-    radius: '1',
-  })
-  return `${PHOTON}/reverse?${params}`
+  const params = new URLSearchParams({ lat: point.lat.toFixed(5), lng: point.lng.toFixed(5) })
+  return `${urlFor('places.index')}?${params}`
 }
 
 function searchUrl(query: string, near: PickupPoint) {
   const params = new URLSearchParams({
     q: query.trim().toLowerCase(),
     lat: near.lat.toFixed(3),
-    lon: near.lng.toFixed(3),
-    limit: '12',
-    bbox: BANDUNG_RAYA_BBOX,
+    lng: near.lng.toFixed(3),
   })
-  return `${PHOTON}/api/?${params}`
+  return `${urlFor('places.index')}?${params}`
 }
 
 export function suggestNearby(point: PickupPoint, signal?: AbortSignal) {

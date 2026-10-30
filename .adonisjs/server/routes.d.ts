@@ -55,6 +55,7 @@ export type ScannedRoutes = {
     'staff.task.arrive': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
     'staff.task.complete': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
     'staff.task.skip': { paramsTuple: [ParamValue,ParamValue]; params: {'kind': ParamValue,'id': ParamValue} }
+    'staff.route': { paramsTuple?: []; params?: {} }
     'staff.process': { paramsTuple?: []; params?: {} }
     'staff.inspection': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.washing': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -115,6 +116,8 @@ export type ScannedRoutes = {
     'seo.sitemap': { paramsTuple?: []; params?: {} }
     'seo.robots': { paramsTuple?: []; params?: {} }
     'area.check': { paramsTuple?: []; params?: {} }
+    'places.index': { paramsTuple?: []; params?: {} }
+    'places.show': { paramsTuple?: []; params?: {} }
     'webhooks.midtrans': { paramsTuple?: []; params?: {} }
     'photos.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
@@ -147,6 +150,7 @@ export type ScannedRoutes = {
     'staff.pickup_task': { paramsTuple?: []; params?: {} }
     'staff.deliveries': { paramsTuple?: []; params?: {} }
     'staff.delivery_task': { paramsTuple?: []; params?: {} }
+    'staff.route': { paramsTuple?: []; params?: {} }
     'staff.process': { paramsTuple?: []; params?: {} }
     'staff.inspection': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.washing': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -177,6 +181,8 @@ export type ScannedRoutes = {
     'seo.sitemap': { paramsTuple?: []; params?: {} }
     'seo.robots': { paramsTuple?: []; params?: {} }
     'area.check': { paramsTuple?: []; params?: {} }
+    'places.index': { paramsTuple?: []; params?: {} }
+    'places.show': { paramsTuple?: []; params?: {} }
     'photos.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
   }
@@ -206,6 +212,7 @@ export type ScannedRoutes = {
     'staff.pickup_task': { paramsTuple?: []; params?: {} }
     'staff.deliveries': { paramsTuple?: []; params?: {} }
     'staff.delivery_task': { paramsTuple?: []; params?: {} }
+    'staff.route': { paramsTuple?: []; params?: {} }
     'staff.process': { paramsTuple?: []; params?: {} }
     'staff.inspection': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.washing': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -236,6 +243,8 @@ export type ScannedRoutes = {
     'seo.sitemap': { paramsTuple?: []; params?: {} }
     'seo.robots': { paramsTuple?: []; params?: {} }
     'area.check': { paramsTuple?: []; params?: {} }
+    'places.index': { paramsTuple?: []; params?: {} }
+    'places.show': { paramsTuple?: []; params?: {} }
     'photos.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
   }

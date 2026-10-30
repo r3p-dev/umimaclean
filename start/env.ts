@@ -29,6 +29,10 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   ADMIN_PHONE: Env.schema.string.optional(),
 
+  OSRM_URL: Env.schema.string.optional({ format: 'url', tld: false }),
+  OSRM_PROFILE: Env.schema.string.optional(),
+  OSRM_TIMEOUT_MS: Env.schema.number.optional(),
+
   TURNSTILE_SITE_KEY: Env.schema.string(),
   TURNSTILE_SECRET_KEY: Env.schema.secret(),
 })

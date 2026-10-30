@@ -1,7 +1,7 @@
 import router from '@adonisjs/core/services/router'
 import { controllers } from '#generated/controllers'
 import { middleware } from '#start/kernel'
-import { throttleAreaCheck } from '#start/limiter'
+import { throttleAreaCheck, throttlePlaces } from '#start/limiter'
 
 import '#start/routes/auth'
 import '#start/routes/customer'
@@ -14,6 +14,13 @@ router.get('/privasi', [controllers.Legal, 'privacy']).as('legal.privacy')
 router.get('/sitemap.xml', [controllers.Seo, 'sitemap']).as('seo.sitemap')
 router.get('/robots.txt', [controllers.Seo, 'robots']).as('seo.robots')
 router.get('/area', [controllers.shared.Areas, 'show']).as('area.check').use(throttleAreaCheck)
+
+router
+  .group(() => {
+    router.get('/lokasi', [controllers.shared.Places, 'index']).as('places.index')
+    router.get('/lokasi/titik', [controllers.shared.Places, 'show']).as('places.show')
+  })
+  .use([middleware.auth(), throttlePlaces])
 
 router
   .post('/webhooks/midtrans', [controllers.shared.PaymentNotifications, 'store'])

@@ -21,7 +21,7 @@ import { useAccount } from '~/lib/shared/auth'
 import { useLiveReload } from '~/lib/shared/live'
 import { useStaffCounts } from '~/lib/staff/summary'
 import type { Task, TaskKind } from '~/lib/tasks/queue'
-import { useDeviceLocation } from '~/lib/tasks/location'
+import { useCourierPosition, useDeviceLocation } from '~/lib/tasks/location'
 import { cn } from '~/lib/shared/utils'
 
 type NextTask = { kind: TaskKind; isActive: boolean; task: Task; tasks: Task[] }
@@ -29,6 +29,7 @@ type NextTask = { kind: TaskKind; isActive: boolean; task: Task; tasks: Task[] }
 export default function StaffHome({ next }: { next: NextTask | null }) {
   const account = useAccount()
   const me = useDeviceLocation()
+  useCourierPosition(me)
   const counts = useStaffCounts()
   useLiveReload('staff/queues', ['next', 'staffCounts'])
   const today = new Date()
@@ -125,7 +126,9 @@ export default function StaffHome({ next }: { next: NextTask | null }) {
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="text-xl leading-none font-bold">{next.task.km}</p>
-                      <p className="text-caption leading-[1.4] text-muted-foreground">dari toko</p>
+                      <p className="text-caption leading-[1.4] text-muted-foreground">
+                        {next.task.legFrom}
+                      </p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-x-3.5 gap-y-1.5 text-note leading-[1.4] text-foreground-secondary">

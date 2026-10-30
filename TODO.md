@@ -7,6 +7,7 @@
   - [] Staff and Owner received WhatsApp cause they have the app
 - [] Order Detail doesn't need the random UID. just straight order number, cause now we have account
 - [] Address only 3
+- [] Landing hero before/after slider should use real Umima.Clean photos (now Unsplash stock photos in `public/images/landing/shoes-before-*` and `shoes-after-*`)
 
 ## Staff
 

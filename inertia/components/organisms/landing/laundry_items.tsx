@@ -1,22 +1,23 @@
+import Photo from '~/components/atoms/photo'
 import { Card, CardDescription, CardTitle } from '~/components/ui/card'
 
 const ITEMS = [
   {
     name: 'Sepatu',
     description: 'Sneakers, kanvas, kulit',
-    src: 'https://images.unsplash.com/photo-1654147801991-a9fa8594e900?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+    src: '/images/landing/shoes',
     alt: 'Foto sepatu',
   },
   {
     name: 'Tas',
     description: 'Ransel, tote, kulit',
-    src: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=800',
+    src: '/images/landing/bag',
     alt: 'Foto tas ransel',
   },
   {
     name: 'Helm',
     description: 'Half-face, full-face',
-    src: 'https://images.unsplash.com/photo-1494030575520-dd03dd6aeb04?q=80&w=1568&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D',
+    src: '/images/landing/helmet',
     alt: 'Foto helm',
   },
 ]
@@ -29,10 +30,13 @@ export default function LaundryItems() {
         {ITEMS.map((item) => (
           <li key={item.name}>
             <Card className="gap-2 border-0 bg-transparent p-0 shadow-none">
-              <img
+              <Photo
                 src={item.src}
+                widths={[360, 720]}
+                ratio={1}
+                sizes="min(357px, calc(33vw - 20px))"
                 alt={item.alt}
-                draggable={false}
+                isLazy
                 className="aspect-square w-full rounded-md object-cover shadow-sm"
               />
               <CardTitle className="text-md leading-[1.2] font-semibold">{item.name}</CardTitle>

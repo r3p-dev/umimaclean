@@ -64,16 +64,22 @@ export default function QueueCard({
                 </span>
               )}
             </span>
-            <span
-              className={cn(
-                'shrink-0',
-                isCurrent
-                  ? 'text-base font-bold text-info-foreground'
-                  : 'text-sm font-semibold text-foreground-secondary',
-                'leading-[1.3]'
+            <span className="flex shrink-0 flex-col items-end">
+              <span
+                className={cn(
+                  isCurrent
+                    ? 'text-base font-bold text-info-foreground'
+                    : 'text-sm font-semibold text-foreground-secondary',
+                  'leading-[1.3]'
+                )}
+              >
+                {task.km}
+              </span>
+              {task.legFrom && (
+                <span className="text-caption leading-[1.4] text-muted-foreground">
+                  {task.legFrom}
+                </span>
               )}
-            >
-              {task.km}
             </span>
           </div>
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-meta leading-[1.4] text-foreground-secondary">

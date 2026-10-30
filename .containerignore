@@ -17,6 +17,7 @@ Containerfile
 build
 node_modules
 public/assets
+public/tiles
 storage
 tmp
 docs

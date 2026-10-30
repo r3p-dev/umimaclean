@@ -19,6 +19,7 @@ router
       .prefix('/:kind/:id')
       .where('kind', /^(jemput|antar)$/)
       .as('task')
+    router.get('/rute', [controllers.staff.Routes, 'show']).as('route')
     router.get('/proses', [controllers.staff.Process, 'queue']).as('process')
     router.get('/proses/:id/periksa', [controllers.staff.Process, 'inspection']).as('inspection')
     router.get('/proses/:id/cuci', [controllers.staff.Process, 'washing']).as('washing')

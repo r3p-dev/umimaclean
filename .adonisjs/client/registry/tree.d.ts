@@ -81,6 +81,7 @@ export interface ApiDefinition {
       complete: typeof routes['staff.task.complete']
       skip: typeof routes['staff.task.skip']
     }
+    route: typeof routes['staff.route']
     process: typeof routes['staff.process']
     inspection: typeof routes['staff.inspection'] & {
       start: typeof routes['staff.inspection.start']
@@ -168,6 +169,10 @@ export interface ApiDefinition {
   }
   area: {
     check: typeof routes['area.check']
+  }
+  places: {
+    index: typeof routes['places.index']
+    show: typeof routes['places.show']
   }
   webhooks: {
     midtrans: typeof routes['webhooks.midtrans']

@@ -12,6 +12,7 @@ x-app-env: &app-env
   DB_PORT: 5432
   DB_USER: umimaclean
   DB_DATABASE: umimaclean
+  OSRM_URL: http://osrm:5000
 
 services:
   web:
@@ -40,6 +41,7 @@ services:
     mem_limit: 512m
     volumes:
       - proofs:/app/storage/proofs
+      - tiles:/app/public/tiles:ro
 
   scheduler:
     image: ${IMAGE}
@@ -70,6 +72,22 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend:v26.9.0-debian
+    command:
+      [
+        'sh',
+        '-c',
+        'while :; do osrm-routed --algorithm ch /data/bandung-raya.osrm; echo "osrm-routed stopped, retrying in 60 s"; sleep 60; done',
+      ]
+    init: true
+    cap_drop: [ALL]
+    mem_limit: 384m
+    volumes:
+      - osrm:/data:ro
+
 volumes:
   proofs:
   pgdata:
+  osrm:
+  tiles:

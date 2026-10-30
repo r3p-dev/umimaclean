@@ -29,7 +29,7 @@ import FlowLayout from '~/components/templates/flow_layout'
 import { photoFile, proofStamp, useCamera } from '~/lib/proof/camera'
 import { useAccount } from '~/lib/shared/auth'
 import { navigationLink, preferences } from '~/lib/staff/preferences'
-import { useDeviceLocation } from '~/lib/tasks/location'
+import { useCourierPosition, useDeviceLocation } from '~/lib/tasks/location'
 import { TASK_COPY, TASK_STEPS, type Task, type TaskKind } from '~/lib/tasks/queue'
 import { useDrivingRoute } from '~/lib/tasks/route'
 
@@ -80,6 +80,7 @@ export default function ActiveTask({
   const receiverId = useId()
   const camera = useCamera(cameraPhase === 'live')
   const me = useDeviceLocation(true)
+  useCourierPosition(me)
 
   const phase =
     cameraPhase === 'live'

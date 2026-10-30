@@ -2,9 +2,9 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import OrderPolicy from '#policies/order_policy'
 import TaskService, { SKIP_REASONS } from '#services/task_service'
-import TaskTransformer from '#transformers/task_transformer'
+import TaskTransformer, { formatLeg } from '#transformers/task_transformer'
 import { formatClock } from '#transformers/order_transformer'
-import { completeTaskValidator, skipTaskValidator } from '#validators/staff/task'
+import { completeTaskValidator, courierPosition, skipTaskValidator } from '#validators/staff/task'
 import { fieldError } from '#validators/shared/field_error'
 
 const KINDS = { jemput: 'pickup', antar: 'delivery' } as const
@@ -79,20 +79,26 @@ export default class TasksController {
     return response.redirect().toRoute(this.#taskRoute(kind))
   }
 
-  async #queue({ auth, bouncer, inertia }: HttpContext, kind: KindParameter) {
+  async #queue({ auth, bouncer, inertia, request }: HttpContext, kind: KindParameter) {
     await bouncer.with(OrderPolicy).authorize('work')
     const user = auth.getUserOrFail()
     const trip = KINDS[kind]
-    const [{ active, queue, slots }, handled] = await Promise.all([
-      this.tasks.tripBoard(trip),
+    const position = await courierPosition(request.header('x-courier-position'))
+    const [{ active, queue, slots, isOptimized }, handled] = await Promise.all([
+      this.tasks.tripBoard(trip, { id: user.id, position }),
       this.tasks.tripsHandledToday(user, trip),
     ])
     const tasks = [...(active ? [active] : []), ...queue]
+    const { legs, total, start } = await this.tasks.findTripLegs(tasks, trip, position)
 
     return inertia.render('staff/tasks/queue', {
       kind,
-      tasks: tasks.map((order) => new TaskTransformer(order, trip, slots).toObject()),
+      tasks: tasks.map((order, index) =>
+        new TaskTransformer(order, trip, slots, legs.get(order.id), index ? null : start).toObject()
+      ),
+      total: tasks.length ? formatLeg(total) : null,
       hasActive: !!active,
+      isOptimized,
       handled: handled.map((entry) => ({
         task: new TaskTransformer(entry.order, trip, slots).toObject(),
         wasSkipped: entry.action.endsWith('skipped'),
@@ -104,20 +110,36 @@ export default class TasksController {
     })
   }
 
-  async #active({ auth, bouncer, inertia, session }: HttpContext, kind: KindParameter) {
+  async #active({ auth, bouncer, inertia, request, session }: HttpContext, kind: KindParameter) {
     await bouncer.with(OrderPolicy).authorize('work')
     const user = auth.getUserOrFail()
     const trip = KINDS[kind]
-    const { active, queue, slots } = await this.tasks.tripBoard(trip)
+    const position = await courierPosition(request.header('x-courier-position'))
+    const { active, queue, slots } = await this.tasks.tripBoard(trip, { id: user.id, position })
     const result = session.flashMessages.get(RESULT_KEY) as TaskResult | undefined
     const handledToday = result ? await this.tasks.tripsHandledToday(user, trip) : []
     const handled = handledToday.find((entry) => entry.order.id === result?.id)
+    const { legs, start } = await this.tasks.findTripLegs(
+      [active, queue[0]].filter((order) => order !== undefined && order !== null),
+      trip,
+      position
+    )
 
     return inertia.render('staff/tasks/active', {
       kind,
-      task: active ? new TaskTransformer(active, trip, slots).toObject() : null,
+      task: active
+        ? new TaskTransformer(active, trip, slots, legs.get(active.id), start).toObject()
+        : null,
       phase: active && (await this.tasks.hasArrived(active)) ? 'arrived' : 'nav',
-      next: queue[0] ? new TaskTransformer(queue[0], trip, slots).toObject() : null,
+      next: queue[0]
+        ? new TaskTransformer(
+            queue[0],
+            trip,
+            slots,
+            legs.get(queue[0].id),
+            active ? null : start
+          ).toObject()
+        : null,
       skipReasons: [...SKIP_REASONS],
       result:
         result && handled

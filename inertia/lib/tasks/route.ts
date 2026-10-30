@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
+import { urlFor } from '~/client'
 import type { PickupPoint } from '~/lib/location/point'
 import { clockTime } from '~/lib/shared/date'
 import { formatKm } from '~/lib/tasks/location'
 
-const OSRM = 'https://router.project-osrm.org/route/v1/driving'
-
 type DrivingRoute = {
-  path: PickupPoint[]
+  path: PickupPoint[] | null
+  isEstimate: boolean
   distanceText: string
   durationText: string
   arrivalText: string
@@ -19,25 +19,34 @@ function routeKey(from: PickupPoint, to: PickupPoint) {
 }
 
 async function fetchRoute(from: PickupPoint, to: PickupPoint, signal: AbortSignal) {
-  const url = `${OSRM}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson`
-  const response = await fetch(url, { signal })
+  const params = new URLSearchParams({
+    fromLat: String(from.lat),
+    fromLng: String(from.lng),
+    toLat: String(to.lat),
+    toLng: String(to.lng),
+  })
+  const response = await fetch(`${urlFor('staff.route')}?${params}`, {
+    signal,
+    headers: { accept: 'application/json' },
+  })
   if (!response.ok) {
     throw new Error('route')
   }
-  const data = (await response.json()) as {
-    code: string
-    routes?: { distance: number; duration: number; geometry: { coordinates: [number, number][] } }[]
+  const best = (await response.json()) as {
+    source: 'osrm' | 'estimate'
+    meters: number
+    seconds: number
+    path: PickupPoint[]
   }
-  const best = data.code === 'Ok' ? data.routes?.[0] : undefined
-  if (!best) {
-    throw new Error('route')
-  }
-  const minutes = Math.max(1, Math.round(best.duration / 60))
+  const isEstimate = best.source !== 'osrm'
+  const approximately = isEstimate ? '± ' : ''
+  const minutes = Math.max(1, Math.round(best.seconds / 60))
   return {
-    path: best.geometry.coordinates.map(([lng, lat]) => ({ lat, lng })),
-    distanceText: formatKm(best.distance / 1000),
-    durationText: `${minutes} mnt`,
-    arrivalText: clockTime(new Date(Date.now() + best.duration * 1000)),
+    path: isEstimate ? null : best.path,
+    isEstimate,
+    distanceText: `${approximately}${formatKm(best.meters / 1000)}`,
+    durationText: `${approximately}${minutes} mnt`,
+    arrivalText: clockTime(new Date(Date.now() + best.seconds * 1000)),
   }
 }
 
@@ -79,7 +88,7 @@ export function useDrivingRoute(
   const isCurrent = state.key === key
   return {
     route: isCurrent ? state.route : null,
-    failed: isCurrent && state.hasFailed,
+    failed: isCurrent && (state.hasFailed || Boolean(state.route?.isEstimate)),
     loading: isEnabled && Boolean(key) && !isCurrent,
   }
 }

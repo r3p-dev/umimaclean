@@ -2,18 +2,19 @@ import { BaseTransformer } from '@adonisjs/core/transformers'
 import { ItemKindLabel, OrderSource } from '#enums/order_enum'
 import type Order from '#models/order'
 import { nationalNumber } from '#helpers/phone'
+import { estimateLeg } from '#helpers/route'
 import { STORE_POINT, type PickupSlotSetting } from '#models/setting'
+import type { TripLeg } from '#services/types'
 
 export type TripKind = 'pickup' | 'delivery'
 
-function distanceKm(from: { lat: number; lng: number }, to: { lat: number; lng: number }) {
-  const radians = (value: number) => (value * Math.PI) / 180
-  const dLat = radians(to.lat - from.lat)
-  const dLng = radians(to.lng - from.lng)
-  const haversine =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(radians(from.lat)) * Math.cos(radians(to.lat)) * Math.sin(dLng / 2) ** 2
-  return 6371 * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine))
+function tripAddress(order: Order, kind: TripKind) {
+  return kind === 'pickup' ? order.pickupAddress : (order.deliveryAddress ?? order.pickupAddress)
+}
+
+export function tripPoint(order: Order, kind: TripKind) {
+  const address = tripAddress(order, kind)
+  return address ? { lat: address.lat, lng: address.lng } : STORE_POINT
 }
 
 export function shortName(full: string) {
@@ -31,21 +32,37 @@ export function countLines(order: Order) {
     .map(([count, label]) => `${label} ×${count}`)
 }
 
+export function formatLeg(leg: TripLeg) {
+  const approximately = leg.source === 'estimate' ? '± ' : ''
+  const minutes = Math.max(1, Math.round(leg.seconds / 60))
+  const hours = Math.floor(minutes / 60)
+  const duration = hours
+    ? `${hours} jam${minutes % 60 ? ` ${minutes % 60} mnt` : ''}`
+    : `${minutes} mnt`
+  return {
+    km: `${approximately}${(leg.meters / 1000).toFixed(1).replace('.', ',')} km`,
+    eta: `${approximately}${duration}`,
+  }
+}
+
 export default class TaskTransformer extends BaseTransformer<Order> {
   constructor(
     resource: Order,
     protected kind: TripKind,
-    protected slots: PickupSlotSetting[]
+    protected slots: PickupSlotSetting[],
+    protected leg?: TripLeg,
+    protected legStart: 'courier' | 'store' | null = null
   ) {
     super(resource)
   }
 
   toObject() {
     const order = this.resource
-    const address =
-      this.kind === 'pickup' ? order.pickupAddress : (order.deliveryAddress ?? order.pickupAddress)
-    const point = address ? { lat: address.lat, lng: address.lng } : STORE_POINT
-    const km = distanceKm(STORE_POINT, point)
+    const address = tripAddress(order, this.kind)
+    const point = tripPoint(order, this.kind)
+    const { km, eta } = formatLeg(
+      this.leg ?? { source: 'estimate', ...estimateLeg(STORE_POINT, point) }
+    )
     const parts = (address?.addressText ?? '').split(',').map((part) => part.trim())
     const area = parts.length >= 3 ? parts.slice(-3, -1).join(', ') : parts.join(', ')
     const counts = countLines(order)
@@ -65,8 +82,14 @@ export default class TaskTransformer extends BaseTransformer<Order> {
       name: shortName(order.customerName),
       full: order.customerName,
       area: area || '—',
-      km: `${km.toFixed(1).replace('.', ',')} km`,
-      eta: `${Math.max(1, Math.round((km / 25) * 60))} mnt`,
+      km,
+      eta,
+      legFrom:
+        this.legStart === 'courier'
+          ? 'dari posisi Anda'
+          : this.legStart === 'store'
+            ? 'dari toko'
+            : null,
       at: '—',
       slot:
         this.kind === 'pickup' && order.pickupSlot !== null

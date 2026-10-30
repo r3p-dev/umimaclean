@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { router } from '@inertiajs/react'
 import type { PickupPoint } from '~/lib/location/point'
 import { STORE_LOCATION } from '~/lib/staff/profile'
 
@@ -29,4 +30,19 @@ export function useDeviceLocation(shouldWatch = false): DeviceLocation {
 
 export function formatKm(km: number) {
   return `${km.toLocaleString('id-ID', { maximumFractionDigits: 1, minimumFractionDigits: 1 })} km`
+}
+
+export function useCourierPosition(location: DeviceLocation) {
+  const position = location.isLive
+    ? `${location.point.lat.toFixed(3)},${location.point.lng.toFixed(3)}`
+    : null
+
+  useEffect(() => {
+    if (!position) {
+      return
+    }
+    return router.on('before', (event) => {
+      event.detail.visit.headers['X-Courier-Position'] = position
+    })
+  }, [position])
 }

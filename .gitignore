@@ -9,6 +9,7 @@ tmp/*
 .env.development.local
 
 public/assets
+/public/tiles
 
 npm-debug.log
 yarn-error.log
@@ -21,3 +22,6 @@ yarn-error.log
 
 docs
 /storage
+
+# Local reference clone
+/skripsi

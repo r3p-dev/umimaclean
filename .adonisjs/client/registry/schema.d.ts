@@ -619,6 +619,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tasks_controller').default['skip']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'staff.route': {
+    methods: ["GET","HEAD"]
+    pattern: '/staf/rute'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/staff/task').findRouteValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/routes_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/routes_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'staff.process': {
     methods: ["GET","HEAD"]
     pattern: '/staf/proses'
@@ -1337,6 +1349,30 @@ export interface Registry {
       query: ExtractQueryForGet<InferInput<(typeof import('#validators/shared/area').checkAreaValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/areas_controller').default['show']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/areas_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'places.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/lokasi'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/shared/place').searchPlacesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/places_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/places_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'places.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/lokasi/titik'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/shared/area').checkAreaValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/shared/places_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/shared/places_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'webhooks.midtrans': {

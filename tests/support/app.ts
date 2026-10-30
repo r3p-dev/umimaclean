@@ -17,6 +17,7 @@ import { OrderAddressFactory } from '#database/factories/order_address_factory'
 import { OrderFactory } from '#database/factories/order_factory'
 import type User from '#models/user'
 import FonnteService from '#services/fonnte_service'
+import { clearRouteCaches } from '#services/task_service'
 import TurnstileService from '#services/turnstile_service'
 import { SERVICE_ZONE } from '#validators/shared/rules/pickup'
 
@@ -149,6 +150,7 @@ export function useApp(group: Group) {
     app.container.swap(TurnstileService, () => state.turnstile)
     app.container.swap(MidtransGateway, () => state.gateway)
     await limiter.clear()
+    clearRouteCaches()
     await truncate()
     state.areas = await serviceAreaFixtures()
     return truncate

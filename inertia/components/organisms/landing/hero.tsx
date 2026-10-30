@@ -1,8 +1,16 @@
 import { IconArrowRight, IconTruckDelivery } from '@tabler/icons-react'
+import Photo from '~/components/atoms/photo'
 import { Badge } from '~/components/ui/badge'
 import CompareSlider from '~/components/molecules/compare_slider'
 import { LinkButton } from '~/components/ui/button'
 import { urlFor } from '~/client'
+
+const PHOTO = {
+  widths: [640, 1100],
+  ratio: 16 / 11,
+  sizes: '(min-width: 600px) min(546px, calc(50vw - 34px)), calc(100vw - 40px)',
+  className: 'absolute inset-0 size-full object-cover',
+}
 
 export default function Hero() {
   return (
@@ -40,8 +48,12 @@ export default function Hero() {
 
       <div className="relative box-content aspect-16/11 p-3">
         <CompareSlider
-          before="https://images.unsplash.com/photo-1601574260493-7b8af92b36db?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D"
-          after="https://images.unsplash.com/photo-1654147801991-a9fa8594e900?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D"
+          before={
+            <Photo {...PHOTO} src="/images/landing/shoes-before" alt="Foto sepatu sebelum dicuci" />
+          }
+          after={
+            <Photo {...PHOTO} src="/images/landing/shoes-after" alt="Foto sepatu sesudah dicuci" />
+          }
           className="absolute inset-0 shadow-lg"
         />
       </div>

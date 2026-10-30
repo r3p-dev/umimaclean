@@ -8,6 +8,9 @@ const staticServerConfig = defineConfig({
   lastModified: true,
 
   dotFiles: 'ignore',
+
+  headers: (path) =>
+    path.endsWith('.pmtiles') ? { 'Cache-Control': 'public, max-age=31536000, immutable' } : {},
 })
 
 export default staticServerConfig

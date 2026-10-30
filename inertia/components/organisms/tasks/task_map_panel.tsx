@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import {
   IconArrowLeft,
   IconCurrentLocation,
@@ -12,6 +12,8 @@ import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '~/component
 import RouteMap, { type RouteMapHandle } from '~/components/organisms/route_map'
 import { MapLegend } from '~/components/organisms/tasks/queue_map'
 import type { PickupPoint } from '~/lib/location/point'
+
+const ALERT_TOP = 68
 
 const FLOATING = 'bg-card text-foreground shadow-1 hover:bg-card hover:text-foreground'
 
@@ -39,6 +41,15 @@ export default function TaskMapPanel({
   onSkip: () => void
 }) {
   const map = useRef<RouteMapHandle>(null)
+  const [alertHeight, setAlertHeight] = useState(0)
+  const alert = useCallback((node: HTMLDivElement | null) => {
+    if (!node) {
+      return
+    }
+    const observer = new ResizeObserver(() => setAlertHeight(node.offsetHeight))
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <RouteMap
@@ -47,8 +58,14 @@ export default function TaskMapPanel({
       destination={destination}
       route={route}
       label="Peta rute ke lokasi tugas"
-      inset={{ top: 56, right: 0, bottom: 40, left: 0 }}
+      inset={{
+        top: hasRouteFailed && alertHeight ? ALERT_TOP + alertHeight : 56,
+        right: 0,
+        bottom: 40,
+        left: 0,
+      }}
       className="absolute inset-0"
+      attributionClassName="bottom-17.5 left-3"
     >
       <div className="absolute inset-x-3 top-3 z-20 flex items-center gap-2">
         <LinkButton
@@ -97,6 +114,7 @@ export default function TaskMapPanel({
       </div>
       {hasRouteFailed && (
         <div
+          ref={alert}
           data-surface="light"
           role="alert"
           className="absolute inset-x-3 top-17 z-20 flex max-w-105 flex-col gap-2.5 rounded-lg border border-attention-border-soft bg-card px-3.5 py-3 shadow-1"

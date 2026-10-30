@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { IconArrowsHorizontal } from '@tabler/icons-react'
 import { cn } from '~/lib/shared/utils'
 
@@ -7,28 +7,18 @@ export default function CompareSlider({
   after,
   className,
 }: {
-  before: string
-  after: string
+  before: ReactNode
+  after: ReactNode
   className?: string
 }) {
   const [position, setPosition] = useState<number>(50)
 
   return (
     <div className={cn('relative isolate overflow-hidden rounded-lg select-none', className)}>
-      <img
-        src={after}
-        alt="Foto sepatu sesudah dicuci"
-        draggable={false}
-        className="absolute inset-0 size-full object-cover"
-      />
+      {after}
 
       <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
-        <img
-          src={before}
-          alt="Foto sepatu sebelum dicuci"
-          draggable={false}
-          className="absolute inset-0 size-full object-cover"
-        />
+        {before}
       </div>
 
       <span className="absolute top-3 left-3 rounded-pill bg-surface-glass px-2.5 py-1.5 text-caption leading-none font-semibold text-foreground">
