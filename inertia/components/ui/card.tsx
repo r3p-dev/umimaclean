@@ -32,9 +32,13 @@ function CardHeader({ className, ...props }: ComponentProps<'div'>) {
   )
 }
 
-function CardTitle({ className, ...props }: ComponentProps<'div'>) {
+function CardTitle({
+  as: Tag = 'div',
+  className,
+  ...props
+}: ComponentProps<'div'> & { as?: 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' }) {
   return (
-    <div
+    <Tag
       data-slot="card-title"
       className={cn('font-heading text-md leading-[1.3] font-semibold', className)}
       {...props}
@@ -56,7 +60,10 @@ function CardAction({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-action"
-      className={cn('col-start-2 row-span-2 row-start-1 self-start justify-self-end', className)}
+      className={cn(
+        'col-start-2 row-span-2 row-start-1 -my-3 flex min-h-icon-btn items-center self-start justify-self-end',
+        className
+      )}
       {...props}
     />
   )
@@ -77,7 +84,7 @@ function CardFooter({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="card-footer"
       className={cn(
-        'flex items-center px-(--card-spacing) [.border-t]:pt-(--card-spacing)',
+        'flex flex-wrap items-center gap-2.5 px-(--card-spacing) [.border-t]:pt-(--card-spacing)',
         className
       )}
       {...props}

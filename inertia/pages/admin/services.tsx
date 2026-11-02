@@ -10,6 +10,7 @@ import {
 } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
+import { Card, CardContent } from '~/components/ui/card'
 import { Switch } from '~/components/ui/switch'
 import {
   Table,
@@ -235,56 +236,58 @@ export default function AdminServices({ services: list }: { services: Service[] 
         Perubahan harga berlaku untuk pemeriksaan berikutnya. Tagihan yang sudah dikirim tidak
         berubah. Semua perubahan tercatat di Aktivitas Staf.
       </p>
-      <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3.5">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <FilterMenu<ServiceType>
-            word="Jenis"
-            label="Filter jenis layanan"
-            values={types}
-            onChange={(value) => changeFilter(() => setTypes(value))}
-            options={SERVICE_TYPES.map((type) => ({
-              ...type,
-              count: list.filter(
-                (service) => service.type === type.value && matches(service, 'type')
-              ).length,
-            }))}
-          />
-          <FilterMenu<ServiceCategory>
-            word="Kategori"
-            label="Filter kategori barang"
-            values={categories}
-            onChange={(value) => changeFilter(() => setCategories(value))}
-            options={SERVICE_CATEGORIES.map((category) => ({
-              value: category,
-              label: category,
-              count: list.filter(
-                (service) => service.categories.includes(category) && matches(service, 'category')
-              ).length,
-            }))}
-          />
-          <Switch
-            isSelected={showInactive}
-            onChange={(isChecked) => changeFilter(() => setShowInactive(isChecked))}
-            className="min-h-icon-btn cursor-pointer gap-2.5"
-          >
-            <span className="text-sm leading-tight font-medium">Tampilkan layanan nonaktif</span>
-          </Switch>
-        </div>
-        <div className="flex flex-wrap gap-2.5">
-          <SearchField
-            label="Cari nama atau deskripsi layanan"
-            placeholder="Cari layanan"
-            value={query}
-            onChange={(value) => changeFilter(() => setQuery(value))}
-          />
-        </div>
-        {parts.length > 0 && (
-          <FilterSummary
-            text={`${table.total} dari ${list.length} layanan · ${parts.join(' · ')}`}
-            onReset={resetFilters}
-          />
-        )}
-      </div>
+      <Card size="sm">
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <FilterMenu<ServiceType>
+              word="Jenis"
+              label="Filter jenis layanan"
+              values={types}
+              onChange={(value) => changeFilter(() => setTypes(value))}
+              options={SERVICE_TYPES.map((type) => ({
+                ...type,
+                count: list.filter(
+                  (service) => service.type === type.value && matches(service, 'type')
+                ).length,
+              }))}
+            />
+            <FilterMenu<ServiceCategory>
+              word="Kategori"
+              label="Filter kategori barang"
+              values={categories}
+              onChange={(value) => changeFilter(() => setCategories(value))}
+              options={SERVICE_CATEGORIES.map((category) => ({
+                value: category,
+                label: category,
+                count: list.filter(
+                  (service) => service.categories.includes(category) && matches(service, 'category')
+                ).length,
+              }))}
+            />
+            <Switch
+              isSelected={showInactive}
+              onChange={(isChecked) => changeFilter(() => setShowInactive(isChecked))}
+              className="min-h-icon-btn cursor-pointer gap-2.5"
+            >
+              <span className="text-sm leading-tight font-medium">Tampilkan layanan nonaktif</span>
+            </Switch>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            <SearchField
+              label="Cari nama atau deskripsi layanan"
+              placeholder="Cari layanan"
+              value={query}
+              onChange={(value) => changeFilter(() => setQuery(value))}
+            />
+          </div>
+          {parts.length > 0 && (
+            <FilterSummary
+              text={`${table.total} dari ${list.length} layanan · ${parts.join(' · ')}`}
+              onReset={resetFilters}
+            />
+          )}
+        </CardContent>
+      </Card>
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         {table.selectedCount > 0 && (
           <BulkBar

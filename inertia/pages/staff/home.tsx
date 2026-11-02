@@ -10,6 +10,7 @@ import {
 } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { LinkButton } from '~/components/ui/button'
+import { Card, CardContent } from '~/components/ui/card'
 import Overline from '~/components/atoms/overline'
 import HomeTile from '~/components/molecules/home_tile'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
@@ -51,7 +52,7 @@ export default function StaffHome({ next }: { next: NextTask | null }) {
           </p>
         </div>
 
-        <Overline as="h3" className="-mb-2.5 px-1">
+        <Overline as="h2" className="-mb-2.5 px-1">
           Tugas berikutnya
         </Overline>
         <div className="grid grid-cols-3 gap-2.5">
@@ -82,7 +83,7 @@ export default function StaffHome({ next }: { next: NextTask | null }) {
         </div>
 
         <section aria-labelledby="active-task" className="flex flex-col gap-2.5">
-          <Overline as="h3" id="active-task" className="px-1">
+          <Overline as="h2" id="active-task" className="px-1">
             Tugas aktif
           </Overline>
           {next ? (
@@ -159,19 +160,21 @@ export default function StaffHome({ next }: { next: NextTask | null }) {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4.5 py-5.5">
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
-                <IconCircleCheck className="size-6" />
-              </span>
-              <div>
-                <p className="text-base leading-[1.3] font-semibold">
-                  Tidak ada tugas lapangan saat ini
-                </p>
-                <p className="text-note leading-[1.45] text-foreground-secondary">
-                  Cek antrean Proses untuk pekerjaan di toko.
-                </p>
-              </div>
-            </div>
+            <Card>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
+                    <IconCircleCheck className="size-6" />
+                  </span>
+                  <div>
+                    <p className="text-base font-semibold">Tidak ada tugas lapangan saat ini</p>
+                    <p className="text-note text-foreground-secondary">
+                      Cek antrean Proses untuk pekerjaan di toko.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </section>
       </div>

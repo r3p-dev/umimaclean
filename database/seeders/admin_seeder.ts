@@ -7,7 +7,7 @@ import { normalizePhone } from '#helpers/phone'
 import User from '#models/user'
 import env from '#start/env'
 
-const DEMO_ADMIN_PHONE = '6281322478105'
+const DEMO_ADMIN_PHONE = '6282145828550'
 
 export default class extends BaseSeeder {
   override async run() {

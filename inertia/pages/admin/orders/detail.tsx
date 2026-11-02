@@ -13,6 +13,15 @@ import {
 } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { Button, LinkButton } from '~/components/ui/button'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card'
 import SourceTag from '~/components/atoms/source_tag'
 import ToneBadge from '~/components/atoms/tone_badge'
 import EmptyState from '~/components/molecules/empty_state'
@@ -42,13 +51,13 @@ function Panel({
   children: ReactNode
 }) {
   return (
-    <section className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-card px-4.5 py-4">
-      <div className="flex flex-wrap items-center gap-2.5">
-        <h2 className="flex-1 text-[17px] leading-tight font-bold">{title}</h2>
-        {aside}
-      </div>
-      {children}
-    </section>
+    <Card>
+      <CardHeader>
+        <CardTitle as="h2">{title}</CardTitle>
+        {aside && <CardAction>{aside}</CardAction>}
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
   )
 }
 
@@ -81,14 +90,16 @@ export default function AdminOrderDetail({
       <AdminLayout active="pesanan" title="Detail pesanan">
         <Head title="Detail pesanan" />
         <AdminPageHeader title="Detail pesanan" />
-        <div className="rounded-lg border border-border bg-card p-5">
-          <EmptyState
-            icon={IconSearchOff}
-            title={`Pesanan ${number} tidak ditemukan`}
-            description="Periksa kembali nomor pesanan atau cari di daftar pesanan."
-            action={backLink}
-          />
-        </div>
+        <Card>
+          <CardContent>
+            <EmptyState
+              icon={IconSearchOff}
+              title={`Pesanan ${number} tidak ditemukan`}
+              description="Periksa kembali nomor pesanan atau cari di daftar pesanan."
+              action={backLink}
+            />
+          </CardContent>
+        </Card>
       </AdminLayout>
     )
   }
@@ -113,22 +124,28 @@ export default function AdminOrderDetail({
     <AdminLayout active="pesanan" title="Detail pesanan">
       <Head title={`Pesanan ${order.number}`} />
       <AdminPageHeader title="Detail pesanan" />
-      <section className="flex min-w-0 flex-col gap-2.5 rounded-lg border border-border bg-card px-4.5 py-4">
-        {backLink}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className="font-mono text-[22px] leading-[1.2] font-bold">{order.number}</span>
-          <ToneBadge tone={order.stage} hasDot>
-            {order.status}
-          </ToneBadge>
-          <SourceTag isInStore={order.isInStore} />
-        </div>
-        <p className="text-sm leading-[1.45] text-foreground-secondary">{detail.createdText}</p>
+      {backLink}
+      <Card role="region" aria-labelledby="order-number">
+        <CardHeader>
+          <CardTitle as="h2" id="order-number">
+            <span className="font-mono">{order.number}</span>
+          </CardTitle>
+          <CardDescription>{detail.createdText}</CardDescription>
+          <CardAction>
+            <span className="flex flex-wrap items-center justify-end gap-2">
+              <ToneBadge tone={order.stage} hasDot>
+                {order.status}
+              </ToneBadge>
+              <SourceTag isInStore={order.isInStore} />
+            </span>
+          </CardAction>
+        </CardHeader>
         {detail.cancelReason && (
-          <p className="text-sm leading-[1.45] text-destructive-text">
-            Alasan pembatalan: {detail.cancelReason}
-          </p>
+          <CardContent>
+            <p className="text-destructive-text">Alasan pembatalan: {detail.cancelReason}</p>
+          </CardContent>
         )}
-        <div className="flex flex-wrap gap-2">
+        <CardFooter>
           <Button
             variant="outline"
             size="desktop"
@@ -148,59 +165,55 @@ export default function AdminOrderDetail({
             <IconBan className="size-4.5" />
             Batalkan pesanan
           </Button>
-        </div>
-      </section>
+        </CardFooter>
+      </Card>
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-4">
           <Panel
             title="Barang & layanan"
-            aside={
-              <span className="text-caption leading-[1.3] text-muted-foreground">
-                {detail.pricedBy}
-              </span>
-            }
+            aside={<span className="text-caption text-muted-foreground">{detail.pricedBy}</span>}
           >
             {detail.items.length ? (
               <>
-                {detail.items.map((item, index) => (
-                  <div
-                    key={`${item.name}-${index}`}
-                    className="flex flex-col gap-1.5 border-t border-border pt-2.5"
-                  >
-                    <div className="flex items-baseline gap-2">
-                      <span className="flex-1 text-[15px] leading-[1.3] font-semibold">
-                        {item.name}
-                      </span>
-                      <span className="text-caption leading-none text-muted-foreground">
-                        {item.category}
-                      </span>
-                    </div>
-                    {item.services.map((service) => (
-                      <div
-                        key={service.name}
-                        className="flex justify-between text-sm leading-[1.4] text-foreground-secondary"
-                      >
-                        <span>{service.name}</span>
-                        <span className="tabular-nums">{formatRupiah(service.price)}</span>
+                <ul className="divide-y divide-border">
+                  {detail.items.map((item, index) => (
+                    <li
+                      key={`${item.name}-${index}`}
+                      className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0"
+                    >
+                      <div className="flex items-baseline gap-2">
+                        <span className="flex-1 text-md font-semibold">{item.name}</span>
+                        <span className="text-caption leading-none text-muted-foreground">
+                          {item.category}
+                        </span>
                       </div>
-                    ))}
-                    <div className="flex justify-between text-sm leading-[1.4] font-semibold">
-                      <span>Subtotal</span>
-                      <span>
-                        {formatRupiah(
-                          item.services.reduce((sum, service) => sum + service.price, 0)
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                <div className="flex justify-between border-t border-input pt-2.5 text-base leading-[1.3] font-bold">
+                      {item.services.map((service) => (
+                        <div
+                          key={service.name}
+                          className="flex justify-between text-sm text-foreground-secondary"
+                        >
+                          <span>{service.name}</span>
+                          <span className="tabular-nums">{formatRupiah(service.price)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between text-sm font-semibold">
+                        <span>Subtotal</span>
+                        <span>
+                          {formatRupiah(
+                            item.services.reduce((sum, service) => sum + service.price, 0)
+                          )}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex justify-between border-t border-border pt-3 text-base font-bold">
                   <span>Total</span>
                   <span>{formatRupiah(itemsTotal)}</span>
                 </div>
               </>
             ) : (
-              <p className="border-t border-border pt-2.5 text-sm leading-[1.45] text-foreground-secondary">
+              <p className="text-foreground-secondary">
                 {order.total
                   ? `Total tagihan ${formatRupiah(order.total)}.`
                   : 'Layanan dan harga ditentukan saat pemeriksaan barang.'}
@@ -217,7 +230,7 @@ export default function AdminOrderDetail({
           >
             <dl className="flex flex-col gap-3">
               {detail.payRows.map((row) => (
-                <div key={row.label} className="flex justify-between gap-3 text-sm leading-[1.4]">
+                <div key={row.label} className="flex justify-between gap-3 text-sm">
                   <dt className="text-muted-foreground">{row.label}</dt>
                   <dd className="text-right">{row.value}</dd>
                 </div>
@@ -236,9 +249,9 @@ export default function AdminOrderDetail({
               {detail.audit.map((entry, index) => (
                 <li
                   key={`${entry.time}-${index}`}
-                  className="grid grid-cols-[84px_minmax(0,1fr)] gap-2.5 text-note leading-[1.4]"
+                  className="grid grid-cols-[84px_minmax(0,1fr)] gap-2.5 text-note"
                 >
-                  <span className="font-mono text-caption leading-[1.4] font-medium text-muted-foreground">
+                  <span className="font-mono text-caption font-medium text-muted-foreground">
                     {entry.time}
                   </span>
                   <span>
@@ -257,9 +270,9 @@ export default function AdminOrderDetail({
         </div>
         <div className="flex min-w-0 flex-col gap-4">
           <Panel title="Pelanggan">
-            <p className="text-[15px] leading-[1.3] font-semibold">{order.customer}</p>
-            <p className="font-mono text-sm leading-[1.3] font-medium">{detail.phone}</p>
-            <p className="text-sm leading-[1.45] text-foreground-secondary">{detail.address}</p>
+            <p className="text-md font-semibold">{order.customer}</p>
+            <p className="font-mono text-sm font-medium">{detail.phone}</p>
+            <p className="text-sm text-foreground-secondary">{detail.address}</p>
             <div className="flex flex-wrap gap-2">
               {detail.waNumber && (
                 <LinkButton
@@ -314,8 +327,8 @@ export default function AdminOrderDetail({
                       )}
                     </div>
                   )}
-                  <span className="text-caption leading-[1.2] font-semibold">{proof.label}</span>
-                  <span className="text-[11.5px] leading-[1.2] text-muted-foreground">
+                  <span className="text-caption font-semibold">{proof.label}</span>
+                  <span className="text-2xs text-muted-foreground">
                     {proof.time
                       ? proof.url
                         ? proof.time

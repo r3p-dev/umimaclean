@@ -4,6 +4,7 @@ import type { Data } from '@generated/data'
 import { IconDeviceMobile, IconDevices, IconLock, IconLogout } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { Button } from '~/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
 import InitialsAvatar from '~/components/atoms/initials_avatar'
 import ToneBadge from '~/components/atoms/tone_badge'
 import ChoicePills from '~/components/molecules/choice_pills'
@@ -18,10 +19,14 @@ import { cn } from '~/lib/shared/utils'
 
 function Panel({ title, children }: { title?: string; children: ReactNode }) {
   return (
-    <section className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-card px-4.5 py-4">
-      {title && <h2 className="text-[17px] leading-[1.25] font-bold">{title}</h2>}
-      {children}
-    </section>
+    <Card>
+      {title && (
+        <CardHeader>
+          <CardTitle as="h2">{title}</CardTitle>
+        </CardHeader>
+      )}
+      <CardContent>{children}</CardContent>
+    </Card>
   )
 }
 
@@ -62,30 +67,25 @@ export default function StaffProfile({
               <div className="flex items-center gap-3.5">
                 <InitialsAvatar initials={initialsOf(user.name)} size="lg" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-lg leading-[1.25] font-bold">{user.name}</p>
-                  <p className="text-note leading-[1.4] text-foreground-secondary">
-                    {user.roleLabel}
-                  </p>
+                  <CardTitle as="h2">{user.name}</CardTitle>
+                  <CardDescription>{user.roleLabel}</CardDescription>
                 </div>
               </div>
-              <dl className="flex flex-col gap-3">
+              <dl className="divide-y divide-border border-t border-border">
                 {rows.map(([label, value, isMono]) => (
-                  <div
-                    key={label}
-                    className="flex justify-between gap-3 border-t border-border pt-2 text-sm leading-[1.4]"
-                  >
+                  <div key={label} className="flex justify-between gap-3 py-3 last:pb-0">
                     <dt className="text-muted-foreground">{label}</dt>
                     <dd className={cn('text-right', isMono && 'font-mono')}>{value}</dd>
                   </div>
                 ))}
               </dl>
-              <p className="flex items-start gap-2 text-caption leading-[1.45] text-muted-foreground">
+              <p className="flex items-start gap-2 text-caption text-muted-foreground">
                 <IconLock className="size-4 shrink-0" />
                 Nama dan peran diatur owner di Pengaturan.
               </p>
             </Panel>
             <Panel title="Navigasi">
-              <p className="text-note leading-normal text-foreground-secondary">
+              <p className="text-note text-foreground-secondary">
                 Aplikasi yang dibuka dari tombol “Buka di Google Maps” saat rute bawaan tidak
                 tersedia.
               </p>
@@ -98,18 +98,13 @@ export default function StaffProfile({
             </Panel>
           </div>
           <div className="flex min-w-0 flex-col gap-3.5">
-            <PasswordForm
-              action={urlFor('staff.password.update')}
-              className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-card px-4.5 py-4"
-            />
+            <PasswordForm action={urlFor('staff.password.update')} />
             <Panel title="Perangkat & sesi">
               <div className="flex items-center gap-2.5">
                 <IconDeviceMobile className="size-5.5 text-foreground-secondary" />
                 <span className="flex-1">
-                  <span className="block text-[14.5px] leading-[1.3] font-semibold">
-                    Perangkat ini
-                  </span>
-                  <span className="block text-caption leading-[1.4] text-muted-foreground">
+                  <span className="block text-sm font-semibold">Perangkat ini</span>
+                  <span className="block text-caption text-muted-foreground">
                     {deviceCount > 1
                       ? `Aktif sekarang · ${deviceCount} perangkat masuk`
                       : 'Aktif sekarang'}

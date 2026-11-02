@@ -7,6 +7,7 @@ import StaffTopBar from '~/components/organisms/staff_top_bar'
 import HandledList from '~/components/organisms/tasks/handled_list'
 import QueueMap from '~/components/organisms/tasks/queue_map'
 import StaffLayout from '~/components/templates/staff_layout'
+import { Card, CardContent } from '~/components/ui/card'
 import { useLiveReload } from '~/lib/shared/live'
 import { useCourierPosition, useDeviceLocation } from '~/lib/tasks/location'
 import { TASK_COPY, type QueueState, type Task, type TaskKind } from '~/lib/tasks/queue'
@@ -109,14 +110,18 @@ export default function TaskQueue({
             </ol>
           )}
           {tasks.length === 0 && (
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4.5">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
-                <IconCircleCheck className="size-5.5" />
-              </span>
-              <p className="flex-1 text-[15px] leading-[1.35] font-semibold">
-                Tidak ada tugas {copy.short.toLowerCase()} saat ini.
-              </p>
-            </div>
+            <Card>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
+                    <IconCircleCheck className="size-5.5" />
+                  </span>
+                  <p className="flex-1 text-md font-semibold">
+                    Tidak ada tugas {copy.short.toLowerCase()} saat ini.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           )}
           <HandledList items={handled} />
           <p className="mx-1 mt-1 flex gap-1.5 text-caption leading-[1.45] text-muted-foreground">

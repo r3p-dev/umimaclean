@@ -1,22 +1,14 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { router } from '@inertiajs/react'
-import Overline from '~/components/atoms/overline'
 import PasswordInput from '~/components/molecules/password_input'
 import { Button } from '~/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '~/components/ui/card'
 import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui/field'
 import { passwordError } from '~/lib/shared/validation'
 
 type PasswordField = 'currentPassword' | 'password' | 'passwordConfirmation'
 
-const CARD = 'flex flex-col gap-4.5 rounded-lg border border-border bg-card p-5 sm:p-6'
-
-export default function PasswordForm({
-  action,
-  className = CARD,
-}: {
-  action: string
-  className?: string
-}) {
+export default function PasswordForm({ action }: { action: string }) {
   const empty = { currentPassword: '', password: '', passwordConfirmation: '' }
   const [values, setValues] = useState(empty)
   const [errors, setErrors] = useState<Partial<Record<PasswordField, string>>>({})
@@ -81,59 +73,63 @@ export default function PasswordForm({
   }
 
   return (
-    <form
-      id="kata-sandi"
-      onSubmit={submit}
-      noValidate
-      aria-labelledby="password-title"
-      className={className}
-    >
-      <Overline as="h2" id="password-title">
-        Ubah kata sandi
-      </Overline>
-      {fields.map((field) => (
-        <Field key={field.key}>
-          <FieldLabel htmlFor={`password-${field.key}`}>{field.label}</FieldLabel>
-          <PasswordInput
-            ref={refs[field.key]}
-            id={`password-${field.key}`}
-            autoComplete={field.autoComplete}
-            value={values[field.key]}
-            onChange={(value) => {
-              setValues({ ...values, [field.key]: value })
-              if (errors[field.key]) {
-                setErrors({ ...errors, [field.key]: undefined })
-              }
-            }}
-            isInvalid={!!errors[field.key]}
-            describedBy={
-              errors[field.key]
-                ? `password-${field.key}-error`
-                : field.help
-                  ? `password-${field.key}-help`
-                  : undefined
-            }
-          />
-          {errors[field.key] ? (
-            <FieldError id={`password-${field.key}-error`}>{errors[field.key]}</FieldError>
-          ) : (
-            field.help && (
-              <FieldDescription id={`password-${field.key}-help`}>{field.help}</FieldDescription>
-            )
-          )}
-        </Field>
-      ))}
-      <p className="text-meta leading-[1.45] text-muted-foreground">
-        Setelah diganti, perangkat lain dikeluarkan dan harus masuk lagi.
-      </p>
-      <Button
-        type="submit"
-        size="desktop"
-        className="self-start px-4 max-sm:h-btn max-sm:w-full"
-        isPending={isBusy}
-      >
-        {isBusy ? 'Menyimpan…' : 'Ubah Kata Sandi'}
-      </Button>
+    <form id="kata-sandi" onSubmit={submit} noValidate aria-labelledby="password-title">
+      <Card>
+        <CardHeader>
+          <CardTitle as="h2" id="password-title">
+            Ubah kata sandi
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {fields.map((field) => (
+            <Field key={field.key}>
+              <FieldLabel htmlFor={`password-${field.key}`}>{field.label}</FieldLabel>
+              <PasswordInput
+                ref={refs[field.key]}
+                id={`password-${field.key}`}
+                autoComplete={field.autoComplete}
+                value={values[field.key]}
+                onChange={(value) => {
+                  setValues({ ...values, [field.key]: value })
+                  if (errors[field.key]) {
+                    setErrors({ ...errors, [field.key]: undefined })
+                  }
+                }}
+                isInvalid={!!errors[field.key]}
+                describedBy={
+                  errors[field.key]
+                    ? `password-${field.key}-error`
+                    : field.help
+                      ? `password-${field.key}-help`
+                      : undefined
+                }
+              />
+              {errors[field.key] ? (
+                <FieldError id={`password-${field.key}-error`}>{errors[field.key]}</FieldError>
+              ) : (
+                field.help && (
+                  <FieldDescription id={`password-${field.key}-help`}>
+                    {field.help}
+                  </FieldDescription>
+                )
+              )}
+            </Field>
+          ))}
+          <p className="text-meta text-muted-foreground">
+            Setelah diganti, perangkat lain dikeluarkan dan harus masuk lagi.
+          </p>
+        </CardContent>
+        <CardFooter>
+          <Button
+            type="submit"
+            size="desktop"
+            className="px-4 max-sm:h-btn max-sm:w-full"
+            isPending={isBusy}
+          >
+            {isBusy ? 'Menyimpan…' : 'Ubah Kata Sandi'}
+          </Button>
+        </CardFooter>
+      </Card>
     </form>
   )
 }

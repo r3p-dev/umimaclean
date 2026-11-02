@@ -11,6 +11,14 @@ import PickupSchedulePicker from '~/components/organisms/order/pickup_schedule_p
 import AccountLayout from '~/components/templates/account_layout'
 import { Alert } from '~/components/ui/alert'
 import { Button, LinkButton } from '~/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card'
 import { Field, FieldLabel } from '~/components/ui/field'
 import { Textarea } from '~/components/ui/textarea'
 import { shortStreet, type SavedAddress } from '~/lib/order/addresses'
@@ -112,41 +120,42 @@ export default function OrderCreate({
                     variant="link"
                     onPress={() => setChoosing(true)}
                     aria-label="Ganti alamat penjemputan"
-                    className="box-content min-h-11 py-2"
                   >
                     Ganti
                   </Button>
                 }
               />
             ) : (
-              <section className="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-4">
-                <p className="text-[15px] leading-[1.4] font-medium">
-                  Belum ada alamat tersimpan. Tambahkan alamat penjemputan dulu.
-                </p>
-                <LinkButton
-                  variant="outline"
-                  href={`${urlFor('customer.addresses.create')}?dari=pesan`}
-                  className="gap-2"
-                >
-                  <IconMapPinPlus className="size-5" />
-                  Tambah Alamat
-                </LinkButton>
-              </section>
+              <Card>
+                <CardHeader>
+                  <CardTitle as="h2">Belum ada alamat tersimpan</CardTitle>
+                  <CardDescription>Tambahkan alamat penjemputan dulu.</CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <LinkButton
+                    variant="outline"
+                    href={`${urlFor('customer.addresses.create')}?dari=pesan`}
+                    className="gap-2"
+                  >
+                    <IconMapPinPlus className="size-5" />
+                    Tambah Alamat
+                  </LinkButton>
+                </CardFooter>
+              </Card>
             )}
             <div className="grid items-start gap-6 sm:grid-cols-2">
               <div className="flex flex-col gap-5">
-                <section
-                  aria-labelledby="items-title"
-                  className="rounded-lg border border-border bg-card px-4 pt-4 pb-2"
-                >
-                  <h2 id="items-title" className="text-[17px] leading-[1.3] font-semibold">
-                    Apa yang mau dijemput?
-                  </h2>
-                  <p className="mt-1 text-sm leading-[1.4] text-foreground-secondary">
-                    Perkiraan saja. Kurir mencatat jumlah pasti.
-                  </p>
-                  <ItemCounterList items={draft.items} onChange={(items) => update({ items })} />
-                </section>
+                <Card role="region" aria-labelledby="items-title">
+                  <CardHeader>
+                    <CardTitle as="h2" id="items-title">
+                      Apa yang mau dijemput?
+                    </CardTitle>
+                    <CardDescription>Perkiraan saja. Kurir mencatat jumlah pasti.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ItemCounterList items={draft.items} onChange={(items) => update({ items })} />
+                  </CardContent>
+                </Card>
                 <Alert variant="info" role="note" className="p-3.5 text-accent-foreground">
                   <IconInfoCircle className="text-info-foreground" />
                   <p>
@@ -174,7 +183,6 @@ export default function OrderCreate({
                 slot={draft.slot}
                 onPickDay={pickDay}
                 onPickSlot={(slot) => update({ slot })}
-                className="pt-0"
               />
             </div>
             <div className="flex flex-col gap-2 lg:hidden">
@@ -185,16 +193,17 @@ export default function OrderCreate({
               {cta}
             </div>
           </div>
-          <OrderSummaryCard
-            className="sticky top-22 max-lg:hidden"
-            where={
-              pickup ? `${pickup.label} · ${shortStreet(pickup.addressText)}` : 'Belum ada alamat'
-            }
-            items={total ? itemsSummary(draft.items) : 'Belum ada barang'}
-            schedule={schedule}
-          >
-            {cta}
-          </OrderSummaryCard>
+          <div className="sticky top-22 max-lg:hidden">
+            <OrderSummaryCard
+              where={
+                pickup ? `${pickup.label} · ${shortStreet(pickup.addressText)}` : 'Belum ada alamat'
+              }
+              items={total ? itemsSummary(draft.items) : 'Belum ada barang'}
+              schedule={schedule}
+            >
+              {cta}
+            </OrderSummaryCard>
+          </div>
         </div>
       </div>
       {pickup && (

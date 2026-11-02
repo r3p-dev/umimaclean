@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Head } from '@inertiajs/react'
 import { IconArrowDownLeft, IconCircleCheck, IconClockShare } from '@tabler/icons-react'
 import EmptyState from '~/components/molecules/empty_state'
+import { Card, CardContent } from '~/components/ui/card'
 import TabList from '~/components/molecules/tab_list'
 import ProcessRow from '~/components/organisms/processing/process_row'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
@@ -58,13 +59,15 @@ export default function ProcessQueue({
               ))}
             </ul>
           ) : (
-            <div className="rounded-lg border border-border bg-card p-5">
-              <EmptyState
-                icon={IconCircleCheck}
-                title={`Tidak ada pesanan di ${group.title}`}
-                description="Pesanan baru muncul di sini otomatis."
-              />
-            </div>
+            <Card>
+              <CardContent>
+                <EmptyState
+                  icon={IconCircleCheck}
+                  title={`Tidak ada pesanan di ${group.title}`}
+                  description="Pesanan baru muncul di sini otomatis."
+                />
+              </CardContent>
+            </Card>
           )}
         </section>
         <div className="flex flex-col gap-2 rounded-md border border-dashed border-input px-3.5 py-3 text-note leading-[1.45] text-foreground-secondary">

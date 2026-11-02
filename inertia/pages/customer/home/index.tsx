@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react'
-import { Link } from '@adonisjs/inertia/react'
 import { urlFor } from '~/client'
-import Overline from '~/components/atoms/overline'
+import { LinkButton } from '~/components/ui/button'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import ActiveOrderPanel from '~/components/organisms/home/active_order_panel'
 import QuickOrderPanel from '~/components/organisms/home/quick_order_panel'
 import RecentOrdersCard from '~/components/organisms/home/recent_orders_card'
@@ -47,25 +47,23 @@ export default function CustomerHome({
           </div>
           <aside className="hidden flex-col gap-4 lg:flex">
             <QuickOrderPanel pickup={primaryAddress} />
-            <section
-              aria-labelledby="saved-addresses-title"
-              className="flex flex-col rounded-lg border border-border bg-card px-5 pt-2 pb-5"
-            >
-              <div className="flex items-center justify-between">
-                <Overline as="h2" id="saved-addresses-title">
+            <Card role="region" aria-labelledby="saved-addresses-title">
+              <CardHeader>
+                <CardTitle as="h2" id="saved-addresses-title">
                   Alamat tersimpan
-                </Overline>
-                <Link
-                  href={urlFor('customer.addresses.index')}
-                  className="box-content inline-flex min-h-11 items-center py-2 text-sm leading-none font-semibold text-primary hover:text-primary-hover"
-                >
-                  Atur
-                </Link>
-              </div>
-              <p className="text-[15px] leading-[1.4]">
-                {addressLabels.length ? addressLabels.join(' · ') : 'Belum ada alamat tersimpan.'}
-              </p>
-            </section>
+                </CardTitle>
+                <CardAction>
+                  <LinkButton variant="link" href={urlFor('customer.addresses.index')}>
+                    Atur
+                  </LinkButton>
+                </CardAction>
+              </CardHeader>
+              <CardContent>
+                <p>
+                  {addressLabels.length ? addressLabels.join(' · ') : 'Belum ada alamat tersimpan.'}
+                </p>
+              </CardContent>
+            </Card>
           </aside>
         </div>
       </div>

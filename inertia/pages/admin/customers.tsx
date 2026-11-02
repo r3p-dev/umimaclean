@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Head } from '@inertiajs/react'
 import { IconListCheck } from '@tabler/icons-react'
 import { Checkbox } from '~/components/ui/checkbox'
+import { Card, CardContent } from '~/components/ui/card'
 import {
   Table,
   TableBody,
@@ -157,24 +158,29 @@ export default function AdminCustomers({
         }))}
       />
       {segment !== 'new' && (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-lg border border-border bg-card px-4.5 py-4">
-          <IconListCheck className="size-5 text-info-foreground" />
-          <p className="flex-[1_1_260px] text-[14.5px] leading-normal">
-            <strong className="font-semibold">Definisi:</strong> pelanggan dianggap tidak aktif jika
-            tidak ada transaksi lunas selama <strong className="font-semibold">{days} hari</strong>{' '}
-            atau lebih (dihitung sampai 8 Okt 2026).
-          </p>
-          <SelectMenu
-            word="Batas"
-            label="Batas hari tidak aktif"
-            value={days}
-            onChange={(value) => changeFilter(() => setThreshold(value))}
-            options={THRESHOLDS.map((value) => ({ value, label: `${value} hari` }))}
-          />
-          <span className="text-caption leading-[1.4] text-muted-foreground">
-            Bawaan diatur di Pengaturan
-          </span>
-        </div>
+        <Card size="sm">
+          <CardContent>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+              <IconListCheck className="size-5 text-info-foreground" />
+              <p className="flex-[1_1_260px]">
+                <strong className="font-semibold">Definisi:</strong> pelanggan dianggap tidak aktif
+                jika tidak ada transaksi lunas selama{' '}
+                <strong className="font-semibold">{days} hari</strong> atau lebih (dihitung sampai 8
+                Okt 2026).
+              </p>
+              <SelectMenu
+                word="Batas"
+                label="Batas hari tidak aktif"
+                value={days}
+                onChange={(value) => changeFilter(() => setThreshold(value))}
+                options={THRESHOLDS.map((value) => ({ value, label: `${value} hari` }))}
+              />
+              <span className="text-caption text-muted-foreground">
+                Bawaan diatur di Pengaturan
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       )}
       <div className="flex flex-wrap items-center gap-2.5">
         <SearchField

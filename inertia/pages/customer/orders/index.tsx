@@ -9,6 +9,7 @@ import SearchField from '~/components/molecules/search_field'
 import { OrderHistoryCards, OrderHistoryTable } from '~/components/organisms/tracking/order_history'
 import AccountLayout from '~/components/templates/account_layout'
 import { LinkButton } from '~/components/ui/button'
+import { Card, CardContent } from '~/components/ui/card'
 import {
   ORDER_FILTERS,
   historyQuery,
@@ -107,26 +108,28 @@ export default function OrderHistoryPage({
         </div>
         <div className="mt-5">
           {orders.length === 0 ? (
-            <section className="rounded-lg border border-border bg-card p-6">
-              {search ? (
-                <EmptyState
-                  icon={IconSearchOff}
-                  title="Pesanan tidak ditemukan"
-                  description={`Tidak ada pesanan dengan nomor yang memuat "${search}".`}
-                />
-              ) : (
-                <EmptyState
-                  icon={IconInbox}
-                  title="Belum ada pesanan di sini"
-                  description="Pesanan Anda akan muncul di halaman ini."
-                  action={
-                    <LinkButton href={urlFor('customer.order.create')} className="mt-2 px-5">
-                      Pesan Penjemputan
-                    </LinkButton>
-                  }
-                />
-              )}
-            </section>
+            <Card>
+              <CardContent>
+                {search ? (
+                  <EmptyState
+                    icon={IconSearchOff}
+                    title="Pesanan tidak ditemukan"
+                    description={`Tidak ada pesanan dengan nomor yang memuat "${search}".`}
+                  />
+                ) : (
+                  <EmptyState
+                    icon={IconInbox}
+                    title="Belum ada pesanan di sini"
+                    description="Pesanan Anda akan muncul di halaman ini."
+                    action={
+                      <LinkButton href={urlFor('customer.order.create')} className="mt-2 px-5">
+                        Pesan Penjemputan
+                      </LinkButton>
+                    }
+                  />
+                )}
+              </CardContent>
+            </Card>
           ) : (
             <>
               <div className="flex flex-col gap-5 sm:hidden">

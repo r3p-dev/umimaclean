@@ -14,6 +14,7 @@ import {
 } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { Button, LinkButton } from '~/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import SourceTag from '~/components/atoms/source_tag'
 import ProofResult from '~/components/molecules/proof_result'
 import {
@@ -102,54 +103,64 @@ export default function Washing({
         actions={<SourceTag isInStore={order.source === 'toko'} shape="pill" />}
       />
       <div className="mx-auto flex w-full max-w-180 flex-col gap-3.5 p-4">
-        <section className="flex flex-col gap-1.5 rounded-lg border border-border bg-card px-4 py-3.5">
-          <span className="text-caption leading-[1.3] font-medium text-muted-foreground">
-            Status saat ini
-          </span>
-          <span role="status" className="flex items-center gap-2.5 text-lg leading-[1.3] font-bold">
-            <span
-              aria-hidden="true"
-              className={cn(
-                'size-2.5 shrink-0 rounded-full',
-                isDone
-                  ? 'bg-success-dot shadow-[0_0_0_4px_var(--success)]'
-                  : 'bg-status-cuci-dot shadow-[0_0_0_4px_var(--status-cuci-bg)]'
-              )}
-            />
-            {order.isCollected
-              ? 'Sudah diambil pelanggan'
-              : order.isWaitingCollection
-                ? 'Siap diambil di toko'
-                : isDone
-                  ? 'Selesai dicuci'
-                  : 'Dalam Pencucian'}
-          </span>
-          <span className="text-note leading-[1.45] text-foreground-secondary">
-            {isDone && shot ? `Foto bukti tersimpan · ${shot.stamp}` : order.statusSub}
-          </span>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle as="h2">Status saat ini</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-1">
+              <span role="status" className="flex items-center gap-2.5 text-lg font-bold">
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'size-2.5 shrink-0 rounded-full',
+                    isDone
+                      ? 'bg-success-dot shadow-[0_0_0_4px_var(--success)]'
+                      : 'bg-status-cuci-dot shadow-[0_0_0_4px_var(--status-cuci-bg)]'
+                  )}
+                />
+                {order.isCollected
+                  ? 'Sudah diambil pelanggan'
+                  : order.isWaitingCollection
+                    ? 'Siap diambil di toko'
+                    : isDone
+                      ? 'Selesai dicuci'
+                      : 'Dalam Pencucian'}
+              </span>
+              <span className="text-note text-foreground-secondary">
+                {isDone && shot ? `Foto bukti tersimpan · ${shot.stamp}` : order.statusSub}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
 
-        <section className="rounded-lg border border-border bg-card px-4 py-1">
-          <h2 className="mt-3 mb-1 text-base leading-[1.3] font-semibold">Barang &amp; layanan</h2>
-          {order.items.map((item) => {
-            const Icon = ICONS[item.category as ItemCategory]
-            return (
-              <div key={item.name} className="flex flex-col gap-1.5 border-t border-border py-3">
-                <span className="flex items-center gap-2 text-[15px] leading-[1.3] font-semibold">
-                  <Icon className="size-5 text-foreground-secondary" />
-                  {item.name}
-                </span>
-                <ul className="flex flex-col gap-1.5">
-                  {item.services.map((service) => (
-                    <li key={service} className="pl-7 text-sm leading-[1.4]">
-                      • {service}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )
-          })}
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle as="h2">Barang &amp; layanan</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y divide-border">
+              {order.items.map((item) => {
+                const Icon = ICONS[item.category as ItemCategory]
+                return (
+                  <li key={item.name} className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0">
+                    <span className="flex items-center gap-2 text-md font-semibold">
+                      <Icon className="size-5 text-foreground-secondary" />
+                      {item.name}
+                    </span>
+                    <ul className="flex flex-col gap-1.5">
+                      {item.services.map((service) => (
+                        <li key={service} className="pl-7 text-sm">
+                          • {service}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                )
+              })}
+            </ul>
+          </CardContent>
+        </Card>
 
         <section className="overflow-hidden rounded-lg border border-border bg-card">
           <div className="px-4 pt-3.5">

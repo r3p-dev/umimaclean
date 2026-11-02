@@ -11,6 +11,7 @@ import StaffMissingOrder from '~/components/organisms/staff_missing_order'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
 import StaffLayout from '~/components/templates/staff_layout'
 import { Button, LinkButton } from '~/components/ui/button'
+import { Card, CardContent } from '~/components/ui/card'
 import type { Catalog } from '~/lib/processing/catalog'
 import {
   INSPECTION_FLOW,
@@ -139,34 +140,36 @@ export default function Inspection({
         )}
         <div className="flex flex-col gap-x-5 gap-y-3.5 lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
           <div className="flex min-w-0 flex-col gap-3.5">
-            <dl className="grid grid-cols-1 gap-x-6 rounded-lg border border-border bg-card px-4 py-1 sm:grid-cols-2">
-              {[
-                ['Pelanggan', `${order.customer} · ${order.phone}`],
-                ['Diterima', order.received],
-                [
-                  'Jumlah barang',
-                  <>
-                    {items.length} barang{' '}
-                    <span className="font-normal text-muted-foreground">
-                      (perkiraan pelanggan: {order.estimate || '—'})
-                    </span>
-                  </>,
-                ],
-                [
-                  'Catatan pelanggan',
-                  <span key="note" className="font-normal">
-                    {order.customerNote ? `“${order.customerNote}”` : '—'}
-                  </span>,
-                ],
-              ].map(([label, value]) => (
-                <div key={String(label)} className="flex flex-col gap-0.5 py-2.5">
-                  <dt className="text-caption leading-[1.3] font-medium text-muted-foreground">
-                    {label}
-                  </dt>
-                  <dd className="text-[14.5px] leading-[1.4] font-semibold">{value}</dd>
-                </div>
-              ))}
-            </dl>
+            <Card>
+              <CardContent>
+                <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+                  {[
+                    ['Pelanggan', `${order.customer} · ${order.phone}`],
+                    ['Diterima', order.received],
+                    [
+                      'Jumlah barang',
+                      <>
+                        {items.length} barang{' '}
+                        <span className="font-normal text-muted-foreground">
+                          (perkiraan pelanggan: {order.estimate || '—'})
+                        </span>
+                      </>,
+                    ],
+                    [
+                      'Catatan pelanggan',
+                      <span key="note" className="font-normal">
+                        {order.customerNote ? `“${order.customerNote}”` : '—'}
+                      </span>,
+                    ],
+                  ].map(([label, value]) => (
+                    <div key={String(label)} className="flex flex-col gap-0.5">
+                      <dt className="text-caption font-medium text-muted-foreground">{label}</dt>
+                      <dd className="text-sm font-semibold">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </CardContent>
+            </Card>
             <p className="flex gap-2 rounded-md bg-status-periksa-bg px-3 py-2.5 text-note leading-[1.45] text-status-periksa-fg">
               <IconClipboardCheck className="mt-0.5 size-4.5 shrink-0" />
               Periksa setiap barang, tulis kondisinya, lalu pilih layanan. Harga diambil dari daftar

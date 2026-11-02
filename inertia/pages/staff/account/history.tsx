@@ -11,7 +11,7 @@ import {
 } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { Button } from '~/components/ui/button'
-import Overline from '~/components/atoms/overline'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import SourceTag from '~/components/atoms/source_tag'
 import { FilterMenu } from '~/components/molecules/filter_menu'
 import TabList from '~/components/molecules/tab_list'
@@ -100,61 +100,67 @@ export default function StaffHistory({ entries }: { entries: HistoryEntry[] }) {
             ))}
           </div>
           {history.days.map((group) => (
-            <section key={group.day} className="flex flex-col gap-2">
-              <Overline as="h2" className="tracking-[0.05em]">
-                {group.label}
-              </Overline>
-              <ul className="overflow-hidden rounded-lg border border-border bg-card">
-                {group.entries.map((entry) => (
-                  <li
-                    key={entry.id}
-                    className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-t border-border px-4 py-3 first:border-t-0"
-                  >
-                    <KindIcon kind={entry.icon} />
-                    <span className="min-w-0">
-                      <span className="block text-[14.5px] leading-[1.3] font-semibold">
-                        {entry.title}
-                      </span>
-                      <span className="block text-meta leading-[1.4] text-foreground-secondary">
-                        {entry.who} · <span className="font-mono">{entry.ref}</span>
-                      </span>
-                      {entry.note && (
-                        <span
-                          className={cn(
-                            'block text-caption leading-[1.4]',
-                            entry.icon === 'skip'
-                              ? 'text-attention-foreground'
-                              : 'text-muted-foreground'
-                          )}
-                        >
-                          {entry.note}
+            <Card key={group.day} role="region" aria-labelledby={`day-${group.day}`}>
+              <CardHeader>
+                <CardTitle as="h2" id={`day-${group.day}`}>
+                  {group.label}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="divide-y divide-border">
+                  {group.entries.map((entry) => (
+                    <li
+                      key={entry.id}
+                      className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 py-3 first:pt-0 last:pb-0"
+                    >
+                      <KindIcon kind={entry.icon} />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold">{entry.title}</span>
+                        <span className="block text-meta text-foreground-secondary">
+                          {entry.who} · <span className="font-mono">{entry.ref}</span>
                         </span>
-                      )}
-                    </span>
-                    <span className="flex flex-col items-end gap-1.5">
-                      <span className="font-mono text-caption leading-none font-medium text-muted-foreground">
-                        {entry.time}
+                        {entry.note && (
+                          <span
+                            className={cn(
+                              'block text-caption',
+                              entry.icon === 'skip'
+                                ? 'text-attention-foreground'
+                                : 'text-muted-foreground'
+                            )}
+                          >
+                            {entry.note}
+                          </span>
+                        )}
                       </span>
-                      <SourceTag isInStore={entry.isInStore} />
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+                      <span className="flex flex-col items-end gap-1.5">
+                        <span className="font-mono text-caption leading-none font-medium text-muted-foreground">
+                          {entry.time}
+                        </span>
+                        <SourceTag isInStore={entry.isInStore} />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           ))}
           {history.empty && (
-            <div className="rounded-lg border border-border bg-card px-4 py-7 text-center text-sm leading-normal text-foreground-secondary">
-              Belum ada catatan {kinds.length ? 'untuk jenis ini di periode ini' : 'di periode ini'}
-              .
-              {kinds.length > 0 && (
-                <div className="mt-2.5">
-                  <Button variant="outline" size="compact" onPress={() => setKinds([])}>
-                    <IconFilterOff className="size-4.5" />
-                    Reset filter jenis
-                  </Button>
+            <Card>
+              <CardContent>
+                <div className="flex flex-col items-center gap-2.5 text-center text-foreground-secondary">
+                  <p>
+                    Belum ada catatan{' '}
+                    {kinds.length ? 'untuk jenis ini di periode ini' : 'di periode ini'}.
+                  </p>
+                  {kinds.length > 0 && (
+                    <Button variant="outline" size="compact" onPress={() => setKinds([])}>
+                      <IconFilterOff className="size-4.5" />
+                      Reset filter jenis
+                    </Button>
+                  )}
                 </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
           )}
         </div>
         <p className="flex items-start gap-2 text-caption leading-[1.45] text-muted-foreground">

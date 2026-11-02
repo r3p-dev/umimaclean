@@ -6,13 +6,13 @@ import User from '#models/user'
 
 const PASSWORD = 'password'
 
-export const DEMO_PHONE = '6281221847305'
+export const DEMO_PHONE = '6281387882973'
 
-export const DEMO_STAFF_PHONE = '6287823561940'
+export const DEMO_STAFF_PHONE = '6287777846518'
 
 const ACCOUNTS = [
   { role: Role.CUSTOMER, name: 'Rina Kartika', phone: DEMO_PHONE },
-  { role: Role.CUSTOMER, name: 'Budi Santoso', phone: '6285720419836' },
+  { role: Role.CUSTOMER, name: 'Budi Santoso', phone: '6281313293859' },
   { role: Role.STAFF, name: 'Dedi Supriadi', phone: DEMO_STAFF_PHONE },
 ]
 

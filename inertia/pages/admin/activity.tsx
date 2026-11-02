@@ -13,6 +13,7 @@ import {
 } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
+import { Card, CardContent } from '~/components/ui/card'
 import { Switch } from '~/components/ui/switch'
 import {
   Table,
@@ -159,95 +160,100 @@ export default function AdminActivity({ activities }: { activities: ActivityRow[
     <AdminLayout active="aktivitas" title="Aktivitas Staf">
       <Head title="Aktivitas Staf" />
       <AdminPageHeader title="Aktivitas Staf" actions={exportButton('desktop')} />
-      <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3.5">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div role="group" aria-label="Tanggal" className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="Hari sebelumnya"
-              isDisabled={filters.day <= ACTIVITY_FIRST_DAY}
-              onPress={() => update({ day: Math.max(ACTIVITY_FIRST_DAY, filters.day - 1) })}
-            >
-              <IconChevronLeft />
-            </Button>
-            <input
-              type="date"
-              aria-label="Pilih tanggal aktivitas"
-              min={toIso(activityDate(ACTIVITY_FIRST_DAY))}
-              max={toIso(activityDate(ACTIVITY_LAST_DAY))}
-              value={toIso(date)}
-              onChange={(event) => {
-                if (!event.target.value) {
-                  return
-                }
-                const day = daysFromToday(event.target.value)
-                if (day >= ACTIVITY_FIRST_DAY && day <= ACTIVITY_LAST_DAY) {
-                  update({ day })
-                }
-              }}
-              className="h-btn-desktop rounded-md border border-input bg-card px-2.5 text-base leading-none text-foreground"
+      <Card size="sm">
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div role="group" aria-label="Tanggal" className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Hari sebelumnya"
+                isDisabled={filters.day <= ACTIVITY_FIRST_DAY}
+                onPress={() => update({ day: Math.max(ACTIVITY_FIRST_DAY, filters.day - 1) })}
+              >
+                <IconChevronLeft />
+              </Button>
+              <input
+                type="date"
+                aria-label="Pilih tanggal aktivitas"
+                min={toIso(activityDate(ACTIVITY_FIRST_DAY))}
+                max={toIso(activityDate(ACTIVITY_LAST_DAY))}
+                value={toIso(date)}
+                onChange={(event) => {
+                  if (!event.target.value) {
+                    return
+                  }
+                  const day = daysFromToday(event.target.value)
+                  if (day >= ACTIVITY_FIRST_DAY && day <= ACTIVITY_LAST_DAY) {
+                    update({ day })
+                  }
+                }}
+                className="h-btn-desktop rounded-md border border-input bg-card px-2.5 text-base leading-none text-foreground"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Hari berikutnya"
+                isDisabled={filters.day >= ACTIVITY_LAST_DAY}
+                onPress={() => update({ day: Math.min(ACTIVITY_LAST_DAY, filters.day + 1) })}
+              >
+                <IconChevronRight />
+              </Button>
+            </div>
+            <FilterMenu
+              word="Staf"
+              label="Filter staf"
+              values={filters.staff}
+              onChange={(staff) => update({ staff })}
+              options={ACTIVITY_STAFF.map((name) => ({
+                value: name,
+                label: name,
+                count: ACTIVITIES.filter(
+                  (activity) =>
+                    activity.staff === name && activityMatches(activity, filters, 'staff')
+                ).length,
+              }))}
             />
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="Hari berikutnya"
-              isDisabled={filters.day >= ACTIVITY_LAST_DAY}
-              onPress={() => update({ day: Math.min(ACTIVITY_LAST_DAY, filters.day + 1) })}
+            <FilterMenu<ActivityCategory>
+              word="Aksi"
+              label="Filter jenis aksi"
+              values={filters.categories}
+              onChange={(categories) => update({ categories })}
+              options={ACTIVITY_CATEGORIES.map((item) => ({
+                ...item,
+                count: ACTIVITIES.filter(
+                  (activity) =>
+                    activity.category === item.value &&
+                    activityMatches(activity, filters, 'categories')
+                ).length,
+              }))}
+            />
+            <Switch
+              isSelected={filters.isSensitiveOnly}
+              onChange={(isSensitiveOnly) => update({ isSensitiveOnly })}
+              className="min-h-icon-btn cursor-pointer gap-2.5"
             >
-              <IconChevronRight />
-            </Button>
+              <span className="text-sm font-medium">Hanya aksi sensitif</span>
+            </Switch>
           </div>
-          <FilterMenu
-            word="Staf"
-            label="Filter staf"
-            values={filters.staff}
-            onChange={(staff) => update({ staff })}
-            options={ACTIVITY_STAFF.map((name) => ({
-              value: name,
-              label: name,
-              count: ACTIVITIES.filter(
-                (activity) => activity.staff === name && activityMatches(activity, filters, 'staff')
-              ).length,
-            }))}
-          />
-          <FilterMenu<ActivityCategory>
-            word="Aksi"
-            label="Filter jenis aksi"
-            values={filters.categories}
-            onChange={(categories) => update({ categories })}
-            options={ACTIVITY_CATEGORIES.map((item) => ({
-              ...item,
-              count: ACTIVITIES.filter(
-                (activity) =>
-                  activity.category === item.value &&
-                  activityMatches(activity, filters, 'categories')
-              ).length,
-            }))}
-          />
-          <Switch
-            isSelected={filters.isSensitiveOnly}
-            onChange={(isSensitiveOnly) => update({ isSensitiveOnly })}
-            className="min-h-icon-btn cursor-pointer gap-2.5"
-          >
-            <span className="text-sm leading-[1.25] font-medium">Hanya aksi sensitif</span>
-          </Switch>
-        </div>
-        <div className="flex flex-wrap gap-2.5">
-          <SearchField
-            label="Cari nomor pesanan, staf, atau detail"
-            placeholder="Cari no. pesanan / staf / detail"
-            value={filters.query}
-            onChange={(query) => update({ query })}
-          />
-        </div>
-        {parts.length > 0 && (
-          <FilterSummary
-            text={`${table.total} dari ${dayTotal} aktivitas · ${parts.join(' · ')}`}
-            onReset={() => update({ query: '', staff: [], categories: [], isSensitiveOnly: false })}
-          />
-        )}
-      </div>
+          <div className="flex flex-wrap gap-2.5">
+            <SearchField
+              label="Cari nomor pesanan, staf, atau detail"
+              placeholder="Cari no. pesanan / staf / detail"
+              value={filters.query}
+              onChange={(query) => update({ query })}
+            />
+          </div>
+          {parts.length > 0 && (
+            <FilterSummary
+              text={`${table.total} dari ${dayTotal} aktivitas · ${parts.join(' · ')}`}
+              onReset={() =>
+                update({ query: '', staff: [], categories: [], isSensitiveOnly: false })
+              }
+            />
+          )}
+        </CardContent>
+      </Card>
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         {table.selectedCount > 0 && (
           <BulkBar

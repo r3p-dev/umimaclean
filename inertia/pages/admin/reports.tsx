@@ -5,6 +5,7 @@ import { formatDate, toIso } from '~/lib/shared/date'
 import { IconPencil, IconPlus, IconTrash } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import {
   Table,
   TableBody,
@@ -367,91 +368,93 @@ export default function AdminReports({ report, costs }: { report: ReportData; co
               />
             </section>
           </div>
-          <section className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-card px-4.5 py-4">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h2 className="flex-1 text-[17px] leading-tight font-bold">
-                Biaya operasional · Okt 2026
-              </h2>
-              <Button
-                size="desktop"
-                className="gap-1.5"
-                onPress={() =>
-                  setDialog({
-                    kind: 'form',
-                    id: null,
-                    initial: {
-                      category: 'Listrik & air',
-                      amount: 0,
-                      note: '',
-                      date: toIso(new Date()),
-                    },
-                  })
-                }
-              >
-                <IconPlus className="size-4.5" />
-                Tambah biaya
-              </Button>
-            </div>
-            {costList.length ? (
-              <ul className="flex flex-col gap-3">
-                {costList.map((item) => (
-                  <li
-                    key={item.id}
-                    className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-t border-border py-2.5"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-[14.5px] leading-[1.3] font-semibold">{item.category}</p>
-                      <p className="text-caption leading-[1.35] text-muted-foreground">
-                        {item.note} · {formatDate(item.date, 'full')}
-                      </p>
-                    </div>
-                    <span className="text-[14.5px] leading-none font-semibold tabular-nums">
-                      {formatRupiah(item.amount)}
-                    </span>
-                    <span className="flex gap-1">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        aria-label={`Ubah biaya ${item.note}`}
-                        onPress={() =>
-                          setDialog({
-                            kind: 'form',
-                            id: item.id,
-                            initial: {
-                              category: item.category,
-                              amount: item.amount,
-                              note: item.note,
-                              date: item.date,
-                            },
-                          })
-                        }
-                      >
-                        <IconPencil className="size-4.5" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        aria-label={`Hapus biaya ${item.note}`}
-                        onPress={() => setDialog({ kind: 'delete', id: item.id })}
-                        className="text-destructive-text"
-                      >
-                        <IconTrash className="size-4.5" />
-                      </Button>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="rounded-md bg-background p-4 text-center text-note leading-[1.45] text-foreground-secondary">
-                Belum ada biaya bulan ini. Tambahkan sewa, gaji, bahan, dan listrik agar laba bisa
-                dihitung.
-              </p>
-            )}
-            <div className="flex justify-between border-t border-input pt-2.5 text-[15px] leading-[1.3] font-bold">
-              <span>Total biaya</span>
-              <span>{formatRupiah(total)}</span>
-            </div>
-          </section>
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">Biaya operasional · Okt 2026</CardTitle>
+              <CardAction>
+                <Button
+                  size="desktop"
+                  className="gap-1.5"
+                  onPress={() =>
+                    setDialog({
+                      kind: 'form',
+                      id: null,
+                      initial: {
+                        category: 'Listrik & air',
+                        amount: 0,
+                        note: '',
+                        date: toIso(new Date()),
+                      },
+                    })
+                  }
+                >
+                  <IconPlus className="size-4.5" />
+                  Tambah biaya
+                </Button>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              {costList.length ? (
+                <ul className="divide-y divide-border">
+                  {costList.map((item) => (
+                    <li
+                      key={item.id}
+                      className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 py-3 first:pt-0 last:pb-0"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold">{item.category}</p>
+                        <p className="text-caption text-muted-foreground">
+                          {item.note} · {formatDate(item.date, 'full')}
+                        </p>
+                      </div>
+                      <span className="text-sm leading-none font-semibold tabular-nums">
+                        {formatRupiah(item.amount)}
+                      </span>
+                      <span className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          aria-label={`Ubah biaya ${item.note}`}
+                          onPress={() =>
+                            setDialog({
+                              kind: 'form',
+                              id: item.id,
+                              initial: {
+                                category: item.category,
+                                amount: item.amount,
+                                note: item.note,
+                                date: item.date,
+                              },
+                            })
+                          }
+                        >
+                          <IconPencil className="size-4.5" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          aria-label={`Hapus biaya ${item.note}`}
+                          onPress={() => setDialog({ kind: 'delete', id: item.id })}
+                          className="text-destructive-text"
+                        >
+                          <IconTrash className="size-4.5" />
+                        </Button>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="rounded-md bg-background p-4 text-center text-note text-foreground-secondary">
+                  Belum ada biaya bulan ini. Tambahkan sewa, gaji, bahan, dan listrik agar laba bisa
+                  dihitung.
+                </p>
+              )}
+              <div className="flex justify-between border-t border-border pt-3 text-md font-bold">
+                <span>Total biaya</span>
+                <span>{formatRupiah(total)}</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
       {dialog?.kind === 'form' && (

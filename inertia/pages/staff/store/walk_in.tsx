@@ -9,6 +9,7 @@ import {
 } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { Button } from '~/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import QuantityStepper from '~/components/molecules/quantity_stepper'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
 import ReturnMethodCard from '~/components/organisms/store/return_method_card'
@@ -136,27 +137,30 @@ export default function WalkIn({ lookup: found }: { lookup: CustomerLookup }) {
               onPick={() => updateWalkInForm({ isPicked: true, shouldUseSaved: true })}
               onUnpick={() => updateWalkInForm({ isPicked: false })}
             />
-            <section className="flex flex-col gap-1.5 rounded-lg border border-border bg-card p-4">
-              <h2 className="mb-1 text-base leading-[1.3] font-semibold">
-                2 · Barang diterima di toko
-              </h2>
-              {COUNTERS.map((counter) => (
-                <QuantityStepper
-                  key={counter.key}
-                  label={counter.label}
-                  icon={counter.icon}
-                  value={items[counter.key]}
-                  onChange={(value) =>
-                    updateWalkInForm({ items: { ...items, [counter.key]: value } })
-                  }
-                  className="min-h-14 last:border-b"
-                  labelClassName="gap-2.5 text-[15.5px] [&_svg]:size-5.5"
-                />
-              ))}
-              <p className="mt-2 text-caption leading-[1.45] text-muted-foreground">
-                Setelah transaksi dibuat, kamera terbuka untuk memotret kondisi barang.
-              </p>
-            </section>
+            <Card>
+              <CardHeader>
+                <CardTitle as="h2">2 · Barang diterima di toko</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  {COUNTERS.map((counter) => (
+                    <QuantityStepper
+                      key={counter.key}
+                      label={counter.label}
+                      icon={counter.icon}
+                      value={items[counter.key]}
+                      onChange={(value) =>
+                        updateWalkInForm({ items: { ...items, [counter.key]: value } })
+                      }
+                      className="last:border-b"
+                    />
+                  ))}
+                </div>
+                <p className="text-caption text-muted-foreground">
+                  Setelah transaksi dibuat, kamera terbuka untuk memotret kondisi barang.
+                </p>
+              </CardContent>
+            </Card>
           </div>
           <div className="flex min-w-0 flex-col gap-3.5">
             <ReturnMethodCard
@@ -172,47 +176,51 @@ export default function WalkIn({ lookup: found }: { lookup: CustomerLookup }) {
               tone={pointLookup.tone}
               isAreaLoading={pointLookup.loading}
             />
-            <section className="flex flex-col gap-2.5 rounded-lg border border-border bg-card p-4">
-              <h2 className="text-base leading-[1.3] font-semibold">Ringkasan</h2>
-              <dl className="flex flex-col text-sm leading-[1.4]">
-                {[
-                  ['Pelanggan', customerText],
-                  ['Barang', itemsSummary(items)],
-                  ['Pengembalian', returnText],
-                ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    className="flex justify-between gap-3 border-b border-border py-2.25 last:border-b-0"
-                  >
-                    <dt className="text-muted-foreground">{label}</dt>
-                    <dd className="text-right font-semibold">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-              <Button
-                size="cta"
-                isDisabled={Boolean(blocker)}
-                isPending={isBusy}
-                onPress={submit}
-                aria-describedby={blocker ? 'walk-in-blocker' : undefined}
-                className={cn('text-[15.5px]', blocker && 'h-13')}
-              >
-                Buat Transaksi &amp; Foto Barang
-                {!blocker && <IconArrowRight />}
-              </Button>
-              {blocker && (
-                <span
-                  id="walk-in-blocker"
-                  className="text-meta leading-[1.4] font-medium text-destructive-text"
+            <Card>
+              <CardHeader>
+                <CardTitle as="h2">Ringkasan</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <dl className="divide-y divide-border">
+                  {[
+                    ['Pelanggan', customerText],
+                    ['Barang', itemsSummary(items)],
+                    ['Pengembalian', returnText],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="flex justify-between gap-3 py-3 first:pt-0 last:pb-0"
+                    >
+                      <dt className="text-muted-foreground">{label}</dt>
+                      <dd className="text-right font-semibold">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <Button
+                  size="cta"
+                  isDisabled={Boolean(blocker)}
+                  isPending={isBusy}
+                  onPress={submit}
+                  aria-describedby={blocker ? 'walk-in-blocker' : undefined}
+                  className={cn('text-md', blocker && 'h-13')}
                 >
-                  {blocker}
-                </span>
-              )}
-              <p className="text-caption leading-normal text-muted-foreground">
-                Layanan dan harga ditentukan saat pemeriksaan. Setelah itu pelanggan membayar di
-                kasir dengan QRIS, tunai, atau EDC.
-              </p>
-            </section>
+                  Buat Transaksi &amp; Foto Barang
+                  {!blocker && <IconArrowRight />}
+                </Button>
+                {blocker && (
+                  <span
+                    id="walk-in-blocker"
+                    className="text-meta font-medium text-destructive-text"
+                  >
+                    {blocker}
+                  </span>
+                )}
+                <p className="text-caption text-muted-foreground">
+                  Layanan dan harga ditentukan saat pemeriksaan. Setelah itu pelanggan membayar di
+                  kasir dengan QRIS, tunai, atau EDC.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

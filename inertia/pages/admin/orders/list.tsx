@@ -5,6 +5,7 @@ import { IconArrowsExchange, IconBan } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
+import { Card, CardContent } from '~/components/ui/card'
 import SourceTag from '~/components/atoms/source_tag'
 import {
   Table,
@@ -171,49 +172,52 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
     <AdminLayout active="pesanan" title="Pesanan">
       <Head title="Pesanan" />
       <AdminPageHeader title="Pesanan" actions={exportButton('desktop')} />
-      <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3.5">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <FilterMenu<StatusTone>
-            word="Status"
-            label="Filter status"
-            values={stages}
-            onChange={(value) => changeFilter(() => setStages(value))}
-            options={STAGE_FILTERS.map((stage) => ({
-              value: stage,
-              label: STAGE_LABEL[stage],
-              count: all.filter((order) => order.stage === stage && matches(order, 'stage')).length,
-            }))}
-          />
-          <FilterMenu<Origin>
-            word="Asal"
-            label="Filter asal"
-            values={origins}
-            onChange={(value) => changeFilter(() => setOrigins(value))}
-            options={(['online', 'toko'] as Origin[]).map((origin) => ({
-              value: origin,
-              label: origin === 'toko' ? 'Toko' : 'Online',
-              count: all.filter(
-                (order) =>
-                  (order.isInStore ? 'toko' : 'online') === origin && matches(order, 'origin')
-              ).length,
-            }))}
-          />
-        </div>
-        <div className="flex flex-wrap gap-2.5">
-          <SearchField
-            label="Cari nomor pesanan, nama, area, atau staf"
-            placeholder="Cari no. pesanan / nama / area"
-            value={query}
-            onChange={(value) => changeFilter(() => setQuery(value))}
-          />
-        </div>
-        {parts.length > 0 && (
-          <FilterSummary
-            text={`${table.total} dari ${all.length} pesanan · ${parts.join(' · ')}`}
-            onReset={resetFilters}
-          />
-        )}
-      </div>
+      <Card size="sm">
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <FilterMenu<StatusTone>
+              word="Status"
+              label="Filter status"
+              values={stages}
+              onChange={(value) => changeFilter(() => setStages(value))}
+              options={STAGE_FILTERS.map((stage) => ({
+                value: stage,
+                label: STAGE_LABEL[stage],
+                count: all.filter((order) => order.stage === stage && matches(order, 'stage'))
+                  .length,
+              }))}
+            />
+            <FilterMenu<Origin>
+              word="Asal"
+              label="Filter asal"
+              values={origins}
+              onChange={(value) => changeFilter(() => setOrigins(value))}
+              options={(['online', 'toko'] as Origin[]).map((origin) => ({
+                value: origin,
+                label: origin === 'toko' ? 'Toko' : 'Online',
+                count: all.filter(
+                  (order) =>
+                    (order.isInStore ? 'toko' : 'online') === origin && matches(order, 'origin')
+                ).length,
+              }))}
+            />
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            <SearchField
+              label="Cari nomor pesanan, nama, area, atau staf"
+              placeholder="Cari no. pesanan / nama / area"
+              value={query}
+              onChange={(value) => changeFilter(() => setQuery(value))}
+            />
+          </div>
+          {parts.length > 0 && (
+            <FilterSummary
+              text={`${table.total} dari ${all.length} pesanan · ${parts.join(' · ')}`}
+              onReset={resetFilters}
+            />
+          )}
+        </CardContent>
+      </Card>
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         {table.selectedCount > 0 && (
           <BulkBar

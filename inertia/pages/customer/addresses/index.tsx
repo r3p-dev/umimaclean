@@ -7,6 +7,14 @@ import EmptyState from '~/components/molecules/empty_state'
 import ProfileShell from '~/components/organisms/profile/profile_shell'
 import AccountLayout from '~/components/templates/account_layout'
 import { Button, LinkButton } from '~/components/ui/button'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card'
 import type { SavedAddress } from '~/lib/order/addresses'
 import { displayPhone } from '~/lib/shared/phone'
 
@@ -60,68 +68,75 @@ export default function AddressIndex({
           <div className="max-sm:hidden">{add}</div>
         </div>
         {addresses.length === 0 ? (
-          <section className="mt-4 rounded-lg border border-border bg-card p-6">
-            <EmptyState
-              icon={IconMapPin}
-              title="Belum ada alamat"
-              description="Simpan alamat jemput sekali, dipakai otomatis setiap pesan."
-            />
-          </section>
+          <div className="mt-4">
+            <Card>
+              <CardContent>
+                <EmptyState
+                  icon={IconMapPin}
+                  title="Belum ada alamat"
+                  description="Simpan alamat jemput sekali, dipakai otomatis setiap pesan."
+                />
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           <ul className="mt-4 grid items-start gap-3 sm:grid-cols-2 sm:gap-4">
             {addresses.map((address) => (
-              <li
-                key={address.id}
-                className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
-              >
-                <div className="flex items-start gap-3">
-                  <IconMapPin className="mt-px size-5.5 shrink-0 text-primary" />
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <span className="flex items-center gap-2 text-[15px] leading-[1.2] font-semibold">
-                      {address.label}
-                      {address.isPrimary && (
+              <li key={address.id}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle as="h2">
+                      <span className="flex items-center gap-2">
+                        <IconMapPin className="size-5 shrink-0 text-primary" />
+                        {address.label}
+                      </span>
+                    </CardTitle>
+                    {address.isPrimary && (
+                      <CardAction>
                         <span className="rounded-pill bg-accent px-2 py-1 text-xs leading-none font-semibold text-accent-foreground">
                           Utama
                         </span>
-                      )}
-                    </span>
-                    <span className="text-sm leading-[1.4] text-foreground-secondary">
-                      {address.addressText}
-                    </span>
-                    {address.landmark && (
-                      <span className="text-meta leading-[1.4] text-muted-foreground">
-                        Patokan: {address.landmark}
-                      </span>
+                      </CardAction>
                     )}
-                    <span className="text-meta leading-[1.4] text-muted-foreground">
-                      Penerima: {address.recipientName} · {displayPhone(address.recipientPhone)}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2 border-t border-border pt-3">
-                  <LinkButton
-                    href={urlFor('customer.addresses.edit', { id: address.id })}
-                    variant="outline"
-                    size="compact"
-                    aria-label={`Ubah ${address.label}`}
-                    className="flex-1 gap-1.5"
-                  >
-                    <IconPencil className="size-4.5" />
-                    Ubah
-                  </LinkButton>
-                  {!address.isPrimary && (
-                    <Button
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col gap-1">
+                      <p className="text-foreground-secondary">{address.addressText}</p>
+                      {address.landmark && (
+                        <p className="text-meta text-muted-foreground">
+                          Patokan: {address.landmark}
+                        </p>
+                      )}
+                      <p className="text-meta text-muted-foreground">
+                        Penerima: {address.recipientName} · {displayPhone(address.recipientPhone)}
+                      </p>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="border-t">
+                    <LinkButton
+                      href={urlFor('customer.addresses.edit', { id: address.id })}
                       variant="outline"
                       size="compact"
-                      className="flex-1"
-                      isPending={pending === address.id}
-                      onPress={() => makePrimary(address)}
-                      aria-label={`Jadikan ${address.label} alamat utama`}
+                      aria-label={`Ubah ${address.label}`}
+                      className="flex-1 gap-1.5"
                     >
-                      Jadikan utama
-                    </Button>
-                  )}
-                </div>
+                      <IconPencil className="size-4.5" />
+                      Ubah
+                    </LinkButton>
+                    {!address.isPrimary && (
+                      <Button
+                        variant="outline"
+                        size="compact"
+                        className="flex-1"
+                        isPending={pending === address.id}
+                        onPress={() => makePrimary(address)}
+                        aria-label={`Jadikan ${address.label} alamat utama`}
+                      >
+                        Jadikan utama
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
               </li>
             ))}
           </ul>

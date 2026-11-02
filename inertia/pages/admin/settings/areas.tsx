@@ -50,36 +50,38 @@ export default function AdminServiceAreas({
           }
         >
           {active.length === 0 && (
-            <p className="text-note leading-normal text-destructive-text">
+            <p className="text-note text-destructive-text">
               Belum ada kecamatan aktif. Pelanggan belum bisa memesan penjemputan.
             </p>
           )}
-          {groupByCity(active).map(({ city, areas }) => (
-            <div key={city} className="flex flex-col gap-2 border-t border-border pt-2.5">
-              <h3 className="text-sm leading-[1.2] font-semibold">
-                {city} · {areas.length}
-              </h3>
-              <ul className="flex flex-wrap gap-1.5">
-                {areas.map((area) => (
-                  <li
-                    key={area.id}
-                    className="box-content inline-flex h-8 items-center gap-0.5 rounded-pill border border-input bg-background pr-1 pl-2.75 text-meta leading-none font-medium"
-                  >
-                    {area.name}
-                    <button
-                      type="button"
-                      aria-label={`Nonaktifkan Kec. ${area.name}, ${city}`}
-                      onClick={() => setServiceAreaActive(area.id, false)}
-                      className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+          <ul className="divide-y divide-border">
+            {groupByCity(active).map(({ city, areas }) => (
+              <li key={city} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
+                <h3 className="text-sm font-semibold">
+                  {city} · {areas.length}
+                </h3>
+                <ul className="flex flex-wrap gap-1.5">
+                  {areas.map((area) => (
+                    <li
+                      key={area.id}
+                      className="box-content inline-flex h-8 items-center gap-0.5 rounded-pill border border-input bg-background pr-1 pl-3 text-meta leading-none font-medium"
                     >
-                      <IconX className="size-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          <p className="text-note leading-normal text-foreground-secondary">
+                      {area.name}
+                      <button
+                        type="button"
+                        aria-label={`Nonaktifkan Kec. ${area.name}, ${city}`}
+                        onClick={() => setServiceAreaActive(area.id, false)}
+                        className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+                      >
+                        <IconX className="size-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+          <p className="text-note text-foreground-secondary">
             Titik jemput dan antar di kecamatan aktif gratis ongkir. Menonaktifkan kecamatan hanya
             berlaku untuk alamat dan pesanan baru; pesanan yang sudah berjalan tidak berubah.
           </p>
@@ -101,29 +103,23 @@ export default function AdminServiceAreas({
                 <IconSearch />
               </InputGroupAddon>
             </InputGroup>
-            <FieldDescription className="text-caption leading-[1.4]">
-              {BOUNDARY_CREDIT}
-            </FieldDescription>
+            <FieldDescription className="text-caption">{BOUNDARY_CREDIT}</FieldDescription>
           </Field>
           {q && results.length === 0 && (
-            <p role="status" className="text-note leading-normal text-muted-foreground">
+            <p role="status" className="text-note text-muted-foreground">
               Tidak ada kecamatan yang cocok dengan “{q}”.
             </p>
           )}
           {results.length > 0 && (
-            <ul aria-label="Hasil pencarian" className="flex flex-col">
+            <ul
+              aria-label="Hasil pencarian"
+              className="divide-y divide-border border-t border-border"
+            >
               {results.map((area) => (
-                <li
-                  key={area.id}
-                  className="flex min-h-11 items-center gap-2.5 border-t border-border py-2"
-                >
+                <li key={area.id} className="flex min-h-11 items-center gap-2.5 py-2">
                   <span className="flex flex-1 flex-col gap-0.5">
-                    <span className="text-[14.5px] leading-[1.3] font-medium">
-                      Kec. {area.name}
-                    </span>
-                    <span className="text-caption leading-[1.3] text-muted-foreground">
-                      {area.city}
-                    </span>
+                    <span className="text-sm font-medium">Kec. {area.name}</span>
+                    <span className="text-caption text-muted-foreground">{area.city}</span>
                   </span>
                   <Switch
                     isSelected={area.isActive}

@@ -11,6 +11,14 @@ import { urlFor } from '~/client'
 import EmptyState from '~/components/molecules/empty_state'
 import AccountLayout from '~/components/templates/account_layout'
 import { LinkButton } from '~/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card'
 import type { Data } from '@generated/data'
 import type { SavedAddress } from '~/lib/order/addresses'
 import { cn } from '~/lib/shared/utils'
@@ -58,75 +66,80 @@ export default function CustomerWelcome({
         </p>
         <div className="mt-5 grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:mt-7 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6">
           <div className="flex flex-col gap-4 lg:gap-6">
-            <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-5 shadow-1 sm:flex-row sm:items-center sm:gap-6 sm:p-7">
-              <span className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-accent text-info-foreground sm:size-16">
-                <IconTruckDelivery className="size-7" />
-              </span>
-              <div className="flex flex-1 flex-col gap-1.5">
-                <h2 className="text-xl leading-[1.25] font-bold tracking-[-0.01em] sm:text-[22px]">
+            <Card role="region" aria-labelledby="first-order-title">
+              <CardContent>
+                <span className="flex size-12 items-center justify-center rounded-md bg-accent text-info-foreground">
+                  <IconTruckDelivery className="size-6" />
+                </span>
+              </CardContent>
+              <CardHeader>
+                <CardTitle as="h2" id="first-order-title">
                   Pesan penjemputan pertama Anda
-                </h2>
-                <p className="text-[15px] leading-normal text-foreground-secondary">
+                </CardTitle>
+                <CardDescription>
                   Kurir menjemput sepatu, tas, atau helm Anda. Bayar setelah tahu harganya.
-                </p>
-              </div>
-              <LinkButton href={urlFor('customer.order.create')} className="px-6 max-sm:h-cta">
-                Pesan Penjemputan
-              </LinkButton>
-            </section>
-            <section
-              aria-labelledby="start-steps-title"
-              className="flex flex-col rounded-lg border border-border bg-card px-5 pt-5 pb-2 sm:px-6"
-            >
-              <h2 id="start-steps-title" className="text-base leading-[1.3] font-semibold">
-                Mulai dalam 3 langkah
-              </h2>
-              <ol className="mt-2 flex flex-col">
-                {steps.map((step, index) => (
-                  <li
-                    key={step.title}
-                    className="flex items-center gap-3.5 border-b border-border py-3.5 last:border-b-0"
-                  >
-                    <span
-                      className={cn(
-                        'flex size-9.5 shrink-0 items-center justify-center rounded-full border text-sm leading-none font-semibold',
-                        step.done
-                          ? 'border-success-solid bg-success-solid text-success-solid-foreground'
-                          : 'border-border-strong text-foreground-secondary'
-                      )}
+                </CardDescription>
+              </CardHeader>
+              <CardFooter>
+                <LinkButton href={urlFor('customer.order.create')} className="w-full">
+                  Pesan Penjemputan
+                </LinkButton>
+              </CardFooter>
+            </Card>
+            <Card role="region" aria-labelledby="start-steps-title">
+              <CardHeader>
+                <CardTitle as="h2" id="start-steps-title">
+                  Mulai dalam 3 langkah
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className="divide-y divide-border">
+                  {steps.map((step, index) => (
+                    <li
+                      key={step.title}
+                      className="flex items-center gap-3.5 py-3 first:pt-0 last:pb-0"
                     >
-                      {step.done ? <IconCheck className="size-5" /> : index + 1}
-                      <span className="sr-only">{step.done ? ' (selesai)' : ''}</span>
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col gap-1">
-                      <span className="text-[15px] leading-[1.3] font-semibold">{step.title}</span>
-                      <span className="text-meta leading-[1.45] text-foreground-secondary sm:text-sm">
-                        {step.text}
-                      </span>
-                    </span>
-                    {step.action && !step.done && (
-                      <LinkButton
-                        href={step.action.href}
-                        variant="outline"
-                        size="compact"
-                        className="shrink-0 px-3.5"
+                      <span
+                        className={cn(
+                          'flex size-10 shrink-0 items-center justify-center rounded-full border text-sm leading-none font-semibold',
+                          step.done
+                            ? 'border-success-solid bg-success-solid text-success-solid-foreground'
+                            : 'border-border-strong text-foreground-secondary'
+                        )}
                       >
-                        {step.action.label}
-                      </LinkButton>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </section>
+                        {step.done ? <IconCheck className="size-5" /> : index + 1}
+                        <span className="sr-only">{step.done ? ' (selesai)' : ''}</span>
+                      </span>
+                      <span className="flex min-w-0 flex-1 flex-col gap-1">
+                        <span className="text-md font-semibold">{step.title}</span>
+                        <span className="text-meta text-muted-foreground">{step.text}</span>
+                      </span>
+                      {step.action && !step.done && (
+                        <LinkButton
+                          href={step.action.href}
+                          variant="outline"
+                          size="compact"
+                          className="shrink-0"
+                        >
+                          {step.action.label}
+                        </LinkButton>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </CardContent>
+            </Card>
           </div>
           <aside className="flex flex-col gap-4">
-            <section className="rounded-lg border border-border bg-card p-5">
-              <EmptyState
-                icon={IconArchive}
-                title="Belum ada pesanan"
-                description="Pesanan aktif dan riwayat akan muncul di sini setelah Anda memesan."
-              />
-            </section>
+            <Card>
+              <CardContent>
+                <EmptyState
+                  icon={IconArchive}
+                  title="Belum ada pesanan"
+                  description="Pesanan aktif dan riwayat akan muncul di sini setelah Anda memesan."
+                />
+              </CardContent>
+            </Card>
             <Link
               href="/#harga"
               className="flex min-h-14 items-center gap-3 rounded-lg bg-muted px-5 text-[15px] leading-none font-medium text-foreground no-underline hover:bg-accent hover:text-foreground hover:no-underline"

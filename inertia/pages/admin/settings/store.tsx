@@ -50,7 +50,7 @@ function TextField({
   const id = useId()
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
-      <Label htmlFor={id} className="text-note leading-[1.2]">
+      <Label htmlFor={id} className="text-note">
         {label}
       </Label>
       <Input
@@ -63,7 +63,7 @@ function TextField({
         className="px-3"
       />
       {hint && (
-        <FieldDescription id={`${id}-hint`} className="text-caption leading-[1.4]">
+        <FieldDescription id={`${id}-hint`} className="text-caption">
           {hint}
         </FieldDescription>
       )}
@@ -148,67 +148,67 @@ export default function AdminStoreSettings({
             </div>
           </SettingsPanel>
           <SettingsPanel title="Slot penjemputan">
-            {draft.slots.map((slot, index) => {
-              const setSlot = (patch: Partial<typeof slot>) =>
-                update({
-                  slots: draft.slots.map((item, position) =>
-                    position === index ? { ...item, ...patch } : item
-                  ),
-                })
-              return (
-                <div
-                  key={slot.label}
-                  className="flex flex-wrap items-center gap-2.5 border-t border-border pt-2.5"
-                >
-                  <Switch
-                    isSelected={slot.on}
-                    onChange={(isOn) => setSlot({ on: isOn })}
-                    aria-label={`Aktifkan slot ${slot.label}`}
-                  />
-                  <span className="flex-1 font-mono text-[14.5px] leading-[1.2] font-semibold">
-                    {slot.label}
-                  </span>
-                  <span className="text-meta leading-none text-foreground-secondary">
-                    kapasitas
-                  </span>
-                  <span
-                    role="group"
-                    aria-label={`Kapasitas ${slot.label}`}
-                    className="inline-flex items-center overflow-hidden rounded-md border border-input"
+            <ul className="divide-y divide-border">
+              {draft.slots.map((slot, index) => {
+                const setSlot = (patch: Partial<typeof slot>) =>
+                  update({
+                    slots: draft.slots.map((item, position) =>
+                      position === index ? { ...item, ...patch } : item
+                    ),
+                  })
+                return (
+                  <li
+                    key={slot.label}
+                    className="flex flex-wrap items-center gap-2.5 py-3 first:pt-0 last:pb-0"
                   >
-                    <button
-                      type="button"
-                      aria-label={`Kurangi kapasitas ${slot.label}`}
-                      disabled={slot.capacity <= SLOT_CAPACITY.min}
-                      onClick={() =>
-                        setSlot({ capacity: Math.max(SLOT_CAPACITY.min, slot.capacity - 1) })
-                      }
-                      className="flex size-11 items-center justify-center bg-card hover:bg-accent disabled:text-disabled-foreground"
+                    <Switch
+                      isSelected={slot.on}
+                      onChange={(isOn) => setSlot({ on: isOn })}
+                      aria-label={`Aktifkan slot ${slot.label}`}
+                    />
+                    <span className="flex-1 font-mono text-sm font-semibold">{slot.label}</span>
+                    <span className="text-meta leading-none text-foreground-secondary">
+                      kapasitas
+                    </span>
+                    <span
+                      role="group"
+                      aria-label={`Kapasitas ${slot.label}`}
+                      className="inline-flex items-center overflow-hidden rounded-md border border-input"
                     >
-                      <IconMinus className="size-5" />
-                    </button>
-                    <output
-                      aria-live="polite"
-                      className="min-w-8.5 text-center text-[15px] leading-none font-semibold"
-                    >
-                      {slot.capacity}
-                    </output>
-                    <button
-                      type="button"
-                      aria-label={`Tambah kapasitas ${slot.label}`}
-                      disabled={slot.capacity >= SLOT_CAPACITY.max}
-                      onClick={() =>
-                        setSlot({ capacity: Math.min(SLOT_CAPACITY.max, slot.capacity + 1) })
-                      }
-                      className="flex size-11 items-center justify-center bg-card hover:bg-accent disabled:text-disabled-foreground"
-                    >
-                      <IconPlus className="size-5" />
-                    </button>
-                  </span>
-                </div>
-              )
-            })}
-            <p className="text-note leading-normal text-foreground-secondary">
+                      <button
+                        type="button"
+                        aria-label={`Kurangi kapasitas ${slot.label}`}
+                        disabled={slot.capacity <= SLOT_CAPACITY.min}
+                        onClick={() =>
+                          setSlot({ capacity: Math.max(SLOT_CAPACITY.min, slot.capacity - 1) })
+                        }
+                        className="flex size-11 items-center justify-center bg-card hover:bg-accent disabled:text-disabled-foreground"
+                      >
+                        <IconMinus className="size-5" />
+                      </button>
+                      <output
+                        aria-live="polite"
+                        className="min-w-8.5 text-center text-md leading-none font-semibold"
+                      >
+                        {slot.capacity}
+                      </output>
+                      <button
+                        type="button"
+                        aria-label={`Tambah kapasitas ${slot.label}`}
+                        disabled={slot.capacity >= SLOT_CAPACITY.max}
+                        onClick={() =>
+                          setSlot({ capacity: Math.min(SLOT_CAPACITY.max, slot.capacity + 1) })
+                        }
+                        className="flex size-11 items-center justify-center bg-card hover:bg-accent disabled:text-disabled-foreground"
+                      >
+                        <IconPlus className="size-5" />
+                      </button>
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+            <p className="text-note text-foreground-secondary">
               Kapasitas = jumlah penjemputan per slot per hari. Slot penuh tetap terlihat tapi tidak
               bisa dipilih pelanggan; slot nonaktif disembunyikan.
             </p>
@@ -219,12 +219,12 @@ export default function AdminStoreSettings({
             <div className="flex items-center gap-2.5 rounded-md bg-accent p-3">
               <IconQrcode className="size-6 shrink-0 text-info-foreground" />
               <span className="flex-1">
-                <span className="block text-[14.5px] leading-[1.3] font-semibold">
+                <span className="block text-sm font-semibold">
                   {isQrisAvailable
                     ? 'QRIS online · Midtrans terhubung'
                     : 'QRIS online · belum aktif'}
                 </span>
-                <span className="block text-caption leading-[1.35] text-foreground-secondary">
+                <span className="block text-caption text-foreground-secondary">
                   {isQrisAvailable
                     ? 'Satu-satunya metode untuk pesanan online'
                     : 'Isi MIDTRANS_SERVER_KEY di server agar pelanggan bisa membayar QRIS'}
@@ -239,9 +239,7 @@ export default function AdminStoreSettings({
               return (
                 <div key={method.key} className="flex min-h-11 items-center gap-2.5">
                   <Icon className="size-5 text-foreground-secondary" />
-                  <span className="flex-1 text-[14.5px] leading-[1.3] font-medium">
-                    {method.label}
-                  </span>
+                  <span className="flex-1 text-sm font-medium">{method.label}</span>
                   <Switch
                     isSelected={draft.payments[method.key]}
                     onChange={() => togglePay(method.key)}
@@ -255,7 +253,7 @@ export default function AdminStoreSettings({
             )}
           </SettingsPanel>
           <SettingsPanel title="Pelanggan tidak aktif">
-            <p className="text-note leading-normal text-foreground-secondary">
+            <p className="text-note text-foreground-secondary">
               Batas bawaan yang dipakai di halaman Pelanggan. Owner tetap bisa mengubahnya sementara
               di sana.
             </p>

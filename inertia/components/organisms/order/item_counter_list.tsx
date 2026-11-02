@@ -16,7 +16,7 @@ export default function ItemCounterList({
   onChange: (items: ItemCounts) => void
 }) {
   return (
-    <div className="pt-2.5">
+    <div>
       {ITEMS.map(({ key, label, icon }) => (
         <QuantityStepper
           key={key}
