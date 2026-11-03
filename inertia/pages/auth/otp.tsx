@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import { Head, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import { IconDeviceMobile } from '@tabler/icons-react'
@@ -83,7 +83,7 @@ export default function VerifyCode({
     )
   }
 
-  function submit(event: FormEvent) {
+  function submit(event: SubmitEvent) {
     event.preventDefault()
     verify()
   }

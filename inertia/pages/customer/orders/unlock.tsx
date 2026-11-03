@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import { Head, router } from '@inertiajs/react'
 import { IconBrandWhatsapp } from '@tabler/icons-react'
 import { urlFor } from '~/client'
@@ -34,7 +34,7 @@ export default function UnlockOrder({ id, number }: { id: number; number: string
     )
   }
 
-  function submit(event: FormEvent) {
+  function submit(event: SubmitEvent) {
     event.preventDefault()
     unlock()
   }

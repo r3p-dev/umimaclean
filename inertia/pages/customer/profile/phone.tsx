@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useRef, useState, type SubmitEvent } from 'react'
 import { Head, router } from '@inertiajs/react'
 import { urlFor } from '~/client'
 import BackLink from '~/components/molecules/back_link'
@@ -21,7 +21,7 @@ export default function ChangePhone({ currentPhone }: { currentPhone: string }) 
   const [isBusy, setBusy] = useState(false)
   const phoneRef = useRef<HTMLInputElement>(null)
 
-  function submit(event: FormEvent) {
+  function submit(event: SubmitEvent) {
     event.preventDefault()
     if (isBusy) {
       return

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useRef, useState, type SubmitEvent } from 'react'
 import { Head, router } from '@inertiajs/react'
 import { toast } from 'sonner'
 import { IconTrash } from '@tabler/icons-react'
@@ -161,7 +161,7 @@ export default function AddressForm({
     return true
   }
 
-  async function submit(event: FormEvent) {
+  async function submit(event: SubmitEvent) {
     event.preventDefault()
     if (isBusy) {
       return

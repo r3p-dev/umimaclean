@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useRef, useState, type SubmitEvent } from 'react'
 import { Head, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import type { Data } from '@generated/data'
@@ -19,7 +19,7 @@ function NameForm({ user }: { user: Data.User }) {
   const [isBusy, setBusy] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
 
-  function submit(event: FormEvent) {
+  function submit(event: SubmitEvent) {
     event.preventDefault()
     if (isBusy) {
       return

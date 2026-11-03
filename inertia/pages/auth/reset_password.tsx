@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useRef, useState, type SubmitEvent } from 'react'
 import { Head, router } from '@inertiajs/react'
 import { urlFor } from '~/client'
 import PasswordInput from '~/components/molecules/password_input'
@@ -27,7 +27,7 @@ export default function ResetPassword({ maskedPhone }: { maskedPhone: string }) 
     }
   }
 
-  function submit(event: FormEvent) {
+  function submit(event: SubmitEvent) {
     event.preventDefault()
     if (isBusy) {
       return

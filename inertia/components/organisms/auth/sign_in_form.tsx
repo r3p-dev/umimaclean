@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useRef, useState, type SubmitEvent, type ReactNode } from 'react'
 import { router } from '@inertiajs/react'
 import PhoneInput from '~/components/molecules/phone_input'
 import PasswordInput from '~/components/molecules/password_input'
@@ -41,7 +41,7 @@ export default function SignInForm({
     }
   }
 
-  function submit(event: FormEvent) {
+  function submit(event: SubmitEvent) {
     event.preventDefault()
     if (isBusy) {
       return

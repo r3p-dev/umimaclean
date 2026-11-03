@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useRef, useState, type SubmitEvent } from 'react'
 import { router } from '@inertiajs/react'
 import PasswordInput from '~/components/molecules/password_input'
 import { Button } from '~/components/ui/button'
@@ -41,7 +41,7 @@ export default function PasswordForm({ action }: { action: string }) {
     }
   }
 
-  function submit(event: FormEvent) {
+  function submit(event: SubmitEvent) {
     event.preventDefault()
     if (isBusy) {
       return
