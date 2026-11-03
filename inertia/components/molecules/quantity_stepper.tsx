@@ -7,7 +7,6 @@ export default function QuantityStepper({
   label,
   icon: Icon,
   value,
-  max = 20,
   onChange,
   className,
   labelClassName,
@@ -17,7 +16,6 @@ export default function QuantityStepper({
   label: string
   icon: ComponentType<SVGProps<SVGSVGElement>>
   value: number
-  max?: number
   onChange: (value: number) => void
 }) {
   const labelId = useId()
@@ -60,7 +58,7 @@ export default function QuantityStepper({
           variant="outline"
           size="icon"
           aria-label={`Tambah ${name}`}
-          isDisabled={value === max}
+          isDisabled={value === 20}
           onPress={() => onChange(value + 1)}
           className="size-11.5 border-border-strong"
         >

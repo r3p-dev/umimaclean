@@ -12,7 +12,6 @@ export type LocationMapHandle = {
 export default function LocationMap({
   ref,
   center,
-  zoom = 16,
   isInteractive = true,
   label,
   onMoveEnd,
@@ -21,7 +20,6 @@ export default function LocationMap({
 }: {
   ref?: Ref<LocationMapHandle>
   center: PickupPoint
-  zoom?: number
   isInteractive?: boolean
   label?: string
   onMoveEnd?: (point: PickupPoint) => void
@@ -31,7 +29,7 @@ export default function LocationMap({
   const element = useRef<HTMLDivElement>(null)
   const baseMapUrl = useBaseMapUrl()
   const map = useRef<L.Map | null>(null)
-  const initial = useRef({ center, zoom })
+  const initial = useRef({ center, zoom: 16 })
   const moveEnd = useRef(onMoveEnd)
 
   useEffect(() => {

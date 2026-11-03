@@ -21,7 +21,6 @@ export default function PickupPointPicker({
   onLocate,
   onMoveEnd,
   onLandmarkChange,
-  className,
 }: {
   title?: string
   mapRef: Ref<LocationMapHandle>
@@ -34,13 +33,9 @@ export default function PickupPointPicker({
   onLocate: () => void
   onMoveEnd: (point: PickupPoint) => void
   onLandmarkChange: (landmark: string) => void
-  className?: string
 }) {
   return (
-    <section
-      aria-labelledby="pickup-point-title"
-      className={cn('flex min-w-0 flex-col gap-3', className)}
-    >
+    <section aria-labelledby="pickup-point-title" className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-col gap-1">
         <h2 id="pickup-point-title" className="text-[17px] leading-[1.3] font-semibold">
           {title}

@@ -6,7 +6,6 @@ import { urlFor } from '~/client'
 import ToneBadge from '~/components/atoms/tone_badge'
 import { FilterMenu } from '~/components/molecules/filter_menu'
 import AdminPageHeader from '~/components/organisms/admin_page_header'
-import { TABLE_HEAD_ROW } from '~/components/organisms/data_table/table_parts'
 import AdminLayout from '~/components/templates/admin_layout'
 import { Alert } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
@@ -112,7 +111,7 @@ export default function AdminReconciliation({
         <CardContent data-bleed>
           <Table>
             <TableHeader>
-              <tr className={TABLE_HEAD_ROW}>
+              <tr>
                 <TableHead>ID Midtrans</TableHead>
                 <TableHead>Pesanan</TableHead>
                 <TableHead>Nominal</TableHead>

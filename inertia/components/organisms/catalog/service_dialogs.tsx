@@ -1,9 +1,8 @@
 import { useId, useState, type ReactNode } from 'react'
 import { Button } from '~/components/ui/button'
 import { Dialog, DialogClose, DialogDescription } from '~/components/ui/dialog'
-import { FieldDescription, FieldError } from '~/components/ui/field'
+import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
 import { Switch } from '~/components/ui/switch'
 import ChoicePills from '~/components/molecules/choice_pills'
 import DialogTitleBar from '~/components/molecules/dialog_title_bar'
@@ -15,51 +14,6 @@ import {
 } from '~/lib/catalog/services'
 
 const FOOTER = 'flex flex-col-reverse justify-end gap-2 sm:flex-row sm:items-center'
-
-function TextField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  isNumeric,
-  error,
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  placeholder: string
-  isNumeric?: boolean
-  error?: string
-}) {
-  const id = useId()
-  return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <Label htmlFor={id} className="text-note leading-[1.2]">
-        {label}
-      </Label>
-      <Input
-        id={id}
-        autoComplete="off"
-        inputMode={isNumeric ? 'numeric' : undefined}
-        placeholder={placeholder}
-        value={value}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? `${id}-error` : undefined}
-        onChange={(event) =>
-          onChange(
-            isNumeric ? event.target.value.replace(/\D/g, '').slice(0, 9) : event.target.value
-          )
-        }
-        className="px-3"
-      />
-      {error && (
-        <FieldError id={`${id}-error`} className="text-meta">
-          {error}
-        </FieldError>
-      )}
-    </div>
-  )
-}
 
 export function ServiceFormDialog({
   isOpen,
@@ -76,6 +30,10 @@ export function ServiceFormDialog({
 }) {
   const [form, setForm] = useState(initial)
   const [errors, setErrors] = useState<{ name?: string; price?: string }>({})
+  const nameId = useId()
+  const priceId = useId()
+  const daysId = useId()
+  const descriptionId = useId()
   const typeId = useId()
   const categoryId = useId()
   const update = (patch: Partial<ServiceForm>) => setForm((current) => ({ ...current, ...patch }))
@@ -83,13 +41,26 @@ export function ServiceFormDialog({
   return (
     <Dialog isOpen={isOpen} onOpenChange={onOpenChange} variant="panel">
       <DialogTitleBar>{isEditing ? 'Ubah layanan' : 'Tambah layanan'}</DialogTitleBar>
-      <TextField
-        label="Nama layanan"
-        placeholder="mis. Deep Clean"
-        value={form.name}
-        onChange={(name) => update({ name })}
-        error={errors.name}
-      />
+      <Field className="min-w-0 gap-1.5">
+        <FieldLabel htmlFor={nameId} className="text-note leading-[1.2]">
+          Nama layanan
+        </FieldLabel>
+        <Input
+          id={nameId}
+          autoComplete="off"
+          placeholder="mis. Deep Clean"
+          value={form.name}
+          aria-invalid={errors.name ? true : undefined}
+          aria-describedby={errors.name ? `${nameId}-error` : undefined}
+          onChange={(event) => update({ name: event.target.value })}
+          className="px-3"
+        />
+        {errors.name && (
+          <FieldError id={`${nameId}-error`} className="text-meta">
+            {errors.name}
+          </FieldError>
+        )}
+      </Field>
       <div className="flex flex-col gap-1.5">
         <span id={typeId} className="text-note leading-[1.2] font-semibold">
           Jenis
@@ -123,28 +94,59 @@ export function ServiceFormDialog({
         />
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <TextField
-          label="Harga (Rp)"
-          placeholder="45000"
-          isNumeric
-          value={form.price}
-          onChange={(price) => update({ price })}
-          error={errors.price}
-        />
-        <TextField
-          label="Estimasi (hari)"
-          placeholder="3"
-          isNumeric
-          value={form.days}
-          onChange={(days) => update({ days })}
-        />
+        <Field className="min-w-0 gap-1.5">
+          <FieldLabel htmlFor={priceId} className="text-note leading-[1.2]">
+            Harga (Rp)
+          </FieldLabel>
+          <Input
+            id={priceId}
+            autoComplete="off"
+            inputMode="numeric"
+            placeholder="45000"
+            value={form.price}
+            aria-invalid={errors.price ? true : undefined}
+            aria-describedby={errors.price ? `${priceId}-error` : undefined}
+            onChange={(event) =>
+              update({ price: event.target.value.replace(/\D/g, '').slice(0, 9) })
+            }
+            className="px-3"
+          />
+          {errors.price && (
+            <FieldError id={`${priceId}-error`} className="text-meta">
+              {errors.price}
+            </FieldError>
+          )}
+        </Field>
+        <Field className="min-w-0 gap-1.5">
+          <FieldLabel htmlFor={daysId} className="text-note leading-[1.2]">
+            Estimasi (hari)
+          </FieldLabel>
+          <Input
+            id={daysId}
+            autoComplete="off"
+            inputMode="numeric"
+            placeholder="3"
+            value={form.days}
+            onChange={(event) =>
+              update({ days: event.target.value.replace(/\D/g, '').slice(0, 9) })
+            }
+            className="px-3"
+          />
+        </Field>
       </div>
-      <TextField
-        label="Deskripsi singkat (opsional)"
-        placeholder="Terlihat oleh staf saat memilih"
-        value={form.description}
-        onChange={(description) => update({ description })}
-      />
+      <Field className="min-w-0 gap-1.5">
+        <FieldLabel htmlFor={descriptionId} className="text-note leading-[1.2]">
+          Deskripsi singkat (opsional)
+        </FieldLabel>
+        <Input
+          id={descriptionId}
+          autoComplete="off"
+          placeholder="Terlihat oleh staf saat memilih"
+          value={form.description}
+          onChange={(event) => update({ description: event.target.value })}
+          className="px-3"
+        />
+      </Field>
       <Switch
         isSelected={form.active}
         onChange={(isActive) => update({ active: isActive })}

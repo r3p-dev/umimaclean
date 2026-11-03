@@ -5,11 +5,9 @@ import { cn } from '~/lib/shared/utils'
 export default function PhaseProgress({
   phases,
   tone,
-  className,
 }: {
   phases: { label: string; state: StepState }[]
   tone: StatusTone
-  className?: string
 }) {
   const current = phases.find((phase) => phase.state === 'current')
 
@@ -17,7 +15,7 @@ export default function PhaseProgress({
     <div
       role="img"
       aria-label={current ? `Kemajuan pesanan: tahap ${current.label}` : 'Kemajuan pesanan'}
-      className={cn('grid grid-cols-5 gap-1.5', className)}
+      className="grid grid-cols-5 gap-1.5"
     >
       {phases.map((phase) => (
         <div key={phase.label} className="flex flex-col gap-1.75">

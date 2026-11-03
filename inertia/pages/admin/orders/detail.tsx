@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import { Head, router } from '@inertiajs/react'
 import type { Data } from '@generated/data'
 import {
@@ -31,26 +31,6 @@ import { cn } from '~/lib/shared/utils'
 type DetailOrder = AdminOrderRow & {
   detail: Data.AdminOrderDetail
   history: AdminOrderRow[]
-}
-
-function Panel({
-  title,
-  aside,
-  children,
-}: {
-  title: string
-  aside?: ReactNode
-  children: ReactNode
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle as="h2">{title}</CardTitle>
-        {aside && <CardAction>{aside}</CardAction>}
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
-  )
 }
 
 export default function AdminOrderDetail({
@@ -217,125 +197,141 @@ export default function AdminOrderDetail({
               )}
             </CardContent>
           </Card>
-          <Panel
-            title="Pembayaran"
-            aside={
-              <ToneBadge tone={paymentTone} hasDot>
-                {order.payment}
-              </ToneBadge>
-            }
-          >
-            <dl className="flex flex-col gap-3">
-              {detail.payRows.map((row) => (
-                <div key={row.label} className="flex justify-between gap-3 text-sm">
-                  <dt className="text-muted-foreground">{row.label}</dt>
-                  <dd className="text-right">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </Panel>
-          <Panel
-            title="Jejak audit pesanan ini"
-            aside={
-              <span className="text-caption leading-none text-muted-foreground">
-                tidak bisa diedit
-              </span>
-            }
-          >
-            <ol className="flex flex-col gap-3">
-              {detail.audit.map((entry, index) => (
-                <li
-                  key={`${entry.time}-${index}`}
-                  className="grid grid-cols-[84px_minmax(0,1fr)] gap-2.5 text-note"
-                >
-                  <span className="font-mono text-caption font-medium text-muted-foreground">
-                    {entry.time}
-                  </span>
-                  <span>
-                    <strong className="font-semibold">{entry.who}</strong> {entry.what}
-                    {entry.sensitive && (
-                      <>
-                        {' '}
-                        <ToneBadge tone="warn">sensitif</ToneBadge>
-                      </>
-                    )}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </Panel>
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">Pembayaran</CardTitle>
+              <CardAction>
+                <ToneBadge tone={paymentTone} hasDot>
+                  {order.payment}
+                </ToneBadge>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              <dl className="flex flex-col gap-3">
+                {detail.payRows.map((row) => (
+                  <div key={row.label} className="flex justify-between gap-3 text-sm">
+                    <dt className="text-muted-foreground">{row.label}</dt>
+                    <dd className="text-right">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">Jejak audit pesanan ini</CardTitle>
+              <CardAction>
+                <span className="text-caption leading-none text-muted-foreground">
+                  tidak bisa diedit
+                </span>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              <ol className="flex flex-col gap-3">
+                {detail.audit.map((entry, index) => (
+                  <li
+                    key={`${entry.time}-${index}`}
+                    className="grid grid-cols-[84px_minmax(0,1fr)] gap-2.5 text-note"
+                  >
+                    <span className="font-mono text-caption font-medium text-muted-foreground">
+                      {entry.time}
+                    </span>
+                    <span>
+                      <strong className="font-semibold">{entry.who}</strong> {entry.what}
+                      {entry.sensitive && (
+                        <>
+                          {' '}
+                          <ToneBadge tone="warn">sensitif</ToneBadge>
+                        </>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
         </div>
         <div className="flex min-w-0 flex-col gap-4">
-          <Panel title="Pelanggan">
-            <p className="text-md font-semibold">{order.customer}</p>
-            <p className="font-mono text-sm font-medium">{detail.phone}</p>
-            <p className="text-sm text-foreground-secondary">{detail.address}</p>
-            <div className="flex flex-wrap gap-2">
-              {detail.waNumber && (
-                <LinkButton
-                  variant="outline"
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">Pelanggan</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-md font-semibold">{order.customer}</p>
+              <p className="font-mono text-sm font-medium">{detail.phone}</p>
+              <p className="text-sm text-foreground-secondary">{detail.address}</p>
+              <div className="flex flex-wrap gap-2">
+                {detail.waNumber && (
+                  <LinkButton
+                    variant="outline"
+                    size="desktop"
+                    href={`https://wa.me/${detail.waNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`WhatsApp ${order.customer} (membuka tab baru)`}
+                  >
+                    <IconMessage className="size-4.5" />
+                    WhatsApp
+                    <IconExternalLink className="size-4 text-icon-muted" />
+                  </LinkButton>
+                )}
+                <Button
+                  variant="ghost"
                   size="desktop"
-                  href={`https://wa.me/${detail.waNumber}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`WhatsApp ${order.customer} (membuka tab baru)`}
+                  aria-haspopup="dialog"
+                  onPress={() => setDialog('history')}
+                  className="px-2 text-primary"
                 >
-                  <IconMessage className="size-4.5" />
-                  WhatsApp
-                  <IconExternalLink className="size-4 text-icon-muted" />
-                </LinkButton>
-              )}
-              <Button
-                variant="ghost"
-                size="desktop"
-                aria-haspopup="dialog"
-                onPress={() => setDialog('history')}
-                className="px-2 text-primary"
-              >
-                Riwayat pelanggan
-              </Button>
-            </div>
-          </Panel>
-          <Panel title="Bukti foto">
-            <ul className="grid grid-cols-3 gap-2">
-              {detail.proofs.map((proof) => (
-                <li key={proof.label} className="flex flex-col gap-1">
-                  {proof.url ? (
-                    <a href={proof.url} target="_blank" rel="noreferrer" className="block">
-                      <img
-                        src={proof.url}
-                        alt={`Bukti ${proof.label.toLowerCase()}`}
-                        className="aspect-square w-full rounded-md object-cover"
-                      />
-                    </a>
-                  ) : (
-                    <div
-                      className={cn(
-                        'flex aspect-square items-center justify-center rounded-md text-muted-foreground',
-                        proof.time
-                          ? 'stripes [--stripe:8px]'
-                          : 'border border-dashed border-input bg-background'
-                      )}
-                    >
-                      {proof.time ? (
-                        <IconPhoto className="size-5.5" />
-                      ) : (
-                        <IconClock className="size-5.5" />
-                      )}
-                    </div>
-                  )}
-                  <span className="text-caption font-semibold">{proof.label}</span>
-                  <span className="text-2xs text-muted-foreground">
-                    {proof.time
-                      ? proof.url
-                        ? proof.time
-                        : `${proof.time} · dihapus (90 hari)`
-                      : 'belum ada'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Panel>
+                  Riwayat pelanggan
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">Bukti foto</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="grid grid-cols-3 gap-2">
+                {detail.proofs.map((proof) => (
+                  <li key={proof.label} className="flex flex-col gap-1">
+                    {proof.url ? (
+                      <a href={proof.url} target="_blank" rel="noreferrer" className="block">
+                        <img
+                          src={proof.url}
+                          alt={`Bukti ${proof.label.toLowerCase()}`}
+                          className="aspect-square w-full rounded-md object-cover"
+                        />
+                      </a>
+                    ) : (
+                      <div
+                        className={cn(
+                          'flex aspect-square items-center justify-center rounded-md text-muted-foreground',
+                          proof.time
+                            ? 'stripes [--stripe:8px]'
+                            : 'border border-dashed border-input bg-background'
+                        )}
+                      >
+                        {proof.time ? (
+                          <IconPhoto className="size-5.5" />
+                        ) : (
+                          <IconClock className="size-5.5" />
+                        )}
+                      </div>
+                    )}
+                    <span className="text-caption font-semibold">{proof.label}</span>
+                    <span className="text-2xs text-muted-foreground">
+                      {proof.time
+                        ? proof.url
+                          ? proof.time
+                          : `${proof.time} · dihapus (90 hari)`
+                        : 'belum ada'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </div>
       <PaymentFixDialog

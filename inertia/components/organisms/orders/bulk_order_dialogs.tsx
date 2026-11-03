@@ -86,7 +86,6 @@ export function CancelDialog({
   reasons,
   skipped,
   confirmLabel,
-  backLabel = 'Kembali',
   onConfirm,
 }: {
   isOpen: boolean
@@ -96,7 +95,6 @@ export function CancelDialog({
   reasons: string[]
   skipped?: string
   confirmLabel: string
-  backLabel?: string
   onConfirm: (reason: string) => void
 }) {
   const [reason, setReason] = useState<string | null>(null)
@@ -129,7 +127,7 @@ export function CancelDialog({
       {hasError && <FieldError className="text-meta">Pilih alasan.</FieldError>}
       <div className={FOOTER}>
         <DialogClose variant="outline" size="desktop">
-          {backLabel}
+          Kembali
         </DialogClose>
         <Button
           variant="destructive"

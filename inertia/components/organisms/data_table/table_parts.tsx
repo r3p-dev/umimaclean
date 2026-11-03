@@ -138,7 +138,6 @@ export function FilterSummary({ text, onReset }: { text: string; onReset: () => 
   )
 }
 
-export const TABLE_HEAD_ROW =
-  'text-left text-xs leading-none font-semibold tracking-[0.05em] text-muted-foreground uppercase'
+export const TABLE_HEAD_ROW = 'text-xs leading-none tracking-[0.05em] text-muted-foreground'
 
 export const CHECK_CELL = 'w-13 py-0.5 pr-0 pl-2 first:pl-2'

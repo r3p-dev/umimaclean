@@ -16,7 +16,6 @@ import {
 } from '~/components/ui/table'
 import ToneBadge from '~/components/atoms/tone_badge'
 import AdminPageHeader from '~/components/organisms/admin_page_header'
-import { TABLE_HEAD_ROW } from '~/components/organisms/data_table/table_parts'
 import SettingsTabs from '~/components/organisms/settings/settings_tabs'
 import {
   DeactivateStaffDialog,
@@ -136,7 +135,7 @@ export default function AdminStaffSettings({
         <CardContent data-bleed>
           <Table className="max-sm:hidden">
             <TableHeader>
-              <tr className={TABLE_HEAD_ROW}>
+              <tr>
                 <TableHead className="px-4.5">Staf</TableHead>
                 <TableHead>Peran</TableHead>
                 <TableHead>Status</TableHead>

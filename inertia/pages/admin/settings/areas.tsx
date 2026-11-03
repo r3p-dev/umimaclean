@@ -6,7 +6,6 @@ import { Field, FieldDescription, FieldLabel } from '~/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/input_group'
 import { Switch } from '~/components/ui/switch'
 import AdminPageHeader from '~/components/organisms/admin_page_header'
-import SettingsPanel from '~/components/organisms/settings/settings_panel'
 import SettingsTabs from '~/components/organisms/settings/settings_tabs'
 import AdminLayout from '~/components/templates/admin_layout'
 import {
@@ -90,51 +89,56 @@ export default function AdminServiceAreas({
             </p>
           </CardContent>
         </Card>
-        <SettingsPanel title="Cari kecamatan">
-          <Field>
-            <FieldLabel htmlFor="area-search">Nama kecamatan atau kota</FieldLabel>
-            <InputGroup className="h-input">
-              <InputGroupInput
-                id="area-search"
-                type="search"
-                autoComplete="off"
-                placeholder="mis. Cileunyi atau Cimahi"
-                maxLength={AREA_QUERY_MAX}
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-              <InputGroupAddon>
-                <IconSearch />
-              </InputGroupAddon>
-            </InputGroup>
-            <FieldDescription className="text-caption">{BOUNDARY_CREDIT}</FieldDescription>
-          </Field>
-          {q && results.length === 0 && (
-            <p role="status" className="text-note text-muted-foreground">
-              Tidak ada kecamatan yang cocok dengan “{q}”.
-            </p>
-          )}
-          {results.length > 0 && (
-            <ul
-              aria-label="Hasil pencarian"
-              className="divide-y divide-border border-t border-border"
-            >
-              {results.map((area) => (
-                <li key={area.id} className="flex min-h-11 items-center gap-2.5 py-2">
-                  <span className="flex flex-1 flex-col gap-0.5">
-                    <span className="text-sm font-medium">Kec. {area.name}</span>
-                    <span className="text-caption text-muted-foreground">{area.city}</span>
-                  </span>
-                  <Switch
-                    isSelected={area.isActive}
-                    onChange={(isActive) => setServiceAreaActive(area.id, isActive)}
-                    aria-label={`Area layanan Kec. ${area.name}, ${area.city}`}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </SettingsPanel>
+        <Card>
+          <CardHeader>
+            <CardTitle as="h2">Cari kecamatan</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Field>
+              <FieldLabel htmlFor="area-search">Nama kecamatan atau kota</FieldLabel>
+              <InputGroup className="h-input">
+                <InputGroupInput
+                  id="area-search"
+                  type="search"
+                  autoComplete="off"
+                  placeholder="mis. Cileunyi atau Cimahi"
+                  maxLength={AREA_QUERY_MAX}
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+                <InputGroupAddon>
+                  <IconSearch />
+                </InputGroupAddon>
+              </InputGroup>
+              <FieldDescription className="text-caption">{BOUNDARY_CREDIT}</FieldDescription>
+            </Field>
+            {q && results.length === 0 && (
+              <p role="status" className="text-note text-muted-foreground">
+                Tidak ada kecamatan yang cocok dengan “{q}”.
+              </p>
+            )}
+            {results.length > 0 && (
+              <ul
+                aria-label="Hasil pencarian"
+                className="divide-y divide-border border-t border-border"
+              >
+                {results.map((area) => (
+                  <li key={area.id} className="flex min-h-11 items-center gap-2.5 py-2">
+                    <span className="flex flex-1 flex-col gap-0.5">
+                      <span className="text-sm font-medium">Kec. {area.name}</span>
+                      <span className="text-caption text-muted-foreground">{area.city}</span>
+                    </span>
+                    <Switch
+                      isSelected={area.isActive}
+                      onChange={(isActive) => setServiceAreaActive(area.id, isActive)}
+                      aria-label={`Area layanan Kec. ${area.name}, ${area.city}`}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   )

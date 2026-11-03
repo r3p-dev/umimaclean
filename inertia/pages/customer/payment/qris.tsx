@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Head, router } from '@inertiajs/react'
-import { IconAlertCircle } from '@tabler/icons-react'
+import { IconAlertCircle, IconCheck } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import BackLink from '~/components/molecules/back_link'
 import FlowHeader from '~/components/organisms/flow_header'
-import PaymentSuccess from '~/components/organisms/payment/payment_success'
 import QrisPanel from '~/components/organisms/payment/qris_panel'
 import FlowLayout from '~/components/templates/flow_layout'
 import { Alert } from '~/components/ui/alert'
+import { LinkButton } from '~/components/ui/button'
 import { useCountdown } from '~/lib/shared/countdown'
 import { formatRupiah } from '~/lib/shared/format'
 import { useLiveReload } from '~/lib/shared/live'
@@ -66,12 +66,36 @@ export default function PaymentQris({
       <FlowHeader title="Bayar dengan QRIS" showLogo={false} />
       <h1 className="sr-only">Bayar dengan QRIS · {order.number}</h1>
       {isPaid(order) ? (
-        <PaymentSuccess
-          id={order.id}
-          number={order.number}
-          total={total}
-          paidOn={order.paidOn ?? 'Baru saja'}
-        />
+        <div className="mx-auto flex max-w-130 flex-col items-center gap-3 px-5 pt-10 pb-7 text-center">
+          <span className="grid size-16 place-items-center rounded-full bg-success text-success-foreground">
+            <IconCheck className="size-9" />
+          </span>
+          <h1 className="mt-1.5 text-2xl leading-[1.2] font-bold">Pembayaran berhasil</h1>
+          <p className="text-[15px] leading-normal text-foreground-secondary">
+            {total} diterima. Barang Anda masuk antrean pencucian.
+          </p>
+          <dl className="mt-2.5 self-stretch rounded-lg border border-border px-4 text-left text-sm leading-[1.4]">
+            <div className="flex items-baseline justify-between gap-4 border-b border-border py-2.75 last:border-b-0">
+              <dt className="text-muted-foreground">Metode</dt>
+              <dd className="text-right font-semibold">QRIS</dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-4 border-b border-border py-2.75 last:border-b-0">
+              <dt className="text-muted-foreground">Waktu</dt>
+              <dd className="text-right font-semibold">{order.paidOn ?? 'Baru saja'}</dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-4 border-b border-border py-2.75 last:border-b-0">
+              <dt className="text-muted-foreground">No. pesanan</dt>
+              <dd className="text-right font-mono text-[13.5px] font-semibold">{order.number}</dd>
+            </div>
+          </dl>
+          <LinkButton
+            size="cta"
+            className="mt-2 self-stretch"
+            href={urlFor('customer.orders.show', { id: order.id })}
+          >
+            Lihat Status Pesanan
+          </LinkButton>
+        </div>
       ) : !isAvailable || !isPayable ? (
         <div className="mx-auto box-content flex max-w-130 flex-col gap-4 px-5 pt-8 pb-8">
           <Alert variant="attention">

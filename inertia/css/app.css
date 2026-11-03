@@ -111,7 +111,7 @@
   --success-on-inverse: oklch(0.8 0.12 155);
   --success-dot: var(--umima-green-500);
 
-  --info: var(--umima-cobalt-50);
+  --info: var(--accent);
   --info-foreground: var(--umima-cobalt-650);
 
   --surface-inverse: var(--umima-ink-900);

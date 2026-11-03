@@ -11,13 +11,11 @@ import {
 } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
-import { FieldDescription, FieldError } from '~/components/ui/field'
+import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
 import { Switch } from '~/components/ui/switch'
 import ChoicePills from '~/components/molecules/choice_pills'
 import AdminPageHeader from '~/components/organisms/admin_page_header'
-import SettingsPanel from '~/components/organisms/settings/settings_panel'
 import SettingsTabs from '~/components/organisms/settings/settings_tabs'
 import AdminLayout from '~/components/templates/admin_layout'
 import { THRESHOLDS } from '~/lib/customers/segments'
@@ -35,43 +33,6 @@ const PAY_ICONS: Record<StorePayKey, ComponentType<SVGProps<SVGSVGElement>>> = {
   edc: IconCreditCard,
 }
 
-function TextField({
-  label,
-  value,
-  onChange,
-  hint,
-  type = 'text',
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  hint?: string
-  type?: 'text' | 'tel'
-}) {
-  const id = useId()
-  return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <Label htmlFor={id} className="text-note">
-        {label}
-      </Label>
-      <Input
-        id={id}
-        type={type}
-        autoComplete="off"
-        value={value}
-        aria-describedby={hint ? `${id}-hint` : undefined}
-        onChange={(event) => onChange(event.target.value)}
-        className="px-3"
-      />
-      {hint && (
-        <FieldDescription id={`${id}-hint`} className="text-caption">
-          {hint}
-        </FieldDescription>
-      )}
-    </div>
-  )
-}
-
 export default function AdminStoreSettings({
   settings: saved,
   isQrisAvailable,
@@ -80,6 +41,10 @@ export default function AdminStoreSettings({
   isQrisAvailable: boolean
 }) {
   const [draft, setDraft] = useState<StoreSettings>(saved)
+  const nameId = useId()
+  const whatsappId = useId()
+  const addressId = useId()
+  const hoursId = useId()
   const [isSaving, setSaving] = useState(false)
   const [showPayWarning, setPayWarning] = useState(false)
   const update = (patch: Partial<StoreSettings>) =>
@@ -122,32 +87,71 @@ export default function AdminStoreSettings({
       <SettingsTabs active="store" />
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-4">
-          <SettingsPanel title="Profil toko">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <TextField
-                label="Nama toko"
-                value={draft.name}
-                onChange={(name) => update({ name })}
-              />
-              <TextField
-                label="WhatsApp bisnis"
-                type="tel"
-                value={draft.whatsapp}
-                onChange={(whatsapp) => update({ whatsapp })}
-              />
-              <TextField
-                label="Alamat toko"
-                value={draft.address}
-                onChange={(address) => update({ address })}
-              />
-              <TextField
-                label="Jam buka"
-                value={draft.hours}
-                onChange={(hours) => update({ hours })}
-                hint="Ditampilkan di struk dan pesan WhatsApp."
-              />
-            </div>
-          </SettingsPanel>
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">Profil toko</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field className="min-w-0 gap-1.5">
+                  <FieldLabel htmlFor={nameId} className="text-note">
+                    Nama toko
+                  </FieldLabel>
+                  <Input
+                    id={nameId}
+                    type="text"
+                    autoComplete="off"
+                    value={draft.name}
+                    onChange={(event) => update({ name: event.target.value })}
+                    className="px-3"
+                  />
+                </Field>
+                <Field className="min-w-0 gap-1.5">
+                  <FieldLabel htmlFor={whatsappId} className="text-note">
+                    WhatsApp bisnis
+                  </FieldLabel>
+                  <Input
+                    id={whatsappId}
+                    type="tel"
+                    autoComplete="off"
+                    value={draft.whatsapp}
+                    onChange={(event) => update({ whatsapp: event.target.value })}
+                    className="px-3"
+                  />
+                </Field>
+                <Field className="min-w-0 gap-1.5">
+                  <FieldLabel htmlFor={addressId} className="text-note">
+                    Alamat toko
+                  </FieldLabel>
+                  <Input
+                    id={addressId}
+                    type="text"
+                    autoComplete="off"
+                    value={draft.address}
+                    onChange={(event) => update({ address: event.target.value })}
+                    className="px-3"
+                  />
+                </Field>
+                <Field className="min-w-0 gap-1.5">
+                  <FieldLabel htmlFor={hoursId} className="text-note">
+                    Jam buka
+                  </FieldLabel>
+                  <Input
+                    id={hoursId}
+                    type="text"
+                    autoComplete="off"
+                    value={draft.hours}
+                    aria-describedby={`${hoursId}-hint`}
+                    onChange={(event) => update({ hours: event.target.value })}
+                    className="px-3"
+                  />
+                  <FieldDescription id={`${hoursId}-hint`} className="text-caption">
+                    Ditampilkan di struk dan pesan WhatsApp.
+                  </FieldDescription>
+                </Field>
+              </div>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader className="border-b">
               <CardTitle as="h2">Slot penjemputan</CardTitle>
@@ -221,55 +225,65 @@ export default function AdminStoreSettings({
           </Card>
         </div>
         <div className="flex min-w-0 flex-col gap-4">
-          <SettingsPanel title="Pembayaran">
-            <div className="flex items-center gap-2.5 rounded-md bg-accent p-3">
-              <IconQrcode className="size-6 shrink-0 text-info-foreground" />
-              <span className="flex-1">
-                <span className="block text-sm font-semibold">
-                  {isQrisAvailable
-                    ? 'QRIS online · Midtrans terhubung'
-                    : 'QRIS online · belum aktif'}
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">Pembayaran</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2.5 rounded-md bg-accent p-3">
+                <IconQrcode className="size-6 shrink-0 text-info-foreground" />
+                <span className="flex-1">
+                  <span className="block text-sm font-semibold">
+                    {isQrisAvailable
+                      ? 'QRIS online · Midtrans terhubung'
+                      : 'QRIS online · belum aktif'}
+                  </span>
+                  <span className="block text-caption text-foreground-secondary">
+                    {isQrisAvailable
+                      ? 'Satu-satunya metode untuk pesanan online'
+                      : 'Isi MIDTRANS_SERVER_KEY di server agar pelanggan bisa membayar QRIS'}
+                  </span>
                 </span>
-                <span className="block text-caption text-foreground-secondary">
-                  {isQrisAvailable
-                    ? 'Satu-satunya metode untuk pesanan online'
-                    : 'Isi MIDTRANS_SERVER_KEY di server agar pelanggan bisa membayar QRIS'}
-                </span>
-              </span>
-            </div>
-            <h3 className="text-meta leading-none font-semibold tracking-wider text-muted-foreground uppercase">
-              Metode di toko
-            </h3>
-            {STORE_PAY_METHODS.map((method) => {
-              const Icon = PAY_ICONS[method.key]
-              return (
-                <div key={method.key} className="flex min-h-11 items-center gap-2.5">
-                  <Icon className="size-5 text-foreground-secondary" />
-                  <span className="flex-1 text-sm font-medium">{method.label}</span>
-                  <Switch
-                    isSelected={draft.payments[method.key]}
-                    onChange={() => togglePay(method.key)}
-                    aria-label={`Aktifkan ${method.label}`}
-                  />
-                </div>
-              )
-            })}
-            {showPayWarning && (
-              <FieldError className="text-meta">Minimal satu metode toko harus aktif.</FieldError>
-            )}
-          </SettingsPanel>
-          <SettingsPanel title="Pelanggan tidak aktif">
-            <p className="text-note text-foreground-secondary">
-              Batas bawaan yang dipakai di halaman Pelanggan. Owner tetap bisa mengubahnya sementara
-              di sana.
-            </p>
-            <ChoicePills
-              label="Batas hari"
-              value={draft.inactiveDays}
-              onChange={(inactiveDays) => update({ inactiveDays })}
-              options={THRESHOLDS.map((days) => ({ value: days, label: `${days} hari` }))}
-            />
-          </SettingsPanel>
+              </div>
+              <h3 className="text-meta leading-none font-semibold tracking-wider text-muted-foreground uppercase">
+                Metode di toko
+              </h3>
+              {STORE_PAY_METHODS.map((method) => {
+                const Icon = PAY_ICONS[method.key]
+                return (
+                  <div key={method.key} className="flex min-h-11 items-center gap-2.5">
+                    <Icon className="size-5 text-foreground-secondary" />
+                    <span className="flex-1 text-sm font-medium">{method.label}</span>
+                    <Switch
+                      isSelected={draft.payments[method.key]}
+                      onChange={() => togglePay(method.key)}
+                      aria-label={`Aktifkan ${method.label}`}
+                    />
+                  </div>
+                )
+              })}
+              {showPayWarning && (
+                <FieldError className="text-meta">Minimal satu metode toko harus aktif.</FieldError>
+              )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">Pelanggan tidak aktif</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-note text-foreground-secondary">
+                Batas bawaan yang dipakai di halaman Pelanggan. Owner tetap bisa mengubahnya
+                sementara di sana.
+              </p>
+              <ChoicePills
+                label="Batas hari"
+                value={draft.inactiveDays}
+                onChange={(inactiveDays) => update({ inactiveDays })}
+                options={THRESHOLDS.map((days) => ({ value: days, label: `${days} hari` }))}
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </AdminLayout>

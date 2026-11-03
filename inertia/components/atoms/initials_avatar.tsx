@@ -16,12 +16,10 @@ export default function InitialsAvatar({
   initials,
   size = 'sm',
   tone = 'accent',
-  className,
 }: {
   initials: string
   size?: keyof typeof SIZES
   tone?: keyof typeof TONES
-  className?: string
 }) {
   return (
     <span
@@ -29,8 +27,7 @@ export default function InitialsAvatar({
       className={cn(
         'inline-flex shrink-0 items-center justify-center rounded-full leading-none',
         SIZES[size],
-        TONES[tone],
-        className
+        TONES[tone]
       )}
     >
       {initials}

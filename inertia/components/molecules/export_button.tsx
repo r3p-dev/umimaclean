@@ -3,20 +3,17 @@ import { toast } from 'sonner'
 import { IconDownload, IconLoader2 } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
 import { exportWorkbook, type ExportSpec } from '~/lib/export/excel'
-import { cn } from '~/lib/shared/utils'
 
 export default function ExportButton({
   build,
   ariaLabel,
   selectedCount = 0,
   size = 'desktop',
-  className,
 }: {
   build: () => ExportSpec
   ariaLabel: string
   selectedCount?: number
   size?: 'desktop' | 'compact'
-  className?: string
 }) {
   const [isBusy, setBusy] = useState(false)
 
@@ -45,7 +42,7 @@ export default function ExportButton({
       aria-busy={isBusy}
       aria-label={ariaLabel}
       title={ariaLabel}
-      className={cn('gap-1.5 px-3.5 text-sm', className)}
+      className="gap-1.5 px-3.5 text-sm"
     >
       {isBusy ? (
         <IconLoader2 className="size-4.5 animate-spin" />

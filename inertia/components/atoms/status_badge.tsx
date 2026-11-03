@@ -10,11 +10,9 @@ const SIZES = {
 export default function StatusBadge({
   status,
   size = 'default',
-  className,
 }: {
   status: OrderStatus
   size?: keyof typeof SIZES
-  className?: string
 }) {
   const tone = TONE_CLASSES[toneOfStatus(status)]
 
@@ -24,8 +22,7 @@ export default function StatusBadge({
         'inline-flex w-fit items-center gap-1.5 rounded-pill leading-none font-semibold whitespace-nowrap',
         SIZES[size],
         tone.surface,
-        tone.ink,
-        className
+        tone.ink
       )}
     >
       <span aria-hidden="true" className={cn('size-[7px] rounded-full', tone.dot)} />

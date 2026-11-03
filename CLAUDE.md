@@ -74,6 +74,7 @@ Stack: AdonisJS 7 + Inertia + React 19, PostgreSQL + PostGIS, Lucid, VineJS, Bou
 
 - Read `docs/design-system.md` (git-ignored, local) before writing UI; artboards are in `docs/design/`.
 - Tokens only in `inertia/css/app.css`; use token utilities, no raw colors. New scale tokens (`--text-*`, `--radius-*`, `--shadow-*`, `--spacing-*`) also go in `inertia/lib/shared/utils.ts`.
+- Muted text: `text-foreground-secondary` for sentences meant to be read (descriptions, intro paragraphs), `text-muted-foreground` for metadata (dates, counts, captions, hints). `CardDescription` defaults to the metadata style; page-level descriptions use `text-foreground-secondary`.
 - Components: shadcn primitives in `inertia/components/ui/`, the rest in `inertia/components/{atoms,molecules,organisms,templates}`. Pages own state and navigation; logic lives in `inertia/lib/<feature>/`, never in components.
 - Pages by role: `inertia/pages/{auth,customer,staff,admin}/` (landing `pages/home.tsx`). Routes per role in `start/routes/{auth,customer,staff,admin}.ts`; shared ones in `start/routes.ts`. Run `node ace codegen` after changing routes.
 - Layouts: `CustomerLayout`, `AccountLayout` (+ `ProfileShell`), `AuthLayout`, `FlowLayout`, `StaffLayout` + `StaffTopBar`, `AdminLayout` + `AdminPageHeader`; owner tables use `useDataTable`.

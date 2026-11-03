@@ -5,28 +5,12 @@ import { cn } from '~/lib/shared/utils'
 export default function BackLink({
   href,
   label = 'Kembali',
-  variant = 'inline',
   className,
 }: {
   href: string
   label?: string
-  variant?: 'inline' | 'footer'
   className?: string
 }) {
-  if (variant === 'footer') {
-    return (
-      <LinkButton
-        variant="outline"
-        size="cta"
-        className={cn('shrink-0 max-sm:w-cta max-sm:px-0', className)}
-        href={href}
-      >
-        <IconArrowLeft className="size-5.5" />
-        <span className="max-sm:sr-only">{label}</span>
-      </LinkButton>
-    )
-  }
-
   return (
     <LinkButton
       variant="ghost"

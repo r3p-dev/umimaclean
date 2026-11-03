@@ -1,6 +1,5 @@
 import { useId } from 'react'
 import { IconAlertCircle, IconTrash } from '@tabler/icons-react'
-import MediaPlaceholder from '~/components/atoms/media_placeholder'
 import { Button } from '~/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
@@ -143,11 +142,18 @@ export default function InspectionItemCard({
               />
             </a>
           ) : (
-            <MediaPlaceholder
-              label="belum ada foto"
-              size="sm"
-              className="box-border aspect-square p-1.25"
-            />
+            <div
+              role="img"
+              aria-label="belum ada foto"
+              className="stripes box-border flex aspect-square items-end rounded-md p-1.25 [--stripe:8px]"
+            >
+              <span
+                aria-hidden="true"
+                className="font-mono text-[9.5px] leading-[1.2] font-medium text-foreground-secondary"
+              >
+                belum ada foto
+              </span>
+            </div>
           )}
           <div className="flex min-w-0 flex-col gap-1.5">
             <label htmlFor={nameId} className="text-note font-semibold">

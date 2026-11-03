@@ -1,10 +1,16 @@
 import { useMemo, useState } from 'react'
 import { Head, router } from '@inertiajs/react'
 import { toast } from 'sonner'
-import { IconInfoCircle, IconMapPinPlus } from '@tabler/icons-react'
+import {
+  IconBackpack,
+  IconHelmet,
+  IconInfoCircle,
+  IconMapPinPlus,
+  IconShoe,
+} from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import AddressSheet from '~/components/organisms/order/address_sheet'
-import ItemCounterList from '~/components/organisms/order/item_counter_list'
+import QuantityStepper from '~/components/molecules/quantity_stepper'
 import OrderSummaryCard from '~/components/organisms/order/order_summary_card'
 import PickupAddressCard from '~/components/organisms/order/pickup_address_card'
 import PickupSchedulePicker from '~/components/organisms/order/pickup_schedule_picker'
@@ -31,6 +37,12 @@ import {
   type Availability,
   type PickupDay,
 } from '~/lib/order/schedule'
+
+const ITEMS = [
+  { key: 'sepatu', label: 'Sepatu', icon: IconShoe },
+  { key: 'tas', label: 'Tas', icon: IconBackpack },
+  { key: 'helm', label: 'Helm', icon: IconHelmet },
+] as const
 
 export default function OrderCreate({
   addresses,
@@ -153,7 +165,17 @@ export default function OrderCreate({
                     <CardDescription>Perkiraan saja. Kurir mencatat jumlah pasti.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ItemCounterList items={draft.items} onChange={(items) => update({ items })} />
+                    <div>
+                      {ITEMS.map(({ key, label, icon }) => (
+                        <QuantityStepper
+                          key={key}
+                          label={label}
+                          icon={icon}
+                          value={draft.items[key]}
+                          onChange={(value) => update({ items: { ...draft.items, [key]: value } })}
+                        />
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
                 <Alert variant="info" role="note" className="p-3.5 text-accent-foreground">

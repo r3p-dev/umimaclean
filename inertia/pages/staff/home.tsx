@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
 import {
   IconArchive,
   IconArrowDownLeft,
@@ -12,7 +13,7 @@ import { urlFor } from '~/client'
 import { LinkButton } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/card'
 import Overline from '~/components/atoms/overline'
-import HomeTile from '~/components/molecules/home_tile'
+import { TONE_CLASSES } from '~/components/atoms/status_tone'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
 import QueueMap from '~/components/organisms/tasks/queue_map'
 import StaffLayout from '~/components/templates/staff_layout'
@@ -35,6 +36,30 @@ export default function StaffHome({ next }: { next: NextTask | null }) {
   useLiveReload('staff/queues', ['next', 'staffCounts'])
   const today = new Date()
 
+  const tiles = [
+    {
+      href: urlFor('staff.pickups'),
+      icon: IconArrowUpRight,
+      tone: 'jemput',
+      count: counts.jemput,
+      label: 'Jemput',
+    },
+    {
+      href: urlFor('staff.process'),
+      icon: IconWashMachine,
+      tone: 'cuci',
+      count: counts.proses,
+      label: 'Proses',
+    },
+    {
+      href: urlFor('staff.deliveries'),
+      icon: IconArrowDownLeft,
+      tone: 'antar',
+      count: counts.antar,
+      label: 'Antar',
+    },
+  ] as const
+
   return (
     <StaffLayout active="beranda">
       <Head title="Beranda" />
@@ -56,30 +81,26 @@ export default function StaffHome({ next }: { next: NextTask | null }) {
           Tugas berikutnya
         </Overline>
         <div className="grid grid-cols-3 gap-2.5">
-          <HomeTile
-            href={urlFor('staff.pickups')}
-            icon={IconArrowUpRight}
-            tone="jemput"
-            count={counts.jemput}
-            label="Jemput"
-            sub="pesanan"
-          />
-          <HomeTile
-            href={urlFor('staff.process')}
-            icon={IconWashMachine}
-            tone="cuci"
-            count={counts.proses}
-            label="Proses"
-            sub="pesanan"
-          />
-          <HomeTile
-            href={urlFor('staff.deliveries')}
-            icon={IconArrowDownLeft}
-            tone="antar"
-            count={counts.antar}
-            label="Antar"
-            sub="pesanan"
-          />
+          {tiles.map(({ href, icon: Icon, tone, count, label }) => (
+            <Link
+              key={label}
+              href={href}
+              className="flex min-w-0 flex-col gap-2 rounded-lg border border-border bg-card p-3.5 text-foreground no-underline hover:border-primary hover:bg-accent hover:text-foreground hover:no-underline"
+            >
+              <span
+                className={cn(
+                  'flex size-9 items-center justify-center rounded-md',
+                  TONE_CLASSES[tone].surface,
+                  TONE_CLASSES[tone].ink
+                )}
+              >
+                <Icon className="size-5" />
+              </span>
+              <span className="text-[26px] leading-none font-bold">{count}</span>
+              <span className="text-sm leading-[1.2] font-semibold">{label}</span>
+              <span className="text-caption leading-[1.3] text-muted-foreground">pesanan</span>
+            </Link>
+          ))}
         </div>
 
         <section aria-labelledby="active-task" className="flex flex-col gap-2.5">

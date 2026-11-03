@@ -18,12 +18,7 @@ import ExportButton from '~/components/molecules/export_button'
 import MetricCard from '~/components/molecules/metric_card'
 import TablePagination from '~/components/molecules/table_pagination'
 import AdminPageHeader from '~/components/organisms/admin_page_header'
-import {
-  BulkBar,
-  CHECK_CELL,
-  SelectAllRow,
-  TABLE_HEAD_ROW,
-} from '~/components/organisms/data_table/table_parts'
+import { BulkBar, CHECK_CELL, SelectAllRow } from '~/components/organisms/data_table/table_parts'
 import { CostFormDialog, DeleteCostDialog } from '~/components/organisms/reports/cost_dialogs'
 import PaymentMixCard from '~/components/organisms/reports/payment_mix_card'
 import PeriodTabs from '~/components/organisms/reports/period_tabs'
@@ -275,7 +270,7 @@ export default function AdminReports({ report, costs }: { report: ReportData; co
                 )}
                 <Table className="max-sm:hidden">
                   <TableHeader>
-                    <tr className={TABLE_HEAD_ROW}>
+                    <tr>
                       <TableHead className={CHECK_CELL}>
                         <Checkbox
                           isSelected={table.allState === true}
