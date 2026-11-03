@@ -188,7 +188,7 @@ export function revenueAxis(days: Day[]) {
     value >= 1000000
       ? `${(value / 1000000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} jt`
       : value
-        ? `${value / 1000} rb`
+        ? `${(value / 1000).toLocaleString('id-ID', { maximumFractionDigits: 0 })} rb`
         : '0'
   const count = days.length
   const xIndexes =

@@ -11,7 +11,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        'group/card flex flex-col gap-3.5 overflow-hidden rounded-lg border border-border bg-card py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-lg *:[img:last-child]:rounded-b-lg',
+        'group/card flex flex-col gap-3.5 overflow-hidden rounded-lg border border-border bg-card py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 has-[>[data-bleed]:first-child]:pt-0 has-[>[data-bleed]:last-child]:pb-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-lg *:[img:last-child]:rounded-b-lg',
         className
       )}
       {...props}
@@ -61,7 +61,7 @@ function CardAction({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="card-action"
       className={cn(
-        'col-start-2 row-span-2 row-start-1 -my-3 flex min-h-icon-btn items-center self-start justify-self-end',
+        'col-start-2 row-span-2 row-start-1 -my-3 flex min-h-icon-btn items-center self-start justify-self-end group-data-[size=sm]/card:-my-2.5',
         className
       )}
       {...props}
@@ -69,11 +69,22 @@ function CardAction({ className, ...props }: ComponentProps<'div'>) {
   )
 }
 
+// <CardContent data-bleed> holds edge-to-edge content (tables, maps, camera, full-width rows):
+// - it drops its side padding and inner gap; rows inside pad themselves with px-(--card-spacing).
+// - Card drops its top padding when a bleed block is its first child and its bottom padding
+//   when it is the last, so the content touches the rounded border (overflow-hidden clips it).
+// - directly after <CardHeader className="border-b"> it cancels the slot gap, so the content
+//   starts at the header line; after a header without a border the normal gap stays.
+// - the Table primitive pads its first and last cells with --card-spacing, so columns line up
+//   with the card title without extra classes.
 function CardContent({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-content"
-      className={cn('flex flex-col gap-3.5 px-(--card-spacing)', className)}
+      className={cn(
+        'flex flex-col gap-3.5 px-(--card-spacing) data-bleed:gap-0 data-bleed:px-0 data-bleed:[.border-b+&]:-mt-3.5',
+        className
+      )}
       {...props}
     />
   )

@@ -4,6 +4,7 @@ import { RoleLabel } from '@enums/role_enum'
 import { toast } from 'sonner'
 import { IconPencil, IconUserPlus } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
+import { Card, CardContent } from '~/components/ui/card'
 import InitialsAvatar from '~/components/atoms/initials_avatar'
 import {
   Table,
@@ -131,79 +132,81 @@ export default function AdminStaffSettings({
         }
       />
       <SettingsTabs active="staff" />
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        <Table className="max-sm:hidden">
-          <TableHeader>
-            <tr className={TABLE_HEAD_ROW}>
-              <TableHead className="px-4.5 first:pl-4.5">Staf</TableHead>
-              <TableHead>Peran</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="max-lg:hidden">Terakhir aktif</TableHead>
-              <TableHead className="pr-4.5 last:pr-4.5">
-                <span className="sr-only">Aksi</span>
-              </TableHead>
-            </tr>
-          </TableHeader>
-          <TableBody>
-            {accounts.map((account) => (
-              <TableRow key={account.id} className={cn(!account.active && 'bg-background')}>
-                <TableCell className="px-4.5 py-3 first:pl-4.5">
-                  <div className="flex items-center gap-2.5">
-                    <InitialsAvatar initials={initialsOf(account.name)} />
-                    <span>
-                      <span className="block font-semibold">{account.name}</span>
-                      <span className="block font-mono text-caption leading-[1.3] text-muted-foreground">
-                        {account.phone}
+      <Card>
+        <CardContent data-bleed>
+          <Table className="max-sm:hidden">
+            <TableHeader>
+              <tr className={TABLE_HEAD_ROW}>
+                <TableHead className="px-4.5">Staf</TableHead>
+                <TableHead>Peran</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="max-lg:hidden">Terakhir aktif</TableHead>
+                <TableHead>
+                  <span className="sr-only">Aksi</span>
+                </TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {accounts.map((account) => (
+                <TableRow key={account.id} className={cn(!account.active && 'bg-background')}>
+                  <TableCell className="px-4.5 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <InitialsAvatar initials={initialsOf(account.name)} />
+                      <span>
+                        <span className="block font-semibold">{account.name}</span>
+                        <span className="block font-mono text-caption leading-[1.3] text-muted-foreground">
+                          {account.phone}
+                        </span>
                       </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-3">{RoleLabel[account.role]}</TableCell>
+                  <TableCell className="py-3">
+                    <ToneBadge tone={account.active ? 'ok' : 'off'}>
+                      {account.active ? 'Aktif' : 'Nonaktif'}
+                    </ToneBadge>
+                  </TableCell>
+                  <TableCell className="py-3 text-foreground-secondary max-lg:hidden">
+                    {account.lastSeen}
+                  </TableCell>
+                  <TableCell className="py-3">{actions(account)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <ul className="sm:hidden">
+            {accounts.map((account) => (
+              <li
+                key={account.id}
+                className={cn(
+                  'flex flex-col gap-2 border-t border-border px-(--card-spacing) py-3.5 first:border-t-0',
+                  !account.active && 'bg-background'
+                )}
+              >
+                <div className="flex items-center gap-2.5">
+                  <InitialsAvatar initials={initialsOf(account.name)} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] leading-[1.3] font-semibold">
+                      {account.name}
                     </span>
-                  </div>
-                </TableCell>
-                <TableCell className="py-3">{RoleLabel[account.role]}</TableCell>
-                <TableCell className="py-3">
+                    <span className="block text-meta leading-[1.3] text-muted-foreground">
+                      {RoleLabel[account.role]}
+                    </span>
+                  </span>
                   <ToneBadge tone={account.active ? 'ok' : 'off'}>
                     {account.active ? 'Aktif' : 'Nonaktif'}
                   </ToneBadge>
-                </TableCell>
-                <TableCell className="py-3 text-foreground-secondary max-lg:hidden">
-                  {account.lastSeen}
-                </TableCell>
-                <TableCell className="py-3 pr-4.5 last:pr-4.5">{actions(account)}</TableCell>
-              </TableRow>
+                </div>
+                {actions(account)}
+              </li>
             ))}
-          </TableBody>
-        </Table>
-        <ul className="sm:hidden">
-          {accounts.map((account) => (
-            <li
-              key={account.id}
-              className={cn(
-                'flex flex-col gap-2 border-t border-border px-4 py-3.5 first:border-t-0',
-                !account.active && 'bg-background'
-              )}
-            >
-              <div className="flex items-center gap-2.5">
-                <InitialsAvatar initials={initialsOf(account.name)} />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] leading-[1.3] font-semibold">
-                    {account.name}
-                  </span>
-                  <span className="block text-meta leading-[1.3] text-muted-foreground">
-                    {RoleLabel[account.role]}
-                  </span>
-                </span>
-                <ToneBadge tone={account.active ? 'ok' : 'off'}>
-                  {account.active ? 'Aktif' : 'Nonaktif'}
-                </ToneBadge>
-              </div>
-              {actions(account)}
-            </li>
-          ))}
-        </ul>
-        <p className="border-t border-border px-4.5 py-3 text-meta leading-[1.4] text-muted-foreground">
-          {active} aktif · {accounts.length} akun · akun nonaktif tidak bisa masuk, riwayatnya tetap
-          tersimpan
-        </p>
-      </div>
+          </ul>
+          <p className="border-t border-border px-(--card-spacing) py-3 text-meta leading-[1.4] text-muted-foreground">
+            {active} aktif · {accounts.length} akun · akun nonaktif tidak bisa masuk, riwayatnya
+            tetap tersimpan
+          </p>
+        </CardContent>
+      </Card>
       {dialog?.kind === 'form' && (
         <StaffFormDialog
           isOpen

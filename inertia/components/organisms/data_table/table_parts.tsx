@@ -24,7 +24,7 @@ export function BulkBar({
     <div
       role="group"
       aria-label={label}
-      className="flex flex-wrap items-center gap-2 border-b border-border bg-row-selected py-2.5 pr-3 pl-4"
+      className="flex flex-wrap items-center gap-2 border-b border-border bg-row-selected py-2.5 pr-3 pl-(--card-spacing)"
     >
       <span role="status" className="text-sm leading-[1.2] font-semibold text-accent-foreground">
         {count} dipilih
@@ -56,7 +56,7 @@ export function SelectAllRow({
   onToggle: () => void
 }) {
   return (
-    <div className="flex items-center gap-1 border-b border-border py-0.5 pr-4 pl-1 text-[13.5px] leading-[1.2] font-medium text-foreground-secondary sm:hidden">
+    <div className="flex items-center gap-1 border-b border-border py-0.5 pr-(--card-spacing) pl-2 text-[13.5px] leading-[1.2] font-medium text-foreground-secondary sm:hidden">
       <Checkbox
         isSelected={state === true}
         isIndeterminate={state === 'indeterminate'}
@@ -79,7 +79,7 @@ export function MobileSort({
 }) {
   const id = useId()
   return (
-    <div className="flex items-center gap-2 border-b border-border px-4 py-2 sm:hidden">
+    <div className="flex items-center gap-2 border-b border-border px-(--card-spacing) py-2 sm:hidden">
       <label
         htmlFor={id}
         className="text-[13.5px] leading-none font-medium text-foreground-secondary"

@@ -4,6 +4,7 @@ import { Link } from '@adonisjs/inertia/react'
 import { IconChevronRight } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { LinkButton } from '~/components/ui/button'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import ExportButton from '~/components/molecules/export_button'
 import MetricCard from '~/components/molecules/metric_card'
 import AdminPageHeader from '~/components/organisms/admin_page_header'
@@ -261,43 +262,44 @@ export default function AdminSummary({
                 Definisi bisa diubah.
               </span>
             </Link>
-            <section className="overflow-hidden rounded-lg border border-border bg-card">
-              <div className="flex items-center justify-between border-b border-border px-4.5 py-3.5">
-                <h2 className="text-[15px] leading-none font-semibold">Aktivitas staf terbaru</h2>
-                <LinkButton
-                  variant="link"
-                  className="box-content min-h-11 py-2 text-meta leading-none"
-                  href={urlFor('admin.activity')}
-                >
-                  Lihat semua
-                </LinkButton>
-              </div>
-              <ul>
-                {recent.length === 0 && (
-                  <li className="px-4.5 py-3 text-meta text-muted-foreground">
-                    Belum ada aktivitas tercatat.
-                  </li>
-                )}
-                {recent.map((item) => (
-                  <li
-                    key={item.id}
-                    className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-0.5 border-b border-border px-4.5 py-2.5 last:border-b-0"
-                  >
-                    <span className="text-[13.5px] leading-[1.35] font-medium">
-                      <strong className="font-semibold">{item.staff.split(' ')[0]}</strong>{' '}
-                      {item.action.toLowerCase()}
-                      {item.detail ? ` · ${item.detail}` : ''}
-                    </span>
-                    <span className="font-mono text-xs leading-[1.35] font-medium text-muted-foreground">
-                      {item.time}
-                    </span>
-                    <span className="font-mono text-caption leading-[1.3] text-muted-foreground">
-                      {item.ref}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+            <Card>
+              <CardHeader className="border-b">
+                <CardTitle as="h2">Aktivitas staf terbaru</CardTitle>
+                <CardAction>
+                  <LinkButton variant="link" href={urlFor('admin.activity')}>
+                    Lihat semua
+                  </LinkButton>
+                </CardAction>
+              </CardHeader>
+              <CardContent>
+                {' '}
+                <ul className="divide-y divide-border">
+                  {recent.length === 0 && (
+                    <li className="text-meta text-muted-foreground">
+                      Belum ada aktivitas tercatat.
+                    </li>
+                  )}
+                  {recent.map((item) => (
+                    <li
+                      key={item.id}
+                      className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-0.5 py-3 first:pt-0 last:pb-0"
+                    >
+                      <span className="text-[13.5px] leading-[1.35] font-medium">
+                        <strong className="font-semibold">{item.staff.split(' ')[0]}</strong>{' '}
+                        {item.action.toLowerCase()}
+                        {item.detail ? ` · ${item.detail}` : ''}
+                      </span>
+                      <span className="font-mono text-xs leading-[1.35] font-medium text-muted-foreground">
+                        {item.time}
+                      </span>
+                      <span className="font-mono text-caption leading-[1.3] text-muted-foreground">
+                        {item.ref}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           </div>
         </div>
         <TopServices

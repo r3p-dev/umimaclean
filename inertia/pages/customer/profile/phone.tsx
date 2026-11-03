@@ -7,7 +7,7 @@ import TurnstileWidget from '~/components/molecules/turnstile_widget'
 import ProfileShell from '~/components/organisms/profile/profile_shell'
 import AccountLayout from '~/components/templates/account_layout'
 import { Button } from '~/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '~/components/ui/card'
+import { Card, CardContent, CardFooter } from '~/components/ui/card'
 import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui/field'
 import { useTurnstile } from '~/lib/shared/turnstile'
 import { phoneError } from '~/lib/shared/validation'
@@ -71,13 +71,11 @@ export default function ChangePhone({ currentPhone }: { currentPhone: string }) 
       >
         <form onSubmit={submit} noValidate aria-busy={isBusy} className="mt-4 max-w-120">
           <Card>
-            <CardHeader>
-              <CardDescription>
+            <CardContent>
+              <p className="text-md text-foreground-secondary">
                 Nomor saat ini <span className="font-semibold text-foreground">{currentPhone}</span>
                 . Kami kirim kode verifikasi via WhatsApp ke nomor baru.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+              </p>
               <Field>
                 <FieldLabel htmlFor="new-phone">Nomor WhatsApp baru</FieldLabel>
                 <PhoneInput

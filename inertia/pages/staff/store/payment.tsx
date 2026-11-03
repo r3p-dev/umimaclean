@@ -175,7 +175,7 @@ export default function StorePayment({
       />
       <div className="mx-auto flex w-full max-w-160 flex-col gap-3.5 p-4">
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b">
             <CardTitle as="h2">Tagihan</CardTitle>
           </CardHeader>
           <CardContent>
@@ -192,7 +192,7 @@ export default function StorePayment({
                 </li>
               ))}
             </ul>
-            <div className="flex items-baseline justify-between border-t border-border pt-3">
+            <div className="flex items-baseline justify-between border-t border-border-strong pt-3">
               <span className="text-md leading-none font-semibold">Total</span>
               <span className="text-2xl leading-none font-bold tracking-tight">
                 {formatRupiah(total)}
@@ -224,8 +224,8 @@ export default function StorePayment({
             <CardHeader>
               <CardTitle as="h2" role="status">
                 <span className="flex items-center gap-2.5">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
-                    <IconCheck className="size-6" />
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
+                    <IconCheck className="size-6.5" />
                   </span>
                   Pembayaran lunas
                 </span>

@@ -56,7 +56,7 @@ Stack: AdonisJS 7 + Inertia + React 19, PostgreSQL + PostGIS, Lucid, VineJS, Bou
 
 ## Conventions
 
-- No comments in any file, except the header comment of each migration and of each `database/osm/*` file.
+- No comments in any file, except the header comment of each migration and of each `database/osm/*` file, the `data-bleed` block in `inertia/components/ui/card.tsx` and the gap comment on the welcome CTA card.
 - Validation messages live only in `start/validator.ts`: one generic message per rule plus `fields` labels; add a `field.rule` key only when the generic text would confuse the user. Validators are named `<action><Resource>Validator`.
 - Errors: `throw new Exception('…', { status })` from `@adonisjs/core/exceptions` for HTTP errors (404 etc.); `fieldError(field, message, rule)` from `#validators/shared/field_error` for a business rule shown under a form field. No custom exception classes.
 - Migrations: one `create` per table, never `alter`. Each starts with a header comment explaining the table, non-obvious columns, indexes and constraints.
@@ -81,6 +81,17 @@ Stack: AdonisJS 7 + Inertia + React 19, PostgreSQL + PostGIS, Lucid, VineJS, Bou
 - Maps: Leaflet with the self-hosted PMTiles base map from `inertia/lib/location/base_map.ts` (`addBaseMap`, `MAP_ATTRIBUTION`); no outside tile or map service.
 - Live updates: Transmit channels `orders/:id`, `staff/queues`, `admin/orders` (`start/transmit.ts`); pages call `useLiveReload`.
 - Browser storage only for conveniences: the staff map-app preference and the unsent walk-in draft.
+
+## Card conventions
+
+- Compose `Card` slots directly: `CardHeader` (`CardTitle`, `CardDescription`, `CardAction`), `CardContent`, `CardFooter`. No wrapper components for card layouts.
+- `CardTitle` renders a native heading through `as="h1"`…`"h6"`; never `role="heading"`/`aria-level`. Top-right items (badges, links, buttons) go in `CardAction`.
+- `size="sm"` only for dense or secondary cards (queue rows, filter toolbars).
+- Classes on slots: layout only (direction, alignment, wrap, grid placement, visibility, child widths), type tokens on `CardTitle`/`CardDescription` for page-level cards only, and `border-b`/`border-t` on `CardHeader`/`CardFooter`. No arbitrary values, no spacing overrides; the welcome CTA gap is the single documented exception.
+- Edge-to-edge tables and media: `<CardContent data-bleed>` (see the comment in `inertia/components/ui/card.tsx`).
+- List cards: inset list in `CardContent` (`<ul className="divide-y divide-border">`, rows `py-3 first:pt-0 last:pb-0`); `CardHeader className="border-b"` where a line under the title is wanted. Menus whose rows have full-width hover backgrounds use `data-bleed` instead, with rows padded `px-(--card-spacing)`.
+- `Overline` only for headings outside cards, with the right element through `as`.
+- Cards are border-only, no shadows.
 
 ## Commands
 

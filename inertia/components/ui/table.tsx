@@ -49,7 +49,7 @@ function TableHead({ className, ...props }: ComponentProps<'th'>) {
     <th
       data-slot="table-head"
       className={cn(
-        'px-2 py-3 text-left align-middle text-xs leading-none font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase first:pl-4 last:pr-4',
+        'px-2 py-3 text-left align-middle text-xs leading-none font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase first:pl-(--card-spacing) last:pr-(--card-spacing)',
         className
       )}
       {...props}
@@ -61,7 +61,10 @@ function TableCell({ className, ...props }: ComponentProps<'td'>) {
   return (
     <td
       data-slot="table-cell"
-      className={cn('px-2 py-3.25 align-middle first:pl-4 last:pr-4', className)}
+      className={cn(
+        'px-2 py-3.25 align-middle first:pl-(--card-spacing) last:pr-(--card-spacing)',
+        className
+      )}
       {...props}
     />
   )

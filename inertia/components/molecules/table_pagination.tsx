@@ -21,7 +21,7 @@ export default function TablePagination({
   onSize: (size: number) => void
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border py-2.5 pr-3.5 pl-4.5 text-meta leading-[1.4] text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border py-2.5 pr-(--card-spacing) pl-(--card-spacing) text-meta leading-[1.4] text-muted-foreground">
       <span role="status" className="flex-[1_1_180px]">
         {rangeText}
       </span>

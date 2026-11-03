@@ -218,205 +218,205 @@ export default function AdminOrders({ orders }: { orders: AdminOrderRow[] }) {
           )}
         </CardContent>
       </Card>
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        {table.selectedCount > 0 && (
-          <BulkBar
-            label="Aksi untuk baris terpilih"
-            count={table.selectedCount}
-            total={table.total}
-            canSelectAll={table.canSelectAll}
-            onSelectAll={table.selectAll}
-            onClear={table.clear}
-          >
-            <Button
-              variant="outline"
-              size="compact"
-              onPress={() => setDialog('status')}
-              className="text-[13.5px]"
+      <Card>
+        <CardContent data-bleed>
+          {table.selectedCount > 0 && (
+            <BulkBar
+              label="Aksi untuk baris terpilih"
+              count={table.selectedCount}
+              total={table.total}
+              canSelectAll={table.canSelectAll}
+              onSelectAll={table.selectAll}
+              onClear={table.clear}
             >
-              <IconArrowsExchange className="size-4.5" />
-              Ubah status
-            </Button>
-            <Button
-              variant="destructive-outline"
-              size="compact"
-              isDisabled={!cancellable.length}
-              title={
-                cancellable.length
-                  ? `Batalkan ${cancellable.length} pesanan terpilih`
-                  : 'Pesanan selesai atau sudah dibatalkan tidak bisa dibatalkan'
-              }
-              onPress={() => setDialog('cancel')}
-              className="border-destructive-border-soft text-[13.5px]"
-            >
-              <IconBan className="size-4.5" />
-              Batalkan pesanan
-            </Button>
-            {exportButton('compact')}
-          </BulkBar>
-        )}
-        <MobileSort
-          value={`${table.sortKey}:${table.sortDirection}`}
-          options={SORT_OPTIONS}
-          onChange={(value) => {
-            const [key, direction] = value.split(':')
-            table.setSort({ key, direction: direction as SortDirection })
-          }}
-        />
-        {table.total > 0 && <SelectAllRow state={table.allState} onToggle={table.toggleAll} />}
-        {table.total > 0 && (
-          <Table className="max-sm:hidden">
-            <TableHeader>
-              <tr className={TABLE_HEAD_ROW}>
-                <TableHead className={CHECK_CELL}>
-                  <Checkbox
-                    isSelected={table.allState === true}
-                    isIndeterminate={table.allState === 'indeterminate'}
-                    onChange={table.toggleAll}
-                    aria-label="Pilih semua baris di halaman ini"
-                  />
-                </TableHead>
-                <SortHeader sort={table.ariaSort('ref')} onSort={() => table.sortBy('ref')}>
-                  No. pesanan
-                </SortHeader>
-                <SortHeader sort={table.ariaSort('name')} onSort={() => table.sortBy('name')}>
-                  Pelanggan
-                </SortHeader>
-                <SortHeader
-                  sort={table.ariaSort('area')}
-                  onSort={() => table.sortBy('area')}
-                  className="max-lg:hidden"
-                >
-                  Area
-                </SortHeader>
-                <SortHeader sort={table.ariaSort('status')} onSort={() => table.sortBy('status')}>
-                  Status
-                </SortHeader>
-                <SortHeader
-                  sort={table.ariaSort('total')}
-                  align="right"
-                  onSort={() => table.sortBy('total')}
-                >
-                  Total
-                </SortHeader>
-                <TableHead>Pembayaran</TableHead>
-                <TableHead className="max-lg:hidden">Staf</TableHead>
-                <SortHeader
-                  sort={table.ariaSort('date')}
-                  onSort={() => table.sortBy('date')}
-                  className="pr-4.5"
-                >
-                  Tanggal
-                </SortHeader>
-              </tr>
-            </TableHeader>
-            <TableBody>
-              {table.rows.map((row) => {
-                const isSelected = table.isSelected(row.id)
-                return (
-                  <TableRow key={row.id} data-selected={isSelected}>
-                    <TableCell className={CHECK_CELL}>
-                      <Checkbox
-                        isSelected={isSelected}
-                        onChange={() => table.toggle(row.id)}
-                        aria-label={`Pilih ${row.label}`}
-                      />
-                    </TableCell>
-                    <TableCell className="py-1">
-                      <Link
-                        href={detailHref(row.id)}
-                        className="inline-flex min-h-11 items-center font-mono text-meta leading-[1.3] font-semibold text-primary"
-                      >
-                        {row.number}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="py-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">{row.customer}</span>
-                        <SourceTag isInStore={row.isInStore} />
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-1 text-foreground-secondary max-lg:hidden">
-                      {row.area}
-                    </TableCell>
-                    <TableCell className="py-1">
-                      <ToneBadge tone={row.stage}>{row.status}</ToneBadge>
-                    </TableCell>
-                    <TableCell className="py-1 text-right tabular-nums">
-                      {row.total ? formatRupiah(row.total) : '—'}
-                    </TableCell>
-                    <TableCell className="py-1 text-foreground-secondary">{row.payment}</TableCell>
-                    <TableCell className="py-1 text-foreground-secondary max-lg:hidden">
-                      {row.staff}
-                    </TableCell>
-                    <TableCell className="py-1 pr-4.5 whitespace-nowrap text-foreground-secondary last:pr-4.5">
-                      {formatDayMonth(row.date)}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        )}
-        <ul className="sm:hidden">
-          {table.rows.map((row) => {
-            const isSelected = table.isSelected(row.id)
-            return (
-              <li
-                key={row.id}
-                data-selected={isSelected}
-                className={cn(
-                  'flex items-start gap-0.5 border-t border-border py-1.5 pr-4 pl-1',
-                  isSelected && 'bg-row-selected'
-                )}
+              <Button
+                variant="outline"
+                size="compact"
+                onPress={() => setDialog('status')}
+                className="text-[13.5px]"
               >
-                <Checkbox
-                  isSelected={isSelected}
-                  onChange={() => table.toggle(row.id)}
-                  aria-label={`Pilih ${row.label}`}
-                />
-                <Link
-                  href={detailHref(row.id)}
-                  className="flex min-w-0 flex-1 flex-col gap-1.5 py-2 text-foreground no-underline hover:text-foreground hover:no-underline"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="font-mono text-meta leading-none font-semibold text-primary">
-                      {row.number}
-                    </span>
-                    <SourceTag isInStore={row.isInStore} />
-                    <span className="ml-auto text-[14.5px] leading-none font-semibold">
-                      {row.total ? formatRupiah(row.total) : '—'}
-                    </span>
-                  </span>
-                  <span className="text-[15px] leading-[1.3] font-semibold">{row.customer}</span>
-                  <span className="flex flex-wrap items-center gap-2">
-                    <ToneBadge tone={row.stage}>{row.status}</ToneBadge>
-                    <span className="text-meta leading-[1.3] text-muted-foreground">
-                      {row.payment} · {formatDayMonth(row.date)}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-        {table.total === 0 && (
-          <TableEmpty
-            title="Tidak ada pesanan yang cocok"
-            description="Ubah filter atau kata kunci pencarian."
-            onReset={resetFilters}
+                <IconArrowsExchange className="size-4.5" />
+                Ubah status
+              </Button>
+              <Button
+                variant="destructive-outline"
+                size="compact"
+                isDisabled={!cancellable.length}
+                title={
+                  cancellable.length
+                    ? `Batalkan ${cancellable.length} pesanan terpilih`
+                    : 'Pesanan selesai atau sudah dibatalkan tidak bisa dibatalkan'
+                }
+                onPress={() => setDialog('cancel')}
+                className="border-destructive-border-soft text-[13.5px]"
+              >
+                <IconBan className="size-4.5" />
+                Batalkan pesanan
+              </Button>
+              {exportButton('compact')}
+            </BulkBar>
+          )}
+          <MobileSort
+            value={`${table.sortKey}:${table.sortDirection}`}
+            options={SORT_OPTIONS}
+            onChange={(value) => {
+              const [key, direction] = value.split(':')
+              table.setSort({ key, direction: direction as SortDirection })
+            }}
           />
-        )}
-        <TablePagination
-          rangeText={table.rangeText}
-          page={table.page}
-          pages={table.pages}
-          pageNumbers={table.pageNumbers}
-          size={table.size}
-          onPage={table.setPage}
-          onSize={table.setSize}
-        />
-      </div>
+          {table.total > 0 && <SelectAllRow state={table.allState} onToggle={table.toggleAll} />}
+          {table.total > 0 && (
+            <Table className="max-sm:hidden">
+              <TableHeader>
+                <tr className={TABLE_HEAD_ROW}>
+                  <TableHead className={CHECK_CELL}>
+                    <Checkbox
+                      isSelected={table.allState === true}
+                      isIndeterminate={table.allState === 'indeterminate'}
+                      onChange={table.toggleAll}
+                      aria-label="Pilih semua baris di halaman ini"
+                    />
+                  </TableHead>
+                  <SortHeader sort={table.ariaSort('ref')} onSort={() => table.sortBy('ref')}>
+                    No. pesanan
+                  </SortHeader>
+                  <SortHeader sort={table.ariaSort('name')} onSort={() => table.sortBy('name')}>
+                    Pelanggan
+                  </SortHeader>
+                  <SortHeader
+                    sort={table.ariaSort('area')}
+                    onSort={() => table.sortBy('area')}
+                    className="max-lg:hidden"
+                  >
+                    Area
+                  </SortHeader>
+                  <SortHeader sort={table.ariaSort('status')} onSort={() => table.sortBy('status')}>
+                    Status
+                  </SortHeader>
+                  <SortHeader
+                    sort={table.ariaSort('total')}
+                    align="right"
+                    onSort={() => table.sortBy('total')}
+                  >
+                    Total
+                  </SortHeader>
+                  <TableHead>Pembayaran</TableHead>
+                  <TableHead className="max-lg:hidden">Staf</TableHead>
+                  <SortHeader sort={table.ariaSort('date')} onSort={() => table.sortBy('date')}>
+                    Tanggal
+                  </SortHeader>
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {table.rows.map((row) => {
+                  const isSelected = table.isSelected(row.id)
+                  return (
+                    <TableRow key={row.id} data-selected={isSelected}>
+                      <TableCell className={CHECK_CELL}>
+                        <Checkbox
+                          isSelected={isSelected}
+                          onChange={() => table.toggle(row.id)}
+                          aria-label={`Pilih ${row.label}`}
+                        />
+                      </TableCell>
+                      <TableCell className="py-1">
+                        <Link
+                          href={detailHref(row.id)}
+                          className="inline-flex min-h-11 items-center font-mono text-meta leading-[1.3] font-semibold text-primary"
+                        >
+                          {row.number}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="py-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold">{row.customer}</span>
+                          <SourceTag isInStore={row.isInStore} />
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-1 text-foreground-secondary max-lg:hidden">
+                        {row.area}
+                      </TableCell>
+                      <TableCell className="py-1">
+                        <ToneBadge tone={row.stage}>{row.status}</ToneBadge>
+                      </TableCell>
+                      <TableCell className="py-1 text-right tabular-nums">
+                        {row.total ? formatRupiah(row.total) : '—'}
+                      </TableCell>
+                      <TableCell className="py-1 text-foreground-secondary">
+                        {row.payment}
+                      </TableCell>
+                      <TableCell className="py-1 text-foreground-secondary max-lg:hidden">
+                        {row.staff}
+                      </TableCell>
+                      <TableCell className="py-1 whitespace-nowrap text-foreground-secondary">
+                        {formatDayMonth(row.date)}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          )}
+          <ul className="sm:hidden">
+            {table.rows.map((row) => {
+              const isSelected = table.isSelected(row.id)
+              return (
+                <li
+                  key={row.id}
+                  data-selected={isSelected}
+                  className={cn(
+                    'flex items-start gap-0.5 border-t border-border py-1.5 pr-(--card-spacing) pl-2',
+                    isSelected && 'bg-row-selected'
+                  )}
+                >
+                  <Checkbox
+                    isSelected={isSelected}
+                    onChange={() => table.toggle(row.id)}
+                    aria-label={`Pilih ${row.label}`}
+                  />
+                  <Link
+                    href={detailHref(row.id)}
+                    className="flex min-w-0 flex-1 flex-col gap-1.5 py-2 text-foreground no-underline hover:text-foreground hover:no-underline"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="font-mono text-meta leading-none font-semibold text-primary">
+                        {row.number}
+                      </span>
+                      <SourceTag isInStore={row.isInStore} />
+                      <span className="ml-auto text-[14.5px] leading-none font-semibold">
+                        {row.total ? formatRupiah(row.total) : '—'}
+                      </span>
+                    </span>
+                    <span className="text-[15px] leading-[1.3] font-semibold">{row.customer}</span>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <ToneBadge tone={row.stage}>{row.status}</ToneBadge>
+                      <span className="text-meta leading-[1.3] text-muted-foreground">
+                        {row.payment} · {formatDayMonth(row.date)}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+          {table.total === 0 && (
+            <TableEmpty
+              title="Tidak ada pesanan yang cocok"
+              description="Ubah filter atau kata kunci pencarian."
+              onReset={resetFilters}
+            />
+          )}
+          <TablePagination
+            rangeText={table.rangeText}
+            page={table.page}
+            pages={table.pages}
+            pageNumbers={table.pageNumbers}
+            size={table.size}
+            onPage={table.setPage}
+            onSize={table.setSize}
+          />
+        </CardContent>
+      </Card>
       <StatusDialog
         key={dialog === 'status' ? 'status-open' : 'status'}
         isOpen={dialog === 'status'}

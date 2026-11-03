@@ -196,152 +196,149 @@ export default function AdminCustomers({
           onReset={() => changeFilter(() => setQuery(''))}
         />
       )}
-      <div
-        id="cust-panel"
-        role="tabpanel"
-        aria-labelledby={`tab-${segment}`}
-        className="overflow-hidden rounded-lg border border-border bg-card"
-      >
-        {table.selectedCount > 0 && (
-          <BulkBar
-            label="Aksi untuk baris terpilih"
-            count={table.selectedCount}
-            total={table.total}
-            canSelectAll={table.canSelectAll}
-            onSelectAll={table.selectAll}
-            onClear={table.clear}
-          >
-            {exportButton('compact')}
-          </BulkBar>
-        )}
-        <MobileSort
-          value={`${table.sortKey}:${table.sortDirection}`}
-          options={SORT_OPTIONS}
-          onChange={(value) => {
-            const [key, direction] = value.split(':')
-            table.setSort({ key, direction: direction as SortDirection })
-          }}
-        />
-        {table.total > 0 && <SelectAllRow state={table.allState} onToggle={table.toggleAll} />}
-        {table.total > 0 && (
-          <Table className="max-sm:hidden">
-            <TableHeader>
-              <tr className={TABLE_HEAD_ROW}>
-                <TableHead className={CHECK_CELL}>
-                  <Checkbox
-                    isSelected={table.allState === true}
-                    isIndeterminate={table.allState === 'indeterminate'}
-                    onChange={table.toggleAll}
-                    aria-label="Pilih semua baris di halaman ini"
-                  />
-                </TableHead>
-                {headers.map(([key, label, align, hide]) => (
-                  <SortHeader
-                    key={key}
-                    sort={table.ariaSort(key)}
-                    align={align}
-                    onSort={() => table.sortBy(key)}
-                    className={hide}
-                  >
-                    {label}
-                  </SortHeader>
-                ))}
-              </tr>
-            </TableHeader>
-            <TableBody>
-              {table.rows.map((row) => {
-                const isSelected = table.isSelected(row.id)
-                return (
-                  <TableRow key={row.id} data-selected={isSelected}>
-                    <TableCell className={CHECK_CELL}>
-                      <Checkbox
-                        isSelected={isSelected}
-                        onChange={() => table.toggle(row.id)}
-                        aria-label={`Pilih ${row.label}`}
-                      />
-                    </TableCell>
-                    <TableCell className="py-2">
-                      <div className="font-semibold">{row.name}</div>
-                      <div className="font-mono text-caption leading-[1.3] text-muted-foreground">
-                        {row.phone}
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-2 text-foreground-secondary max-lg:hidden">
-                      {row.area}
-                    </TableCell>
-                    <TableCell className="py-2">{formatDayMonth(row.last, true)}</TableCell>
-                    <TableCell className="py-2 text-right font-semibold tabular-nums">
-                      {row.days} hari
-                    </TableCell>
-                    <TableCell className="py-2 text-right tabular-nums max-lg:hidden">
-                      {row.orders}
-                    </TableCell>
-                    <TableCell className="py-2 text-right tabular-nums">
-                      {formatRupiah(row.spend)}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        )}
-        <ul className="sm:hidden">
-          {table.rows.map((row) => {
-            const isSelected = table.isSelected(row.id)
-            return (
-              <li
-                key={row.id}
-                data-selected={isSelected}
-                className={cn(
-                  'flex items-center gap-0.5 border-t border-border py-1.5 pr-4 pl-1',
-                  isSelected && 'bg-row-selected'
-                )}
-              >
-                <Checkbox
-                  isSelected={isSelected}
-                  onChange={() => table.toggle(row.id)}
-                  aria-label={`Pilih ${row.label}`}
-                />
-                <div className="min-w-0 flex-1 py-2">
-                  <p className="text-[15px] leading-[1.3] font-semibold">{row.name}</p>
-                  <p className="text-meta leading-[1.4] text-muted-foreground">
-                    {row.days} hari tidak aktif · terakhir {formatDayMonth(row.last, true)}
-                  </p>
-                  <p className="text-meta leading-[1.4] text-foreground-secondary">
-                    {row.orders} pesanan · {formatRupiah(row.spend)} · {row.area}
-                  </p>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-        {table.total === 0 && (
-          <TableEmpty
-            title={
-              search
-                ? `Tidak ada pelanggan yang cocok di tab ${tabName}`
-                : 'Tidak ada pelanggan di segmen ini'
-            }
-            description={
-              search
-                ? 'Coba tab lain atau ubah kata kunci pencarian.'
-                : segment === 'inactive'
-                  ? 'Coba batas hari yang lebih pendek.'
-                  : 'Coba tab lain.'
-            }
-            onReset={() => changeFilter(() => setQuery(''))}
+      <Card id="cust-panel" role="tabpanel" aria-labelledby={`tab-${segment}`}>
+        <CardContent data-bleed>
+          {table.selectedCount > 0 && (
+            <BulkBar
+              label="Aksi untuk baris terpilih"
+              count={table.selectedCount}
+              total={table.total}
+              canSelectAll={table.canSelectAll}
+              onSelectAll={table.selectAll}
+              onClear={table.clear}
+            >
+              {exportButton('compact')}
+            </BulkBar>
+          )}
+          <MobileSort
+            value={`${table.sortKey}:${table.sortDirection}`}
+            options={SORT_OPTIONS}
+            onChange={(value) => {
+              const [key, direction] = value.split(':')
+              table.setSort({ key, direction: direction as SortDirection })
+            }}
           />
-        )}
-        <TablePagination
-          rangeText={table.rangeText}
-          page={table.page}
-          pages={table.pages}
-          pageNumbers={table.pageNumbers}
-          size={table.size}
-          onPage={table.setPage}
-          onSize={table.setSize}
-        />
-      </div>
+          {table.total > 0 && <SelectAllRow state={table.allState} onToggle={table.toggleAll} />}
+          {table.total > 0 && (
+            <Table className="max-sm:hidden">
+              <TableHeader>
+                <tr className={TABLE_HEAD_ROW}>
+                  <TableHead className={CHECK_CELL}>
+                    <Checkbox
+                      isSelected={table.allState === true}
+                      isIndeterminate={table.allState === 'indeterminate'}
+                      onChange={table.toggleAll}
+                      aria-label="Pilih semua baris di halaman ini"
+                    />
+                  </TableHead>
+                  {headers.map(([key, label, align, hide]) => (
+                    <SortHeader
+                      key={key}
+                      sort={table.ariaSort(key)}
+                      align={align}
+                      onSort={() => table.sortBy(key)}
+                      className={hide}
+                    >
+                      {label}
+                    </SortHeader>
+                  ))}
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {table.rows.map((row) => {
+                  const isSelected = table.isSelected(row.id)
+                  return (
+                    <TableRow key={row.id} data-selected={isSelected}>
+                      <TableCell className={CHECK_CELL}>
+                        <Checkbox
+                          isSelected={isSelected}
+                          onChange={() => table.toggle(row.id)}
+                          aria-label={`Pilih ${row.label}`}
+                        />
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <div className="font-semibold">{row.name}</div>
+                        <div className="font-mono text-caption leading-[1.3] text-muted-foreground">
+                          {row.phone}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2 text-foreground-secondary max-lg:hidden">
+                        {row.area}
+                      </TableCell>
+                      <TableCell className="py-2">{formatDayMonth(row.last, true)}</TableCell>
+                      <TableCell className="py-2 text-right font-semibold tabular-nums">
+                        {row.days} hari
+                      </TableCell>
+                      <TableCell className="py-2 text-right tabular-nums max-lg:hidden">
+                        {row.orders}
+                      </TableCell>
+                      <TableCell className="py-2 text-right tabular-nums">
+                        {formatRupiah(row.spend)}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          )}
+          <ul className="sm:hidden">
+            {table.rows.map((row) => {
+              const isSelected = table.isSelected(row.id)
+              return (
+                <li
+                  key={row.id}
+                  data-selected={isSelected}
+                  className={cn(
+                    'flex items-center gap-0.5 border-t border-border py-1.5 pr-(--card-spacing) pl-2',
+                    isSelected && 'bg-row-selected'
+                  )}
+                >
+                  <Checkbox
+                    isSelected={isSelected}
+                    onChange={() => table.toggle(row.id)}
+                    aria-label={`Pilih ${row.label}`}
+                  />
+                  <div className="min-w-0 flex-1 py-2">
+                    <p className="text-[15px] leading-[1.3] font-semibold">{row.name}</p>
+                    <p className="text-meta leading-[1.4] text-muted-foreground">
+                      {row.days} hari tidak aktif · terakhir {formatDayMonth(row.last, true)}
+                    </p>
+                    <p className="text-meta leading-[1.4] text-foreground-secondary">
+                      {row.orders} pesanan · {formatRupiah(row.spend)} · {row.area}
+                    </p>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+          {table.total === 0 && (
+            <TableEmpty
+              title={
+                search
+                  ? `Tidak ada pelanggan yang cocok di tab ${tabName}`
+                  : 'Tidak ada pelanggan di segmen ini'
+              }
+              description={
+                search
+                  ? 'Coba tab lain atau ubah kata kunci pencarian.'
+                  : segment === 'inactive'
+                    ? 'Coba batas hari yang lebih pendek.'
+                    : 'Coba tab lain.'
+              }
+              onReset={() => changeFilter(() => setQuery(''))}
+            />
+          )}
+          <TablePagination
+            rangeText={table.rangeText}
+            page={table.page}
+            pages={table.pages}
+            pageNumbers={table.pageNumbers}
+            size={table.size}
+            onPage={table.setPage}
+            onSize={table.setSize}
+          />
+        </CardContent>
+      </Card>
     </AdminLayout>
   )
 }

@@ -87,78 +87,80 @@ export default function StaffHome({ next }: { next: NextTask | null }) {
             Tugas aktif
           </Overline>
           {next ? (
-            <div className="overflow-hidden rounded-lg border-[1.5px] border-primary bg-card">
-              <div className="grid grid-cols-1 sm:grid-cols-2">
-                <QueueMap
-                  tasks={next.tasks}
-                  done={0}
-                  me={me.point}
-                  label={`Peta antrean ${next.kind === 'jemput' ? 'jemput' : 'antar'}`}
-                  showLegend={false}
-                  className="min-h-37.5 min-w-0"
-                />
-                <div className="flex min-w-0 flex-col gap-2.5 p-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={cn(
-                        'inline-flex h-badge items-center gap-1.25 rounded-pill px-2.25 text-xs leading-none font-bold',
-                        next.kind === 'jemput'
-                          ? 'bg-status-jemput-bg text-status-jemput-fg'
-                          : 'bg-success text-success-foreground'
-                      )}
+            <Card className="border-[1.5px] border-primary">
+              <CardContent data-bleed>
+                <div className="grid grid-cols-1 sm:grid-cols-2">
+                  <QueueMap
+                    tasks={next.tasks}
+                    done={0}
+                    me={me.point}
+                    label={`Peta antrean ${next.kind === 'jemput' ? 'jemput' : 'antar'}`}
+                    showLegend={false}
+                    className="min-h-37.5 min-w-0"
+                  />
+                  <div className="flex min-w-0 flex-col gap-2.5 p-(--card-spacing)">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={cn(
+                          'inline-flex h-badge items-center gap-1.25 rounded-pill px-2.25 text-xs leading-none font-bold',
+                          next.kind === 'jemput'
+                            ? 'bg-status-jemput-bg text-status-jemput-fg'
+                            : 'bg-success text-success-foreground'
+                        )}
+                      >
+                        {next.kind === 'jemput' ? (
+                          <IconArrowUpRight className="size-3.75" />
+                        ) : (
+                          <IconArrowDownLeft className="size-3.75" />
+                        )}
+                        {next.kind === 'jemput' ? 'Jemput' : 'Antar'}
+                      </span>
+                      <span className="text-caption leading-none font-medium text-muted-foreground">
+                        {next.isActive ? 'Sedang Anda kerjakan' : 'Urutan #1 dari sistem'}
+                      </span>
+                    </div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-lg leading-[1.25] font-bold">{next.task.name}</p>
+                        <p className="font-mono text-caption leading-[1.4] text-muted-foreground">
+                          {next.task.ref}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="text-xl leading-none font-bold">{next.task.km}</p>
+                        <p className="text-caption leading-[1.4] text-muted-foreground">
+                          {next.task.legFrom}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-x-3.5 gap-y-1.5 text-note leading-[1.4] text-foreground-secondary">
+                      <span className="flex items-center gap-1.25">
+                        <IconMapPin className="size-4" />
+                        sekitar {next.task.area}
+                      </span>
+                      <span className="flex items-center gap-1.25">
+                        <IconArchive className="size-4" />
+                        {next.task.count} barang
+                      </span>
+                    </div>
+                    <LinkButton
+                      size="cta"
+                      className="mt-1"
+                      href={
+                        next.isActive
+                          ? urlFor(
+                              next.kind === 'jemput' ? 'staff.pickup_task' : 'staff.delivery_task'
+                            )
+                          : urlFor(next.kind === 'jemput' ? 'staff.pickups' : 'staff.deliveries')
+                      }
                     >
-                      {next.kind === 'jemput' ? (
-                        <IconArrowUpRight className="size-3.75" />
-                      ) : (
-                        <IconArrowDownLeft className="size-3.75" />
-                      )}
-                      {next.kind === 'jemput' ? 'Jemput' : 'Antar'}
-                    </span>
-                    <span className="text-caption leading-none font-medium text-muted-foreground">
-                      {next.isActive ? 'Sedang Anda kerjakan' : 'Urutan #1 dari sistem'}
-                    </span>
+                      {next.isActive ? 'Lanjutkan Tugas' : 'Buka Antrean'}
+                      <IconArrowRight />
+                    </LinkButton>
                   </div>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-lg leading-[1.25] font-bold">{next.task.name}</p>
-                      <p className="font-mono text-caption leading-[1.4] text-muted-foreground">
-                        {next.task.ref}
-                      </p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-xl leading-none font-bold">{next.task.km}</p>
-                      <p className="text-caption leading-[1.4] text-muted-foreground">
-                        {next.task.legFrom}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-x-3.5 gap-y-1.5 text-note leading-[1.4] text-foreground-secondary">
-                    <span className="flex items-center gap-1.25">
-                      <IconMapPin className="size-4" />
-                      sekitar {next.task.area}
-                    </span>
-                    <span className="flex items-center gap-1.25">
-                      <IconArchive className="size-4" />
-                      {next.task.count} barang
-                    </span>
-                  </div>
-                  <LinkButton
-                    size="cta"
-                    className="mt-1"
-                    href={
-                      next.isActive
-                        ? urlFor(
-                            next.kind === 'jemput' ? 'staff.pickup_task' : 'staff.delivery_task'
-                          )
-                        : urlFor(next.kind === 'jemput' ? 'staff.pickups' : 'staff.deliveries')
-                    }
-                  >
-                    {next.isActive ? 'Lanjutkan Tugas' : 'Buka Antrean'}
-                    <IconArrowRight />
-                  </LinkButton>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ) : (
             <Card>
               <CardContent>

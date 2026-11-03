@@ -1,4 +1,5 @@
 import { Link } from '@adonisjs/inertia/react'
+import { Card, CardContent } from '~/components/ui/card'
 import StatusBadge from '~/components/atoms/status_badge'
 import {
   Table,
@@ -49,45 +50,47 @@ export function OrderHistoryCards({ orders }: { orders: OrderSummary[] }) {
 
 export function OrderHistoryTable({ orders }: { orders: OrderSummary[] }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Tanggal</TableHead>
-            <TableHead>No. pesanan</TableHead>
-            <TableHead>Barang</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Total</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.number}>
-              <TableCell className="text-foreground-secondary">{order.date}</TableCell>
-              <TableCell>
-                <Link
-                  href={order.href}
-                  className="inline-flex min-h-11 items-center font-mono text-sm leading-none font-semibold text-primary hover:text-primary-hover hover:underline"
-                >
-                  {order.number}
-                </Link>
-              </TableCell>
-              <TableCell>{order.items}</TableCell>
-              <TableCell>
-                <StatusBadge status={order.status} />
-              </TableCell>
-              <TableCell
-                className={cn(
-                  'text-right tabular-nums',
-                  order.total ? 'font-semibold' : 'text-muted-foreground'
-                )}
-              >
-                {order.total ?? '—'}
-              </TableCell>
+    <Card>
+      <CardContent data-bleed>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Tanggal</TableHead>
+              <TableHead>No. pesanan</TableHead>
+              <TableHead>Barang</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Total</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {orders.map((order) => (
+              <TableRow key={order.number}>
+                <TableCell className="text-foreground-secondary">{order.date}</TableCell>
+                <TableCell>
+                  <Link
+                    href={order.href}
+                    className="inline-flex min-h-11 items-center font-mono text-sm leading-none font-semibold text-primary hover:text-primary-hover hover:underline"
+                  >
+                    {order.number}
+                  </Link>
+                </TableCell>
+                <TableCell>{order.items}</TableCell>
+                <TableCell>
+                  <StatusBadge status={order.status} />
+                </TableCell>
+                <TableCell
+                  className={cn(
+                    'text-right tabular-nums',
+                    order.total ? 'font-semibold' : 'text-muted-foreground'
+                  )}
+                >
+                  {order.total ?? '—'}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   )
 }

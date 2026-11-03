@@ -2,14 +2,7 @@ import { Link } from '@adonisjs/inertia/react'
 import { IconChevronRight, IconTruckDelivery } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { LinkButton } from '~/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card'
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card'
 import { shortStreet, type SavedAddress } from '~/lib/order/addresses'
 
 export default function QuickOrderPanel({ pickup }: { pickup: SavedAddress | null }) {
@@ -33,12 +26,10 @@ export default function QuickOrderPanel({ pickup }: { pickup: SavedAddress | nul
         <IconChevronRight className="size-5 text-foreground-secondary" />
       </Link>
       <Card role="region" aria-labelledby="quick-order-title" className="hidden sm:flex">
-        <CardContent>
-          <span className="flex size-12 items-center justify-center rounded-md bg-accent text-info-foreground">
+        <CardHeader>
+          <span className="mb-2 flex size-12 items-center justify-center rounded-md bg-accent text-info-foreground">
             <IconTruckDelivery className="size-6" />
           </span>
-        </CardContent>
-        <CardHeader>
           <CardTitle as="h2" id="quick-order-title">
             Ada yang mau dicuci lagi?
           </CardTitle>

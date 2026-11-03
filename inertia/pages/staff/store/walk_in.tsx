@@ -152,7 +152,8 @@ export default function WalkIn({ lookup: found }: { lookup: CustomerLookup }) {
                       onChange={(value) =>
                         updateWalkInForm({ items: { ...items, [counter.key]: value } })
                       }
-                      className="last:border-b"
+                      className="min-h-14 last:border-b"
+                      labelClassName="gap-2.5 text-md [&_svg]:size-5.5"
                     />
                   ))}
                 </div>

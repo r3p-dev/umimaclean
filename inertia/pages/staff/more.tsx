@@ -26,30 +26,31 @@ export default function StaffMore() {
             </div>
           </CardContent>
         </Card>
-        <nav
-          aria-label="Menu lainnya"
-          className="overflow-hidden rounded-lg border border-border bg-card"
-        >
-          <MenuRow
-            href={urlFor('staff.walk_in')}
-            icon={IconBuildingStore}
-            title="Transaksi Offline"
-            description="Pelanggan datang langsung ke toko"
-            isHighlighted
-          />
-          <MenuRow
-            href={urlFor('staff.history')}
-            icon={IconHistory}
-            title="Riwayat"
-            description="Tugas dan transaksi yang Anda catat"
-          />
-          <MenuRow
-            href={urlFor('staff.profile')}
-            icon={IconUserCog}
-            title="Profil & Pengaturan"
-            description="Kata sandi dan perangkat"
-          />
-        </nav>
+        <Card>
+          <CardContent data-bleed>
+            <nav aria-label="Menu lainnya" className="divide-y divide-border">
+              <MenuRow
+                href={urlFor('staff.walk_in')}
+                icon={IconBuildingStore}
+                title="Transaksi Offline"
+                description="Pelanggan datang langsung ke toko"
+                isHighlighted
+              />
+              <MenuRow
+                href={urlFor('staff.history')}
+                icon={IconHistory}
+                title="Riwayat"
+                description="Tugas dan transaksi yang Anda catat"
+              />
+              <MenuRow
+                href={urlFor('staff.profile')}
+                icon={IconUserCog}
+                title="Profil & Pengaturan"
+                description="Kata sandi dan perangkat"
+              />
+            </nav>
+          </CardContent>
+        </Card>
         <button
           type="button"
           onClick={signOut}

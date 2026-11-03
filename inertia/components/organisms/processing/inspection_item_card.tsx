@@ -2,6 +2,7 @@ import { useId } from 'react'
 import { IconAlertCircle, IconTrash } from '@tabler/icons-react'
 import MediaPlaceholder from '~/components/atoms/media_placeholder'
 import { Button } from '~/components/ui/button'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Textarea } from '~/components/ui/textarea'
 import ChoiceRow from '~/components/molecules/choice_row'
@@ -99,77 +100,81 @@ export default function InspectionItemCard({
   const nameId = useId()
 
   return (
-    <article
+    <Card
+      role="article"
       aria-label={`${label} · ${title}`}
-      className={cn(
-        'overflow-hidden rounded-lg bg-card',
-        isMissing ? 'border-[1.5px] border-destructive-border-soft' : 'border border-border'
-      )}
+      className={cn(isMissing && 'border-[1.5px] border-destructive-border-soft')}
     >
-      <header className="flex items-center gap-2.5 border-b border-border px-4 py-3">
-        <span className="rounded-xs bg-muted px-1.75 py-1 font-mono text-[11.5px] leading-none font-semibold">
-          {label}
-        </span>
-        <h2 className="min-w-0 flex-1 text-base leading-[1.3] font-semibold">
-          {title || category}
-        </h2>
-        <span className="h-badge rounded-pill border border-border-strong px-2.25 text-caption leading-5.5 font-medium">
-          {category}
-        </span>
-        {onRemove && !isLocked && (
-          <Button
-            variant="ghost"
-            size="icon-compact"
-            aria-label={`Hapus ${label}`}
-            onPress={onRemove}
-          >
-            <IconTrash className="size-4.5" />
-          </Button>
-        )}
-      </header>
-      <div className="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-3.5 px-4 py-3.5">
-        {photo ? (
-          <a href={photo} target="_blank" rel="noreferrer" className="block">
-            <img
-              src={photo}
-              alt="Foto barang saat diterima"
-              className="aspect-square w-full rounded-sm object-cover"
+      <CardHeader className="border-b">
+        <CardTitle as="h2">
+          <span className="flex min-w-0 items-center gap-2.5">
+            <span className="rounded-xs bg-muted px-1.75 py-1 font-mono text-2xs leading-none font-semibold">
+              {label}
+            </span>
+            {title || category}
+          </span>
+        </CardTitle>
+        <CardAction>
+          <span className="flex items-center gap-2.5">
+            <span className="h-badge rounded-pill border border-border-strong px-2.25 text-caption leading-5.5 font-medium">
+              {category}
+            </span>
+            {onRemove && !isLocked && (
+              <Button
+                variant="ghost"
+                size="icon-compact"
+                aria-label={`Hapus ${label}`}
+                onPress={onRemove}
+              >
+                <IconTrash className="size-4.5" />
+              </Button>
+            )}
+          </span>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-3.5">
+          {photo ? (
+            <a href={photo} target="_blank" rel="noreferrer" className="block">
+              <img
+                src={photo}
+                alt="Foto barang saat diterima"
+                className="aspect-square w-full rounded-sm object-cover"
+              />
+            </a>
+          ) : (
+            <MediaPlaceholder
+              label="belum ada foto"
+              size="sm"
+              className="box-border aspect-square p-1.25"
             />
-          </a>
-        ) : (
-          <MediaPlaceholder
-            label="belum ada foto"
-            size="sm"
-            className="box-border aspect-square p-1.25"
-          />
-        )}
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <label htmlFor={nameId} className="text-note leading-[1.3] font-semibold">
-            Nama barang
-          </label>
-          <Input
-            id={nameId}
-            value={title}
-            readOnly={isLocked}
-            placeholder="mis. Sneakers kanvas putih"
-            onChange={(event) => onName(event.target.value.slice(0, 80))}
-            className="px-3"
-          />
-          <label htmlFor={noteId} className="text-note leading-[1.3] font-semibold">
-            Kondisi / catatan pemeriksaan
-          </label>
-          <Textarea
-            id={noteId}
-            rows={2}
-            value={note}
-            readOnly={isLocked}
-            placeholder="mis. noda di bagian depan, sol menguning"
-            onChange={(event) => onNote(event.target.value)}
-            className="min-h-15 px-3 py-2.5 text-[14.5px] leading-[1.45]"
-          />
+          )}
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <label htmlFor={nameId} className="text-note font-semibold">
+              Nama barang
+            </label>
+            <Input
+              id={nameId}
+              value={title}
+              readOnly={isLocked}
+              placeholder="mis. Sneakers kanvas putih"
+              onChange={(event) => onName(event.target.value.slice(0, 80))}
+              className="px-3"
+            />
+            <label htmlFor={noteId} className="text-note font-semibold">
+              Kondisi / catatan pemeriksaan
+            </label>
+            <Textarea
+              id={noteId}
+              rows={2}
+              value={note}
+              readOnly={isLocked}
+              placeholder="mis. noda di bagian depan, sol menguning"
+              onChange={(event) => onNote(event.target.value)}
+              className="min-h-15 px-3 py-2.5 text-sm"
+            />
+          </div>
         </div>
-      </div>
-      <div className="flex flex-col gap-3 px-4 pb-4">
         <OptionGroup
           role="radio"
           title="Layanan utama"
@@ -191,17 +196,17 @@ export default function InspectionItemCard({
         {isMissing && (
           <p
             role="alert"
-            className="flex items-center gap-1.5 text-note leading-[1.4] font-medium text-destructive-text"
+            className="flex items-center gap-1.5 text-note font-medium text-destructive-text"
           >
             <IconAlertCircle className="size-4.25" />
             Isi nama barang dan pilih layanan utama.
           </p>
         )}
-        <div className="flex items-baseline justify-between border-t border-dashed border-border-strong pt-2.5 text-[15px] leading-[1.3] font-semibold">
+        <div className="flex items-baseline justify-between border-t border-dashed border-border-strong pt-2.5 text-md font-semibold">
           <span>Subtotal</span>
           <span>{formatRupiah(subtotal)}</span>
         </div>
-      </div>
-    </article>
+      </CardContent>
+    </Card>
   )
 }

@@ -34,14 +34,14 @@ export default function OrderReceipt({ receipt, store }: { receipt: Data.Receipt
         <div className="mx-auto mt-3 max-w-120">
           <Card role="article" aria-labelledby="receipt-title">
             <CardHeader className="border-b border-dashed border-border-strong">
-              <Logo size="md" />
-              <CardDescription>
+              <Logo size="md" className="w-full" />
+              <CardDescription className="text-foreground-secondary">
                 {store.address} · {store.hours}
               </CardDescription>
-              <CardTitle as="h1" id="receipt-title">
+              <CardTitle as="h1" id="receipt-title" className="text-h2">
                 Struk <span className="font-mono">{receipt.number}</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm text-foreground-secondary">
                 {receipt.customer} · dibuat {receipt.createdAt}
               </CardDescription>
             </CardHeader>

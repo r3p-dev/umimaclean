@@ -10,6 +10,7 @@ import {
   IconQrcode,
 } from '@tabler/icons-react'
 import { Button } from '~/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { FieldDescription, FieldError } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
@@ -147,72 +148,77 @@ export default function AdminStoreSettings({
               />
             </div>
           </SettingsPanel>
-          <SettingsPanel title="Slot penjemputan">
-            <ul className="divide-y divide-border">
-              {draft.slots.map((slot, index) => {
-                const setSlot = (patch: Partial<typeof slot>) =>
-                  update({
-                    slots: draft.slots.map((item, position) =>
-                      position === index ? { ...item, ...patch } : item
-                    ),
-                  })
-                return (
-                  <li
-                    key={slot.label}
-                    className="flex flex-wrap items-center gap-2.5 py-3 first:pt-0 last:pb-0"
-                  >
-                    <Switch
-                      isSelected={slot.on}
-                      onChange={(isOn) => setSlot({ on: isOn })}
-                      aria-label={`Aktifkan slot ${slot.label}`}
-                    />
-                    <span className="flex-1 font-mono text-sm font-semibold">{slot.label}</span>
-                    <span className="text-meta leading-none text-foreground-secondary">
-                      kapasitas
-                    </span>
-                    <span
-                      role="group"
-                      aria-label={`Kapasitas ${slot.label}`}
-                      className="inline-flex items-center overflow-hidden rounded-md border border-input"
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle as="h2">Slot penjemputan</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="divide-y divide-border">
+                {draft.slots.map((slot, index) => {
+                  const setSlot = (patch: Partial<typeof slot>) =>
+                    update({
+                      slots: draft.slots.map((item, position) =>
+                        position === index ? { ...item, ...patch } : item
+                      ),
+                    })
+                  return (
+                    <li
+                      key={slot.label}
+                      className="flex flex-wrap items-center gap-2.5 py-3 first:pt-0 last:pb-0"
                     >
-                      <button
-                        type="button"
-                        aria-label={`Kurangi kapasitas ${slot.label}`}
-                        disabled={slot.capacity <= SLOT_CAPACITY.min}
-                        onClick={() =>
-                          setSlot({ capacity: Math.max(SLOT_CAPACITY.min, slot.capacity - 1) })
-                        }
-                        className="flex size-11 items-center justify-center bg-card hover:bg-accent disabled:text-disabled-foreground"
+                      <Switch
+                        isSelected={slot.on}
+                        onChange={(isOn) => setSlot({ on: isOn })}
+                        aria-label={`Aktifkan slot ${slot.label}`}
+                      />
+                      <span className="flex-1 font-mono text-sm font-semibold">{slot.label}</span>
+                      <span className="text-meta leading-none text-foreground-secondary">
+                        kapasitas
+                      </span>
+                      <span
+                        role="group"
+                        aria-label={`Kapasitas ${slot.label}`}
+                        className="inline-flex items-center overflow-hidden rounded-md border border-input"
                       >
-                        <IconMinus className="size-5" />
-                      </button>
-                      <output
-                        aria-live="polite"
-                        className="min-w-8.5 text-center text-md leading-none font-semibold"
-                      >
-                        {slot.capacity}
-                      </output>
-                      <button
-                        type="button"
-                        aria-label={`Tambah kapasitas ${slot.label}`}
-                        disabled={slot.capacity >= SLOT_CAPACITY.max}
-                        onClick={() =>
-                          setSlot({ capacity: Math.min(SLOT_CAPACITY.max, slot.capacity + 1) })
-                        }
-                        className="flex size-11 items-center justify-center bg-card hover:bg-accent disabled:text-disabled-foreground"
-                      >
-                        <IconPlus className="size-5" />
-                      </button>
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
-            <p className="text-note text-foreground-secondary">
-              Kapasitas = jumlah penjemputan per slot per hari. Slot penuh tetap terlihat tapi tidak
-              bisa dipilih pelanggan; slot nonaktif disembunyikan.
-            </p>
-          </SettingsPanel>
+                        <button
+                          type="button"
+                          aria-label={`Kurangi kapasitas ${slot.label}`}
+                          disabled={slot.capacity <= SLOT_CAPACITY.min}
+                          onClick={() =>
+                            setSlot({ capacity: Math.max(SLOT_CAPACITY.min, slot.capacity - 1) })
+                          }
+                          className="flex size-11 items-center justify-center bg-card hover:bg-accent disabled:text-disabled-foreground"
+                        >
+                          <IconMinus className="size-5" />
+                        </button>
+                        <output
+                          aria-live="polite"
+                          className="min-w-8.5 text-center text-md leading-none font-semibold"
+                        >
+                          {slot.capacity}
+                        </output>
+                        <button
+                          type="button"
+                          aria-label={`Tambah kapasitas ${slot.label}`}
+                          disabled={slot.capacity >= SLOT_CAPACITY.max}
+                          onClick={() =>
+                            setSlot({ capacity: Math.min(SLOT_CAPACITY.max, slot.capacity + 1) })
+                          }
+                          className="flex size-11 items-center justify-center bg-card hover:bg-accent disabled:text-disabled-foreground"
+                        >
+                          <IconPlus className="size-5" />
+                        </button>
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+              <p className="text-note text-foreground-secondary">
+                Kapasitas = jumlah penjemputan per slot per hari. Slot penuh tetap terlihat tapi
+                tidak bisa dipilih pelanggan; slot nonaktif disembunyikan.
+              </p>
+            </CardContent>
+          </Card>
         </div>
         <div className="flex min-w-0 flex-col gap-4">
           <SettingsPanel title="Pembayaran">

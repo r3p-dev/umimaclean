@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Head } from '@inertiajs/react'
 import { IconSearch, IconX } from '@tabler/icons-react'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Field, FieldDescription, FieldLabel } from '~/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '~/components/ui/input_group'
 import { Switch } from '~/components/ui/switch'
@@ -41,51 +42,54 @@ export default function AdminServiceAreas({
       <AdminPageHeader title="Pengaturan" />
       <SettingsTabs active="areas" />
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-        <SettingsPanel
-          title="Area aktif"
-          aside={
-            <span className="text-caption leading-none text-muted-foreground">
-              {active.length} kecamatan
-            </span>
-          }
-        >
-          {active.length === 0 && (
-            <p className="text-note text-destructive-text">
-              Belum ada kecamatan aktif. Pelanggan belum bisa memesan penjemputan.
-            </p>
-          )}
-          <ul className="divide-y divide-border">
-            {groupByCity(active).map(({ city, areas }) => (
-              <li key={city} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
-                <h3 className="text-sm font-semibold">
-                  {city} · {areas.length}
-                </h3>
-                <ul className="flex flex-wrap gap-1.5">
-                  {areas.map((area) => (
-                    <li
-                      key={area.id}
-                      className="box-content inline-flex h-8 items-center gap-0.5 rounded-pill border border-input bg-background pr-1 pl-3 text-meta leading-none font-medium"
-                    >
-                      {area.name}
-                      <button
-                        type="button"
-                        aria-label={`Nonaktifkan Kec. ${area.name}, ${city}`}
-                        onClick={() => setServiceAreaActive(area.id, false)}
-                        className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+        <Card>
+          <CardHeader className="border-b">
+            <CardTitle as="h2">Area aktif</CardTitle>
+            <CardAction>
+              <span className="text-caption leading-none text-muted-foreground">
+                {active.length} kecamatan
+              </span>
+            </CardAction>
+          </CardHeader>
+          <CardContent>
+            {active.length === 0 && (
+              <p className="text-note text-destructive-text">
+                Belum ada kecamatan aktif. Pelanggan belum bisa memesan penjemputan.
+              </p>
+            )}
+            <ul className="divide-y divide-border">
+              {groupByCity(active).map(({ city, areas }) => (
+                <li key={city} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
+                  <h3 className="text-sm font-semibold">
+                    {city} · {areas.length}
+                  </h3>
+                  <ul className="flex flex-wrap gap-1.5">
+                    {areas.map((area) => (
+                      <li
+                        key={area.id}
+                        className="box-content inline-flex h-8 items-center gap-0.5 rounded-pill border border-input bg-background pr-1 pl-3 text-meta leading-none font-medium"
                       >
-                        <IconX className="size-4" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
-          <p className="text-note text-foreground-secondary">
-            Titik jemput dan antar di kecamatan aktif gratis ongkir. Menonaktifkan kecamatan hanya
-            berlaku untuk alamat dan pesanan baru; pesanan yang sudah berjalan tidak berubah.
-          </p>
-        </SettingsPanel>
+                        {area.name}
+                        <button
+                          type="button"
+                          aria-label={`Nonaktifkan Kec. ${area.name}, ${city}`}
+                          onClick={() => setServiceAreaActive(area.id, false)}
+                          className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+                        >
+                          <IconX className="size-4" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+            <p className="text-note text-foreground-secondary">
+              Titik jemput dan antar di kecamatan aktif gratis ongkir. Menonaktifkan kecamatan hanya
+              berlaku untuk alamat dan pesanan baru; pesanan yang sudah berjalan tidak berubah.
+            </p>
+          </CardContent>
+        </Card>
         <SettingsPanel title="Cari kecamatan">
           <Field>
             <FieldLabel htmlFor="area-search">Nama kecamatan atau kota</FieldLabel>

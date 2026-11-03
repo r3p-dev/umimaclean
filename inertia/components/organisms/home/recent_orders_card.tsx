@@ -9,7 +9,7 @@ import { orderSummary } from '~/lib/tracking/summary'
 export default function RecentOrdersCard({ orders }: { orders: OrderRecord[] }) {
   return (
     <Card role="region" aria-labelledby="recent-orders-title">
-      <CardHeader>
+      <CardHeader className="border-b">
         <CardTitle as="h2" id="recent-orders-title">
           Terakhir selesai
         </CardTitle>
@@ -19,12 +19,12 @@ export default function RecentOrdersCard({ orders }: { orders: OrderRecord[] }) 
           </LinkButton>
         </CardAction>
       </CardHeader>
-      <CardContent>
+      <CardContent data-bleed>
         <ul className="divide-y divide-border">
           {orders.map((order) => {
             const summary = orderSummary(order)
             return (
-              <li key={order.number} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+              <li key={order.number} className="flex items-center gap-4 px-(--card-spacing) py-3">
                 <div className="flex min-w-0 flex-1 flex-col gap-1 sm:grid sm:grid-cols-[110px_120px_minmax(0,1fr)_auto] sm:items-center sm:gap-4">
                   <span className="text-meta leading-none text-muted-foreground sm:text-sm">
                     {summary.date}

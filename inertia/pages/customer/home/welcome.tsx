@@ -66,22 +66,28 @@ export default function CustomerWelcome({
         </p>
         <div className="mt-5 grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:mt-7 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6">
           <div className="flex flex-col gap-4 lg:gap-6">
-            <Card role="region" aria-labelledby="first-order-title">
-              <CardContent>
-                <span className="flex size-12 items-center justify-center rounded-md bg-accent text-info-foreground">
-                  <IconTruckDelivery className="size-6" />
+            <Card
+              role="region"
+              aria-labelledby="first-order-title"
+              className="sm:flex-row sm:items-center"
+            >
+              <CardHeader className="sm:flex-1 sm:grid-cols-[auto_1fr]">
+                <span className="mb-3 flex size-14 items-center justify-center rounded-lg bg-accent text-info-foreground sm:row-span-2 sm:mr-5 sm:mb-0 sm:size-16 sm:self-center">
+                  <IconTruckDelivery className="size-7" />
                 </span>
-              </CardContent>
-              <CardHeader>
-                <CardTitle as="h2" id="first-order-title">
+                <CardTitle as="h2" id="first-order-title" className="text-xl font-bold">
                   Pesan penjemputan pertama Anda
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-md leading-normal text-foreground-secondary">
                   Kurir menjemput sepatu, tas, atau helm Anda. Bayar setelah tahu harganya.
                 </CardDescription>
               </CardHeader>
-              <CardFooter>
-                <LinkButton href={urlFor('customer.order.create')} className="w-full">
+              {/* Slots stack vertically by design; in this sm: row their side padding doubles, so pull the button back to the reference 24px gap. */}
+              <CardFooter className="sm:-ml-7.5">
+                <LinkButton
+                  href={urlFor('customer.order.create')}
+                  className="w-full px-6 max-sm:h-cta sm:w-auto"
+                >
                   Pesan Penjemputan
                 </LinkButton>
               </CardFooter>

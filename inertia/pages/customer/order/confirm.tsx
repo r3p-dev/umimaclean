@@ -72,7 +72,7 @@ export default function OrderConfirm({
                 <LocationMap
                   center={pickupAddress.point}
                   isInteractive={false}
-                  className="h-32 rounded-md"
+                  className="h-32.5"
                 />
               }
               action={

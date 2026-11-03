@@ -254,149 +254,153 @@ export default function AdminActivity({ activities }: { activities: ActivityRow[
           )}
         </CardContent>
       </Card>
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        {table.selectedCount > 0 && (
-          <BulkBar
-            label="Aksi untuk baris terpilih"
-            count={table.selectedCount}
-            total={table.total}
-            canSelectAll={table.canSelectAll}
-            onSelectAll={table.selectAll}
-            onClear={table.clear}
-          >
-            {exportButton('compact')}
-          </BulkBar>
-        )}
-        {table.total > 0 && <SelectAllRow state={table.allState} onToggle={table.toggleAll} />}
-        {table.total > 0 && (
-          <Table className="max-sm:hidden">
-            <TableHeader>
-              <tr className={TABLE_HEAD_ROW}>
-                <TableHead className={CHECK_CELL}>
-                  <Checkbox
-                    isSelected={table.allState === true}
-                    isIndeterminate={table.allState === 'indeterminate'}
-                    onChange={table.toggleAll}
-                    aria-label="Pilih semua baris di halaman ini"
-                  />
-                </TableHead>
-                <SortHeader sort={table.ariaSort('time')} onSort={() => table.sortBy('time')}>
-                  Waktu
-                </SortHeader>
-                <SortHeader sort={table.ariaSort('staff')} onSort={() => table.sortBy('staff')}>
-                  Staf
-                </SortHeader>
-                <SortHeader sort={table.ariaSort('action')} onSort={() => table.sortBy('action')}>
-                  Aksi
-                </SortHeader>
-                <TableHead>Objek</TableHead>
-                <TableHead className="pr-4.5 max-lg:hidden last:pr-4.5">Detail</TableHead>
-              </tr>
-            </TableHeader>
-            <TableBody>
-              {table.rows.map((row) => {
-                const isSelected = table.isSelected(row.id)
-                return (
-                  <TableRow
-                    key={row.id}
-                    data-selected={isSelected}
-                    className={cn(row.isSensitive && !isSelected && 'bg-destructive-surface')}
-                  >
-                    <TableCell className={CHECK_CELL}>
-                      <Checkbox
-                        isSelected={isSelected}
-                        onChange={() => table.toggle(row.id)}
-                        aria-label={`Pilih ${row.label}`}
-                      />
-                    </TableCell>
-                    <TableCell className="py-2 font-mono text-meta leading-none font-medium">
-                      {row.time}
-                    </TableCell>
-                    <TableCell className="py-2 font-semibold">{row.staff}</TableCell>
-                    <TableCell className="py-2">
-                      <div className="flex items-start gap-1.5">
-                        <ActionIcon activity={row} />
-                        <div>
+      <Card>
+        <CardContent data-bleed>
+          {table.selectedCount > 0 && (
+            <BulkBar
+              label="Aksi untuk baris terpilih"
+              count={table.selectedCount}
+              total={table.total}
+              canSelectAll={table.canSelectAll}
+              onSelectAll={table.selectAll}
+              onClear={table.clear}
+            >
+              {exportButton('compact')}
+            </BulkBar>
+          )}
+          {table.total > 0 && <SelectAllRow state={table.allState} onToggle={table.toggleAll} />}
+          {table.total > 0 && (
+            <Table className="max-sm:hidden">
+              <TableHeader>
+                <tr className={TABLE_HEAD_ROW}>
+                  <TableHead className={CHECK_CELL}>
+                    <Checkbox
+                      isSelected={table.allState === true}
+                      isIndeterminate={table.allState === 'indeterminate'}
+                      onChange={table.toggleAll}
+                      aria-label="Pilih semua baris di halaman ini"
+                    />
+                  </TableHead>
+                  <SortHeader sort={table.ariaSort('time')} onSort={() => table.sortBy('time')}>
+                    Waktu
+                  </SortHeader>
+                  <SortHeader sort={table.ariaSort('staff')} onSort={() => table.sortBy('staff')}>
+                    Staf
+                  </SortHeader>
+                  <SortHeader sort={table.ariaSort('action')} onSort={() => table.sortBy('action')}>
+                    Aksi
+                  </SortHeader>
+                  <TableHead>Objek</TableHead>
+                  <TableHead className="max-lg:hidden">Detail</TableHead>
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {table.rows.map((row) => {
+                  const isSelected = table.isSelected(row.id)
+                  return (
+                    <TableRow
+                      key={row.id}
+                      data-selected={isSelected}
+                      className={cn(row.isSensitive && !isSelected && 'bg-destructive-surface')}
+                    >
+                      <TableCell className={CHECK_CELL}>
+                        <Checkbox
+                          isSelected={isSelected}
+                          onChange={() => table.toggle(row.id)}
+                          aria-label={`Pilih ${row.label}`}
+                        />
+                      </TableCell>
+                      <TableCell className="py-2 font-mono text-meta leading-none font-medium">
+                        {row.time}
+                      </TableCell>
+                      <TableCell className="py-2 font-semibold">{row.staff}</TableCell>
+                      <TableCell className="py-2">
+                        <div className="flex items-start gap-1.5">
+                          <ActionIcon activity={row} />
                           <div>
-                            {row.action}
-                            {row.isSensitive && <SensitiveTag />}
-                          </div>
-                          <div className="mt-0.5 text-caption text-muted-foreground lg:hidden">
-                            {row.detail}
+                            <div>
+                              {row.action}
+                              {row.isSensitive && <SensitiveTag />}
+                            </div>
+                            <div className="mt-0.5 text-caption text-muted-foreground lg:hidden">
+                              {row.detail}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-2 font-mono text-meta leading-none font-medium whitespace-nowrap">
-                      {row.ref}
-                    </TableCell>
-                    <TableCell className="py-2 pr-4.5 text-foreground-secondary max-lg:hidden last:pr-4.5">
-                      {row.detail}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        )}
-        <ul className="sm:hidden">
-          {table.rows.map((row) => {
-            const isSelected = table.isSelected(row.id)
-            return (
-              <li
-                key={row.id}
-                data-selected={isSelected}
-                className={cn(
-                  'flex items-start gap-0.5 border-t border-border py-1 pr-4 pl-1',
-                  isSelected ? 'bg-row-selected' : row.isSensitive && 'bg-destructive-surface'
-                )}
-              >
-                <Checkbox
-                  isSelected={isSelected}
-                  onChange={() => table.toggle(row.id)}
-                  aria-label={`Pilih ${row.label}`}
-                />
-                <div className="grid min-w-0 flex-1 grid-cols-[22px_minmax(0,1fr)] gap-x-2.5 gap-y-1 py-2.5">
-                  <ActionIcon activity={row} />
-                  <div className="flex justify-between gap-2">
-                    <span className="text-sm leading-[1.35] font-semibold">
-                      {row.action}
-                      {row.isSensitive && <SensitiveTag />}
+                      </TableCell>
+                      <TableCell className="py-2 font-mono text-meta leading-none font-medium whitespace-nowrap">
+                        {row.ref}
+                      </TableCell>
+                      <TableCell className="py-2 text-foreground-secondary max-lg:hidden">
+                        {row.detail}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          )}
+          <ul className="sm:hidden">
+            {table.rows.map((row) => {
+              const isSelected = table.isSelected(row.id)
+              return (
+                <li
+                  key={row.id}
+                  data-selected={isSelected}
+                  className={cn(
+                    'flex items-start gap-0.5 border-t border-border py-1 pr-(--card-spacing) pl-2',
+                    isSelected ? 'bg-row-selected' : row.isSensitive && 'bg-destructive-surface'
+                  )}
+                >
+                  <Checkbox
+                    isSelected={isSelected}
+                    onChange={() => table.toggle(row.id)}
+                    aria-label={`Pilih ${row.label}`}
+                  />
+                  <div className="grid min-w-0 flex-1 grid-cols-[22px_minmax(0,1fr)] gap-x-2.5 gap-y-1 py-2.5">
+                    <ActionIcon activity={row} />
+                    <div className="flex justify-between gap-2">
+                      <span className="text-sm leading-[1.35] font-semibold">
+                        {row.action}
+                        {row.isSensitive && <SensitiveTag />}
+                      </span>
+                      <span className="font-mono text-caption leading-[1.35] font-medium text-muted-foreground">
+                        {row.time}
+                      </span>
+                    </div>
+                    <span />
+                    <span className="text-meta leading-[1.4] text-foreground-secondary">
+                      {row.staff} · <span className="font-mono">{row.ref}</span>
                     </span>
-                    <span className="font-mono text-caption leading-[1.35] font-medium text-muted-foreground">
-                      {row.time}
+                    <span />
+                    <span className="text-meta leading-[1.4] text-muted-foreground">
+                      {row.detail}
                     </span>
                   </div>
-                  <span />
-                  <span className="text-meta leading-[1.4] text-foreground-secondary">
-                    {row.staff} · <span className="font-mono">{row.ref}</span>
-                  </span>
-                  <span />
-                  <span className="text-meta leading-[1.4] text-muted-foreground">
-                    {row.detail}
-                  </span>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-        {table.total === 0 && (
-          <TableEmpty
-            title="Tidak ada aktivitas yang cocok"
-            description="Ubah tanggal, filter staf/aksi, atau kata kunci."
-            onReset={() => update({ query: '', staff: [], categories: [], isSensitiveOnly: false })}
+                </li>
+              )
+            })}
+          </ul>
+          {table.total === 0 && (
+            <TableEmpty
+              title="Tidak ada aktivitas yang cocok"
+              description="Ubah tanggal, filter staf/aksi, atau kata kunci."
+              onReset={() =>
+                update({ query: '', staff: [], categories: [], isSensitiveOnly: false })
+              }
+            />
+          )}
+          <TablePagination
+            rangeText={table.rangeText}
+            page={table.page}
+            pages={table.pages}
+            pageNumbers={table.pageNumbers}
+            size={table.size}
+            onPage={table.setPage}
+            onSize={table.setSize}
           />
-        )}
-        <TablePagination
-          rangeText={table.rangeText}
-          page={table.page}
-          pages={table.pages}
-          pageNumbers={table.pageNumbers}
-          size={table.size}
-          onPage={table.setPage}
-          onSize={table.setSize}
-        />
-      </div>
+        </CardContent>
+      </Card>
     </AdminLayout>
   )
 }

@@ -9,8 +9,8 @@ import AccountLayout from '~/components/templates/account_layout'
 import { Button, LinkButton } from '~/components/ui/button'
 import {
   Card,
-  CardAction,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -84,34 +84,30 @@ export default function AddressIndex({
             {addresses.map((address) => (
               <li key={address.id}>
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="grid-cols-[auto_1fr]">
+                    <IconMapPin className="row-span-2 mt-px mr-2 size-5.5 shrink-0 text-primary" />
                     <CardTitle as="h2">
                       <span className="flex items-center gap-2">
-                        <IconMapPin className="size-5 shrink-0 text-primary" />
                         {address.label}
+                        {address.isPrimary && (
+                          <span className="rounded-pill bg-accent px-2 py-1 text-xs leading-none font-semibold text-accent-foreground">
+                            Utama
+                          </span>
+                        )}
                       </span>
                     </CardTitle>
-                    {address.isPrimary && (
-                      <CardAction>
-                        <span className="rounded-pill bg-accent px-2 py-1 text-xs leading-none font-semibold text-accent-foreground">
-                          Utama
+                    <CardDescription>
+                      <span className="flex flex-col gap-1">
+                        <span className="text-sm text-foreground-secondary">
+                          {address.addressText}
                         </span>
-                      </CardAction>
-                    )}
+                        {address.landmark && <span>Patokan: {address.landmark}</span>}
+                        <span>
+                          Penerima: {address.recipientName} · {displayPhone(address.recipientPhone)}
+                        </span>
+                      </span>
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col gap-1">
-                      <p className="text-foreground-secondary">{address.addressText}</p>
-                      {address.landmark && (
-                        <p className="text-meta text-muted-foreground">
-                          Patokan: {address.landmark}
-                        </p>
-                      )}
-                      <p className="text-meta text-muted-foreground">
-                        Penerima: {address.recipientName} · {displayPhone(address.recipientPhone)}
-                      </p>
-                    </div>
-                  </CardContent>
                   <CardFooter className="border-t">
                     <LinkButton
                       href={urlFor('customer.addresses.edit', { id: address.id })}

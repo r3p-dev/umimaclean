@@ -288,208 +288,210 @@ export default function AdminServices({ services: list }: { services: Service[] 
           )}
         </CardContent>
       </Card>
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        {table.selectedCount > 0 && (
-          <BulkBar
-            label="Aksi untuk baris terpilih"
-            count={table.selectedCount}
-            total={table.total}
-            canSelectAll={table.canSelectAll}
-            onSelectAll={table.selectAll}
-            onClear={table.clear}
-          >
-            <Button
-              variant="outline"
-              size="compact"
-              isDisabled={table.selectedRows.every((row) => row.active)}
-              onPress={() => {
-                setServicesActive(selectedIds, true, { onSuccess: () => table.clear() })
-              }}
-              className="text-[13.5px]"
+      <Card>
+        <CardContent data-bleed>
+          {table.selectedCount > 0 && (
+            <BulkBar
+              label="Aksi untuk baris terpilih"
+              count={table.selectedCount}
+              total={table.total}
+              canSelectAll={table.canSelectAll}
+              onSelectAll={table.selectAll}
+              onClear={table.clear}
             >
-              <IconToggleRight className="size-4.5" />
-              Aktifkan
-            </Button>
-            <Button
-              variant="outline"
-              size="compact"
-              isDisabled={table.selectedRows.every((row) => !row.active)}
-              onPress={() => {
-                setServicesActive(selectedIds, false, { onSuccess: () => table.clear() })
-              }}
-              className="text-[13.5px]"
-            >
-              <IconToggleLeft className="size-4.5" />
-              Nonaktifkan
-            </Button>
-            <Button
-              variant="destructive-outline"
-              size="compact"
-              onPress={() => setDialog({ kind: 'bulk-delete' })}
-              className="border-destructive-border-soft text-[13.5px]"
-            >
-              <IconTrash className="size-4.5" />
-              Hapus
-            </Button>
-            {exportButton('compact')}
-          </BulkBar>
-        )}
-        {table.total > 0 && <SelectAllRow state={table.allState} onToggle={table.toggleAll} />}
-        {table.total > 0 && (
-          <Table className="max-sm:hidden">
-            <TableHeader>
-              <tr className={TABLE_HEAD_ROW}>
-                <TableHead className={CHECK_CELL}>
-                  <Checkbox
-                    isSelected={table.allState === true}
-                    isIndeterminate={table.allState === 'indeterminate'}
-                    onChange={table.toggleAll}
-                    aria-label="Pilih semua baris di halaman ini"
-                  />
-                </TableHead>
-                <SortHeader sort={table.ariaSort('name')} onSort={() => table.sortBy('name')}>
-                  Layanan
-                </SortHeader>
-                <SortHeader sort={table.ariaSort('type')} onSort={() => table.sortBy('type')}>
-                  Jenis
-                </SortHeader>
-                <TableHead>Kategori</TableHead>
-                <SortHeader
-                  sort={table.ariaSort('price')}
-                  align="right"
-                  onSort={() => table.sortBy('price')}
-                >
-                  Harga
-                </SortHeader>
-                <SortHeader
-                  sort={table.ariaSort('days')}
-                  onSort={() => table.sortBy('days')}
-                  className="max-lg:hidden"
-                >
-                  Estimasi
-                </SortHeader>
-                <SortHeader sort={table.ariaSort('active')} onSort={() => table.sortBy('active')}>
-                  Aktif
-                </SortHeader>
-                <TableHead className="pr-4.5 last:pr-4.5" />
-              </tr>
-            </TableHeader>
-            <TableBody>
-              {table.rows.map((row) => {
-                const isSelected = table.isSelected(row.id)
-                return (
-                  <TableRow key={row.id} data-selected={isSelected}>
-                    <TableCell className={CHECK_CELL}>
-                      <Checkbox
-                        isSelected={isSelected}
-                        onChange={() => table.toggle(row.id)}
-                        aria-label={`Pilih ${row.label}`}
-                      />
-                    </TableCell>
-                    <TableCell className="py-2">
-                      <div className="font-semibold">{row.name}</div>
-                      <div className="text-caption leading-[1.35] text-muted-foreground">
-                        {row.description}
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-2">
-                      <TypeBadge type={row.type} />
-                    </TableCell>
-                    <TableCell className="py-2 text-foreground-secondary">
-                      {row.categories.join(', ')}
-                    </TableCell>
-                    <TableCell className="py-2 text-right font-semibold tabular-nums">
-                      {formatRupiah(row.price)}
-                    </TableCell>
-                    <TableCell className="py-2 text-foreground-secondary max-lg:hidden">
-                      {row.days} hari
-                    </TableCell>
-                    <TableCell className="py-2">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          isSelected={row.active}
-                          onChange={() => toggleActive(row)}
-                          aria-label={`Aktifkan ${row.name}`}
-                        />
-                        <span className="text-meta leading-none font-medium text-foreground-secondary">
-                          {row.active ? 'Aktif' : 'Nonaktif'}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-2 pr-4.5 last:pr-4.5">
-                      <div className="flex justify-end gap-1.5">{rowActions(row)}</div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        )}
-        <ul className="sm:hidden">
-          {table.rows.map((row) => {
-            const isSelected = table.isSelected(row.id)
-            return (
-              <li
-                key={row.id}
-                data-selected={isSelected}
-                className={cn(
-                  'flex items-start gap-0.5 border-t border-border pt-2 pr-4 pb-3 pl-1',
-                  isSelected && 'bg-row-selected'
-                )}
+              <Button
+                variant="outline"
+                size="compact"
+                isDisabled={table.selectedRows.every((row) => row.active)}
+                onPress={() => {
+                  setServicesActive(selectedIds, true, { onSuccess: () => table.clear() })
+                }}
+                className="text-[13.5px]"
               >
-                <Checkbox
-                  isSelected={isSelected}
-                  onChange={() => table.toggle(row.id)}
-                  aria-label={`Pilih ${row.label}`}
-                />
-                <div className="flex min-w-0 flex-1 flex-col gap-2 pt-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="flex-1 text-[15px] leading-[1.3] font-semibold">
-                      {row.name}
-                    </span>
-                    <span className="text-[15px] leading-none font-semibold">
-                      {formatRupiah(row.price)}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <TypeBadge type={row.type} />
-                    <span className="text-meta leading-[1.3] text-muted-foreground">
-                      {row.categories.join(', ')} · {row.days} hari
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      isSelected={row.active}
-                      onChange={() => toggleActive(row)}
-                      aria-label={`Aktifkan ${row.name}`}
+                <IconToggleRight className="size-4.5" />
+                Aktifkan
+              </Button>
+              <Button
+                variant="outline"
+                size="compact"
+                isDisabled={table.selectedRows.every((row) => !row.active)}
+                onPress={() => {
+                  setServicesActive(selectedIds, false, { onSuccess: () => table.clear() })
+                }}
+                className="text-[13.5px]"
+              >
+                <IconToggleLeft className="size-4.5" />
+                Nonaktifkan
+              </Button>
+              <Button
+                variant="destructive-outline"
+                size="compact"
+                onPress={() => setDialog({ kind: 'bulk-delete' })}
+                className="border-destructive-border-soft text-[13.5px]"
+              >
+                <IconTrash className="size-4.5" />
+                Hapus
+              </Button>
+              {exportButton('compact')}
+            </BulkBar>
+          )}
+          {table.total > 0 && <SelectAllRow state={table.allState} onToggle={table.toggleAll} />}
+          {table.total > 0 && (
+            <Table className="max-sm:hidden">
+              <TableHeader>
+                <tr className={TABLE_HEAD_ROW}>
+                  <TableHead className={CHECK_CELL}>
+                    <Checkbox
+                      isSelected={table.allState === true}
+                      isIndeterminate={table.allState === 'indeterminate'}
+                      onChange={table.toggleAll}
+                      aria-label="Pilih semua baris di halaman ini"
                     />
-                    <span className="flex-1 text-meta leading-none font-medium text-foreground-secondary">
-                      {row.active ? 'Aktif' : 'Nonaktif'}
-                    </span>
-                    {rowActions(row)}
+                  </TableHead>
+                  <SortHeader sort={table.ariaSort('name')} onSort={() => table.sortBy('name')}>
+                    Layanan
+                  </SortHeader>
+                  <SortHeader sort={table.ariaSort('type')} onSort={() => table.sortBy('type')}>
+                    Jenis
+                  </SortHeader>
+                  <TableHead>Kategori</TableHead>
+                  <SortHeader
+                    sort={table.ariaSort('price')}
+                    align="right"
+                    onSort={() => table.sortBy('price')}
+                  >
+                    Harga
+                  </SortHeader>
+                  <SortHeader
+                    sort={table.ariaSort('days')}
+                    onSort={() => table.sortBy('days')}
+                    className="max-lg:hidden"
+                  >
+                    Estimasi
+                  </SortHeader>
+                  <SortHeader sort={table.ariaSort('active')} onSort={() => table.sortBy('active')}>
+                    Aktif
+                  </SortHeader>
+                  <TableHead />
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {table.rows.map((row) => {
+                  const isSelected = table.isSelected(row.id)
+                  return (
+                    <TableRow key={row.id} data-selected={isSelected}>
+                      <TableCell className={CHECK_CELL}>
+                        <Checkbox
+                          isSelected={isSelected}
+                          onChange={() => table.toggle(row.id)}
+                          aria-label={`Pilih ${row.label}`}
+                        />
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <div className="font-semibold">{row.name}</div>
+                        <div className="text-caption leading-[1.35] text-muted-foreground">
+                          {row.description}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <TypeBadge type={row.type} />
+                      </TableCell>
+                      <TableCell className="py-2 text-foreground-secondary">
+                        {row.categories.join(', ')}
+                      </TableCell>
+                      <TableCell className="py-2 text-right font-semibold tabular-nums">
+                        {formatRupiah(row.price)}
+                      </TableCell>
+                      <TableCell className="py-2 text-foreground-secondary max-lg:hidden">
+                        {row.days} hari
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            isSelected={row.active}
+                            onChange={() => toggleActive(row)}
+                            aria-label={`Aktifkan ${row.name}`}
+                          />
+                          <span className="text-meta leading-none font-medium text-foreground-secondary">
+                            {row.active ? 'Aktif' : 'Nonaktif'}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <div className="flex justify-end gap-1.5">{rowActions(row)}</div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          )}
+          <ul className="sm:hidden">
+            {table.rows.map((row) => {
+              const isSelected = table.isSelected(row.id)
+              return (
+                <li
+                  key={row.id}
+                  data-selected={isSelected}
+                  className={cn(
+                    'flex items-start gap-0.5 border-t border-border pt-2 pr-(--card-spacing) pb-3 pl-2',
+                    isSelected && 'bg-row-selected'
+                  )}
+                >
+                  <Checkbox
+                    isSelected={isSelected}
+                    onChange={() => table.toggle(row.id)}
+                    aria-label={`Pilih ${row.label}`}
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col gap-2 pt-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="flex-1 text-[15px] leading-[1.3] font-semibold">
+                        {row.name}
+                      </span>
+                      <span className="text-[15px] leading-none font-semibold">
+                        {formatRupiah(row.price)}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <TypeBadge type={row.type} />
+                      <span className="text-meta leading-[1.3] text-muted-foreground">
+                        {row.categories.join(', ')} · {row.days} hari
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        isSelected={row.active}
+                        onChange={() => toggleActive(row)}
+                        aria-label={`Aktifkan ${row.name}`}
+                      />
+                      <span className="flex-1 text-meta leading-none font-medium text-foreground-secondary">
+                        {row.active ? 'Aktif' : 'Nonaktif'}
+                      </span>
+                      {rowActions(row)}
+                    </div>
                   </div>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-        {table.total === 0 && (
-          <TableEmpty
-            title="Tidak ada layanan yang cocok"
-            description="Ubah filter, kata kunci, atau tampilkan layanan nonaktif."
-            onReset={resetFilters}
+                </li>
+              )
+            })}
+          </ul>
+          {table.total === 0 && (
+            <TableEmpty
+              title="Tidak ada layanan yang cocok"
+              description="Ubah filter, kata kunci, atau tampilkan layanan nonaktif."
+              onReset={resetFilters}
+            />
+          )}
+          <TablePagination
+            rangeText={table.rangeText}
+            page={table.page}
+            pages={table.pages}
+            pageNumbers={table.pageNumbers}
+            size={table.size}
+            onPage={table.setPage}
+            onSize={table.setSize}
           />
-        )}
-        <TablePagination
-          rangeText={table.rangeText}
-          page={table.page}
-          pages={table.pages}
-          pageNumbers={table.pageNumbers}
-          size={table.size}
-          onPage={table.setPage}
-          onSize={table.setSize}
-        />
-      </div>
+        </CardContent>
+      </Card>
       {dialog?.kind === 'form' && (
         <ServiceFormDialog
           isOpen

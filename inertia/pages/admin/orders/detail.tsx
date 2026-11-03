@@ -13,15 +13,7 @@ import {
 } from '@tabler/icons-react'
 import { urlFor } from '~/client'
 import { Button, LinkButton } from '~/components/ui/button'
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import SourceTag from '~/components/atoms/source_tag'
 import ToneBadge from '~/components/atoms/tone_badge'
 import EmptyState from '~/components/molecules/empty_state'
@@ -124,102 +116,107 @@ export default function AdminOrderDetail({
     <AdminLayout active="pesanan" title="Detail pesanan">
       <Head title={`Pesanan ${order.number}`} />
       <AdminPageHeader title="Detail pesanan" />
-      {backLink}
       <Card role="region" aria-labelledby="order-number">
-        <CardHeader>
-          <CardTitle as="h2" id="order-number">
-            <span className="font-mono">{order.number}</span>
-          </CardTitle>
-          <CardDescription>{detail.createdText}</CardDescription>
-          <CardAction>
-            <span className="flex flex-wrap items-center justify-end gap-2">
+        <CardContent>
+          <div className="flex flex-col gap-2.5">
+            {backLink}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <CardTitle as="h2" id="order-number" className="font-mono text-2xl font-bold">
+                {order.number}
+              </CardTitle>
               <ToneBadge tone={order.stage} hasDot>
                 {order.status}
               </ToneBadge>
               <SourceTag isInStore={order.isInStore} />
-            </span>
-          </CardAction>
-        </CardHeader>
-        {detail.cancelReason && (
-          <CardContent>
-            <p className="text-destructive-text">Alasan pembatalan: {detail.cancelReason}</p>
-          </CardContent>
-        )}
-        <CardFooter>
-          <Button
-            variant="outline"
-            size="desktop"
-            isDisabled={!detail.canFixPayment}
-            onPress={() => setDialog('fix')}
-          >
-            <IconPencil className="size-4.5" />
-            Koreksi pembayaran
-          </Button>
-          <Button
-            variant="destructive-outline"
-            size="desktop"
-            isDisabled={!detail.canCancel}
-            onPress={() => setDialog('cancel')}
-            className="border-destructive-border-soft"
-          >
-            <IconBan className="size-4.5" />
-            Batalkan pesanan
-          </Button>
-        </CardFooter>
+            </div>
+            <p className="text-sm text-foreground-secondary">{detail.createdText}</p>
+            {detail.cancelReason && (
+              <p className="text-sm text-destructive-text">
+                Alasan pembatalan: {detail.cancelReason}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="desktop"
+                isDisabled={!detail.canFixPayment}
+                onPress={() => setDialog('fix')}
+              >
+                <IconPencil className="size-4.5" />
+                Koreksi pembayaran
+              </Button>
+              <Button
+                variant="destructive-outline"
+                size="desktop"
+                isDisabled={!detail.canCancel}
+                onPress={() => setDialog('cancel')}
+                className="border-destructive-border-soft"
+              >
+                <IconBan className="size-4.5" />
+                Batalkan pesanan
+              </Button>
+            </div>
+          </div>
+        </CardContent>
       </Card>
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-4">
-          <Panel
-            title="Barang & layanan"
-            aside={<span className="text-caption text-muted-foreground">{detail.pricedBy}</span>}
-          >
-            {detail.items.length ? (
-              <>
-                <ul className="divide-y divide-border">
-                  {detail.items.map((item, index) => (
-                    <li
-                      key={`${item.name}-${index}`}
-                      className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0"
-                    >
-                      <div className="flex items-baseline gap-2">
-                        <span className="flex-1 text-md font-semibold">{item.name}</span>
-                        <span className="text-caption leading-none text-muted-foreground">
-                          {item.category}
-                        </span>
-                      </div>
-                      {item.services.map((service) => (
-                        <div
-                          key={service.name}
-                          className="flex justify-between text-sm text-foreground-secondary"
-                        >
-                          <span>{service.name}</span>
-                          <span className="tabular-nums">{formatRupiah(service.price)}</span>
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle as="h2">Barang & layanan</CardTitle>
+              <CardAction>
+                <span className="text-caption text-muted-foreground">{detail.pricedBy}</span>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              {detail.items.length ? (
+                <>
+                  <ul className="divide-y divide-border">
+                    {detail.items.map((item, index) => (
+                      <li
+                        key={`${item.name}-${index}`}
+                        className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0"
+                      >
+                        <div className="flex items-baseline gap-2">
+                          <span className="flex-1 text-md font-semibold">{item.name}</span>
+                          <span className="text-caption leading-none text-muted-foreground">
+                            {item.category}
+                          </span>
                         </div>
-                      ))}
-                      <div className="flex justify-between text-sm font-semibold">
-                        <span>Subtotal</span>
-                        <span>
-                          {formatRupiah(
-                            item.services.reduce((sum, service) => sum + service.price, 0)
-                          )}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex justify-between border-t border-border pt-3 text-base font-bold">
-                  <span>Total</span>
-                  <span>{formatRupiah(itemsTotal)}</span>
-                </div>
-              </>
-            ) : (
-              <p className="text-foreground-secondary">
-                {order.total
-                  ? `Total tagihan ${formatRupiah(order.total)}.`
-                  : 'Layanan dan harga ditentukan saat pemeriksaan barang.'}
-              </p>
-            )}
-          </Panel>
+                        {item.services.map((service) => (
+                          <div
+                            key={service.name}
+                            className="flex justify-between text-sm text-foreground-secondary"
+                          >
+                            <span>{service.name}</span>
+                            <span className="tabular-nums">{formatRupiah(service.price)}</span>
+                          </div>
+                        ))}
+                        <div className="flex justify-between text-sm font-semibold">
+                          <span>Subtotal</span>
+                          <span>
+                            {formatRupiah(
+                              item.services.reduce((sum, service) => sum + service.price, 0)
+                            )}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex justify-between border-t border-input pt-3 text-base font-bold">
+                    <span>Total</span>
+                    <span>{formatRupiah(itemsTotal)}</span>
+                  </div>
+                </>
+              ) : (
+                <p className="text-foreground-secondary">
+                  {order.total
+                    ? `Total tagihan ${formatRupiah(order.total)}.`
+                    : 'Layanan dan harga ditentukan saat pemeriksaan barang.'}
+                </p>
+              )}
+            </CardContent>
+          </Card>
           <Panel
             title="Pembayaran"
             aside={

@@ -10,6 +10,7 @@ import { TABLE_HEAD_ROW } from '~/components/organisms/data_table/table_parts'
 import AdminLayout from '~/components/templates/admin_layout'
 import { Alert } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
+import { Card, CardContent } from '~/components/ui/card'
 import {
   Table,
   TableBody,
@@ -107,86 +108,88 @@ export default function AdminReconciliation({
           }))}
         />
       </div>
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
-        <Table>
-          <TableHeader>
-            <tr className={TABLE_HEAD_ROW}>
-              <TableHead>ID Midtrans</TableHead>
-              <TableHead>Pesanan</TableHead>
-              <TableHead>Nominal</TableHead>
-              <TableHead>Status bayar</TableHead>
-              <TableHead>Status pesanan</TableHead>
-              <TableHead>Hasil</TableHead>
-              <TableHead>
-                <span className="sr-only">Aksi</span>
-              </TableHead>
-            </tr>
-          </TableHeader>
-          <TableBody>
-            {shown.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} className="py-6 text-center text-foreground-secondary">
-                  Belum ada transaksi QRIS{flags.length ? ' untuk filter ini' : ''}.
-                </TableCell>
-              </TableRow>
-            )}
-            {shown.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell className="py-3">
-                  <span className="block font-mono text-meta">{row.providerOrderId}</span>
-                  <span className="block text-caption text-muted-foreground">
-                    {row.createdAt} · {row.channel}
-                  </span>
-                </TableCell>
-                <TableCell className="py-3">
-                  <Link
-                    href={urlFor('admin.order', { id: row.orderId })}
-                    className="inline-flex min-h-11 items-center font-mono font-semibold"
-                  >
-                    {row.number}
-                  </Link>
-                  <span className="block text-caption text-muted-foreground">{row.customer}</span>
-                </TableCell>
-                <TableCell className="py-3 tabular-nums">
-                  {formatRupiah(row.amount)}
-                  {row.billTotal !== null && row.billTotal !== row.amount && (
-                    <span className="block text-caption text-destructive-text">
-                      tagihan {formatRupiah(row.billTotal)}
+      <Card>
+        <CardContent data-bleed>
+          <Table>
+            <TableHeader>
+              <tr className={TABLE_HEAD_ROW}>
+                <TableHead>ID Midtrans</TableHead>
+                <TableHead>Pesanan</TableHead>
+                <TableHead>Nominal</TableHead>
+                <TableHead>Status bayar</TableHead>
+                <TableHead>Status pesanan</TableHead>
+                <TableHead>Hasil</TableHead>
+                <TableHead>
+                  <span className="sr-only">Aksi</span>
+                </TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {shown.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-6 text-center text-foreground-secondary">
+                    Belum ada transaksi QRIS{flags.length ? ' untuk filter ini' : ''}.
+                  </TableCell>
+                </TableRow>
+              )}
+              {shown.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell className="py-3">
+                    <span className="block font-mono text-meta">{row.providerOrderId}</span>
+                    <span className="block text-caption text-muted-foreground">
+                      {row.createdAt} · {row.channel}
                     </span>
-                  )}
-                </TableCell>
-                <TableCell className="py-3">
-                  {row.status}
-                  {row.paidAt && (
-                    <span className="block text-caption text-muted-foreground">{row.paidAt}</span>
-                  )}
-                </TableCell>
-                <TableCell className="py-3">{row.orderStatus}</TableCell>
-                <TableCell className="py-3">
-                  <ToneBadge tone={FLAGS[row.flag].tone}>{FLAGS[row.flag].label}</ToneBadge>
-                  {row.note && (
-                    <span className="mt-1 block text-caption text-muted-foreground">
-                      {row.note}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className="py-3">
-                  <Button
-                    variant="outline"
-                    size="compact"
-                    isDisabled={!isAvailable}
-                    isPending={busyId === row.id}
-                    onPress={() => refresh(row)}
-                  >
-                    <IconRefresh className="size-4.5" />
-                    Cek ke Midtrans
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <Link
+                      href={urlFor('admin.order', { id: row.orderId })}
+                      className="inline-flex min-h-11 items-center font-mono font-semibold"
+                    >
+                      {row.number}
+                    </Link>
+                    <span className="block text-caption text-muted-foreground">{row.customer}</span>
+                  </TableCell>
+                  <TableCell className="py-3 tabular-nums">
+                    {formatRupiah(row.amount)}
+                    {row.billTotal !== null && row.billTotal !== row.amount && (
+                      <span className="block text-caption text-destructive-text">
+                        tagihan {formatRupiah(row.billTotal)}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="py-3">
+                    {row.status}
+                    {row.paidAt && (
+                      <span className="block text-caption text-muted-foreground">{row.paidAt}</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="py-3">{row.orderStatus}</TableCell>
+                  <TableCell className="py-3">
+                    <ToneBadge tone={FLAGS[row.flag].tone}>{FLAGS[row.flag].label}</ToneBadge>
+                    {row.note && (
+                      <span className="mt-1 block text-caption text-muted-foreground">
+                        {row.note}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <Button
+                      variant="outline"
+                      size="compact"
+                      isDisabled={!isAvailable}
+                      isPending={busyId === row.id}
+                      onPress={() => refresh(row)}
+                    >
+                      <IconRefresh className="size-4.5" />
+                      Cek ke Midtrans
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </AdminLayout>
   )
 }

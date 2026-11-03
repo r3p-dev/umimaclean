@@ -104,11 +104,11 @@ export default function Washing({
       />
       <div className="mx-auto flex w-full max-w-180 flex-col gap-3.5 p-4">
         <Card>
-          <CardHeader>
-            <CardTitle as="h2">Status saat ini</CardTitle>
-          </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-caption font-medium text-muted-foreground">
+                Status saat ini
+              </span>
               <span role="status" className="flex items-center gap-2.5 text-lg font-bold">
                 <span
                   aria-hidden="true"
@@ -135,7 +135,7 @@ export default function Washing({
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b">
             <CardTitle as="h2">Barang &amp; layanan</CardTitle>
           </CardHeader>
           <CardContent>
@@ -162,179 +162,191 @@ export default function Washing({
           </CardContent>
         </Card>
 
-        <section className="overflow-hidden rounded-lg border border-border bg-card">
-          <div className="px-4 pt-3.5">
-            <h2 className="text-base leading-[1.3] font-semibold">Foto bukti pencucian</h2>
-          </div>
+        <Card>
+          <CardHeader>
+            <CardTitle as="h2">Foto bukti pencucian</CardTitle>
+          </CardHeader>
 
           {cameraPhase === 'live' && (
-            <div data-surface="inverse" className="relative mt-3 aspect-4/3 bg-surface-inverse">
-              <CameraFeed
-                videoRef={camera.videoRef}
-                status={camera.status}
-                onRetry={camera.retry}
-                frameClassName="inset-x-[9%] top-14 bottom-25"
-                guide="tampilan kamera belakang"
-              />
-              <div className="absolute top-2 left-2">
-                <CloseCameraButton onClose={() => setCameraPhase('off')} />
+            <CardContent data-bleed>
+              <div data-surface="inverse" className="relative aspect-4/3 bg-surface-inverse">
+                <CameraFeed
+                  videoRef={camera.videoRef}
+                  status={camera.status}
+                  onRetry={camera.retry}
+                  frameClassName="inset-x-[9%] top-14 bottom-25"
+                  guide="tampilan kamera belakang"
+                />
+                <div className="absolute top-2 left-2">
+                  <CloseCameraButton onClose={() => setCameraPhase('off')} />
+                </div>
+                <div className="absolute inset-x-0 bottom-4 flex justify-center">
+                  <Shutter onShoot={shoot} isDisabled={!camera.canCapture} className="size-17" />
+                </div>
               </div>
-              <div className="absolute inset-x-0 bottom-4 flex justify-center">
-                <Shutter onShoot={shoot} isDisabled={!camera.canCapture} className="size-17" />
-              </div>
-            </div>
+            </CardContent>
           )}
 
           {cameraPhase === 'preview' && pending && (
             <>
-              <PhotoPreview
-                photo={pending.photo}
-                stamp={pending.stamp}
-                showLabel={false}
-                className="mt-3 aspect-4/3"
-              />
-              <div className="grid grid-cols-2 gap-2.5 px-4 pt-3.5 pb-4">
-                <Button
-                  variant="outline"
-                  size="cta"
-                  onPress={() => setCameraPhase('live')}
-                  className="text-[15px]"
-                >
-                  <IconRotate />
-                  Ulangi
-                </Button>
-                <Button
-                  size="cta"
-                  onPress={() => {
-                    setLocalShot(pending)
-                    setPending(null)
-                    setCameraPhase('off')
-                  }}
-                  className="text-[15px]"
-                >
-                  <IconCheck />
-                  Pakai Foto
-                </Button>
-              </div>
+              <CardContent data-bleed>
+                <PhotoPreview
+                  photo={pending.photo}
+                  stamp={pending.stamp}
+                  showLabel={false}
+                  className="aspect-4/3"
+                />
+              </CardContent>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Button
+                    variant="outline"
+                    size="cta"
+                    onPress={() => setCameraPhase('live')}
+                    className="text-[15px]"
+                  >
+                    <IconRotate />
+                    Ulangi
+                  </Button>
+                  <Button
+                    size="cta"
+                    onPress={() => {
+                      setLocalShot(pending)
+                      setPending(null)
+                      setCameraPhase('off')
+                    }}
+                    className="text-[15px]"
+                  >
+                    <IconCheck />
+                    Pakai Foto
+                  </Button>
+                </div>
+              </CardContent>
             </>
           )}
 
           {cameraPhase === 'off' && !shot && !isDone && (
-            <div className="flex flex-col gap-2.5 px-4 pt-2.5 pb-4">
-              <p className="text-sm leading-[1.45] text-foreground-secondary">
-                Wajib sebelum pencucian ditandai selesai. Foto semua barang setelah dicuci, sebelum
-                dikemas.
-              </p>
-              <Button size="cta" onPress={() => setCameraPhase('live')}>
-                <IconCamera />
-                Ambil Foto Hasil Cuci
-              </Button>
-              <span className="text-center text-caption leading-[1.4] text-muted-foreground">
-                Kamera perangkat saja · tanpa galeri atau file
-              </span>
-            </div>
+            <CardContent>
+              <div className="flex flex-col gap-2.5">
+                <p className="text-sm text-foreground-secondary">
+                  Wajib sebelum pencucian ditandai selesai. Foto semua barang setelah dicuci,
+                  sebelum dikemas.
+                </p>
+                <Button size="cta" onPress={() => setCameraPhase('live')}>
+                  <IconCamera />
+                  Ambil Foto Hasil Cuci
+                </Button>
+                <span className="text-center text-caption text-muted-foreground">
+                  Kamera perangkat saja · tanpa galeri atau file
+                </span>
+              </div>
+            </CardContent>
           )}
 
           {cameraPhase === 'off' && localShot && !isDone && (
-            <div className="flex flex-col gap-2.5 px-4 pt-3 pb-4">
-              <ProofResult
-                title="Foto bukti pencucian"
-                photo={localShot.photo}
-                stamp={localShot.stamp}
-                onRetake={() => setCameraPhase('live')}
-              />
-              <Button variant="success" size="cta" onPress={complete} isPending={isBusy}>
-                <IconCircleCheck />
-                {isBusy ? 'Menyimpan…' : 'Selesaikan Pencucian'}
-              </Button>
-            </div>
+            <CardContent>
+              <div className="flex flex-col gap-2.5">
+                <ProofResult
+                  title="Foto bukti pencucian"
+                  photo={localShot.photo}
+                  stamp={localShot.stamp}
+                  onRetake={() => setCameraPhase('live')}
+                />
+                <Button variant="success" size="cta" onPress={complete} isPending={isBusy}>
+                  <IconCircleCheck />
+                  {isBusy ? 'Menyimpan…' : 'Selesaikan Pencucian'}
+                </Button>
+              </div>
+            </CardContent>
           )}
 
           {cameraPhase === 'off' && isDone && (
-            <div className="flex flex-col gap-2.5 px-4 pt-3 pb-4.5">
-              <div
-                role="status"
-                className="flex flex-col gap-2 rounded-md bg-success p-3.5 text-success-foreground"
-              >
-                <span className="flex items-center gap-2 text-base leading-[1.3] font-bold">
-                  <IconCircleCheck className="size-5.5" />
-                  Pencucian selesai
-                </span>
-                {order.returnMethod === 'delivery' ? (
-                  <span className="text-sm leading-[1.45]">
-                    Pesanan dipindah ke{' '}
-                    <strong className="font-bold tracking-[0.03em]">ANTAR</strong>.
-                  </span>
-                ) : (
-                  <span className="text-sm leading-[1.45]">
-                    {order.isCollected
-                      ? 'Barang sudah diserahkan ke pelanggan.'
-                      : 'Pesanan siap diambil di toko.'}
-                  </span>
-                )}
-              </div>
-              {shot && shot.photo && (
-                <img
-                  src={shot.photo}
-                  alt="Foto bukti pencucian"
-                  className="aspect-4/3 w-full rounded-md object-cover"
-                />
-              )}
-              {order.isWaitingCollection && (
-                <Button
-                  size="cta"
-                  isPending={isBusy}
-                  onPress={() =>
-                    router.post(
-                      urlFor('staff.collect', { id }),
-                      {},
-                      {
-                        onStart: () => setBusy(true),
-                        onFinish: () => setBusy(false),
-                      }
-                    )
-                  }
+            <CardContent>
+              <div className="flex flex-col gap-2.5">
+                <div
+                  role="status"
+                  className="flex flex-col gap-2 rounded-md bg-success p-3.5 text-success-foreground"
                 >
-                  <IconCircleCheck />
-                  Serahkan ke Pelanggan
-                </Button>
-              )}
-              {(order.canPrintLabel || order.canPrintReceipt) && (
-                <div className="grid grid-cols-2 gap-2.5">
-                  {order.canPrintLabel && (
-                    <LinkButton
-                      size="cta"
-                      className="text-[15px]"
-                      href={urlFor('staff.print.label', { id })}
-                    >
-                      <IconPrinter />
-                      Label
-                    </LinkButton>
-                  )}
-                  {order.canPrintReceipt && (
-                    <LinkButton
-                      variant="outline"
-                      size="cta"
-                      className="text-[15px]"
-                      href={urlFor('staff.print.receipt', { id })}
-                    >
-                      <IconPrinter />
-                      Struk
-                    </LinkButton>
+                  <span className="flex items-center gap-2 text-base leading-[1.3] font-bold">
+                    <IconCircleCheck className="size-5.5" />
+                    Pencucian selesai
+                  </span>
+                  {order.returnMethod === 'delivery' ? (
+                    <span className="text-sm leading-[1.45]">
+                      Pesanan dipindah ke{' '}
+                      <strong className="font-bold tracking-[0.03em]">ANTAR</strong>.
+                    </span>
+                  ) : (
+                    <span className="text-sm leading-[1.45]">
+                      {order.isCollected
+                        ? 'Barang sudah diserahkan ke pelanggan.'
+                        : 'Pesanan siap diambil di toko.'}
+                    </span>
                   )}
                 </div>
-              )}
-              <LinkButton
-                variant="ghost"
-                className="border-[1.5px] border-input text-[15px] text-info-foreground hover:text-info-foreground"
-                href={order.returnMethod === 'delivery' ? urlFor('staff.deliveries') : back.href}
-              >
-                {order.returnMethod === 'delivery' && <IconArrowDownLeft />}
-                {order.returnMethod === 'delivery' ? 'Lihat antrean Antar' : 'Kembali ke Proses'}
-              </LinkButton>
-            </div>
+                {shot && shot.photo && (
+                  <img
+                    src={shot.photo}
+                    alt="Foto bukti pencucian"
+                    className="aspect-4/3 w-full rounded-md object-cover"
+                  />
+                )}
+                {order.isWaitingCollection && (
+                  <Button
+                    size="cta"
+                    isPending={isBusy}
+                    onPress={() =>
+                      router.post(
+                        urlFor('staff.collect', { id }),
+                        {},
+                        {
+                          onStart: () => setBusy(true),
+                          onFinish: () => setBusy(false),
+                        }
+                      )
+                    }
+                  >
+                    <IconCircleCheck />
+                    Serahkan ke Pelanggan
+                  </Button>
+                )}
+                {(order.canPrintLabel || order.canPrintReceipt) && (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {order.canPrintLabel && (
+                      <LinkButton
+                        size="cta"
+                        className="text-[15px]"
+                        href={urlFor('staff.print.label', { id })}
+                      >
+                        <IconPrinter />
+                        Label
+                      </LinkButton>
+                    )}
+                    {order.canPrintReceipt && (
+                      <LinkButton
+                        variant="outline"
+                        size="cta"
+                        className="text-[15px]"
+                        href={urlFor('staff.print.receipt', { id })}
+                      >
+                        <IconPrinter />
+                        Struk
+                      </LinkButton>
+                    )}
+                  </div>
+                )}
+                <LinkButton
+                  variant="ghost"
+                  className="border-[1.5px] border-input text-[15px] text-info-foreground hover:text-info-foreground"
+                  href={order.returnMethod === 'delivery' ? urlFor('staff.deliveries') : back.href}
+                >
+                  {order.returnMethod === 'delivery' && <IconArrowDownLeft />}
+                  {order.returnMethod === 'delivery' ? 'Lihat antrean Antar' : 'Kembali ke Proses'}
+                </LinkButton>
+              </div>
+            </CardContent>
           )}
-        </section>
+        </Card>
       </div>
     </StaffLayout>
   )

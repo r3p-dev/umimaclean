@@ -24,7 +24,7 @@ export default function PickupAddressCard({
 }) {
   return (
     <Card role="region" aria-labelledby="pickup-address-title">
-      {media && <CardContent>{media}</CardContent>}
+      {media && <CardContent data-bleed>{media}</CardContent>}
       <CardHeader>
         <CardTitle as="h2" id="pickup-address-title">
           <span className="flex min-w-0 items-center gap-2">

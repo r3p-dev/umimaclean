@@ -252,124 +252,126 @@ export default function AdminReports({ report, costs }: { report: ReportData; co
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
           <div className="flex min-w-0 flex-col gap-4">
             <PaymentMixCard mix={mix} />
-            <section className="min-w-0 overflow-hidden rounded-lg border border-border bg-card">
-              <div className="flex flex-wrap items-center gap-2.5 border-b border-border px-4.5 py-3.5">
-                <h2 className="flex-1 text-[17px] leading-tight font-bold">{detailTitle}</h2>
-                {detailExport('desktop')}
-              </div>
-              {table.selectedCount > 0 && (
-                <BulkBar
-                  label="Aksi untuk baris terpilih"
-                  count={table.selectedCount}
-                  total={table.total}
-                  canSelectAll={table.canSelectAll}
-                  onSelectAll={table.selectAll}
-                  onClear={table.clear}
-                >
-                  {detailExport('compact')}
-                </BulkBar>
-              )}
-              {table.total > 0 && (
-                <SelectAllRow state={table.allState} onToggle={table.toggleAll} />
-              )}
-              <Table className="max-sm:hidden">
-                <TableHeader>
-                  <tr className={TABLE_HEAD_ROW}>
-                    <TableHead className={CHECK_CELL}>
-                      <Checkbox
-                        isSelected={table.allState === true}
-                        isIndeterminate={table.allState === 'indeterminate'}
-                        onChange={table.toggleAll}
-                        aria-label="Pilih semua baris di halaman ini"
-                      />
-                    </TableHead>
-                    <TableHead>{detail.isDaily ? 'Tanggal' : 'Minggu'}</TableHead>
-                    <TableHead className="text-right">Transaksi</TableHead>
-                    <TableHead className="text-right">Online</TableHead>
-                    <TableHead className="text-right">Toko</TableHead>
-                    <TableHead className="text-right">Omzet</TableHead>
-                    <TableHead className="pr-4.5 text-right last:pr-4.5">Δ</TableHead>
-                  </tr>
-                </TableHeader>
-                <TableBody>
+            <Card>
+              <CardHeader className="border-b">
+                <CardTitle as="h2">{detailTitle}</CardTitle>
+                <CardAction>{detailExport('desktop')}</CardAction>
+              </CardHeader>
+              <CardContent data-bleed>
+                {table.selectedCount > 0 && (
+                  <BulkBar
+                    label="Aksi untuk baris terpilih"
+                    count={table.selectedCount}
+                    total={table.total}
+                    canSelectAll={table.canSelectAll}
+                    onSelectAll={table.selectAll}
+                    onClear={table.clear}
+                  >
+                    {detailExport('compact')}
+                  </BulkBar>
+                )}
+                {table.total > 0 && (
+                  <SelectAllRow state={table.allState} onToggle={table.toggleAll} />
+                )}
+                <Table className="max-sm:hidden">
+                  <TableHeader>
+                    <tr className={TABLE_HEAD_ROW}>
+                      <TableHead className={CHECK_CELL}>
+                        <Checkbox
+                          isSelected={table.allState === true}
+                          isIndeterminate={table.allState === 'indeterminate'}
+                          onChange={table.toggleAll}
+                          aria-label="Pilih semua baris di halaman ini"
+                        />
+                      </TableHead>
+                      <TableHead>{detail.isDaily ? 'Tanggal' : 'Minggu'}</TableHead>
+                      <TableHead className="text-right">Transaksi</TableHead>
+                      <TableHead className="text-right">Online</TableHead>
+                      <TableHead className="text-right">Toko</TableHead>
+                      <TableHead className="text-right">Omzet</TableHead>
+                      <TableHead className="pr-4.5 text-right">Δ</TableHead>
+                    </tr>
+                  </TableHeader>
+                  <TableBody>
+                    {table.rows.map((row) => {
+                      const isSelected = table.isSelected(row.id)
+                      return (
+                        <TableRow key={row.id} data-selected={isSelected}>
+                          <TableCell className={CHECK_CELL}>
+                            <Checkbox
+                              isSelected={isSelected}
+                              onChange={() => table.toggle(row.id)}
+                              aria-label={`Pilih ${row.label}`}
+                            />
+                          </TableCell>
+                          <TableCell className="py-2 font-semibold whitespace-nowrap">
+                            {row.label}
+                          </TableCell>
+                          <TableCell className="py-2 text-right tabular-nums">
+                            {row.transactions}
+                          </TableCell>
+                          <TableCell className="py-2 text-right tabular-nums">
+                            {formatRupiah(row.online)}
+                          </TableCell>
+                          <TableCell className="py-2 text-right tabular-nums">
+                            {formatRupiah(row.store)}
+                          </TableCell>
+                          <TableCell className="py-2 text-right font-semibold tabular-nums">
+                            {formatRupiah(row.revenue)}
+                          </TableCell>
+                          <TableCell className="py-2 text-right whitespace-nowrap text-foreground-secondary">
+                            {changeText(row.change)}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+                <ul className="sm:hidden">
                   {table.rows.map((row) => {
                     const isSelected = table.isSelected(row.id)
                     return (
-                      <TableRow key={row.id} data-selected={isSelected}>
-                        <TableCell className={CHECK_CELL}>
-                          <Checkbox
-                            isSelected={isSelected}
-                            onChange={() => table.toggle(row.id)}
-                            aria-label={`Pilih ${row.label}`}
-                          />
-                        </TableCell>
-                        <TableCell className="py-2 font-semibold whitespace-nowrap">
-                          {row.label}
-                        </TableCell>
-                        <TableCell className="py-2 text-right tabular-nums">
-                          {row.transactions}
-                        </TableCell>
-                        <TableCell className="py-2 text-right tabular-nums">
-                          {formatRupiah(row.online)}
-                        </TableCell>
-                        <TableCell className="py-2 text-right tabular-nums">
-                          {formatRupiah(row.store)}
-                        </TableCell>
-                        <TableCell className="py-2 text-right font-semibold tabular-nums">
-                          {formatRupiah(row.revenue)}
-                        </TableCell>
-                        <TableCell className="py-2 pr-4.5 text-right whitespace-nowrap text-foreground-secondary last:pr-4.5">
-                          {changeText(row.change)}
-                        </TableCell>
-                      </TableRow>
+                      <li
+                        key={row.id}
+                        data-selected={isSelected}
+                        className={cn(
+                          'flex items-center gap-0.5 border-t border-border py-1 pr-(--card-spacing) pl-2',
+                          isSelected && 'bg-row-selected'
+                        )}
+                      >
+                        <Checkbox
+                          isSelected={isSelected}
+                          onChange={() => table.toggle(row.id)}
+                          aria-label={`Pilih ${row.label}`}
+                        />
+                        <div className="min-w-0 flex-1 py-2.5">
+                          <div className="flex justify-between gap-2 text-[14.5px] leading-[1.3] font-semibold">
+                            <span>{row.label}</span>
+                            <span>{formatRupiah(row.revenue)}</span>
+                          </div>
+                          <p className="text-meta leading-[1.4] text-foreground-secondary">
+                            {row.transactions} transaksi · online {formatRupiah(row.online)} · toko{' '}
+                            {formatRupiah(row.store)} · {changeText(row.change)}
+                          </p>
+                        </div>
+                      </li>
                     )
                   })}
-                </TableBody>
-              </Table>
-              <ul className="sm:hidden">
-                {table.rows.map((row) => {
-                  const isSelected = table.isSelected(row.id)
-                  return (
-                    <li
-                      key={row.id}
-                      data-selected={isSelected}
-                      className={cn(
-                        'flex items-center gap-0.5 border-t border-border py-1 pr-4 pl-1',
-                        isSelected && 'bg-row-selected'
-                      )}
-                    >
-                      <Checkbox
-                        isSelected={isSelected}
-                        onChange={() => table.toggle(row.id)}
-                        aria-label={`Pilih ${row.label}`}
-                      />
-                      <div className="min-w-0 flex-1 py-2.5">
-                        <div className="flex justify-between gap-2 text-[14.5px] leading-[1.3] font-semibold">
-                          <span>{row.label}</span>
-                          <span>{formatRupiah(row.revenue)}</span>
-                        </div>
-                        <p className="text-meta leading-[1.4] text-foreground-secondary">
-                          {row.transactions} transaksi · online {formatRupiah(row.online)} · toko{' '}
-                          {formatRupiah(row.store)} · {changeText(row.change)}
-                        </p>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-              <TablePagination
-                rangeText={table.rangeText}
-                page={table.page}
-                pages={table.pages}
-                pageNumbers={table.pageNumbers}
-                size={table.size}
-                onPage={table.setPage}
-                onSize={table.setSize}
-              />
-            </section>
+                </ul>
+                <TablePagination
+                  rangeText={table.rangeText}
+                  page={table.page}
+                  pages={table.pages}
+                  pageNumbers={table.pageNumbers}
+                  size={table.size}
+                  onPage={table.setPage}
+                  onSize={table.setSize}
+                />
+              </CardContent>
+            </Card>
           </div>
           <Card>
-            <CardHeader>
+            <CardHeader className="border-b">
               <CardTitle as="h2">Biaya operasional · Okt 2026</CardTitle>
               <CardAction>
                 <Button
@@ -449,7 +451,7 @@ export default function AdminReports({ report, costs }: { report: ReportData; co
                   dihitung.
                 </p>
               )}
-              <div className="flex justify-between border-t border-border pt-3 text-md font-bold">
+              <div className="flex justify-between border-t border-input pt-3 text-md font-bold">
                 <span>Total biaya</span>
                 <span>{formatRupiah(total)}</span>
               </div>
