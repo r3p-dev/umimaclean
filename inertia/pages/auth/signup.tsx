@@ -7,7 +7,7 @@ export default function Signup() {
       <h1 className="auth__title">Create your account</h1>
       <p className="auth__sub">Start building with the starter kit.</p>
 
-      <Form route="new_account.store">
+      <Form route="register.store">
         {({ errors, processing }) => (
           <div className="auth__form">
             <div className="field">

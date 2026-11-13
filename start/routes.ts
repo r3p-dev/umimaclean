@@ -15,8 +15,8 @@ router.on('/').renderInertia('home', {}).as('home')
 
 router
   .group(() => {
-    router.get('signup', [controllers.NewAccount, 'create'])
-    router.post('signup', [controllers.NewAccount, 'store'])
+    router.get('signup', [controllers.Register, 'create'])
+    router.post('signup', [controllers.Register, 'store'])
 
     router.get('login', [controllers.Session, 'create'])
     router.post('login', [controllers.Session, 'store'])

@@ -10,7 +10,7 @@
 
 import { inject } from '@adonisjs/core'
 import AuthService from '#services/auth_service'
-import { loginValidator } from '#validators/user'
+import { loginValidator } from '#validators/auth'
 import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()

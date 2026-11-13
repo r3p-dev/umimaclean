@@ -1,9 +1,9 @@
 /*
 |--------------------------------------------------------------------------
-| User Validators
+| Auth Validators
 |--------------------------------------------------------------------------
 |
-| Validation schemas and inferred types for user signup and authentication.
+| Validation schemas and inferred input types for authentication.
 |
 */
 
@@ -12,13 +12,9 @@ import type { Infer } from '@vinejs/vine/types'
 import { emailRule, passwordRule } from '#validators/rules'
 
 /**
- * Validator to use when performing self-signup.
- *
- * Uses VineJS .confirmed() to enforce that the confirmation field matches.
- * The confirmation field is also explicitly declared so that it is included
- * in the inferred request body type shared with the frontend.
+ * Validates self-registration data, including password confirmation.
  */
-export const signupValidator = vine.create({
+export const registerValidator = vine.create({
   fullName: vine.string().nullable(),
   email: emailRule().unique({ table: 'users', column: 'email' }),
   password: passwordRule().confirmed({ as: 'passwordConfirmation' }),
@@ -26,12 +22,12 @@ export const signupValidator = vine.create({
 })
 
 /**
- * Inferred type from self-signup validator.
+ * Input type inferred from the registration validator.
  */
-export type SignupInput = Infer<typeof signupValidator>
+export type RegisterInput = Infer<typeof registerValidator>
 
 /**
- * Validator to use before validating user credentials during login.
+ * Validates user credentials for authentication.
  */
 export const loginValidator = vine.create({
   email: emailRule(),
@@ -39,6 +35,6 @@ export const loginValidator = vine.create({
 })
 
 /**
- * Inferred type from login credentials validator.
+ * Input type inferred from the login validator.
  */
 export type LoginInput = Infer<typeof loginValidator>

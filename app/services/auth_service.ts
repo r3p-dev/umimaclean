@@ -1,21 +1,17 @@
 /*
 |--------------------------------------------------------------------------
-| Authentication Service
+| Auth Service
 |--------------------------------------------------------------------------
 |
-| Encapsulates business logic for user account registration, credentials
-| verification, and related authentication operations.
+| Handles user registration and credential verification.
 |
 */
 
 import User from '#models/user'
-import type { SignupInput, LoginInput } from '#validators/user'
+import type { RegisterInput, LoginInput } from '#validators/auth'
 
 export default class AuthService {
-  /**
-   * Register a new user account using validated signup input.
-   */
-  async register(payload: SignupInput): Promise<User> {
+  async register(payload: RegisterInput): Promise<User> {
     return User.create({
       fullName: payload.fullName,
       email: payload.email,
@@ -23,9 +19,6 @@ export default class AuthService {
     })
   }
 
-  /**
-   * Verify user credentials for login using validated login input.
-   */
   async verifyCredentials(credentials: LoginInput): Promise<User> {
     return User.verifyCredentials(credentials.email, credentials.password)
   }

@@ -12,7 +12,7 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import app from '@adonisjs/core/services/app'
 import AuthService from '#services/auth_service'
-import NewAccountController from '#controllers/new_account_controller'
+import NewAccountController from '#controllers/register_controller'
 import SessionController from '#controllers/session_controller'
 
 test.group('AuthService', (group) => {

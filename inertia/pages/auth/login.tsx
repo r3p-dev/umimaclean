@@ -56,7 +56,7 @@ export default function Login() {
 
       <p className="auth__foot">
         New here?{' '}
-        <Link route="new_account.create" className="il">
+        <Link route="register.create" className="il">
           Create an account
         </Link>
       </p>
