@@ -2,6 +2,8 @@
 
 Date: 2026-11-13. Version: none (M0 has no version bump). No application code was written.
 
+This is the record of M0 as it was run. Since M1a the database is no longer a `compose.yaml` service: development and tests use their own databases on a shared PostgreSQL server, and the data tools run through `compose.yaml` (`docs/ARCHITECTURE.md` §6).
+
 ## 1. Summary
 
 M0 prepared everything the later milestones depend on, without application code:
@@ -35,7 +37,7 @@ No accounts or pages: M0 has no application code.
 
 ## 3. Screens
 
-None: M0 adds no pages, so `docs/evidence/M0/` holds no screenshots.
+None: M0 adds no pages, so this folder holds no screenshots.
 
 ## 4. How it works
 
@@ -84,7 +86,7 @@ Documentation check (2026-11-13):
 
 Before the run, this project's containers, database volume, images (`postgis/postgis:18-3.6`, `osrm-backend:v26.11.0-debian`, `go-pmtiles:v1.31.2`, `debian:trixie-20261104-slim`, `umimaclean-map-tools`) and all data files (`storage/`, `public/tiles/`) were removed. The commands were then extracted verbatim from the code blocks of `docs/ARCHITECTURE.md` §6.1–§6.4 into a script and run with `bash -x` and `DB_PORT=5433` (port 5432 is taken on the development machine).
 
-Full log: [`evidence/M0/clean-run.log`](evidence/M0/clean-run.log) (progress-bar lines of curl, osm2pgsql and pmtiles removed with `grep -vE 'fetching chunks|^Processing: |^\s*[0-9]+ +[0-9.]+[kMG]? +[0-9]+ +[0-9.]+[kMG]?'`; nothing else changed). Key lines from it:
+Full log: [`clean-run.log`](clean-run.log) (progress-bar lines of curl, osm2pgsql and pmtiles removed with `grep -vE 'fetching chunks|^Processing: |^\s*[0-9]+ +[0-9.]+[kMG]? +[0-9]+ +[0-9.]+[kMG]?'`; nothing else changed). Key lines from it:
 
 ```text
 2026-11-13T13:29:18Z
