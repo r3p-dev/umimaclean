@@ -1,99 +1,65 @@
-import AuthLayout from '~/components/templates/auth_layout'
+import { Head } from '@inertiajs/react'
 import { Form, Link } from '@adonisjs/inertia/react'
+import { IconArrowLeft } from '@tabler/icons-react'
+import FormField from '~/components/molecules/form_field'
+import AuthLayout from '~/components/templates/auth_layout'
+import { Button } from '~/components/ui/button'
 
 export default function Signup() {
   return (
     <>
-      <h1 className="auth__title">Create your account</h1>
-      <p className="auth__sub">Start building with the starter kit.</p>
+      <Head title="Daftar" />
+      <h1 className="text-3xl font-bold tracking-tight">Buat akun</h1>
+      <p className="mt-1 text-base text-muted-foreground">
+        Simpan alamat dan riwayat pesanan, lalu pesan penjemputan kapan saja.
+      </p>
 
-      <Form route="register.store">
+      <Form route="register.store" className="mt-8 flex flex-col gap-5">
         {({ errors, processing }) => (
-          <div className="auth__form">
-            <div className="field">
-              <label className="field__label" htmlFor="fullName">
-                Full name
-              </label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                className="field__input"
-                autoComplete="name"
-                placeholder="Ada Lovelace"
-                aria-invalid={errors.fullName ? 'true' : 'false'}
-              />
-              {errors.fullName && <span className="field__error">{errors.fullName}</span>}
-            </div>
-
-            <div className="field">
-              <label className="field__label" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                className="field__input"
-                autoComplete="email"
-                placeholder="you@example.com"
-                aria-invalid={errors.email ? 'true' : 'false'}
-              />
-              {errors.email && <span className="field__error">{errors.email}</span>}
-            </div>
-
-            <div className="field">
-              <label className="field__label" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                className="field__input"
-                autoComplete="new-password"
-                placeholder="••••••••"
-                aria-invalid={errors.password ? 'true' : 'false'}
-              />
-              {errors.password && <span className="field__error">{errors.password}</span>}
-            </div>
-
-            <div className="field">
-              <label className="field__label" htmlFor="passwordConfirmation">
-                Confirm password
-              </label>
-              <input
-                id="passwordConfirmation"
-                name="passwordConfirmation"
-                type="password"
-                className="field__input"
-                autoComplete="new-password"
-                placeholder="••••••••"
-                aria-invalid={errors.passwordConfirmation ? 'true' : 'false'}
-              />
-              {errors.passwordConfirmation && (
-                <span className="field__error">{errors.passwordConfirmation}</span>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn--primary btn--block"
-              disabled={processing}
-              style={{ marginTop: 4 }}
-            >
-              {processing ? 'One moment…' : 'Create account'}
-            </button>
-          </div>
+          <>
+            <FormField id="fullName" label="Nama" autoComplete="name" error={errors.fullName} />
+            <FormField
+              id="email"
+              label="Email"
+              type="email"
+              autoComplete="email"
+              error={errors.email}
+            />
+            <FormField
+              id="password"
+              label="Kata sandi"
+              type="password"
+              autoComplete="new-password"
+              description="Minimal 8 karakter."
+              error={errors.password}
+            />
+            <FormField
+              id="passwordConfirmation"
+              label="Ulangi kata sandi"
+              type="password"
+              autoComplete="new-password"
+              error={errors.passwordConfirmation}
+            />
+            <Button type="submit" isDisabled={processing} className="mt-3 h-14 text-base">
+              {processing ? 'Memproses…' : 'Daftar'}
+            </Button>
+          </>
         )}
       </Form>
 
-      <p className="auth__foot">
-        Already have an account?{' '}
-        <Link route="session.create" className="il">
-          Sign in
+      <p className="mt-6 text-center text-base text-muted-foreground">
+        Sudah punya akun?{' '}
+        <Link route="session.create" className="font-semibold text-primary hover:underline">
+          Masuk
         </Link>
       </p>
+      <Link
+        route="home"
+        className="mt-8 inline-flex min-h-11 items-center gap-2 self-start text-sm text-foreground/80 hover:text-foreground"
+      >
+        <IconArrowLeft className="size-4.5" />
+        Kembali ke beranda
+      </Link>
     </>
   )
 }
