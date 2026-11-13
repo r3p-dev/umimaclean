@@ -1,0 +1,9 @@
+# Map data tools (osmium-tool, osm2pgsql), so nothing extra is installed on the host.
+# Build: podman build -t umimaclean-map-tools maps/
+FROM docker.io/library/debian:trixie-20261104-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
+
+# osm2pgsql comes from trixie-backports: trixie ships 2.1.1, backports the current 2.3.1.
+RUN echo 'deb http://deb.debian.org/debian trixie-backports main' > /etc/apt/sources.list.d/backports.list \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends osmium-tool osm2pgsql/trixie-backports \
+  && rm -rf /var/lib/apt/lists/*
