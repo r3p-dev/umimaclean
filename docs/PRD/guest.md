@@ -6,7 +6,7 @@ Anyone who is not signed in: people browsing the site, people signing up or in, 
 
 ## 1. Public pages (`GUEST`)
 
-- **GUEST-1** **Landing** (`/`): hero with a before/after comparison (free-license photos of shoes before and after cleaning, with each photo's source and license documented, until the shop provides its own) and an order CTA; how it works; the items we clean; the price list built from active services (SVC-1, "mulai dari" where flagged); reviews; a service-area map with an "is my location covered?" check (AREA-4, rate limited per IP); FAQ; footer with the shop's name, WhatsApp, address and opening hours from the store settings.
+- **GUEST-1** **Landing** (`/`): hero with a before/after comparison (free-license photos of shoes before and after cleaning, with each photo's source and license documented, until the shop provides its own) and an order CTA; how it works; the items we clean; the price list built from active services (SVC-1, "mulai dari" where flagged); reviews; a service-area map with an "is my location covered?" check (AREA-4, rate limited per IP); FAQ; footer with the shop's name, WhatsApp, address and opening hours from the store settings, and one small line crediting the hero photos ("Foto: Pavel Ševela (CC BY-SA 3.0), JustinLiang522 (CC BY-SA 4.0), via Wikimedia Commons"), each name linked to its photo's source page.
 - **GUEST-2** **Terms** (`/syarat`) and **privacy** (`/privasi`). The privacy page states which outside services receive which data (`shared.md` §11) and uses the shop details from the store settings.
 - **GUEST-3** **SEO**: title, description and Open Graph on public pages; `/sitemap.xml` and `/robots.txt` list public pages only.
 
@@ -31,13 +31,13 @@ Anyone who is not signed in: people browsing the site, people signing up or in, 
 
 ## 5. Pages
 
-| Page | URL |
-| --- | --- |
-| Landing | `/` |
-| Terms, privacy | `/syarat`, `/privasi` |
-| Sitemap, robots | `/sitemap.xml`, `/robots.txt` |
-| Order (unlock form or detail) | `/pesanan/:id` |
-| Register | `/daftar` |
-| OTP verification (all purposes) | `/verifikasi` |
-| Sign in | `/masuk` |
-| Forgot password, new password | `/lupa-kata-sandi`, `/kata-sandi-baru` |
+| Page                            | URL                                    |
+| ------------------------------- | -------------------------------------- |
+| Landing                         | `/`                                    |
+| Terms, privacy                  | `/syarat`, `/privasi`                  |
+| Sitemap, robots                 | `/sitemap.xml`, `/robots.txt`          |
+| Order (unlock form or detail)   | `/pesanan/:id`                         |
+| Register                        | `/daftar`                              |
+| OTP verification (all purposes) | `/verifikasi`                          |
+| Sign in                         | `/masuk`                               |
+| Forgot password, new password   | `/lupa-kata-sandi`, `/kata-sandi-baru` |

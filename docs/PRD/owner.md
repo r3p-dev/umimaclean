@@ -38,14 +38,14 @@ The business owner (role `admin`). Signs in at `/staf/masuk` (`staff.md` STAFF-1
 
 ## 7. Pages
 
-| Page | URL |
-| --- | --- |
-| Summary | `/admin` |
-| Orders, order detail | `/admin/pesanan`, `/admin/pesanan/:id` |
-| Reconciliation | `/admin/rekonsiliasi` |
-| Services and prices | `/admin/layanan` |
-| Customers | `/admin/pelanggan` |
-| Reports | `/admin/laporan` |
-| Staff activity | `/admin/aktivitas` |
+| Page                          | URL                                                                     |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| Summary                       | `/admin`                                                                |
+| Orders, order detail          | `/admin/pesanan`, `/admin/pesanan/:id`                                  |
+| Reconciliation                | `/admin/rekonsiliasi`                                                   |
+| Services and prices           | `/admin/layanan`                                                        |
+| Customers                     | `/admin/pelanggan`                                                      |
+| Reports                       | `/admin/laporan`                                                        |
+| Staff activity                | `/admin/aktivitas`                                                      |
 | Settings: staff, store, areas | `/admin/pengaturan`, `/admin/pengaturan/toko`, `/admin/pengaturan/area` |
-| Profile | `/admin/profil` |
+| Profile                       | `/admin/profil`                                                         |

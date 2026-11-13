@@ -41,13 +41,13 @@
 
 ## 6. Pages
 
-| Page | URL |
-| --- | --- |
-| Sign in | `/staf/masuk` |
-| Home | `/staf` |
-| Pickup queue, active pickup | `/staf/jemput`, `/staf/jemput/tugas` |
-| Delivery queue, active delivery | `/staf/antar`, `/staf/antar/tugas` |
+| Page                                | URL                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------- |
+| Sign in                             | `/staf/masuk`                                                       |
+| Home                                | `/staf`                                                             |
+| Pickup queue, active pickup         | `/staf/jemput`, `/staf/jemput/tugas`                                |
+| Delivery queue, active delivery     | `/staf/antar`, `/staf/antar/tugas`                                  |
 | Workshop queue, inspection, washing | `/staf/proses`, `/staf/proses/:id/periksa`, `/staf/proses/:id/cuci` |
-| Walk-in, counter payment | `/staf/transaksi`, `/staf/transaksi/:id/bayar` |
-| Print label, receipt | `/staf/cetak/:id/label`, `/staf/cetak/:id/struk` |
-| More, history, profile | `/staf/lainnya`, `/staf/riwayat`, `/staf/profil` |
+| Walk-in, counter payment            | `/staf/transaksi`, `/staf/transaksi/:id/bayar`                      |
+| Print label, receipt                | `/staf/cetak/:id/label`, `/staf/cetak/:id/struk`                    |
+| More, history, profile              | `/staf/lainnya`, `/staf/riwayat`, `/staf/profil`                    |

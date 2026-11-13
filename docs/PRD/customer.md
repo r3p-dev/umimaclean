@@ -21,6 +21,7 @@ A customer has an account (`guest.md` GUEST-10) and signs in at `/masuk`. Bottom
   - **bag**: brand, type (e.g. "ransel kanvas"), size (Small, Medium, Large or X-Large, with the lengths from SVC-5 as hints).
 
   Then: pickup address (from saved addresses, with a shortcut to add one while fewer than 3 exist), delivery address (same as pickup, or another saved address), pickup date and slot (SLOT; full or closed slots disabled), optional note (≤ 300 characters). "Pesan lagi" from a past order prefills its items. The form keeps its values when the customer goes back from the confirmation page.
+
 - **CUST-6** **Confirm** (`/pesan/konfirmasi`): a summary of the declared items, addresses, date, slot and note. Placing the order re-checks the slot capacity (SLOT-3) and the service area of both addresses (AREA-4), creates the order at `awaiting_pickup`, and sends the "order received" message (MSG-1). A double submit creates one order.
 
 ## 4. Orders
@@ -39,11 +40,11 @@ A customer has an account (`guest.md` GUEST-10) and signs in at `/masuk`. Bottom
 
 ## 6. Pages
 
-| Page | URL |
-| --- | --- |
-| Home | `/beranda` |
-| New order, confirm | `/pesan`, `/pesan/konfirmasi` |
-| Orders, order detail | `/pesanan`, `/pesanan/:id` |
-| Pay, receipt | `/pesanan/:id/bayar`, `/pesanan/:id/struk` |
-| Profile, edit, phone | `/profil`, `/profil/ubah`, `/profil/nomor` |
-| Addresses | `/profil/alamat`, `/profil/alamat/baru`, `/profil/alamat/:id/ubah` |
+| Page                 | URL                                                                |
+| -------------------- | ------------------------------------------------------------------ |
+| Home                 | `/beranda`                                                         |
+| New order, confirm   | `/pesan`, `/pesan/konfirmasi`                                      |
+| Orders, order detail | `/pesanan`, `/pesanan/:id`                                         |
+| Pay, receipt         | `/pesanan/:id/bayar`, `/pesanan/:id/struk`                         |
+| Profile, edit, phone | `/profil`, `/profil/ubah`, `/profil/nomor`                         |
+| Addresses            | `/profil/alamat`, `/profil/alamat/baru`, `/profil/alamat/:id/ubah` |
