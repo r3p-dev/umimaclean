@@ -8,8 +8,8 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | ---- | ------- | ---------------------------------------------- | --------------------- | ----- |
 | M0   | –       | Spikes and plan                                | done                  | 8     |
 | M1a  | –       | Conventions across the existing code           | done                  | 8     |
-| M1b  | –       | Foundation and look                            | done, awaiting review | 10    |
-| M1c  | 0.1.0   | Landing, legal pages, SEO                      | not started           | 10    |
+| M1b  | –       | Foundation and look                            | done                  | 10    |
+| M1c  | 0.1.0   | Landing, legal pages, SEO                      | done, awaiting review | 10    |
 | M2   | 0.2.0   | Accounts                                       | not started           | 24    |
 | M3   | 0.3.0   | Services, service areas, store settings        | not started           | 16    |
 | M4   | 0.4.0   | Addresses and maps                             | not started           | 20    |

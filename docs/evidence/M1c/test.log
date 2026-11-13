@@ -1,0 +1,79 @@
+$ npm test -- --reporters spec
+
+> umimaclean@0.1.0 test
+> node ace test --reporters spec
+
+c[ info ] loading hooks...
+[ info ] generating indexes...
+[ info ] codegen: created 6 file(s)
+[ info ] booting application to run tests...
+❯ Executed 1 migrations (50 ms)
+
+unit / AuthService (tests/unit/auth_service.spec.ts)
+  ✔ registers a new user account with hashed password (17.45ms)
+  ✔ verifies credentials successfully for valid user (12.49ms)
+  ✔ fails verification for incorrect password (10.12ms)
+  ✔ resolves RegisterController and SessionController with injected AuthService from container (1.72ms)
+
+unit / One light theme (tests/unit/theme.spec.ts)
+  ✔ the shadcn components carry no dark: classes (2.3ms)
+  ✔ app.css defines no dark theme (0.52ms)
+
+functional / Authentication Routes (tests/functional/auth.spec.ts)
+1:10:07 AM [vite] (ssr) connected.
+  ✔ POST /signup registers user and redirects to dashboard (2s)
+  ✔ POST /login authenticates valid credentials and redirects to dashboard (207.29ms)
+  ✔ POST /logout terminates user session and redirects to login (27.45ms)
+
+functional / Search engines (GUEST-3) (tests/functional/seo.spec.ts)
+  ✔ robots.txt keeps signed-in and development pages out and points to the sitemap (7.93ms)
+  ✔ the sitemap lists the public pages only (5.63ms)
+  ✔ a public page arrives server-rendered with its title, description and Open Graph tags (17.47ms)
+
+browser / Authentication Browser Flow (tests/browser/auth_flow.spec.ts)
+  ✔ home page renders and displays authentication entry points (475.01ms)
+  ✔ login page displays login form with credentials fields (493.14ms)
+  ✔ signup page displays registration form with all required fields (400.19ms)
+  ✔ user logs in through browser form and lands on dashboard (471.2ms)
+  ✔ sign-in also works before the page scripts run (server-rendered form) (182.46ms)
+
+browser / Look and feel (tests/browser/look.spec.ts)
+  ✔ / loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /syarat loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /privasi loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /login loads nothing from another host, in Indonesian, with one main heading (979.28ms)
+  ✔ /signup loads nothing from another host, in Indonesian, with one main heading (998.24ms)
+  ✔ /_preview/staf loads nothing from another host, in Indonesian, with one main heading (991.81ms)
+  ✔ /_preview/admin loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/alur loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/cetak loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/404 loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/500 loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ stays light when the device prefers a dark theme (301.46ms)
+  ✔ the first Tab press shows a visible focus ring (958.29ms)
+  ✔ / has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /syarat has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /privasi has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /login has no WCAG 2.1 AA violations (axe) (1s)
+  ✔ /signup has no WCAG 2.1 AA violations (axe) (1s)
+  ✔ /_preview/404 has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /_preview/500 has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ / does not scroll sideways at 360 px (1s)
+  ✔ /syarat does not scroll sideways at 360 px (952.05ms)
+  ✔ /privasi does not scroll sideways at 360 px (924.61ms)
+  ✔ /login does not scroll sideways at 360 px (948.87ms)
+  ✔ /signup does not scroll sideways at 360 px (953.53ms)
+  ✔ /_preview/staf does not scroll sideways at 360 px (914.75ms)
+  ✔ /_preview/admin does not scroll sideways at 360 px (1s)
+  ✔ /_preview/alur does not scroll sideways at 360 px (937.79ms)
+  ✔ /_preview/cetak does not scroll sideways at 360 px (989.08ms)
+  ✔ /_preview/404 does not scroll sideways at 360 px (1s)
+  ✔ /_preview/500 does not scroll sideways at 360 px (998.94ms)
+  ✔ the before and after slider moves with the keyboard (455.62ms)
+❯ Reverted 1 migrations (16 ms)
+
+ PASSED 
+
+Tests  49 passed (49)
+ Time  39s
+exit=0

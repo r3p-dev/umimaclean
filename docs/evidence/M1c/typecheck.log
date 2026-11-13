@@ -1,0 +1,6 @@
+$ npm run typecheck
+
+> umimaclean@0.1.0 typecheck
+> tsc --noEmit && tsc --noEmit --project inertia/tsconfig.json
+
+exit=0
