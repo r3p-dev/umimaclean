@@ -1,7 +1,10 @@
 import { test } from '@japa/runner'
+import { AxeBuilder } from '@axe-core/playwright'
 
 const PAGES = [
   '/',
+  '/syarat',
+  '/privasi',
   '/login',
   '/signup',
   '/_preview/staf',
@@ -57,5 +60,40 @@ test.group('Look and feel', () => {
     const { tag, width, shadow } = focused as { tag: string; width: string; shadow: string }
     assert.equal(tag, 'A')
     assert.isTrue(width !== '0px' || shadow !== 'none')
+  })
+
+  test('{$self} has no WCAG 2.1 AA violations (axe)')
+    .with(['/', '/syarat', '/privasi', '/login', '/signup', '/_preview/404', '/_preview/500'])
+    .run(async ({ visit, assert }, path) => {
+      const page = await visit(path)
+      await page.waitForLoadState('networkidle')
+
+      const results = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze()
+
+      const violations = results.violations.map(
+        (violation) => `${violation.id}: ${violation.nodes.map((node) => node.target).join(' | ')}`
+      )
+      assert.deepEqual(violations, [])
+    })
+
+  test('{$self} does not scroll sideways at 360 px')
+    .with(PAGES)
+    .run(async ({ visit, assert }, path) => {
+      const page = await visit(path)
+      await page.setViewportSize({ width: 360, height: 780 })
+      await page.waitForLoadState('networkidle')
+
+      assert.isAtMost(Number(await page.evaluate('document.documentElement.scrollWidth')), 360)
+    })
+
+  test('the before and after slider moves with the keyboard', async ({ visit, assert }) => {
+    const page = await visit('/')
+    const slider = page.getByRole('slider', { name: /membandingkan sebelum dan sesudah/ })
+    await slider.focus()
+    await page.keyboard.press('ArrowRight')
+
+    assert.equal(await slider.inputValue(), '51')
   })
 })
