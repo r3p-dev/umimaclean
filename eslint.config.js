@@ -13,6 +13,12 @@ export default configApp(
     rules: { '@typescript-eslint/no-deprecated': 'error' },
   },
   {
+    // Inertia's <Head> uses head-key to replace a tag instead of adding a second one.
+    name: 'Inertia head keys',
+    files: ['inertia/**/*.tsx'],
+    rules: { 'react/no-unknown-property': ['error', { ignore: ['head-key'] }] },
+  },
+  {
     // shadcn CLI output: two style rules its code doesn't follow are off here, so `shadcn add` can
     // keep updating these files untouched (docs/CONVENTIONS.md §3, §9).
     name: 'Generated shadcn components',

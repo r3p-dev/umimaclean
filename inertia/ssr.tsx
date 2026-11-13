@@ -1,4 +1,5 @@
 import { client } from '~/client'
+import { pageTitle } from '~/lib/page_title'
 import type { Page } from '@inertiajs/core'
 import ReactDOMServer from 'react-dom/server'
 import { TuyauProvider } from '@adonisjs/inertia/react'
@@ -8,6 +9,7 @@ import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react'
 export default function render(page: Page) {
   return createInertiaApp({
     page,
+    title: pageTitle,
     render: ReactDOMServer.renderToString,
     resolve: async (name) => {
       const resolvedPage = await resolvePageComponent(

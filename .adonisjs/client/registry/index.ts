@@ -14,6 +14,30 @@ const routes = {
     tokens: [[0,"/"]],
     types: placeholder as Registry['home']['types'],
   },
+  'legal.terms': {
+    methods: ["GET","HEAD"],
+    pattern: '/syarat',
+    tokens: [[0,"syarat"]],
+    types: placeholder as Registry['legal.terms']['types'],
+  },
+  'legal.privacy': {
+    methods: ["GET","HEAD"],
+    pattern: '/privasi',
+    tokens: [[0,"privasi"]],
+    types: placeholder as Registry['legal.privacy']['types'],
+  },
+  'seo.robots': {
+    methods: ["GET","HEAD"],
+    pattern: '/robots.txt',
+    tokens: [[0,"robots.txt"]],
+    types: placeholder as Registry['seo.robots']['types'],
+  },
+  'seo.sitemap': {
+    methods: ["GET","HEAD"],
+    pattern: '/sitemap.xml',
+    tokens: [[0,"sitemap.xml"]],
+    types: placeholder as Registry['seo.sitemap']['types'],
+  },
   'register.create': {
     methods: ["GET","HEAD"],
     pattern: '/signup',

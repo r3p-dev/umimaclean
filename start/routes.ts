@@ -4,6 +4,10 @@ import app from '@adonisjs/core/services/app'
 import router from '@adonisjs/core/services/router'
 
 router.on('/').renderInertia('home', {}).as('home')
+router.on('/syarat').renderInertia('legal/terms', {}).as('legal.terms')
+router.on('/privasi').renderInertia('legal/privacy', {}).as('legal.privacy')
+router.get('/robots.txt', [controllers.Seo, 'robots'])
+router.get('/sitemap.xml', [controllers.Seo, 'sitemap'])
 
 router
   .group(() => {
@@ -32,6 +36,7 @@ if (!app.inProduction) {
       router.on('/cetak').renderInertia('staff/print_template_preview', {})
       router.on('/404').renderInertia('errors/not_found', {})
       router.on('/500').renderInertia('errors/server_error', {})
+      router.on('/og').renderInertia('og_image', {})
     })
     .prefix('/_preview')
 }

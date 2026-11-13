@@ -21,6 +21,58 @@ export interface Registry {
       rawResponse: ExtractRawResponse<unknown>
     }
   }
+  'legal.terms': {
+    methods: ["GET","HEAD"]
+    pattern: '/syarat'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'legal.privacy': {
+    methods: ["GET","HEAD"]
+    pattern: '/privasi'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'seo.robots': {
+    methods: ["GET","HEAD"]
+    pattern: '/robots.txt'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['robots']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['robots']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['robots']>>>
+    }
+  }
+  'seo.sitemap': {
+    methods: ["GET","HEAD"]
+    pattern: '/sitemap.xml'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['sitemap']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['sitemap']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['sitemap']>>>
+    }
+  }
   'register.create': {
     methods: ["GET","HEAD"]
     pattern: '/signup'

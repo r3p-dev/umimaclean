@@ -1,14 +1,13 @@
 import '~/css/app.css'
 import { client } from '~/client'
-import { createRoot } from 'react-dom/client'
+import { pageTitle } from '~/lib/page_title'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import { TuyauProvider } from '@adonisjs/inertia/react'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react'
 
-const appName = 'Umima Clean'
-
 createInertiaApp({
-  title: (title) => (title ? `${title} - ${appName}` : appName),
+  title: pageTitle,
   resolve: async (name) => {
     const page = await resolvePageComponent(
       `./pages/${name}.tsx`,
@@ -17,11 +16,17 @@ createInertiaApp({
     return page.default
   },
   setup({ el, App, props }) {
-    createRoot(el).render(
+    const app = (
       <TuyauProvider client={client}>
         <App {...props} />
       </TuyauProvider>
     )
+    // Server-rendered pages (config/inertia.ts) arrive with their HTML, which React takes over.
+    if (el.hasChildNodes()) {
+      hydrateRoot(el, app)
+      return
+    }
+    createRoot(el).render(app)
   },
   progress: {
     color: 'var(--primary)',
