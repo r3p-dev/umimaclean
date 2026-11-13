@@ -101,13 +101,8 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
               </a>
             </li>
             <li>
-              <a href="/#harga" className={LINK}>
-                Daftar Harga
-              </a>
-            </li>
-            <li>
-              <a href="/#area-layanan" className={LINK}>
-                Area Layanan
+              <a href="/#ulasan" className={LINK}>
+                Ulasan
               </a>
             </li>
             <li>
@@ -125,6 +120,16 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
             <li>
               <Link route="register.create" className={LINK}>
                 Daftar Akun
+              </Link>
+            </li>
+            <li>
+              <Link route="legal.terms" className={LINK}>
+                Syarat Layanan
+              </Link>
+            </li>
+            <li>
+              <Link route="legal.privacy" className={LINK}>
+                Kebijakan Privasi
               </Link>
             </li>
           </FooterColumn>
