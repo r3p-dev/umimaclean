@@ -20,7 +20,7 @@
 | WhatsApp        | **Fonnte**, called only from one service class. Without a token (outside production), messages go to the log.                                                                                                                                                                                                                                    |
 | Payments        | **Midtrans Core API** (QRIS: charge, status, cancel, notification signature) over `fetch`, from one gateway class. Sandbox only in development.                                                                                                                                                                                                  |
 | Bot protection  | **Cloudflare Turnstile** on public forms, on by default; Cloudflare's test keys in development and tests.                                                                                                                                                                                                                                        |
-| Scheduled jobs  | Ace commands (`docs/prd/shared.md` §10).                                                                                                                                                                                                                                                                                                         |
+| Scheduled jobs  | Ace commands (`docs/PRD/shared.md` §10).                                                                                                                                                                                                                                                                                                         |
 | Uploads         | Proof photos on disk outside `public/`, path from env, served through an authorized route.                                                                                                                                                                                                                                                       |
 | Language        | UI Indonesian only. Code, comments, docs, commit messages English.                                                                                                                                                                                                                                                                               |
 | Delivery        | v1.0.0 ships a production `Containerfile` with a health check endpoint. Deployment automation is out of scope.                                                                                                                                                                                                                                   |
@@ -34,32 +34,348 @@
 5. Midtrans notifications: verify the signature, confirm the status with Midtrans, process idempotently, never trust amounts from the client. At most one paid payment per order, enforced by the database.
 6. Uploads: validate type and size; store outside `public/`; serve only to users allowed to see that order.
 7. Secrets only in env, validated in `start/env.ts`; `.env` is never committed. Phone numbers masked in logs.
-8. No personal data to any outside service except what `docs/prd/shared.md` §11 lists.
+8. No personal data to any outside service except what `docs/PRD/shared.md` §11 lists.
 
 ---
 
 ## 2. Overview
 
-_Written in M0._
+Umima.Clean is **one AdonisJS 7 application** (a monolith) that renders React pages through Inertia, stores everything in **one PostgreSQL database with PostGIS**, and talks to a few outside services through one class each. There are no separate frontend or API apps, no queues and no cache servers.
+
+```mermaid
+flowchart LR
+  browser["Browser<br/>(customer, staff, owner, guest)"]
+  subgraph server["AdonisJS app (one process)"]
+    http["Routes → middleware → controllers"]
+    services["Services (one per domain)"]
+    models["Lucid models"]
+    jobs["Ace commands<br/>(scheduled jobs, data import)"]
+  end
+  db[("PostgreSQL + PostGIS<br/>public schema: app data<br/>osm schema: place search")]
+  osrm["OSRM<br/>(self-hosted)"]
+  tiles["public/tiles/*.pmtiles<br/>(static file)"]
+  fonnte["Fonnte<br/>(WhatsApp)"]
+  midtrans["Midtrans Core API<br/>(QRIS)"]
+  turnstile["Cloudflare Turnstile"]
+
+  browser -- "Inertia visits, form posts" --> http
+  browser -- "SSE (Transmit)" --> http
+  browser -- "range requests" --> tiles
+  http --> services --> models --> db
+  jobs --> services
+  services --> osrm
+  services --> fonnte
+  services --> midtrans
+  services --> turnstile
+  midtrans -- "payment notifications" --> http
+```
+
+- **Pages**: Inertia + React, server-rendered on first load (NFR-3), then client-side visits. Pages are grouped by role (`inertia/pages/{auth,customer,staff,admin}`); everything else is organized by domain.
+- **Maps**: the browser only talks to our own server: vector tiles come from a PMTiles file in `public/tiles/` (MAP-2), place search from the `osm` schema (MAP-1), routes from our OSRM (STAFF-6, STAFF-7).
+- **Outside services**: Fonnte, Midtrans and Turnstile are called only from their gateway classes (§4.2). Each one failing degrades one feature, never the whole app (NFR-4).
+- **Live updates**: Transmit (SSE) sends a small "changed" signal; the page reloads its own props over normal, authorized HTTP (§4.4).
+- **Scheduled jobs**: ace commands, run by a system timer in production (§6.5).
 
 ## 3. Components
 
-_Written in M0: backend modules (controllers, services, models, policies, validators, commands), frontend structure (templates, organisms, pages), and how they connect._
+This section is the map of the code. It lists the planned modules by domain; each milestone adds what it builds and corrects names if needed. Names follow `docs/CONVENTIONS.md` (§2 naming, §3 snake_case files, §8 layers).
+
+### 3.1 Backend (`app/`)
+
+**Layers** (CONVENTIONS §8): a controller validates, authorizes and calls one service; a service runs one business process (transactions, several models, outside calls); a model holds entity rules and reusable queries; a transformer shapes props for a page. Roles appear only in URL prefixes and route groups (`/staf`, `/admin`), never in folder names.
+
+| Domain               | Controllers                                                                                                                                                                                                             | Service                                                                                                           | Models                                                                       | Policy                                       | Milestone |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------- | --------- |
+| Accounts             | `session_controller`, `registration_controller`, `password_reset_controller`, `otp_controller`, `account_security_controller`, `profile_controller`, `phone_change_controller`                                          | `AccountService` (sign-in, passwords, devices), `OtpService` (codes, limits, flow state in the session)           | `User`, `OtpCode` (+ `remember_me_tokens`, `sessions`, `rate_limits` tables) | abilities per role (`app/abilities/main.ts`) | M2        |
+| Price list           | `services_controller`                                                                                                                                                                                                   | `PriceListService`                                                                                                | `Service`                                                                    | `ServicePolicy`                              | M3        |
+| Service areas        | `service_areas_controller`, `area_check_controller`                                                                                                                                                                     | `AreaService`                                                                                                     | `ServiceArea` (PostGIS polygon)                                              | owner ability                                | M3        |
+| Store settings       | `store_settings_controller`                                                                                                                                                                                             | `SettingService`                                                                                                  | `Setting` (key → JSON)                                                       | owner ability                                | M3        |
+| Addresses and places | `addresses_controller`, `places_controller`                                                                                                                                                                             | `AddressService`, `PlaceService` (raw SQL on the `osm` schema)                                                    | `CustomerAddress`                                                            | `CustomerAddressPolicy`                      | M4        |
+| Orders               | `orders_controller` (customer), `order_tracking_controller` (4-digit unlock), `owner_orders_controller`                                                                                                                 | `OrderService`: placing, cancelling, slots, and **the only place an order changes status** (§5.1)                 | `Order`, `OrderAddress`, `OrderItem`, `OrderEvent`                           | `OrderPolicy`                                | M5        |
+| Staff trips          | `trips_controller`                                                                                                                                                                                                      | `TripService` (queues, one active trip per queue, queue order)                                                    | `Order` (trip state lives on the order and its events)                       | staff ability                                | M6        |
+| Proof photos         | `proof_photos_controller`                                                                                                                                                                                               | `ProofPhotoService` (store, serve, prune)                                                                         | `OrderPhoto`                                                                 | `OrderPolicy`                                | M6        |
+| Workshop             | `inspections_controller`, `washing_controller`, `collections_controller`, `print_controller`                                                                                                                            | `WorkshopService` (inspection → bill, washing, collection)                                                        | `Bill`, `BillLine`                                                           | staff ability                                | M7        |
+| Payments             | `payments_controller` (customer QRIS), `counter_payments_controller`, `midtrans_notifications_controller`, `payment_reconciliation_controller`                                                                          | `PaymentService`: QRIS, cash, corrections, reconciliation, and **the only place a payment changes status** (§5.2) | `Payment`                                                                    | `OrderPolicy`                                | M8        |
+| Walk-in orders       | `walk_in_orders_controller`                                                                                                                                                                                             | `OrderService` (walk-in placement)                                                                                | as orders                                                                    | staff ability                                | M9        |
+| Owner area           | `owner_summary_controller`, `customers_controller`, `reports_controller`, `operating_costs_controller`, `activity_logs_controller`, `staff_accounts_controller`, `come_back_reminders_controller`, `exports_controller` | `ReportService`, `StaffAccountService`, `ReminderService` (payment and come-back reminders)                       | `OperatingCost`, `ActivityLog`                                               | owner ability                                | M10       |
+| Public pages         | `home_controller`, `legal_controller`, `seo_controller`                                                                                                                                                                 | `SettingService`                                                                                                  |                                                                              | none                                         | M1, M3    |
+
+**Gateways** (one class per outside service, swapped for a fake in every test with `app.container.swap`, CONVENTIONS §0 rule 4):
+
+| Class              | Calls                                                                                     | Without configuration                                                                                              |
+| ------------------ | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `FonnteGateway`    | `POST https://api.fonnte.com/send`                                                        | no token outside production → the message is written to the log (MSG-4)                                            |
+| `MidtransGateway`  | Core API: charge (`payment_type: qris`), status, cancel; verifies notification signatures | no server key → QRIS shown as unavailable (PAY-5)                                                                  |
+| `TurnstileGateway` | `POST https://challenges.cloudflare.com/turnstile/v0/siteverify`                          | Cloudflare test keys in development and tests                                                                      |
+| `OsrmGateway`      | our OSRM: `/route`, `/table`                                                              | no `OSRM_URL` or OSRM down → straight-line estimate marked "±", queue "Urutan belum dioptimasi" (STAFF-6, STAFF-7) |
+
+**Other backend pieces**
+
+- `app/enums/`: `role_enum`, `order_status_enum` (with stage and label), `payment_status_enum`, `payment_method_enum`, `item_kind_enum`, `service_type_enum`, `return_method_enum`, `order_source_enum`, `photo_kind_enum`, `skip_reason_enum`, `activity_category_enum`, `cost_category_enum`, `otp_purpose_enum`. Each exports an `as const` object, its type and an Indonesian `…Label` map (CONVENTIONS §8).
+- `app/validators/`: one VineJS validator per action (`createOrderValidator`, …); the shared phone rule normalizes to `62…` (ACC-1). Messages in `start/validator.ts`.
+- `start/limiter.ts`: HTTP-level limits (area check per IP, place search per user). Business limits (sign-in, OTP, unlock digits, QRIS charges) live in their service, because their keys (phone, order) come from the request body.
+- `start/transmit.ts`: channel authorization (§4.4).
+- `commands/`: `payments_remind` (`node ace payments:remind`, PAY-6) and `photos_prune` (`node ace photos:prune`, PHOTO-3); in M4 `osm_import` (`node ace osm:import`) runs the pipeline of §6.2.
+- `database/migrations/`: one create migration per table (`docs/PRD/shared.md` §12), edited in place until v1.0.0. `database/seeders/`: one per domain, run from one index seeder that prints the demo accounts.
+
+### 3.2 Frontend (`inertia/`)
+
+| Folder                  | Holds                                                                                                                                                                                                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `components/ui/`        | shadcn components (React Aria base, `aria-vega`), file names as the CLI generates them                                                                                                                                                                          |
+| `components/atoms/`     | logo, status badge (one map from order stage to Tailwind classes), tone badge, initials avatar, photo                                                                                                                                                           |
+| `components/molecules/` | phone input, password input, OTP input, quantity stepper, search field, empty state, metric card, Turnstile widget, compare slider, address combobox                                                                                                            |
+| `components/organisms/` | site header and footer, landing sections, navigation per area (customer bottom bar, staff bottom bar, owner sidebar), order summary card, bill items, QRIS panel, map panels (location, route, queue), camera view, data table parts, dialogs per owner feature |
+| `components/templates/` | one layout per area: public, auth, customer, flow (order steps), staff, owner, print                                                                                                                                                                            |
+| `lib/<feature>/`        | non-visual logic shared by components: phone formatting, countdown, map setup, camera, live updates, form drafts                                                                                                                                                |
+| `pages/`                | `home.tsx`, `legal/`, `errors/`, `auth/`, `customer/`, `staff/`, `admin/` (one file per page in the PRD page tables)                                                                                                                                            |
+
+Pages own state and navigation; they get data only through Inertia props (built by transformers) and send data only through Inertia forms. URLs come from the Tuyau route helper. Icons: `@tabler/icons-react`.
 
 ## 4. Data flow
 
-_Written in M0: a request from click to database and back; outside services; live updates._
+### 4.1 One request, from click to database and back
+
+```mermaid
+sequenceDiagram
+  participant B as Browser (page)
+  participant R as Router + middleware
+  participant C as Controller
+  participant S as Service
+  participant M as Models / PostgreSQL
+  participant X as Gateways (after commit)
+  B->>R: Inertia form post (CSRF token, session cookie)
+  R->>R: bodyparser, session, Shield (CSRF), auth, role/limit middleware
+  R->>C: matched route
+  C->>C: validate (VineJS), authorize (Bouncer policy)
+  C->>S: call one service method
+  S->>M: transaction: lock rows, check rules, write, append order_events / activity_logs
+  M-->>S: committed
+  S->>X: WhatsApp message, Transmit signal (failures logged, never fail the action)
+  S-->>C: result
+  C-->>B: redirect + flash → next page's props (transformers)
+```
+
+Rules that hold for every flow:
+
+1. **Validation and authorization at the edge.** Every route has a validator for its input and a Bouncer check (`docs/ARCHITECTURE.md` §1.2 rule 2). Customers can only reach their own records; guests reach an order only after the 4-digit unlock (GUEST-4).
+2. **One transaction per business action.** The status change, its timeline event and its activity log entry are written together, or not at all (ORD-4, NFR-5).
+3. **Concurrency is decided by the database**, not by checks before the transaction: row locks (`FOR UPDATE`) on the order or payment being changed, a lock per pickup slot for capacity (SLOT-3), a lock per queue for the single active trip (STAFF-3), and a partial unique index for "one paid payment per order" (PAY-3).
+4. **Outside calls happen after commit** (messages, Midtrans cancels, live signals), so a slow or failing service never holds a lock or rolls back a finished action (MSG-3, NFR-4). The one exception is the QRIS charge, which must succeed before a payment row can be `pending`.
+
+### 4.2 Outside services
+
+| Service                | Called from                                            | When                                                                                    | Data sent (`docs/PRD/shared.md` §11)             | When it fails                                                                                                                                                                                                                   |
+| ---------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fonnte                 | `FonnteGateway`                                        | OTP codes; the six customer messages (MSG-1)                                            | phone number, message text                       | logged with context; the action continues (MSG-3); OTP screens say the code could not be sent                                                                                                                                   |
+| Midtrans Core API      | `MidtransGateway`                                      | "Bayar" pressed (charge), "Cek status", live QR cancel (PAY-4), reconciliation re-check | order reference, amount, customer name and phone | charge: error shown, no payment row; cancel: payment becomes `cancel_failed` (PAY-7)                                                                                                                                            |
+| Midtrans notifications | `midtrans_notifications_controller` → `PaymentService` | Midtrans posts a status                                                                 | —                                                | signature checked (SHA-512 of `order_id + status_code + gross_amount + server key`), status confirmed with `GET /v2/{order_id}/status`, processed idempotently; non-2xx makes Midtrans retry (up to 5 times over about 6 hours) |
+| Turnstile              | `TurnstileGateway`                                     | public forms (sign-up, sign-in, forgot password, order unlock)                          | token, client IP                                 | the form shows "verification failed, try again"                                                                                                                                                                                 |
+| OSRM                   | `OsrmGateway`                                          | queue order, route line, distance/ETA                                                   | nothing leaves our servers                       | estimate "±", "Urutan belum dioptimasi"                                                                                                                                                                                         |
+| Map data               | `PlaceService`, static tiles                           | address search, pin label, base map                                                     | —                                                | search returns nothing and the pin is placed by hand (MAP-1); maps show a plain background (MAP-2)                                                                                                                              |
+
+Midtrans facts that shape the design (checked 2026-11-13 in the Midtrans docs): a QRIS charge is `POST /v2/charge` with `payment_type: "qris"`; the response carries the QR image URL in `actions` (`generate-qr-code`) and the QR text in `qr_string`; the default QRIS expiry is 15 minutes, and `custom_expiry` can set it explicitly (we set 15 minutes, PAY-1). Statuses we act on: `pending`, `settlement`, `expire`, `cancel`, `deny`, `failure`. The exact response fields are verified against the sandbox in M8 before they are relied on.
+
+### 4.3 Money and time
+
+Money is whole rupiah in `integer` columns; a bill line stores the listed and the charged price (SVC-3). Timestamps are `timestamptz`; business dates (pickup days, report days, reminder windows) are computed in `Asia/Jakarta` with Luxon.
+
+### 4.4 Live updates
+
+Transmit (SSE) channels: `orders/:id` (one order's page), `staff/queues` (pickup, workshop, delivery queues), `admin/orders` (owner order list). After a status change commits, `OrderService` broadcasts a **signal without personal data** on the affected channels; the open page then asks for its own props again with an Inertia partial reload. The data itself therefore always comes through the normal HTTP route with its policy check, and Transmit's channel authorization (`start/transmit.ts`) only has to decide who may _hear_ that something changed: the order's customer or a session that unlocked it, staff and owner for queues, the owner for the list.
+
+Transmit facts that shape the design (checked 2026-11-13): channel authorization through `transmit.authorize()`; one process needs no transport (Redis is only for several instances, which v1.0.0 doesn't have); the reverse proxy **must not compress** `text/event-stream`, or SSE breaks (recorded for deployment).
 
 ## 5. State machines
 
-_Written in M0: order status (`docs/prd/shared.md` ORD-2, ORD-3) and payment status (PAY-3, PAY-4), where each transition happens, and how it is tested._
+Both machines follow the same pattern (CONVENTIONS §0 rule 3):
+
+- The allowed transitions are **one table in code** next to the enum (`ORDER_TRANSITIONS` in `app/enums/order_status_enum.ts`, `PAYMENT_TRANSITIONS` in `app/enums/payment_status_enum.ts`), copied from the PRD tables below. The model answers `order.canTransitionTo(status)` / `payment.canTransitionTo(status)`.
+- **One service method writes the status**: `OrderService.transitionOrder(order, status, { actor, note }, transaction)` and `PaymentService.transitionPayment(payment, status, { actor, note }, transaction)`. Every flow that changes a status calls it inside its own transaction. It locks the row, refuses a transition that isn't in the table (HTTP 409 with an Indonesian message), writes the new status, appends the event (order: `order_events`; both: `activity_logs` when the actor is staff or owner) and queues the after-commit work (messages, live signal).
+- **Tests**: a unit test walks the whole table: every allowed pair succeeds and every other pair (all statuses × all statuses) is refused. Functional tests cover each trigger below, named by its requirement ID.
+
+### 5.1 Order status (ORD-2, ORD-3)
+
+```mermaid
+stateDiagram-v2
+  [*] --> awaiting_pickup: online order placed (CUST-6)
+  [*] --> in_inspection: walk-in saved (STAFF-13)
+  awaiting_pickup --> courier_en_route: start pickup
+  courier_en_route --> picked_up: finish pickup + photo
+  courier_en_route --> awaiting_pickup: skip
+  picked_up --> in_inspection: start inspection / owner bulk move
+  in_inspection --> awaiting_payment: save inspection (bill)
+  awaiting_payment --> in_cleaning: payment paid
+  in_cleaning --> ready_for_delivery: finish washing + photo (return by delivery)
+  in_cleaning --> ready_for_collection: finish washing + photo (return at store)
+  ready_for_delivery --> in_delivery: start delivery
+  in_delivery --> completed: finish delivery + photo + receiver
+  in_delivery --> ready_for_delivery: skip
+  ready_for_collection --> completed: hand over / owner bulk move
+  completed --> [*]
+  cancelled --> [*]
+```
+
+Plus: **any status except `completed` and `cancelled` → `cancelled`** (owner only), and `awaiting_pickup → cancelled` by the customer.
+
+| From                                | To                                            | Trigger (who)                                                              | Where                                                               | Side effects                                                                                                                                                                                        | Req                             |
+| ----------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| (new)                               | `awaiting_pickup`                             | customer places an online order                                            | `OrderService.placeOnlineOrder`                                     | slot capacity locked and re-checked; both addresses re-checked against active areas; "order received" message                                                                                       | CUST-6, SLOT-3, AREA-4, MSG-1.1 |
+| (new)                               | `in_inspection`                               | staff save a walk-in                                                       | `OrderService.placeWalkInOrder`                                     | 1–3 intake photos; no message yet                                                                                                                                                                   | STAFF-12, STAFF-13              |
+| `awaiting_pickup`                   | `courier_en_route`                            | staff start a pickup                                                       | `TripService.startTrip`                                             | refused while another pickup is active (team-wide lock); "courier on the way" message                                                                                                               | STAFF-3, STAFF-4, MSG-1.2       |
+| `courier_en_route`                  | `picked_up`                                   | trip holder or owner finishes                                              | `TripService.finishTrip`                                            | proof photo required                                                                                                                                                                                | STAFF-4, PHOTO-1                |
+| `courier_en_route`                  | `awaiting_pickup`                             | trip holder or owner skips                                                 | `TripService.skipTrip`                                              | reason + note on the timeline; stop goes last today                                                                                                                                                 | STAFF-4, STAFF-5, STAFF-6       |
+| `picked_up`                         | `in_inspection`                               | staff start inspection; owner bulk move                                    | `WorkshopService.startInspection`, `OrderService.moveOrdersByOwner` |                                                                                                                                                                                                     | STAFF-9, OWN-3                  |
+| `in_inspection`                     | `awaiting_payment`                            | staff save the inspection                                                  | `WorkshopService.saveInspection`                                    | bill created (re-inspection before payment replaces it); "bill" message for online orders                                                                                                           | STAFF-9, SVC-3, MSG-1.3         |
+| `awaiting_payment`                  | `in_cleaning`                                 | a payment becomes `paid` (QRIS settlement, cash, owner accepts a mismatch) | `PaymentService` (calls `transitionOrder` in the same transaction)  | walk-in: "order received" message after counter payment                                                                                                                                             | PAY-2, STAFF-14, OWN-5, MSG-1.1 |
+| `in_cleaning`                       | `ready_for_delivery` / `ready_for_collection` | staff finish washing                                                       | `WorkshopService.finishWashing`                                     | proof photo required; target chosen by the return method; items marked washed                                                                                                                       | STAFF-10                        |
+| `ready_for_delivery`                | `in_delivery`                                 | staff start a delivery                                                     | `TripService.startTrip`                                             | refused while another delivery is active                                                                                                                                                            | STAFF-3, STAFF-4                |
+| `in_delivery`                       | `completed`                                   | trip holder or owner finishes                                              | `TripService.finishTrip`                                            | proof photo + receiver name                                                                                                                                                                         | STAFF-4                         |
+| `in_delivery`                       | `ready_for_delivery`                          | trip holder or owner skips                                                 | `TripService.skipTrip`                                              | reason on the timeline                                                                                                                                                                              | STAFF-4, STAFF-5                |
+| `ready_for_collection`              | `completed`                                   | staff hand over; owner bulk move                                           | `WorkshopService.handOverOrder`, `OrderService.moveOrdersByOwner`   |                                                                                                                                                                                                     | STAFF-11, OWN-3                 |
+| `awaiting_pickup`                   | `cancelled`                                   | customer, with a reason                                                    | `OrderService.cancelOrderByCustomer`                                | no message                                                                                                                                                                                          | CUST-8                          |
+| any except `completed`, `cancelled` | `cancelled`                                   | owner, with a reason (one or several orders)                               | `OrderService.cancelOrdersByOwner`                                  | an active trip on that order ends; live QRIS cancelled (PAY-4); a `paid` payment → `refund_due` (PAY-7); "cancelled by the shop" message if the customer was already told about the order (MSG-1.5) | OWN-3, PAY-4, PAY-7             |
+
+### 5.2 Payment status (PAY-3, PAY-7)
+
+```mermaid
+stateDiagram-v2
+  [*] --> pending: QRIS charge created
+  [*] --> paid: cash at the counter
+  pending --> paid: settlement, amount = bill, order unpaid and not cancelled
+  pending --> amount_mismatch: settlement, amount ≠ bill
+  pending --> refund_due: settlement, order already paid or cancelled
+  pending --> expired: expiry
+  pending --> failed: deny / failure
+  pending --> cancelled: cancelled at Midtrans (PAY-4)
+  pending --> cancel_failed: cancel request failed
+  cancel_failed --> cancelled: retry succeeds / owner marks handled
+  cancel_failed --> refund_due: settled after all
+  amount_mismatch --> paid: owner accepts (order unpaid)
+  amount_mismatch --> refunded: owner records refund
+  refund_due --> refunded: owner records refund
+  paid --> refund_due: owner cancels the paid order
+  expired --> [*]
+  failed --> [*]
+  cancelled --> [*]
+  refunded --> [*]
+```
+
+| From                            | To                                                               | Trigger                                                                                                                                                | Where                                                                   | Req                      |
+| ------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------ |
+| (new)                           | `pending`                                                        | "Bayar" pressed (customer online, staff at the counter); at most 5 new charges per order per 15 minutes; a live QR is shown again instead of a new one | `PaymentService.startQrisPayment`                                       | PAY-1, CUST-10, STAFF-14 |
+| (new)                           | `paid`                                                           | cash received at the counter                                                                                                                           | `PaymentService.recordCashPayment`                                      | STAFF-14, PAY-4          |
+| `pending`                       | `paid` / `amount_mismatch` / `refund_due` / `expired` / `failed` | a verified Midtrans notification or "Cek status", decided by the status Midtrans confirms                                                              | `PaymentService.applyMidtransStatus`                                    | PAY-2, PAY-4, PAY-7      |
+| `pending`                       | `cancelled` / `cancel_failed`                                    | the order was paid another way or cancelled; after commit the live charge is cancelled at Midtrans and the confirmed status decides                    | `PaymentService.cancelLiveQrisPayments`                                 | PAY-4                    |
+| `cancel_failed`                 | `cancelled`                                                      | retry succeeds, or the owner marks it handled                                                                                                          | `PaymentService.retryCancel`, `PaymentService.markCancelHandled`        | OWN-5                    |
+| `cancel_failed`                 | `refund_due`                                                     | Midtrans reports it was settled                                                                                                                        | `PaymentService.applyMidtransStatus`                                    | PAY-7                    |
+| `amount_mismatch`               | `paid`                                                           | owner accepts while the order has no paid payment (the order then moves to `in_cleaning`)                                                              | `PaymentService.acceptMismatch`                                         | OWN-5                    |
+| `amount_mismatch`, `refund_due` | `refunded`                                                       | owner records a refund made outside the app, with a note                                                                                               | `PaymentService.recordRefund`                                           | OWN-5                    |
+| `paid`                          | `refund_due`                                                     | owner cancels a paid order                                                                                                                             | `OrderService.cancelOrdersByOwner` → `PaymentService.transitionPayment` | OWN-3, PAY-7             |
+
+"At most one `paid` payment per order" is enforced by a partial unique index (`payments(order_id) WHERE status = 'paid'`); a violation inside `transitionPayment` becomes "Pesanan ini sudah dibayar." Open question: whether the owner's payment correction (OWN-4) may change a status at all is not in PAY-7 (M0 report, question Q1); until answered, OWN-4 changes method, channel and amount only.
 
 ## 6. Local services and data
 
-_Written in M0: the Podman setup, the map data pipeline (OSM extract → `osm` schema, OSRM build, PMTiles extract), scheduled jobs locally and in production._
+All commands run in the repository root and work in fish and bash. Credentials and the database port come from `.env` (copy `.env.example` first). If port 5432 is already taken on your machine, set another `DB_PORT` in `.env` (for example `5433`); `compose.yaml` and the app both read it.
+
+### 6.1 Database (PostgreSQL + PostGIS)
+
+| Task                                                                         | Command                                                                     |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Start (first run creates the volume, the app database and `umimaclean_test`) | `podman compose up -d db`                                                   |
+| Status                                                                       | `podman compose ps`                                                         |
+| Open psql                                                                    | `podman compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'` |
+| Stop (keeps data)                                                            | `podman compose stop`                                                       |
+| Remove containers (keeps data)                                               | `podman compose down`                                                       |
+| **Reset** (deletes all data, including the `osm` schema)                     | `podman compose down -v` then `podman compose up -d db`                     |
+
+The PostGIS image installs the `postgis` extension in the app database; migrations still run `CREATE EXTENSION IF NOT EXISTS postgis` so the test database gets it too.
+
+### 6.2 Map data: OSM extract → `osm` schema (MAP-1)
+
+Needs the database running. In M4 an ace command (`node ace osm:import`) runs steps 2–5; until then these are the documented commands.
+
+```sh
+# 1. Tools image (once): osmium-tool + osm2pgsql
+podman build -t umimaclean-map-tools maps/
+
+# 2. Download the Java extract (899 MB) and check it
+mkdir -p storage/osm
+curl -fL -o storage/osm/java-latest.osm.pbf https://download.geofabrik.de/asia/indonesia/java-latest.osm.pbf
+curl -fL -o storage/osm/java-latest.osm.pbf.md5 https://download.geofabrik.de/asia/indonesia/java-latest.osm.pbf.md5
+cd storage/osm && md5sum -c java-latest.osm.pbf.md5 && cd ../..
+
+# 3. Clip to Bandung Raya (73 MB)
+podman run --rm -v ./storage/osm:/data:z umimaclean-map-tools osmium extract --bbox=107.20,-7.37,107.99,-6.76 --strategy=smart --option=types=multipolygon,boundary --overwrite --output=/data/bandung-raya.osm.pbf /data/java-latest.osm.pbf
+
+# 4. Create the osm schema and load the staging tables
+podman compose exec -T db sh -c 'psql -v ON_ERROR_STOP=1 -q -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < maps/osm_schema.sql
+podman compose exec -T db sh -c 'psql -v ON_ERROR_STOP=1 -q -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE SCHEMA IF NOT EXISTS osm_import"'
+podman run --rm --network umimaclean_default --env-file .env -v ./storage/osm:/data:ro,z -v ./maps:/maps:ro,z umimaclean-map-tools sh -c 'PGPASSWORD="$DB_PASSWORD" osm2pgsql --create --output=flex --style=/maps/osm_import.lua --schema=osm_import --host=db --port=5432 --user="$DB_USER" --database="$DB_DATABASE" /data/bandung-raya.osm.pbf'
+
+# 5. Swap the staging data into the osm tables in one transaction
+podman compose exec -T db sh -c 'psql -v ON_ERROR_STOP=1 -q --single-transaction -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < maps/osm_build.sql
+```
+
+Result on 2026-11-13 (data up to 2026-11-12T21:23Z): 13,213 roads, 14,457 places, 500 boundaries (10 kota/kabupaten, 64 kecamatan, 426 kelurahan/desa), 30 MB with indexes; clip 15 s, osm2pgsql 11 s, swap 3 s. The schema is outside `public`, so migrations and test resets leave it alone; `podman compose down -v` removes it. Files: `maps/osm_schema.sql` (tables, indexes, the `osm.normalize` search function), `maps/osm_import.lua` (what is kept from OSM), `maps/osm_build.sql` (merge streets per kelurahan, swap).
+
+### 6.3 Routing: OSRM with the motorbike profile (STAFF-6, STAFF-7)
+
+Needs `storage/osm/bandung-raya.osm.pbf` from §6.2 step 3.
+
+```sh
+mkdir -p storage/osrm
+cp storage/osm/bandung-raya.osm.pbf storage/osrm/
+podman run --rm -v ./storage/osrm:/data:z -v ./maps/motorbike.lua:/opt/motorbike.lua:ro,z ghcr.io/project-osrm/osrm-backend:v26.11.0-debian@sha256:e1929ae2818226284d7ef007329098a30851c11528ab3712bc9c8d68da78278b osrm-extract --profile=/opt/motorbike.lua /data/bandung-raya.osm.pbf
+podman run --rm -v ./storage/osrm:/data:z ghcr.io/project-osrm/osrm-backend:v26.11.0-debian@sha256:e1929ae2818226284d7ef007329098a30851c11528ab3712bc9c8d68da78278b osrm-contract /data/bandung-raya.osrm
+rm storage/osrm/bandung-raya.osm.pbf
+podman compose up -d osrm
+curl -s --retry 10 --retry-connrefused 'http://127.0.0.1:5000/nearest/v1/driving/107.6186,-6.9026'   # {"code":"Ok",…}
+```
+
+Result: 23 files, 242 MB; extract 19 s (peak 1.0 GB RAM), contract 26 s (peak 0.3 GB RAM). Contraction Hierarchies (`osrm-contract`, `--algorithm ch`) because the graph is static (no live traffic), so MLD's fast re-customization buys nothing while CH answers `/route` and `/table` faster. The files only load in the OSRM version that built them, so the build and `compose.yaml` use the same image reference. Check that toll roads are avoided: a route from Pasteur to Cileunyi (`/route/v1/driving/107.5900,-6.8935;107.7465,-6.9395?steps=true`) takes surface streets and has no `motorway` or `toll` class, although the data contains the Padalarang–Cileunyi toll road.
+
+### 6.4 Base map: PMTiles extract (MAP-2)
+
+```sh
+mkdir -p public/tiles
+podman run --rm -v ./public/tiles:/out:z docker.io/protomaps/go-pmtiles:v1.31.2@sha256:06574f01f55a78f78f887bc7ebf729a5c093c0d6e17d9876300cfcb0758b59d3 extract https://build.protomaps.com/20261112.pmtiles /out/bandung-raya-20261112.pmtiles --bbox=107.20,-7.37,107.99,-6.76
+```
+
+Reads only the tiles inside the box from the public Protomaps daily build over HTTP range requests (68 MB transferred, 17 s). Result: `public/tiles/bandung-raya-20261112.pmtiles`, 62 MB, zoom 0–15, Protomaps basemap tileset v4.15.2. The file name carries the build date, so a new build is a new URL and browsers can cache tiles forever. Available builds are listed at `https://build-metadata.protomaps.dev/builds.json`; before switching builds, check that its tileset major version (`pmtiles show`) is the one the map library supports.
+
+### 6.5 Scheduled jobs
+
+| Job                          | Command (from M8 / M11)    | Schedule                                                                        |
+| ---------------------------- | -------------------------- | ------------------------------------------------------------------------------- |
+| Payment reminders (PAY-6)    | `node ace payments:remind` | every 15 minutes; the command checks the 10:00–15:00 Asia/Jakarta window itself |
+| Prune proof photos (PHOTO-3) | `node ace photos:prune`    | daily                                                                           |
+
+Both commands are idempotent (running them twice in a row sends or deletes nothing twice), so a missed or doubled run is harmless.
+
+- **Locally**: run them by hand when testing those features. Tests call the service method with a fixed "now" instead of waiting for a clock.
+- **Production**: a **systemd timer** on the host runs each command in a one-shot container from the app image (`OnCalendar=*:0/15` and `daily`, `Persistent=true` so a run missed while the server was down happens at boot). This fits the rootless Podman setup (Quadlet units are systemd units), adds no dependency and keeps jobs out of the web process. The unit files come with the production `Containerfile` in M12.
 
 ## 7. Decisions log
 
 Every decision not covered by §1, and **every workaround**, gets an entry: number, date, decision, reason, alternatives considered, and links.
 
-_Empty until M0._
+| #   | Date       | Decision                                                                                                                                  | Reason                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Alternatives considered                                                                                                                                                                                       |
+| --- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | 2026-11-13 | Local services are defined in `compose.yaml` and run with `podman compose` (provider `podman-compose`)                                    | Readable, one file for start/stop/reset, uses only portable compose features (no Docker-only features). Credentials come from the same `.env` as the app                                                                                                                                                                                                                                                                                                           | `podman kube play` (built in, but Kubernetes YAML is harder to read), Quadlet units (production-style, but per-user systemd files are awkward for a dev checkout), plain `podman run` lines (no single reset) |
+| D2  | 2026-11-13 | Container images are pinned by tag **and** digest                                                                                         | `postgis/postgis:18-3.6` is a moving tag (patch updates); the digest makes every machine run the same build (AGENTS.md: pin exact versions)                                                                                                                                                                                                                                                                                                                        | tag only                                                                                                                                                                                                      |
+| D3  | 2026-11-13 | PostgreSQL 18 with PostGIS 3.6, not 3.7                                                                                                   | 3.7.0 was published days before M0; 3.6 is the mature line. Revisit at M12                                                                                                                                                                                                                                                                                                                                                                                         | `18-3.7`                                                                                                                                                                                                      |
+| D4  | 2026-11-13 | OSRM image from GHCR (`v26.11.0-debian`), Contraction Hierarchies                                                                         | The project publishes on GHCR; Docker Hub stopped at v5.25.0 (2021). CH: see §6.3                                                                                                                                                                                                                                                                                                                                                                                  | Docker Hub image (stale), MLD                                                                                                                                                                                 |
+| D5  | 2026-11-13 | `osmium` and `osm2pgsql` run from a small Debian image built from `maps/Containerfile`                                                    | No official images exist; DEPENDENCIES §4 prefers containers over host installs; Debian packages are maintained (osm2pgsql 2.3.1 from trixie-backports)                                                                                                                                                                                                                                                                                                            | host packages (`dnf`/`apt`), the community image `iboates/osm2pgsql`                                                                                                                                          |
+| D6  | 2026-11-13 | Map data covers the box 107.20–107.99 E, 7.37–6.76 S                                                                                      | The extent of the 64 kecamatan of AREA-1 (107.25–107.93 E, 7.32–6.81 S) plus about 5 km, so streets and routes just outside a border still work                                                                                                                                                                                                                                                                                                                    | a larger box including Kabupaten Bandung Barat (not in AREA-1)                                                                                                                                                |
+| D7  | 2026-11-13 | The `osm` schema is created from `maps/osm_schema.sql`, not migrations; imports go to a staging schema and are swapped in one transaction | It is reference data rebuilt from a file, not app data: migrations and test resets must not drop it, and a refresh must never show empty search results                                                                                                                                                                                                                                                                                                            | Lucid migrations (would be wiped by `migration:fresh`), loading straight into the live tables                                                                                                                 |
+| D8  | 2026-11-13 | **Workaround**: `osm.normalize` is marked `IMMUTABLE` although it calls `unaccent()`, which is `STABLE`                                   | Generated search columns need an immutable function. Passing the dictionary explicitly (`unaccent('public.unaccent', …)`) removes the search-path lookup that makes `unaccent` stable, so the label is safe. Without it, `CREATE TABLE` fails. Comment in `maps/osm_schema.sql`. See PostgreSQL docs on [function volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html) and [unaccent](https://www.postgresql.org/docs/current/unaccent.html) | a trigger-maintained column (more code), searching without a stored column (no index)                                                                                                                         |
+| D9  | 2026-11-13 | **Workaround**: `maps/motorbike.lua` replaces car.lua's global `WayHandlers.maxspeed` with a no-op                                        | Legal maxspeed tags would raise motorbike speeds above real city traffic, and car.lua has no option to skip them. Without it, ETAs on tagged roads are too optimistic. Comment in the profile; [OSRM profiles docs](https://github.com/Project-OSRM/osrm-backend/blob/master/docs/profiles.md)                                                                                                                                                                     | copying car.lua's whole `process_way` minus one handler (60+ lines to keep in sync)                                                                                                                           |
+| D10 | 2026-11-13 | The motorbike profile leaves the driving side unset                                                                                       | Since OSRM v26.10, the driving side is resolved per way from location data, and car.lua says to leave `left_hand_driving` unset                                                                                                                                                                                                                                                                                                                                    | forcing `left_hand_driving = true`                                                                                                                                                                            |
+| D11 | 2026-11-13 | Base map from a pinned Protomaps daily build, file named after the build date                                                             | A dated file is reproducible and cacheable forever; Protomaps builds are ODbL data in a maintained schema                                                                                                                                                                                                                                                                                                                                                          | building tiles ourselves with planetiler (more tooling, more RAM), an OpenMapTiles build (different schema)                                                                                                   |
+| D12 | 2026-11-13 | The generated `.adonisjs/` directory stays committed                                                                                      | The AdonisJS docs (Codegen): "The `.adonisjs` directory is generated, but it is not a disposable build artifact. You must commit it to Git." Without it a fresh clone does not typecheck. Refresh with `node ace codegen` after switching branches                                                                                                                                                                                                                 | ignoring it and generating in CI                                                                                                                                                                              |
+| D13 | 2026-11-13 | Scheduled jobs: idempotent ace commands, run by systemd timers in production, by hand locally (§6.5)                                      | No dependency, survives web restarts, catches missed runs (`Persistent=true`), fits rootless Podman + Quadlet                                                                                                                                                                                                                                                                                                                                                      | a sleep loop in a container (no missed-run handling, drifts), an in-process scheduler package (not official AdonisJS, runs twice with two web processes)                                                      |
+| D14 | 2026-11-13 | Map data and future uploads live in git-ignored `storage/` and `public/tiles/`                                                            | AGENTS.md §7: map/OSM/OSRM data and uploads are never committed                                                                                                                                                                                                                                                                                                                                                                                                    | a folder outside the repository (harder to find)                                                                                                                                                              |
+| D15 | 2026-11-13 | The SQL and Lua files in `maps/` start with a short header comment                                                                        | Like migrations (CONVENTIONS §8), they define a schema or a profile whose purpose and limits aren't visible from the statements alone                                                                                                                                                                                                                                                                                                                              | no header (CONVENTIONS §10 default)                                                                                                                                                                           |
+| D16 | 2026-11-13 | Kecamatan boundaries: OCHA COD-AB for Indonesia (BPS data) on HDX, CC BY-IGO; the filtered file for the 64 kecamatan is produced in M3    | The only licensed public dataset with BPS kecamatan codes and names; the license allows reuse with credit (AREA-1). Credit text for pin maps: "Batas wilayah: BPS, via HDX (CC BY-IGO)"                                                                                                                                                                                                                                                                            | OSM admin boundaries (incomplete for kecamatan outside Kota Bandung, names not BPS)                                                                                                                           |
