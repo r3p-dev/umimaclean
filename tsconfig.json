@@ -4,7 +4,9 @@
     "rootDir": "./",
     "jsx": "react",
     "outDir": "./build",
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    // The shadcn CLI resolves the "~" alias of components.json through this file, not inertia/tsconfig.json.
+    "paths": { "~/*": ["./inertia/*"] }
   },
   "references": [{ "path": "./tsconfig.inertia.json" }]
 }
