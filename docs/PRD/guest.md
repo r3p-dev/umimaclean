@@ -6,7 +6,7 @@ Anyone who is not signed in: people browsing the site, people signing up or in, 
 
 ## 1. Public pages (`GUEST`)
 
-- **GUEST-1** **Landing** (`/`): hero with a before/after comparison (free-license placeholder photos, with their source and license documented, until the shop provides real ones) and an order CTA; how it works; the items we clean; the price list built from active services (SVC-1, "mulai dari" where flagged); reviews; a service-area map with an "is my location covered?" check (AREA-4, rate limited per IP); FAQ; footer with the shop's name, WhatsApp, address and opening hours from the store settings.
+- **GUEST-1** **Landing** (`/`): hero with a before/after comparison (free-license photos of shoes before and after cleaning, with each photo's source and license documented, until the shop provides its own) and an order CTA; how it works; the items we clean; the price list built from active services (SVC-1, "mulai dari" where flagged); reviews; a service-area map with an "is my location covered?" check (AREA-4, rate limited per IP); FAQ; footer with the shop's name, WhatsApp, address and opening hours from the store settings.
 - **GUEST-2** **Terms** (`/syarat`) and **privacy** (`/privasi`). The privacy page states which outside services receive which data (`shared.md` §11) and uses the shop details from the store settings.
 - **GUEST-3** **SEO**: title, description and Open Graph on public pages; `/sitemap.xml` and `/robots.txt` list public pages only.
 

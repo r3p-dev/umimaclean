@@ -96,8 +96,8 @@ Bag rows are two services each (kanvas and kulit). Sizes: Small < 25 cm, Medium 
 - **PAY-1** QRIS payments go through **Midtrans Core API**. A charge is created **only when someone presses "Bayar"** (the customer online, or staff at the counter). A QR code lives **15 minutes**; pressing again while one is live shows the same QR. At most 5 new QR codes per order per 15 minutes.
 - **PAY-2** Midtrans notifications are verified (signature), the status is confirmed with Midtrans, and processing is idempotent. A paid QRIS moves the order to `in_cleaning`. Pages showing a QR also offer "Cek status", which asks Midtrans directly.
 - **PAY-3** Payment statuses: `pending` (Menunggu), `paid` (Lunas), `expired` (Kedaluwarsa), `cancelled` (Dibatalkan), `failed` (Gagal), `cancel_failed` (Gagal dibatalkan), `refund_due` (Perlu refund), `amount_mismatch` (Nominal tidak cocok), `refunded` (Sudah dikembalikan). **At most one `paid` payment per order**, guaranteed by the database.
-- **PAY-4** When an order is paid another way (cash, owner correction), any live QRIS of that order is cancelled at Midtrans; if that fails the payment becomes `cancel_failed`. A QRIS settled after the order was already paid becomes `refund_due`. A settled amount different from the bill becomes `amount_mismatch`.
-- **PAY-7** Payment status transitions (nothing else is possible; `expired`, `failed`, `cancelled` and `refunded` are final):
+- **PAY-4** A QRIS always carries the current bill amount: when a bill is replaced (re-inspection before payment) or an order is paid another way (cash, owner correction) or cancelled, any live QRIS of that order is cancelled at Midtrans; if that fails the payment becomes `cancel_failed`. A QRIS settled after the order was already paid becomes `refund_due`. A settled amount different from the bill becomes `amount_mismatch`; with dynamic QRIS this should never happen, so it is a safety check that sends the payment to reconciliation.
+- **PAY-7** Payment status transitions (nothing else is possible; `expired`, `failed`, `cancelled` and `refunded` are final except for an owner correction):
 
 | From | To | When |
 | --- | --- | --- |
@@ -116,9 +116,10 @@ Bag rows are two services each (kanvas and kulit). Sizes: Small < 25 cm, Medium 
 | `amount_mismatch` | `refunded` | The owner records a refund made outside the app (OWN-5) |
 | `refund_due` | `refunded` | The owner records a refund made outside the app (OWN-5) |
 | `paid` | `refund_due` | The owner cancels an order that was already paid (OWN-3) |
+| `pending`, `expired`, `failed`, `cancelled`, `cancel_failed` | `paid` | The owner corrects the payment because the money was in fact received, e.g. a QRIS recorded as cash (OWN-4), and the order has no other paid payment |
 
 - **PAY-5** Each payment method (QRIS, cash) can be switched off by the owner (`owner.md` OWN-8). Without Midtrans keys, QRIS shows as unavailable with a hint to pay at the shop.
-- **PAY-6** **Payment reminders** (online orders only): while an order is `awaiting_payment` without a paid payment, a WhatsApp reminder goes **24 hours after the bill, then every 2 days after the last sent reminder**, only **between 10:00 and 15:00 Asia/Jakarta**, until paid. A reminder that falls due outside that window goes at the start of the next window (a bill at 17:00 gets its first reminder at 10:00 two days later). Only a successfully sent message counts; a failed send is retried on the next run. Reminders never call Midtrans.
+- **PAY-6** **Payment reminders** (online orders only): while an order is `awaiting_payment` without a paid payment, a WhatsApp reminder goes **24 hours after the bill, then every 2 days after the last sent reminder**, only **between 10:00 and 15:00 Asia/Jakarta**, until paid. A reminder that falls due outside that window goes at the start of the next window (a bill at 17:00 gets its first reminder at 10:00 two days later). No reminder goes while the order has a payment in `amount_mismatch` (it waits for the owner's reconciliation). Only a successfully sent message counts; a failed send is retried on the next run. Reminders never call Midtrans.
 
 ## 7. WhatsApp messages (`MSG`)
 

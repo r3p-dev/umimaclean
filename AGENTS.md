@@ -16,7 +16,7 @@ Read these at the start of every session:
 | `docs/ARCHITECTURE.md`                | §1 fixed decisions and security (owner); §2+ components, data flow, state machines, decisions log (you) | Both                        |
 | `docs/PLAN.md`                        | Milestones, versions, acceptance criteria, estimates, status                                            | You (approved by the owner) |
 | `docs/DEPENDENCIES.md`                | Approved packages and container images, with reasons                                                    | You                         |
-| `docs/M{N}-EVIDENCE.md`               | Proof that a milestone is done                                                                          | You                         |
+| `docs/evidence/M{N}/EVIDENCE.md`      | Proof that a milestone is done                                                                          | You                         |
 
 On behavior the PRD wins; on technology `docs/ARCHITECTURE.md` §1 wins; on code style `docs/CONVENTIONS.md` wins. If two documents conflict, say so in your report instead of choosing silently.
 
@@ -26,11 +26,11 @@ Always check the current stable versions and official documentation of every too
 
 ## 2. Milestone loop
 
-1. **Align:** read `docs/PLAN.md` and the existing `docs/M*-EVIDENCE.md` files to find the active milestone. If the previous milestone has no confirmation from me, stop and ask.
+1. **Align:** read `docs/PLAN.md` and the existing `docs/evidence/M*/EVIDENCE.md` files to find the active milestone. If the previous milestone has no confirmation from me, stop and ask.
 2. **Implement and test:** follow `docs/CONVENTIONS.md`. Cover the milestone's acceptance criteria with tests: unit tests for services, state machines and helpers; functional tests for every route (happy path, authorization, and the PRD rule it implements, named by requirement ID); browser tests for the main journeys. `npm run lint`, `npm run typecheck` and `npm test` pass with no deprecation warnings.
 3. **Keep the docs current:** update `docs/ARCHITECTURE.md` §2+ when routes, modules, schema, state machines or decisions change; every workaround gets a short code comment and a decisions-log entry. Update `docs/DEPENDENCIES.md` for every package or image added. Update the status column in `docs/PLAN.md`.
-4. **Seed data:** keep a usable development database: one owner, one staff, a few customers with addresses, the price list, the service areas, and sample orders in every status once orders exist. The seeder prints the demo accounts.
-5. **Produce evidence:** a milestone is not done until `docs/M{N}-EVIDENCE.md` exists with the content of the report below (in English is fine), screenshots under `docs/evidence/M{N}/`, and known limitations or deferred items.
+4. **Seed data:** keep a usable development database: one owner, two staff, a few customers with addresses, the price list, the service areas, and sample orders in every status once orders exist. The seeder prints the demo accounts.
+5. **Produce evidence:** a milestone is not done until `docs/evidence/M{N}/EVIDENCE.md` exists with the content of the report below (in English is fine), with its screenshots and logs in the same folder, and known limitations or deferred items.
 6. **Report and stop** (§4), then wait for my confirmation before the next milestone.
 
 ## 3. Pace
@@ -43,7 +43,7 @@ Write the report to me **in Indonesian**, short and concrete:
 
 1. **Ringkasan**: what was built, in a few sentences, with the requirement IDs covered.
 2. **Cara menjalankan dan melihat**: exact commands from a clean checkout, URLs, seeded accounts, and what to click to see each new thing.
-3. **Tampilan**: screenshots of every new or changed page (desktop and mobile width) under `docs/evidence/M{N}/`, linked.
+3. **Tampilan**: screenshots of every new or changed page (desktop and mobile width) in `docs/evidence/M{N}/`, linked.
 4. **Cara kerja**: how each new flow works from the click to the database and back (route → middleware → controller → validator → service → model → page), with a short sequence (text or Mermaid).
 5. **Tur kode**: the new or changed files **in reading order**, one line each, so I can read them in that order.
 6. **Keputusan dan penyimpangan**: decisions taken, deviations from the documents, every workaround added (with its reason).

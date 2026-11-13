@@ -11,14 +11,14 @@
 
 ## 2. Courier trips
 
-- **STAFF-3** Two queues: **Jemput** (orders `awaiting_pickup`) and **Antar** (orders `ready_for_delivery`). There is **one active trip per queue at a time for the whole team**: while someone has an active pickup, no one can start another pickup until it is finished or skipped (same for deliveries). Every staff member sees who holds the active trip; only that staff member or the owner can finish or skip it.
+- **STAFF-3** Two queues: **Jemput** (orders `awaiting_pickup`) and **Antar** (orders `ready_for_delivery`). There is **one active trip per queue at a time for the whole team**: while someone has an active pickup, no one can start another pickup until it is finished or skipped (same for deliveries). Every staff member sees who holds the active trip; only that staff member or the owner can finish or skip it. If the owner cancels that order, the trip ends (`owner.md` OWN-3).
 - **STAFF-4** Trip steps:
   - **start** → `courier_en_route` (pickup, sends the "courier on the way" message) or `in_delivery` (delivery);
   - **arrived** → only logged;
   - **finish** with a **required proof photo** (PHOTO-1): pickup → `picked_up`; delivery → `completed`, with the name of who received it;
   - **skip** with a reason from STAFF-5 and an optional note → back to `awaiting_pickup` / `ready_for_delivery`; the reason appears on the timeline.
 - **STAFF-5** Skip reasons: "Pelanggan tidak bisa dihubungi (±15 menit)", "Pelanggan tidak ada di lokasi", "Jalan ditutup / masalah rute", "Lokasi tidak bisa diakses", "Kendaraan bermasalah", "Lainnya".
-- **STAFF-6** **Queue order**: the pickup queue keeps its blocks (overdue dates first, then each date and slot in order) and orders the stops inside each block nearest first by road travel time (OSRM, motorbike profile, no toll roads); the delivery queue is nearest first as a whole. Stops skipped today go last. The plan starts from the staff member's position when the device shares GPS, otherwise from the shop, and is recomputed only when a stop is finished or skipped or the queue's orders change. Without OSRM, the scheduled order is shown with "Urutan belum dioptimasi".
+- **STAFF-6** **Queue order**: the pickup queue keeps its blocks (overdue dates first, then each date and slot in order) and orders the stops inside each block nearest first by road travel time (OSRM, motorbike profile, no toll roads); the delivery queue is nearest first as a whole. Stops skipped today go last. **Each staff member sees the queue ordered from their own position** when their device shares GPS, otherwise from the shop; a staff member's plan is recomputed only when a stop is finished or skipped or the queue's orders change. Without OSRM, the scheduled order is shown with "Urutan belum dioptimasi".
 - **STAFF-7** The **active trip** shows a map with the route line and distance/ETA, call and WhatsApp buttons for the recipient, the order's note, the declared items (pickup) or inspected items (delivery), and a button that opens navigation in **Google Maps or Waze** (the choice is remembered on the device). Without OSRM, distance and time are estimates marked "±".
 
 ## 3. Workshop
