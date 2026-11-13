@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import AuthService from '#services/auth_service'
+import env from '#start/env'
 
 test.group('Authentication Browser Flow', (group) => {
   group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
@@ -49,5 +50,31 @@ test.group('Authentication Browser Flow', (group) => {
     await page.waitForURL('/dashboard')
 
     await page.assertPath('/dashboard')
+  })
+
+  test('sign-in also works before the page scripts run (server-rendered form)', async ({
+    browser,
+    assert,
+  }) => {
+    await new AuthService().registerUser({
+      fullName: 'No Script User',
+      email: 'noscript@example.com',
+      password: 'password123',
+      passwordConfirmation: 'password123',
+    })
+    const context = await browser.newContext({
+      javaScriptEnabled: false,
+      baseURL: `http://${env.get('HOST')}:${env.get('PORT')}`,
+    })
+    const page = await context.newPage()
+
+    await page.goto('/login')
+    await page.locator('input#email').fill('noscript@example.com')
+    await page.locator('input#password').fill('password123')
+    await page.locator('button[type="submit"]').click()
+    await page.waitForURL('**/dashboard')
+
+    assert.equal(new URL(page.url()).pathname, '/dashboard')
+    await context.close()
   })
 })

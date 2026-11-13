@@ -5,11 +5,13 @@ import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
   share(ctx: HttpContext) {
-    // A page can render before the auth middleware ran (a 404, for example), so auth may be missing.
-    const { auth } = ctx as Partial<HttpContext>
+    // A page can render before the auth and Shield middleware ran (a 404, for example), so these may be missing.
+    const { auth, request } = ctx as Partial<HttpContext>
 
     return {
       errors: ctx.inertia.always(this.getValidationErrors(ctx)),
+      // Lets a form submitted before the page's scripts have loaded pass the CSRF check (CsrfField).
+      csrfToken: ctx.inertia.always(request?.csrfToken),
       user: ctx.inertia.always(auth?.user ? UserTransformer.transform(auth.user) : undefined),
     }
   }

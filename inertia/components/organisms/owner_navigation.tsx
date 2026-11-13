@@ -1,4 +1,5 @@
 import { useState, type ComponentType, type SVGProps } from 'react'
+import CsrfField from '~/components/atoms/csrf_field'
 import { Form } from '@adonisjs/inertia/react'
 import {
   IconArrowsExchange,
@@ -76,6 +77,7 @@ function OwnerNavigationItems({ active, isCompact }: { active: OwnerSection; isC
           <span className={labelClass}>Profil</span>
         </NavigationItem>
         <Form route="session.destroy">
+          <CsrfField />
           <button type="submit" className={itemClass(false, isCompact)}>
             <IconLogout className="size-5 shrink-0" />
             <span className={labelClass}>Keluar</span>

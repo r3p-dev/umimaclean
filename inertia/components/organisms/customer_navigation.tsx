@@ -1,4 +1,5 @@
 import type { ComponentType, SVGProps } from 'react'
+import CsrfField from '~/components/atoms/csrf_field'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { usePage } from '@inertiajs/react'
 import {
@@ -78,6 +79,7 @@ export function CustomerHeader({ active }: { active: CustomerSection }) {
             </span>
           )}
           <Form route="session.destroy">
+            <CsrfField />
             <button
               type="submit"
               className={cn(

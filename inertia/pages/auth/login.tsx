@@ -1,14 +1,18 @@
-import { Head } from '@inertiajs/react'
 import { Form, Link } from '@adonisjs/inertia/react'
+import CsrfField from '~/components/atoms/csrf_field'
 import { IconArrowLeft } from '@tabler/icons-react'
 import FormField from '~/components/molecules/form_field'
+import SeoHead from '~/components/molecules/seo_head'
 import AuthLayout from '~/components/templates/auth_layout'
 import { Button } from '~/components/ui/button'
 
 export default function Login() {
   return (
     <>
-      <Head title="Masuk" />
+      <SeoHead
+        title="Masuk"
+        description="Masuk ke akun Umima Clean untuk memesan penjemputan dan melihat pesanan Anda."
+      />
       <h1 className="text-3xl font-bold tracking-tight">Masuk ke Umima Clean</h1>
       <p className="mt-1 text-base text-muted-foreground">
         Pakai email dan kata sandi yang Anda buat saat daftar.
@@ -17,6 +21,7 @@ export default function Login() {
       <Form route="session.store" className="mt-8 flex flex-col gap-5">
         {({ errors, processing }) => (
           <>
+            <CsrfField />
             <FormField
               id="email"
               label="Email"

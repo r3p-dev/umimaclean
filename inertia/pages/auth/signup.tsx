@@ -1,14 +1,18 @@
-import { Head } from '@inertiajs/react'
 import { Form, Link } from '@adonisjs/inertia/react'
+import CsrfField from '~/components/atoms/csrf_field'
 import { IconArrowLeft } from '@tabler/icons-react'
 import FormField from '~/components/molecules/form_field'
+import SeoHead from '~/components/molecules/seo_head'
 import AuthLayout from '~/components/templates/auth_layout'
 import { Button } from '~/components/ui/button'
 
 export default function Signup() {
   return (
     <>
-      <Head title="Daftar" />
+      <SeoHead
+        title="Daftar"
+        description="Buat akun Umima Clean untuk memesan penjemputan cuci sepatu dan tas di Bandung Raya."
+      />
       <h1 className="text-3xl font-bold tracking-tight">Buat akun</h1>
       <p className="mt-1 text-base text-muted-foreground">
         Simpan alamat dan riwayat pesanan, lalu pesan penjemputan kapan saja.
@@ -17,6 +21,7 @@ export default function Signup() {
       <Form route="register.store" className="mt-8 flex flex-col gap-5">
         {({ errors, processing }) => (
           <>
+            <CsrfField />
             <FormField id="fullName" label="Nama" autoComplete="name" error={errors.fullName} />
             <FormField
               id="email"
