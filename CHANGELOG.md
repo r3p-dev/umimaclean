@@ -1,0 +1,32 @@
+# Changelog
+
+All notable changes to this project are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
+[Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+## [0.1.0] - 2026-11-14
+
+### Added
+
+- Landing page: hero with a before/after photo comparison, the items we clean, how it works,
+  customer reviews and frequently asked questions, with the photo credit in the footer (GUEST-1).
+- Terms (`/syarat`) and privacy (`/privasi`) pages, including the outside services that receive
+  data (GUEST-2).
+- Titles, descriptions and Open Graph tags on public pages, a link preview image, `/sitemap.xml`
+  and `/robots.txt` (GUEST-3). Public pages are server-rendered.
+- The Umima look: Tailwind and shadcn (React Aria) with the brand colors, the Instrument Sans
+  typeface, the logo and icons; page templates for the public, sign-in, customer, step-by-step,
+  staff, owner and print areas; 404 and 500 pages; template previews outside production.
+- Browser tests for outside requests, language, headings, focus, the light theme, horizontal
+  scrolling at 360 px and accessibility (axe).
+- Local routing and map data tools in `compose.yaml`, the OpenStreetMap import style and SQL, and
+  the OSRM motorbike profile.
+
+### Changed
+
+- The whole interface is in Indonesian with one light theme.
+- Development and tests use their own databases on a shared PostgreSQL 18 / PostGIS 3.6 server,
+  and the test run migrates its own database.
+- The sign-up form requires a name.
