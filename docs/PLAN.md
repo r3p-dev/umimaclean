@@ -6,8 +6,9 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 
 | #    | Version | Milestone                                      | Status                | Hours |
 | ---- | ------- | ---------------------------------------------- | --------------------- | ----- |
-| M0   | –       | Spikes and plan                                | done, awaiting review | 8     |
-| M1   | 0.1.0   | Foundation and look                            | not started           | 16    |
+| M0   | –       | Spikes and plan                                | done                  | 8     |
+| M1a  | –       | Conventions across the existing code           | done, awaiting review | 8     |
+| M1b  | 0.1.0   | Foundation and look                            | not started           | 16    |
 | M2   | 0.2.0   | Accounts                                       | not started           | 24    |
 | M3   | 0.3.0   | Services, service areas, store settings        | not started           | 16    |
 | M4   | 0.4.0   | Addresses and maps                             | not started           | 20    |
@@ -22,11 +23,11 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M11  | 0.11.0  | Live updates and jobs                          | not started           | 10    |
 | M12  | 1.0.0   | Hardening and release                          | not started           | 20    |
 
-Hours are the implementer's estimate for building, testing and writing the evidence of each milestone; review time is not included. Total M1–M12: 248 hours.
+Hours are the implementer's estimate for building, testing and writing the evidence of each milestone; review time is not included. Total M1a–M12: 256 hours.
 
-**Proposed split (M0):** M5 and M10 each became two checkpoints (`a`, `b`) so that each stop stays reviewable in one sitting. A checkpoint `a` ends with a report and suggested commits but no version bump; the minor version is bumped at the end of checkpoint `b`.
+**Checkpoints:** M5 and M10 each became two checkpoints (`a`, `b`) in M0 so that each stop stays reviewable in one sitting; M1 became M1a (conventions applied to the existing code, added by the owner after M0) and M1b. A checkpoint `a` ends with a report and suggested commits but no version bump; the minor version is bumped at the end of checkpoint `b`.
 
-**Every milestone** also meets the general acceptance criteria of `AGENTS.md` §2: tests for its criteria (unit for services, state machines and helpers; functional for every route, including authorization and the PRD rule, named by requirement ID; browser tests for the main journeys), `npm run lint`, `npm run typecheck` and `npm test` pass without deprecation warnings, seed data updated, `docs/ARCHITECTURE.md` and `docs/DEPENDENCIES.md` current, `docs/M{N}-EVIDENCE.md` with desktop and mobile screenshots.
+**Every milestone** also meets the general acceptance criteria of `AGENTS.md` §2: tests for its criteria (unit for services, state machines and helpers; functional for every route, including authorization and the PRD rule, named by requirement ID; browser tests for the main journeys), `npm run lint`, `npm run typecheck` and `npm test` pass without deprecation warnings, seed data updated, `docs/ARCHITECTURE.md` and `docs/DEPENDENCIES.md` current, `docs/evidence/M{N}/EVIDENCE.md` with desktop and mobile screenshots and logs in the same folder.
 
 ## M0: Spikes and plan
 
@@ -39,17 +40,30 @@ No application code. Infrastructure files are allowed: the Podman setup for loca
 5. Decide whether the generated `.adonisjs/` directory stays committed (it is today), following the official AdonisJS recommendation, and how scheduled jobs run locally and in production.
 6. Write `docs/ARCHITECTURE.md` §2–§7 (including both state machines as tables, from ORD-3 and PAY-7) and complete this plan (acceptance criteria and hours per milestone). List any decision in `docs/ARCHITECTURE.md` §1 you believe must change, and why.
 
-## M1 (0.1.0): Foundation and look
+## M1a (checkpoint of 0.1.0): Conventions across the existing code
 
-Tailwind, shadcn (React Aria base) with the brand values in shadcn's theme variables, the atomic folders, the page templates per area, error pages. Public: landing with its static sections, terms and privacy (GUEST-1 static parts, GUEST-2, GUEST-3). Review focus: does it look right.
+Apply `docs/CONVENTIONS.md` to the whole existing codebase before anything new is built on it. Behavior does not change. Code that M2 replaces (the email sign-up and sign-in) only gets the mechanical rules: naming, comments, file locations.
 
 Acceptance criteria:
 
-- Tailwind v4 and shadcn initialized with `--base aria` (style `aria-vega`), `iconLibrary` set to Tabler; every package the CLI adds is listed in `docs/DEPENDENCIES.md`; `lucide-react` removed; the type-aware `@typescript-eslint/no-deprecated` rule enabled and passing.
+- Every convention applied, with the files it touched, and everything deliberately left for a later milestone with its reason, listed in `docs/evidence/M1a/EVIDENCE.md`.
+- Tooling enforces what it can: the type-aware `@typescript-eslint/no-deprecated` rule (CONVENTIONS §12) and TypeScript's `noImplicitOverride` (§5) are on and pass.
+- `npm run lint`, `npm run typecheck` and `npm test` pass, and `npm test` also passes on a freshly created test database: the test runner migrates its own database (`tests/bootstrap.ts`, `docs/ARCHITECTURE.md` §6.6).
+- Behavior unchanged: the same routes answer with the same status codes, and the existing pages look the same (screenshots compared with the previous commit).
+- Development and tests use their own databases on the shared PostgreSQL server (`database/create_databases.sql`); `compose.yaml` keeps only OSRM and the data tools.
+
+## M1b (0.1.0): Foundation and look
+
+Tailwind, shadcn (React Aria base) with the brand values in shadcn's theme variables, the page templates per area, error pages. Public: landing with its static sections, terms and privacy (GUEST-1 static parts, GUEST-2, GUEST-3). Review focus: does it look right.
+
+Acceptance criteria:
+
+- Tailwind v4 and shadcn initialized with `--base aria` (style `aria-vega`), `iconLibrary` set to Tabler; every package the CLI adds is listed in `docs/DEPENDENCIES.md`; `lucide-react` removed.
+- The starter's look (its CSS classes in `inertia/css/app.css`, inline styles, English copy) replaced by Tailwind classes, shadcn components and Indonesian copy (CONVENTIONS §9.1, §15).
 - Brand colors only in shadcn's existing theme variables in `inertia/css/app.css`; no new CSS variables; status colors in one map from stage to Tailwind classes (CONVENTIONS §9.1).
 - Fonts self-hosted through `@fontsource-variable/*`; no request to a font or map CDN (checked in a browser test that blocks outside hosts).
 - One template per area (public, auth, customer, flow, staff, owner, print) and the error pages (404, 500), viewable in development.
-- GUEST-1 static sections (hero with before/after placeholders whose source and license are documented, how it works, items, reviews, FAQ, footer from placeholder store data until M3); GUEST-2 terms and privacy; GUEST-3 titles, descriptions, Open Graph, `/sitemap.xml`, `/robots.txt` listing public pages only.
+- GUEST-1 static sections (hero with the before/after photos chosen in M1a, with each photo's source, author and license documented in `docs/DEPENDENCIES.md` §4 and credited on the site as their license requires, how it works, items, reviews, FAQ, footer from placeholder store data until M3); GUEST-2 terms and privacy; GUEST-3 titles, descriptions, Open Graph, `/sitemap.xml`, `/robots.txt` listing public pages only.
 - NFR-2 on the new pages: keyboard reachable, visible focus, native headings, AA contrast (automated check in the browser test).
 
 ## M2 (0.2.0): Accounts
@@ -65,7 +79,8 @@ Acceptance criteria:
 - GUEST-12, ACC-5: forgot password never reveals whether a number exists; a reset signs out every other device.
 - ACC-4, CUST-12, OWN-13, STAFF-16 (profile part): change password (current required, rate limited), active device count, sign out other devices, change name.
 - CUST-13 (without walk-in linking): phone change through an OTP to the new number; a taken number is refused; other devices signed out.
-- Role redirects after sign-in; empty home pages for customer, staff and owner; the first owner account from a seeder (`ADMIN_PHONE` in production); demo accounts printed by the seeder.
+- Role redirects after sign-in; empty home pages for customer, staff and owner; the first owner account from a seeder (`ADMIN_PHONE` in production); seed data with one owner and two staff accounts; demo accounts printed by the seeder.
+- All validation messages in Indonesian in `start/validator.ts` (CONVENTIONS §8); the starter's email sign-up and sign-in and its `AuthService` are replaced.
 - `docs/ARCHITECTURE.md` §1.2 rules 1–4 and 7 covered by tests (trusted proxy IP, Bouncer on every route, rate limits, OTP storage).
 
 ## M3 (0.3.0): Services, service areas, store settings
@@ -89,10 +104,9 @@ Acceptance criteria:
 
 - `node ace osm:import` runs the pipeline of `docs/ARCHITECTURE.md` §6.2 (checks that the clip box contains every service area first).
 - MAP-1: place search for signed-in users only (per-user rate limit), typo and spacing tolerant ("dipati ukur" finds "Jalan Dipatiukur"), generic words ignored; nearby places and the street label under a pin; without the `osm` schema the pin can still be placed by hand.
-- MAP-2: maps draw the self-hosted PMTiles file; the browser contacts no map provider (browser test blocks outside hosts); "© OpenStreetMap contributors" on every map; without the file a plain background and pins still work.
+- MAP-2: maps are drawn by MapLibre GL JS from the self-hosted PMTiles file (`pmtiles` protocol, `@protomaps/basemaps` style), loaded only on pages that show a map; the browser contacts no map provider (browser test blocks outside hosts); "© OpenStreetMap contributors" on every map; without the file a plain background and pins still work.
 - AREA-4: every saved pin is checked against active areas on the server; instant inside/outside feedback while moving the pin.
 - CUST-2, CUST-3, CUST-14: at most 3 addresses, exactly one primary (database-enforced), deleting the primary promotes the newest; label, recipient name and phone, address text, landmark, pin; list, add, edit, make primary, delete.
-- Map library question (M0 report, §1 change proposal) decided before this milestone starts.
 
 ## M5a (checkpoint of 0.5.0): Online ordering: slots, new order, confirm
 
@@ -128,9 +142,9 @@ STAFF-2…STAFF-7, PHOTO-1, PHOTO-2, the "courier on the way" message.
 Acceptance criteria:
 
 - STAFF-2: staff home with counts per queue and the next thing to do.
-- STAFF-3: one active pickup and one active delivery for the whole team, enforced by the database (concurrency test); everyone sees who holds a trip; only that staff member or the owner can finish or skip it (authorization tests).
+- STAFF-3: one active pickup and one active delivery for the whole team, enforced by the database (concurrency test); everyone sees who holds a trip; only that staff member or the owner can finish or skip it (authorization tests); when the owner cancels the order of an active trip, the trip ends and the queue is free again (OWN-3).
 - STAFF-4, STAFF-5: start, arrived (logged), finish with a required proof photo (delivery also records the receiver), skip with a listed reason and note shown on the timeline; "courier on the way" message on pickup start (MSG-1.2).
-- STAFF-6: queue order as specified (pickup blocks by date and slot, nearest first inside a block by OSRM travel time; deliveries nearest first; today's skipped stops last; start from GPS or the shop; recomputed only on finish, skip or queue change); without OSRM the scheduled order with "Urutan belum dioptimasi". Where the plan is stored with 3–4 staff is decided in the M0 open questions.
+- STAFF-6: queue order as specified (pickup blocks by date and slot, nearest first inside a block by OSRM travel time; deliveries nearest first; today's skipped stops last; each staff member sees the queue ordered from their own GPS position, or from the shop without GPS, with a plan kept per staff member and recomputed only on finish, skip or queue change); without OSRM the scheduled order with "Urutan belum dioptimasi".
 - STAFF-7: active trip with route line, distance/ETA ("±" without OSRM), call and WhatsApp buttons, note, items, and a Google Maps / Waze button whose choice is remembered on the device.
 - PHOTO-1, PHOTO-2: JPG/PNG/WebP up to 8 MB from the device camera; stored outside `public/`; served only to signed-in users allowed to see that order.
 
@@ -154,9 +168,9 @@ Acceptance criteria:
 - The payment state machine of `docs/ARCHITECTURE.md` §5.2 in one table and one writer method, with the unit test over every status pair; at most one `paid` payment per order enforced by the database.
 - PAY-1, CUST-10: a QRIS charge only on "Bayar"; 15-minute QR with countdown; a live QR is shown again; at most 5 new QRs per order per 15 minutes; the bill itemized.
 - PAY-2: notifications verified by signature, confirmed with Midtrans, idempotent (the same notification twice changes nothing); "Cek status" asks Midtrans; a paid QRIS moves the order to `in_cleaning`.
-- PAY-4, PAY-7: live QRIS cancelled when the order is paid another way; `cancel_failed`, `refund_due` and `amount_mismatch` reached exactly as the table says (functional tests with the Midtrans fake for each row).
+- PAY-4, PAY-7: live QRIS cancelled when the bill is replaced (re-inspection) and when the order is paid another way or cancelled; `cancel_failed`, `refund_due` and `amount_mismatch` reached exactly as the table says (functional tests with the Midtrans fake for each row).
 - PAY-5: without Midtrans keys QRIS shows as unavailable with a hint to pay at the shop.
-- PAY-6: `node ace payments:remind` sends the reminder 24 hours after the bill, then every 2 days after the last sent one, only 10:00–15:00 Asia/Jakarta (a due reminder outside the window goes at the next window start), online orders only, until paid; only a sent message counts; never calls Midtrans (tests with a fixed clock).
+- PAY-6: `node ace payments:remind` sends the reminder 24 hours after the bill, then every 2 days after the last sent one, only 10:00–15:00 Asia/Jakarta (a due reminder outside the window goes at the next window start), online orders only, until paid, and never while the order has a payment in `amount_mismatch`; only a sent message counts; never calls Midtrans (tests with a fixed clock).
 - CUST-11: receipt only for `completed` orders.
 - Verified once against the Midtrans sandbox with sandbox keys (the evidence shows the charge and notification).
 
@@ -180,8 +194,8 @@ OWN-1…OWN-5, MSG-1.5, MSG-2.
 Acceptance criteria:
 
 - OWN-2: summary with today's numbers, services report, inactive customer count, latest staff activity.
-- OWN-3: orders with stage and source filters, server-side search and pagination; order detail with the customer's history; owner cancel (also several at once) from any status except `completed`/`cancelled` with its side effects (active trip ends, live QRIS cancelled, paid payment → `refund_due`); "cancelled by the shop" message only when the customer was already told about the order (MSG-1.5); bulk move limited to `picked_up → in_inspection` and `ready_for_collection → completed`.
-- OWN-4: payment correction with a required reason, flagged sensitive (scope depends on open question Q1).
+- OWN-3: orders with stage and source filters, server-side search and pagination; order detail with the customer's history; owner cancel (also several at once) from any status except `completed`/`cancelled` with its side effects (active trip ends and the queue is free again, live QRIS cancelled, paid payment → `refund_due`); "cancelled by the shop" message only when the customer was already told about the order (MSG-1.5); bulk move limited to `picked_up → in_inspection` and `ready_for_collection → completed`.
+- OWN-4: payment correction with a required reason, flagged sensitive: change method, channel and amount, or set an unpaid payment (`pending`, `expired`, `failed`, `cancelled`, `cancel_failed`) to `paid` when the money was received and the order has no other paid payment (PAY-7); a paid correction moves the order on like any payment and cancels any live QRIS (PAY-4).
 - OWN-5: reconciliation with the review flags and actions of PAY-7 (re-check, mark refunded, resolve mismatch, retry cancel, mark handled), each with a note and an activity log entry.
 - OWN-1: the activity log with actor, time, order, readable detail, sensitive flag and category filter; customer actions not listed.
 - MSG-2: no message ever goes to staff or owner (test over all message kinds).

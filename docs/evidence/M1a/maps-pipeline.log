@@ -1,0 +1,990 @@
++ podman compose --profile tools build map-tools
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0mSTEP 1/2: FROM docker.io/library/debian:trixie-20261104-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
+STEP 2/2: RUN echo 'deb http://deb.debian.org/debian trixie-backports main' > /etc/apt/sources.list.d/backports.list   && apt-get update   && apt-get install -y --no-install-recommends osmium-tool osm2pgsql/trixie-backports   && rm -rf /var/lib/apt/lists/*
+--> Using cache fe3e824920a2703e94049fa196ba6c8ab89548545e5e8b5bf80252ad5aae0236
+COMMIT localhost/umimaclean-map-tools
+--> fe3e824920a2
+Successfully tagged localhost/umimaclean-map-tools:latest
+fe3e824920a2703e94049fa196ba6c8ab89548545e5e8b5bf80252ad5aae0236
++ mkdir -p storage/osm
++ cd storage/osm
++ md5sum -c java-latest.osm.pbf.md5
+java-latest.osm.pbf: OK
++ cd ../..
++ podman compose --profile tools run --rm -T map-tools osmium extract --bbox=107.20,-7.37,107.99,-6.76 --strategy=smart --option=types=multipolygon,boundary --overwrite --output=/data/bandung-raya.osm.pbf /data/java-latest.osm.pbf
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0m+ podman compose --profile tools run --rm -T psql -q -f /maps/osm_schema.sql
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0mpsql:/maps/osm_schema.sql:11: NOTICE:  extension "postgis" already exists, skipping
+psql:/maps/osm_schema.sql:12: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/maps/osm_schema.sql:13: NOTICE:  extension "unaccent" already exists, skipping
++ podman compose --profile tools run --rm -T psql -q -c 'CREATE SCHEMA IF NOT EXISTS osm_import'
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0m+ podman compose --profile tools run --rm -T map-tools sh -c 'PGPASSWORD="$DB_PASSWORD" osm2pgsql --create --output=flex --style=/maps/osm_import.lua --schema=osm_import --host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER" --database="$DB_DATABASE" /data/bandung-raya.osm.pbf'
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0m2026-11-13 21:24:53  osm2pgsql version 2.3.1
+2026-11-13 21:24:53  Database version: 17.5 (Debian 17.5-1.pgdg110+1)
+2026-11-13 21:24:53  PostGIS version: 3.5
+2026-11-13 21:24:53  Initializing properties table '"osm_import"."osm2pgsql_properties"'.
+2026-11-13 21:24:53  Storing properties to table '"osm_import"."osm2pgsql_properties"'.
+
+                                                                                          
+2026-11-13 21:25:04  Reading input files done in 11s.
+2026-11-13 21:25:04    Processed 12770432 nodes in 1s - 12770k/s
+2026-11-13 21:25:04    Processed 2482888 ways in 10s - 248k/s
+2026-11-13 21:25:04    Processed 3595 relations in 0s - 4k/s
+2026-11-13 21:25:04  No marked nodes or ways (Skipping stage 2).
+2026-11-13 21:25:04  Clustering table 'roads' by geometry...
+2026-11-13 21:25:04  Clustering table 'pois' by geometry...
+2026-11-13 21:25:04  Clustering table 'boundaries' by geometry...
+2026-11-13 21:25:04  Creating index on table 'pois' ("geom")...
+2026-11-13 21:25:04  Analyzing table 'pois'...
+2026-11-13 21:25:04  Creating index on table 'boundaries' ("geom")...
+2026-11-13 21:25:04  Creating index on table 'roads' ("geom")...
+2026-11-13 21:25:04  Analyzing table 'boundaries'...
+2026-11-13 21:25:04  Analyzing table 'roads'...
+2026-11-13 21:25:04  All postprocessing on table 'roads' done in 0s.
+2026-11-13 21:25:04  All postprocessing on table 'pois' done in 0s.
+2026-11-13 21:25:04  All postprocessing on table 'boundaries' done in 0s.
+2026-11-13 21:25:04  Storing properties to table '"osm_import"."osm2pgsql_properties"'.
+2026-11-13 21:25:04  osm2pgsql took 11s overall.
++ podman compose --profile tools run --rm -T psql -q --single-transaction -f /maps/osm_build.sql
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0mpsql:/maps/osm_build.sql:34: NOTICE:  drop cascades to 4 other objects
+drop cascades to table osm_import.roads
+drop cascades to table osm_import.boundaries
+drop cascades to table osm_import.pois
++ mkdir -p storage/osrm
++ cp storage/osm/bandung-raya.osm.pbf storage/osrm/
++ podman compose --profile tools run --rm -T osrm-build osrm-extract --profile=/opt/motorbike.lua /data/bandung-raya.osm.pbf
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0m[2026-11-13T14:25:08] [info] Parsed 0 location-dependent features with 0 GeoJSON polygons
+[2026-11-13T14:25:08] [info] Driving side: classifying every way
+[2026-11-13T14:25:08] [info] Using script /opt/motorbike.lua
+[2026-11-13T14:25:08] [info] Input file: bandung-raya.osm.pbf
+[2026-11-13T14:25:08] [info] Profile: motorbike.lua
+[2026-11-13T14:25:08] [info] Threads: 12
+[2026-11-13T14:25:08] [info] Parsing in progress ...
+[2026-11-13T14:25:08] [info] input file generated by osmium/1.18.0
+[2026-11-13T14:25:08] [info] timestamp: n/a
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Found 3 turn restriction tags:
+[2026-11-13T14:25:08] [info]   motor_vehicle
+[2026-11-13T14:25:08] [info]   motorcycle
+[2026-11-13T14:25:08] [info]   vehicle
+[2026-11-13T14:25:08] [info] Stashing relations of following types ...
+[2026-11-13T14:25:08] [info]   route
+[2026-11-13T14:25:08] [info] ... 454 relations in 0.119661 seconds
+[2026-11-13T14:25:08] [info] Parse ways and nodes and restrictions ...
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:08] [info] Using profile api version 4
+[2026-11-13T14:25:20] [info] ... in 12.0359 seconds
+[2026-11-13T14:25:20] [info] Parsing finished after 12.161 seconds
+[2026-11-13T14:25:20] [info] Raw input contains 12770432 nodes, 2482888 ways, and 454 relations, 323 restrictions
+[2026-11-13T14:25:20] [info] Collecting way information on 323 restrictions...ok, after 0.00256s
+[2026-11-13T14:25:20] [info] Collecting way information on 0 maneuver overrides...ok, after 0.000138s
+[2026-11-13T14:25:20] [info] Collecting information on 8827 obstacles...ok, after 0.02729s
+[2026-11-13T14:25:20] [info] Sorting used nodes        ... ok, after 0.014804s
+[2026-11-13T14:25:20] [info] Erasing duplicate nodes   ... ok, after 0.00295s
+[2026-11-13T14:25:21] [info] Sorting all nodes         ... ok, after 0.005021s
+[2026-11-13T14:25:21] [info] Building node id map      ... ok, after 0.013337s
+[2026-11-13T14:25:21] [info] Confirming/Writing used nodes     ... ok, after 0.042855s
+[2026-11-13T14:25:21] [info] Processed 1586922 nodes
+[2026-11-13T14:25:21] [info] Sorting edges by start    ... ok, after 0.049253s
+[2026-11-13T14:25:21] [info] Setting start coords      ... ok, after 0.071803s
+[2026-11-13T14:25:21] [info] Sorting edges by target   ... ok, after 0.045643s
+[2026-11-13T14:25:21] [info] Computing edge weights    ... ok, after 0.162529s
+[2026-11-13T14:25:21] [info] Sorting edges by renumbered start ... ok, after 0.048807s
+[2026-11-13T14:25:21] [info] Writing used edges       ... ok, after 0.028161s -- Processed 1637254 edges
+[2026-11-13T14:25:21] [info] Renumbering 8980 obstacles...ok, after 0.001907s
+[2026-11-13T14:25:21] [info] Collecting node information on 0 maneuver overrides...ok, after 1e-06s
+[2026-11-13T14:25:21] [info] Collecting node information on 323 restrictions...ok, after 0.000301s
+[2026-11-13T14:25:21] [info] writing street name index ... ok, after 0.002485s
+[2026-11-13T14:25:21] [info] extraction finished after 12.7237s
+[2026-11-13T14:25:21] [info] Generating edge-expanded graph representation
+[2026-11-13T14:25:21] [info] .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%
+[2026-11-13T14:25:23] [info] Node compression ratio: 0.160029
+[2026-11-13T14:25:23] [info] Edge compression ratio: 0.185596
+[2026-11-13T14:25:23] [info]  graph compression removed 164322 annotations of 176973 in 0.086538 seconds
+[2026-11-13T14:25:23] [info] Find segregated edges in node-based graph ...
+[2026-11-13T14:25:24] [info] ok, after 0.460255s
+[2026-11-13T14:25:24] [info] Segregated edges count = 2824
+[2026-11-13T14:25:24] [info] Writing nodes for nodes-based and edges-based graphs ...
+[2026-11-13T14:25:24] [info] Geometry successfully removed:
+  compressed edges: 607600
+  compressed geometries: 5939418
+  longest chain length: 2335
+  cmpr ratio: 0.1023
+  avg chain length: 9.77521
+[2026-11-13T14:25:24] [info] Removing invalid turn restrictions...removed 10 invalid turn restrictions, after 9.5e-05s
+[2026-11-13T14:25:24] [info] Removing invalid maneuver overrides...removed 0 invalid maneuver overrides, after 1e-06s
+[2026-11-13T14:25:24] [info] Constructing restriction graph on 280 restrictions...ok, after 5.8e-05s
+[2026-11-13T14:25:24] [info] Generating edge expanded nodes ... 
+[2026-11-13T14:25:24] [info] .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%
+[2026-11-13T14:25:24] [info] Expanding via-way turn restrictions ... 
+[2026-11-13T14:25:24] [info] .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%
+[2026-11-13T14:25:24] [info] Generated 590591 nodes (79 of which are duplicates)  and 1636837 segments in edge-expanded graph
+[2026-11-13T14:25:24] [info] Generating edge-expanded edges 
+[2026-11-13T14:25:24] [info] .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+
+[2026-11-13T14:25:25] [info] Sorting and writing 0 maneuver overrides...
+[2026-11-13T14:25:25] [info] done.
+[2026-11-13T14:25:25] [info] Renumbering turns
+[2026-11-13T14:25:25] [info] Writing 0 conditional turn penalties...
+[2026-11-13T14:25:25] [info] Generated 1636837 edge based node segments
+[2026-11-13T14:25:25] [info] Node-based graph contains 590163 edges
+[2026-11-13T14:25:25] [info] Edge-expanded graph ...
+[2026-11-13T14:25:25] [info]   contains 1110170 edges
+[2026-11-13T14:25:25] [info] Timing statistics for edge-expanded graph:
+[2026-11-13T14:25:25] [info] Renumbering edges: 0.020631s
+[2026-11-13T14:25:25] [info] Generating nodes: 0.189693s
+[2026-11-13T14:25:25] [info] Generating edges: 1.0862s
+[2026-11-13T14:25:25] [info] Generating guidance turns 
+[2026-11-13T14:25:25] [info] .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+
+[2026-11-13T14:25:26] [info] done.
+[2026-11-13T14:25:26] [info] Created 33 entry classes and 3049 Bearing Classes
+[2026-11-13T14:25:26] [info] Handled: 657 of 6487 lanes: 10.1279 %.
+[2026-11-13T14:25:26] [info] Assigned 1335421 turn instruction types:
+[2026-11-13T14:25:26] [info]   new name: 28525 (2.14%)
+[2026-11-13T14:25:26] [info]   continue: 88341 (6.62%)
+[2026-11-13T14:25:26] [info]   turn: 516763 (38.70%)
+[2026-11-13T14:25:26] [info]   merge: 358 (0.03%)
+[2026-11-13T14:25:26] [info]   on ramp: 115 (0.01%)
+[2026-11-13T14:25:26] [info]   off ramp: 224 (0.02%)
+[2026-11-13T14:25:26] [info]   fork: 6002 (0.45%)
+[2026-11-13T14:25:26] [info]   end of road: 249990 (18.72%)
+[2026-11-13T14:25:26] [info]   notification: 2 (0.00%)
+[2026-11-13T14:25:26] [info]   enter roundabout: 461 (0.03%)
+[2026-11-13T14:25:26] [info]   enter and exit roundabout: 8 (0.00%)
+[2026-11-13T14:25:26] [info]   enter rotary: 42 (0.00%)
+[2026-11-13T14:25:26] [info]   enter and exit rotary: 1 (0.00%)
+[2026-11-13T14:25:26] [info]   enter roundabout turn: 137 (0.01%)
+[2026-11-13T14:25:26] [info]   (noturn): 39107 (2.93%)
+[2026-11-13T14:25:26] [info]   (suppressed): 403443 (30.21%)
+[2026-11-13T14:25:26] [info]   roundabout: 8 (0.00%)
+[2026-11-13T14:25:26] [info]   exit roundabout: 545 (0.04%)
+[2026-11-13T14:25:26] [info]   rotary: 1 (0.00%)
+[2026-11-13T14:25:26] [info]   exit rotary: 53 (0.00%)
+[2026-11-13T14:25:26] [info]   exit roundabout turn: 146 (0.01%)
+[2026-11-13T14:25:26] [info]   (stay on roundabout): 726 (0.05%)
+[2026-11-13T14:25:26] [info]   (sliproad): 423 (0.03%)
+[2026-11-13T14:25:26] [info] Assigned 1335421 turn instruction modifiers:
+[2026-11-13T14:25:26] [info]   uturn: 84571 (6.33%)
+[2026-11-13T14:25:26] [info]   sharp right: 16844 (1.26%)
+[2026-11-13T14:25:26] [info]   right: 367747 (27.54%)
+[2026-11-13T14:25:26] [info]   slight right: 29801 (2.23%)
+[2026-11-13T14:25:26] [info]   straight: 416490 (31.19%)
+[2026-11-13T14:25:26] [info]   slight left: 29759 (2.23%)
+[2026-11-13T14:25:26] [info]   left: 374066 (28.01%)
+[2026-11-13T14:25:26] [info]   sharp left: 16143 (1.21%)
+[2026-11-13T14:25:26] [info] Guidance turn annotations took 0.695369s
+[2026-11-13T14:25:26] [info] Writing Intersection Classification Data
+[2026-11-13T14:25:26] [info] ok, after 0.018775s
+[2026-11-13T14:25:26] [info] Writing Turns and Lane Data...
+[2026-11-13T14:25:26] [info] ok, after 0.020174s
+[2026-11-13T14:25:26] [info] Saving edge-based node weights to file.
+[2026-11-13T14:25:26] [info] Done writing. (0.020967)
+[2026-11-13T14:25:26] [info] Computing strictly connected components ...
+[2026-11-13T14:25:26] [info] Found 1102 SCC (1 large, 1101 small)
+[2026-11-13T14:25:26] [info] SCC run took: 0.0314169s
+[2026-11-13T14:25:26] [info] Building r-tree ...
+[2026-11-13T14:25:26] [info] Constructing r-tree of 1636837 segments build on-top of 1586922 coordinates
+[2026-11-13T14:25:26] [info] finished r-tree construction in 0.18036 seconds
+[2026-11-13T14:25:26] [info] Writing edge-based-graph edges       ... 
+[2026-11-13T14:25:26] [info] ok, after 0.100625s
+[2026-11-13T14:25:26] [info] Processed 1110170 edges
+[2026-11-13T14:25:26] [info] Expansion: 328291 nodes/sec and 122177 edges/sec
+[2026-11-13T14:25:26] [info] To prepare the data for routing, run: ./osrm-partition "/data/bandung-raya"
+[2026-11-13T14:25:27] [info] RAM: peak bytes used: 1015402496
++ podman compose --profile tools run --rm -T osrm-build osrm-contract /data/bandung-raya.osrm
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0m[2026-11-13T14:25:28] [info] Input file: /data/bandung-raya.osrm
+[2026-11-13T14:25:28] [info] Threads: 12
+[2026-11-13T14:25:28] [info] Reading node weights.
+[2026-11-13T14:25:28] [info] Done reading node weights.
+[2026-11-13T14:25:28] [info] Loading edge-expanded graph representation
+[2026-11-13T14:25:28] [info] merged 1284 edges out of 2220340
+[2026-11-13T14:25:28] [info] initializing node priorities...
+[2026-11-13T14:25:28] [info] will contract 531530 (89.9997%) nodes...
+[2026-11-13T14:25:28] [info] will leave 59059 core nodes (9.99998%) nodes...
+[2026-11-13T14:25:28] [info] .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+[2026-11-13T14:25:35] [info] node priorities initialized in 373.26ms
+[2026-11-13T14:25:35] [info] nodes contracted in 19.66ms
+[2026-11-13T14:25:35] [info] nodes post-processed in 0.00ms
+[2026-11-13T14:25:35] [info] edges inserted in 2.36ms
+[2026-11-13T14:25:35] [info] edges appended: 2629479, shortcut duplicates: 338 updated in place, 0 dropped
+[2026-11-13T14:25:35] [info] node priorities updated in 0.00ms
+[2026-11-13T14:25:35] [info] core flags updated in 0.02ms
+[2026-11-13T14:25:35] [info] adjusted remaining nodes left in 0.33ms
+[2026-11-13T14:25:35] [info] graph renumbered in 343.65ms
+
+[2026-11-13T14:25:35] [info] Converting contracted graph with 2670383 to edge list (64089192 bytes)
+[2026-11-13T14:25:35] [info] Getting edges of minimized graph .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%
+[2026-11-13T14:25:35] [info] initializing node priorities...
+[2026-11-13T14:25:35] [info] will contract 57230 (9.69029%) nodes...
+[2026-11-13T14:25:35] [info] will leave 0 core nodes (0%) nodes...
+[2026-11-13T14:25:35] [info] .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%[2026-11-13T14:25:39] [info] node priorities initialized in 292.13ms
+[2026-11-13T14:25:39] [info] nodes contracted in 0.00ms
+[2026-11-13T14:25:39] [info] nodes post-processed in 0.00ms
+[2026-11-13T14:25:39] [info] edges inserted in 0.00ms
+[2026-11-13T14:25:39] [info] edges appended: 541537, shortcut duplicates: 392 updated in place, 0 dropped
+[2026-11-13T14:25:39] [info] node priorities updated in 0.00ms
+[2026-11-13T14:25:39] [info] core flags updated in 0.00ms
+[2026-11-13T14:25:39] [info] adjusted remaining nodes left in 0.00ms
+[2026-11-13T14:25:39] [info] graph renumbered in 34.88ms
+
+[2026-11-13T14:25:39] [info] Converting contracted graph with 479692 to edge list (11512608 bytes)
+[2026-11-13T14:25:39] [info] Getting edges of minimized graph .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%
+[2026-11-13T14:25:40] [info] initializing node priorities...
+[2026-11-13T14:25:40] [info] will contract 57230 (9.69029%) nodes...
+[2026-11-13T14:25:40] [info] will leave 0 core nodes (0%) nodes...
+[2026-11-13T14:25:40] [info] .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%[2026-11-13T14:25:44] [info] node priorities initialized in 189.84ms
+[2026-11-13T14:25:44] [info] nodes contracted in 0.00ms
+[2026-11-13T14:25:44] [info] nodes post-processed in 0.00ms
+[2026-11-13T14:25:44] [info] edges inserted in 0.00ms
+[2026-11-13T14:25:44] [info] edges appended: 541537, shortcut duplicates: 392 updated in place, 0 dropped
+[2026-11-13T14:25:44] [info] node priorities updated in 0.00ms
+[2026-11-13T14:25:44] [info] core flags updated in 0.00ms
+[2026-11-13T14:25:44] [info] adjusted remaining nodes left in 0.00ms
+[2026-11-13T14:25:44] [info] graph renumbered in 38.11ms
+
+[2026-11-13T14:25:44] [info] Converting contracted graph with 479692 to edge list (11512608 bytes)
+[2026-11-13T14:25:44] [info] Getting edges of minimized graph .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%
+[2026-11-13T14:25:44] [info] initializing node priorities...
+[2026-11-13T14:25:44] [info] will contract 57230 (9.69029%) nodes...
+[2026-11-13T14:25:44] [info] will leave 0 core nodes (0%) nodes...
+[2026-11-13T14:25:44] [info] .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%[2026-11-13T14:25:48] [info] node priorities initialized in 189.55ms
+[2026-11-13T14:25:48] [info] nodes contracted in 0.00ms
+[2026-11-13T14:25:48] [info] nodes post-processed in 0.00ms
+[2026-11-13T14:25:48] [info] edges inserted in 0.00ms
+[2026-11-13T14:25:48] [info] edges appended: 541537, shortcut duplicates: 392 updated in place, 0 dropped
+[2026-11-13T14:25:48] [info] node priorities updated in 0.00ms
+[2026-11-13T14:25:48] [info] core flags updated in 0.00ms
+[2026-11-13T14:25:48] [info] adjusted remaining nodes left in 0.00ms
+[2026-11-13T14:25:48] [info] graph renumbered in 38.00ms
+
+[2026-11-13T14:25:48] [info] Converting contracted graph with 479692 to edge list (11512608 bytes)
+[2026-11-13T14:25:48] [info] Getting edges of minimized graph .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%
+[2026-11-13T14:25:49] [info] initializing node priorities...
+[2026-11-13T14:25:49] [info] will contract 57230 (9.69029%) nodes...
+[2026-11-13T14:25:49] [info] will leave 0 core nodes (0%) nodes...
+[2026-11-13T14:25:49] [info] .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%[2026-11-13T14:25:53] [info] node priorities initialized in 190.06ms
+[2026-11-13T14:25:53] [info] nodes contracted in 0.00ms
+[2026-11-13T14:25:53] [info] nodes post-processed in 0.00ms
+[2026-11-13T14:25:53] [info] edges inserted in 0.00ms
+[2026-11-13T14:25:53] [info] edges appended: 541528, shortcut duplicates: 392 updated in place, 0 dropped
+[2026-11-13T14:25:53] [info] node priorities updated in 0.00ms
+[2026-11-13T14:25:53] [info] core flags updated in 0.00ms
+[2026-11-13T14:25:53] [info] adjusted remaining nodes left in 0.00ms
+[2026-11-13T14:25:53] [info] graph renumbered in 36.96ms
+
+[2026-11-13T14:25:53] [info] Converting contracted graph with 479679 to edge list (11512296 bytes)
+[2026-11-13T14:25:53] [info] Getting edges of minimized graph .
+ 10% 
+.
+ 20% 
+.
+ 30% 
+.
+ 40% 
+.
+ 50% 
+.
+ 60% 
+.
+ 70% 
+.
+ 80% 
+.
+ 90% 
+.
+ 100%
+[2026-11-13T14:25:53] [info] Contracted graph has 2815983 edges.
+[2026-11-13T14:25:53] [info] Contraction took 25.5554 sec
+[2026-11-13T14:25:54] [info] Preprocessing : 25.8621 seconds
+[2026-11-13T14:25:54] [info] finished preprocessing
+[2026-11-13T14:25:54] [info] RAM: peak bytes used: 307167232
++ rm storage/osrm/bandung-raya.osm.pbf
++ podman compose up -d osrm
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0m1c4c54ad3360fc0d3cfcd1a25a083ef7f1212197bdb0187670d8953bdd21370b
+3c0726c173852def910ff89402ddd61604205678a7955aef2c75ff9af42a76c2
+umimaclean_osrm_1
++ curl -s --retry 10 --retry-connrefused http://127.0.0.1:5000/nearest/v1/driving/107.6186,-6.9026
+{"code":"Ok","waypoints":[{"nodes":[5293711561,5293711560],"hint":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","location":[107.618599,-6.902237],"name":"","distance":40.14447418}]}+ mkdir -p public/tiles
++ podman compose --profile tools run --rm -T pmtiles extract https://build.protomaps.com/20261112.pmtiles /out/bandung-raya-20261112.pmtiles --bbox=107.20,-7.37,107.99,-6.76
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0m2026/11/13 14:25:57 extract.go:401: fetching 8 dirs, 8 chunks, 8 requests
+2026/11/13 14:26:02 extract.go:441: Region tiles 5655, result tile entries 5652
+2026/11/13 14:26:02 extract.go:450: fetching 5652 tiles, 142 chunks, 48 requests
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+                                                                               
+
+2026/11/13 14:26:50 extract.go:606: Completed in 55.327903445s with 4 download threads (102.15459931636634 tiles/s).
+2026/11/13 14:26:50 extract.go:611: Extract required 59 total requests.
+2026/11/13 14:26:50 extract.go:612: Extract transferred 68 MB (overfetch 0.05) for an archive size of 65 MB
+
+real	2m13,662s
+user	0m4,031s
+sys	0m2,171s
