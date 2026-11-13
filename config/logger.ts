@@ -9,7 +9,7 @@ const loggerConfig = defineConfig({
     app: {
       enabled: true,
 
-      name: env.get('APP_NAME'),
+      name: 'umimaclean',
 
       level: env.get('LOG_LEVEL'),
 

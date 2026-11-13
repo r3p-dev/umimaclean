@@ -1,45 +1,28 @@
 import type { ReactNode } from 'react'
+import { Link } from '@adonisjs/inertia/react'
 import Logo from '~/components/atoms/logo'
-import ThemeToggle from '~/components/atoms/theme_toggle'
 import FlashToasts from '~/components/molecules/flash_toasts'
+import AuthBrandPanel from '~/components/organisms/auth_brand_panel'
 
-export default function AuthLayout({ children }: { children: ReactNode }) {
+export default function AuthLayout({
+  isStaff = false,
+  children,
+}: {
+  isStaff?: boolean
+  children: ReactNode
+}) {
   return (
-    <>
-      <div className="auth">
-        <div className="auth__form-col">
-          <Logo size={28} />
-          <div className="auth__form-wrap">{children}</div>
-          <div style={{ height: 20 }} />
+    <div className="min-h-screen bg-card lg:grid lg:grid-cols-2">
+      <AuthBrandPanel isStaff={isStaff} />
+      <main className="flex flex-col px-5 pt-5 pb-10 lg:justify-center lg:px-10 lg:py-12">
+        <div className="mx-auto flex w-full max-w-md flex-col">
+          <Link route="home" className="mb-5 self-start rounded-sm lg:hidden">
+            <Logo />
+          </Link>
+          {children}
         </div>
-
-        <aside className="auth__aside">
-          <div className="auth__aside-top">
-            <ThemeToggle />
-          </div>
-
-          <p className="auth__quote">
-            Auth, kept intentionally minimal so you can build it your way.
-          </p>
-
-          <div>
-            <div className="pitch__t">Looking for production-ready auth?</div>
-            <p className="pitch__p">
-              Check out Feature packs, production-ready full-stack components from the creator of
-              AdonisJS.
-            </p>
-            <a
-              className="il pitch__a"
-              href="https://plus.adonisjs.com/feature-packs"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Explore Feature packs →
-            </a>
-          </div>
-        </aside>
-      </div>
+      </main>
       <FlashToasts />
-    </>
+    </div>
   )
 }

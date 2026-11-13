@@ -5,20 +5,12 @@ import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
   share(ctx: HttpContext) {
-    // A page can render before the session and auth middleware ran (a 404, for example),
-    // so these context properties may be missing.
-    const { auth, request } = ctx as Partial<HttpContext>
-
-    const theme: 'light' | 'dark' =
-      request?.plainCookie('app_theme', {
-        defaultValue: 'light',
-        encoded: false,
-      }) ?? 'light'
+    // A page can render before the auth middleware ran (a 404, for example), so auth may be missing.
+    const { auth } = ctx as Partial<HttpContext>
 
     return {
       errors: ctx.inertia.always(this.getValidationErrors(ctx)),
       user: ctx.inertia.always(auth?.user ? UserTransformer.transform(auth.user) : undefined),
-      preferences: ctx.inertia.always({ theme }),
     }
   }
 
