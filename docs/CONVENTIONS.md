@@ -181,6 +181,17 @@ Follow the official AdonisJS, Lucid and VineJS conventions first; these rules ad
 - **Never add new CSS variables or theme tokens** (no `--umimaclean-black`, no `--brand-*`, no `--status-*`). If a design need truly isn't covered (for example the colors of order-status badges), use Tailwind's built-in palette in one place (one map from status to classes) and ask before adding anything to `app.css`.
 - Use Tailwind's default spacing, radius, shadow and type scales. No arbitrary values (`text-[28px]`) unless no scale step fits; then explain why in the review report.
 - Default Tailwind breakpoints only, mobile first.
+- **One light theme.** No dark variant, no `dark:` classes, no dark values.
+- **Text sizes**: body text `text-base` (16 px), secondary text such as meta lines and captions `text-sm` (14 px). Every input, select and textarea is at least 16 px on mobile, so iOS Safari doesn't zoom in when it is tapped.
+- **Status colors** come from one map to Tailwind's palette, and a status badge always shows its text label.
+
+### 9.2 Mobile and desktop
+
+- **Mobile first.** The smallest target is 360 px wide (the most common Android width), then 390 px, then desktop at 1440 px. Nothing scrolls horizontally at 360 px.
+- **Tap targets** are at least 44 × 44 px (`size-11`, `min-h-11`).
+- **The main action of a flow** (ordering, paying, a staff task step) sits on mobile in a bar fixed to the bottom of the screen, respecting the safe area.
+- **On desktop, text content has a readable maximum width** (`max-w-prose` for running text, `max-w-6xl` for page content); owner tables may use the full width.
+- **Meaning never relies on color alone**: a status, an error or a note always has text (and an icon where it helps).
 
 ## 10. Comments and documentation
 
