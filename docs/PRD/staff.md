@@ -1,6 +1,6 @@
 # Staff
 
-One person who is both the courier and the shop worker. Staff screens are designed for a phone. Bottom navigation: **Beranda, Jemput, Proses, Antar, Lainnya**. The owner can use every staff screen too.
+3–4 people, all equal: every staff member does courier trips and shop work, sees the same queues, and has their own account. Staff screens are designed for a phone. Bottom navigation: **Beranda, Jemput, Proses, Antar, Lainnya**. The owner can use every staff screen too.
 
 ---
 
@@ -11,7 +11,7 @@ One person who is both the courier and the shop worker. Staff screens are design
 
 ## 2. Courier trips
 
-- **STAFF-3** Two queues: **Jemput** (orders `awaiting_pickup`) and **Antar** (orders `ready_for_delivery`). There is **one active trip per queue at a time**; starting another is refused until the current one is finished or skipped.
+- **STAFF-3** Two queues: **Jemput** (orders `awaiting_pickup`) and **Antar** (orders `ready_for_delivery`). There is **one active trip per queue at a time for the whole team**: while someone has an active pickup, no one can start another pickup until it is finished or skipped (same for deliveries). Every staff member sees who holds the active trip; only that staff member or the owner can finish or skip it.
 - **STAFF-4** Trip steps:
   - **start** → `courier_en_route` (pickup, sends the "courier on the way" message) or `in_delivery` (delivery);
   - **arrived** → only logged;
@@ -24,7 +24,7 @@ One person who is both the courier and the shop worker. Staff screens are design
 ## 3. Workshop
 
 - **STAFF-8** **Workshop queue** (`/staf/proses`): orders waiting for inspection, payment, washing and collection, oldest first.
-- **STAFF-9** **Inspection** (`/staf/proses/:id/periksa`): starting it moves `picked_up → in_inspection`. For an online order the list starts from the customer's declared items (CUST-5); staff correct them, add items the customer forgot and remove items that weren't handed over, and the declared list stays visible on the order for comparison. For a walk-in the list starts empty. Each item has kind, name such as "Nike Air Force 1 putih", size and condition note, and, per item, exactly one active main service and up to 10 active add-ons that match its kind (SVC-2). 1–60 items per order. Saving creates the bill (SVC-3), moves the order to `awaiting_payment`, and sends the "bill" message for online orders. Re-inspecting before payment replaces the bill.
+- **STAFF-9** **Inspection** (`/staf/proses/:id/periksa`): starting it moves `picked_up → in_inspection`. For an online order the list starts from the customer's declared items (CUST-5); staff correct them, add items the customer forgot and remove items that weren't handed over, and the declared list stays visible on the order for comparison. For a walk-in the list starts empty. Each item has kind, name such as "Nike Air Force 1 putih", size and condition note, and, per item, exactly one active main service and up to 10 active add-ons that match its kind (SVC-2). For a service flagged "mulai dari" staff may raise the price for that item (never below the listed price); the bill shows the charged price and the activity log records the change. 1–60 items per order. Saving creates the bill (SVC-3), moves the order to `awaiting_payment`, and sends the "bill" message for online orders. Re-inspecting before payment replaces the bill.
 - **STAFF-10** **Washing** (`/staf/proses/:id/cuci`): finishing requires a **proof photo**; items are marked washed and the order moves to `ready_for_delivery` or `ready_for_collection` by its return method.
 - **STAFF-11** **Collection**: handing items over at the shop moves `ready_for_collection → completed`. Staff can print a **label** for an order (`/staf/cetak/:id/label`) and a **receipt** after payment (`/staf/cetak/:id/struk`) on a small-printer page.
 
@@ -41,13 +41,13 @@ One person who is both the courier and the shop worker. Staff screens are design
 
 ## 6. Pages
 
-| Page                                | URL                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------- |
-| Sign in                             | `/staf/masuk`                                                       |
-| Home                                | `/staf`                                                             |
-| Pickup queue, active pickup         | `/staf/jemput`, `/staf/jemput/tugas`                                |
-| Delivery queue, active delivery     | `/staf/antar`, `/staf/antar/tugas`                                  |
+| Page | URL |
+| --- | --- |
+| Sign in | `/staf/masuk` |
+| Home | `/staf` |
+| Pickup queue, active pickup | `/staf/jemput`, `/staf/jemput/tugas` |
+| Delivery queue, active delivery | `/staf/antar`, `/staf/antar/tugas` |
 | Workshop queue, inspection, washing | `/staf/proses`, `/staf/proses/:id/periksa`, `/staf/proses/:id/cuci` |
-| Walk-in, counter payment            | `/staf/transaksi`, `/staf/transaksi/:id/bayar`                      |
-| Print label, receipt                | `/staf/cetak/:id/label`, `/staf/cetak/:id/struk`                    |
-| More, history, profile              | `/staf/lainnya`, `/staf/riwayat`, `/staf/profil`                    |
+| Walk-in, counter payment | `/staf/transaksi`, `/staf/transaksi/:id/bayar` |
+| Print label, receipt | `/staf/cetak/:id/label`, `/staf/cetak/:id/struk` |
+| More, history, profile | `/staf/lainnya`, `/staf/riwayat`, `/staf/profil` |

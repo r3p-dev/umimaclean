@@ -11,7 +11,7 @@ The business owner (role `admin`). Signs in at `/staf/masuk` (`staff.md` STAFF-1
 
 ## 2. Orders and money
 
-- **OWN-3** **Orders** (`/admin/pesanan`, `/admin/pesanan/:id`): all orders with filters by stage and source, search, and the order detail with the customer's order history. The owner can **cancel** orders (also several at once) with a reason, which sends the "cancelled by the shop" message (MSG-1), and can **bulk move** orders `picked_up → in_inspection` and `ready_for_collection → completed`.
+- **OWN-3** **Orders** (`/admin/pesanan`, `/admin/pesanan/:id`): all orders with filters by stage and source, search, and the order detail with the customer's order history. The owner can **cancel** an order in any status except `completed` and `cancelled` (also several at once) with a reason. A live QRIS is cancelled (PAY-4); an already paid order's payment becomes `refund_due` (PAY-7) so the refund is recorded later in reconciliation; items already collected are returned to the customer outside the app (no return trip is scheduled). The "cancelled by the shop" message follows MSG-1. The owner can also **bulk move** orders `picked_up → in_inspection` and `ready_for_collection → completed`.
 - **OWN-4** **Payment correction** (on the order detail): change a payment's method, channel and amount, with a required reason. It is flagged as sensitive in the activity log and follows PAY-4.
 - **OWN-5** **Reconciliation** (`/admin/rekonsiliasi`): recent QRIS charges with a flag. Needing review: `refund_due`, `cancel_failed`, `amount_mismatch`, paid while the order still waits for payment, and pending past expiry. Actions: re-check with Midtrans, mark refunded (with note), resolve a mismatch (accept or refund, with note), retry a failed cancel or mark it handled.
 
@@ -38,14 +38,14 @@ The business owner (role `admin`). Signs in at `/staf/masuk` (`staff.md` STAFF-1
 
 ## 7. Pages
 
-| Page                          | URL                                                                     |
-| ----------------------------- | ----------------------------------------------------------------------- |
-| Summary                       | `/admin`                                                                |
-| Orders, order detail          | `/admin/pesanan`, `/admin/pesanan/:id`                                  |
-| Reconciliation                | `/admin/rekonsiliasi`                                                   |
-| Services and prices           | `/admin/layanan`                                                        |
-| Customers                     | `/admin/pelanggan`                                                      |
-| Reports                       | `/admin/laporan`                                                        |
-| Staff activity                | `/admin/aktivitas`                                                      |
+| Page | URL |
+| --- | --- |
+| Summary | `/admin` |
+| Orders, order detail | `/admin/pesanan`, `/admin/pesanan/:id` |
+| Reconciliation | `/admin/rekonsiliasi` |
+| Services and prices | `/admin/layanan` |
+| Customers | `/admin/pelanggan` |
+| Reports | `/admin/laporan` |
+| Staff activity | `/admin/aktivitas` |
 | Settings: staff, store, areas | `/admin/pengaturan`, `/admin/pengaturan/toko`, `/admin/pengaturan/area` |
-| Profile                       | `/admin/profil`                                                         |
+| Profile | `/admin/profil` |

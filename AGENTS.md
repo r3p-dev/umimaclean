@@ -11,7 +11,7 @@ Read these at the start of every session:
 | Document                              | Defines                                                                                                 | Who writes it               |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------- |
 | `AGENTS.md` (this file)               | How to work: milestone loop, rules, reporting, versioning, git                                          | Owner                       |
-| `docs/prd/` (start with `summary.md`) | What the app does, per audience, with requirement IDs                                                   | Owner                       |
+| `docs/PRD/` (start with `summary.md`) | What the app does, per audience, with requirement IDs                                                   | Owner                       |
 | `docs/CONVENTIONS.md`                 | How code is written: project rules, naming, layers, frontend, styling, comments                         | Owner                       |
 | `docs/ARCHITECTURE.md`                | §1 fixed decisions and security (owner); §2+ components, data flow, state machines, decisions log (you) | Both                        |
 | `docs/PLAN.md`                        | Milestones, versions, acceptance criteria, estimates, status                                            | You (approved by the owner) |

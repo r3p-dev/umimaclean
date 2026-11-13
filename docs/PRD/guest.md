@@ -31,13 +31,13 @@ Anyone who is not signed in: people browsing the site, people signing up or in, 
 
 ## 5. Pages
 
-| Page                            | URL                                    |
-| ------------------------------- | -------------------------------------- |
-| Landing                         | `/`                                    |
-| Terms, privacy                  | `/syarat`, `/privasi`                  |
-| Sitemap, robots                 | `/sitemap.xml`, `/robots.txt`          |
-| Order (unlock form or detail)   | `/pesanan/:id`                         |
-| Register                        | `/daftar`                              |
-| OTP verification (all purposes) | `/verifikasi`                          |
-| Sign in                         | `/masuk`                               |
-| Forgot password, new password   | `/lupa-kata-sandi`, `/kata-sandi-baru` |
+| Page | URL |
+| --- | --- |
+| Landing | `/` |
+| Terms, privacy | `/syarat`, `/privasi` |
+| Sitemap, robots | `/sitemap.xml`, `/robots.txt` |
+| Order (unlock form or detail) | `/pesanan/:id` |
+| Register | `/daftar` |
+| OTP verification (all purposes) | `/verifikasi` |
+| Sign in | `/masuk` |
+| Forgot password, new password | `/lupa-kata-sandi`, `/kata-sandi-baru` |

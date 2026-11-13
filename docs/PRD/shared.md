@@ -6,32 +6,32 @@ Rules that more than one role depends on. The role files (`guest.md`, `customer.
 
 ## 1. Services and prices (`SVC`)
 
-- **SVC-1** A service has: name, type (`main` or `addon`), the item kinds it applies to, price (whole rupiah), a "starting from" flag (shown as "mulai dari"), estimated working days, a short Indonesian description, an active flag and a display position. The owner manages the list (`owner.md` OWN-7).
+- **SVC-1** A service has: name, type (`main` or `addon`), the item kinds it applies to, price (whole rupiah), a "starting from" flag (shown as "mulai dari"; staff may charge more than the listed price for that service, `staff.md` STAFF-9), estimated working days, a short Indonesian description, an active flag and a display position. The owner manages the list (`owner.md` OWN-7).
 - **SVC-2** Inactive services are hidden from staff during inspection but stay on the owner's list. Removing a service is a soft delete, so old bills keep pointing at it.
-- **SVC-3** A bill copies each service's name and price at inspection time. Later changes never change an existing bill.
+- **SVC-3** A bill copies each service's name, listed price and charged price at inspection time. Later changes never change an existing bill.
 - **SVC-4** **Helmet services are shop-only.** An online order can never contain helmets.
 - **SVC-5** The initial price list (seeded):
 
-| Name                           | Type  | Kinds  |       Price (Rp) |  Days | Starting from |
-| ------------------------------ | ----- | ------ | ---------------: | ----: | :-----------: |
-| Mild                           | main  | shoe   |           60.000 |     3 |               |
-| Medium                         | main  | shoe   |           65.000 |     3 |               |
-| Hard                           | main  | shoe   |           70.000 |     4 |               |
-| Premium for Suede              | main  | shoe   |          120.000 |     5 |       ✓       |
-| Kids Shoes                     | main  | shoe   |           40.000 |     3 |       ✓       |
-| Just for Her                   | main  | shoe   |           45.000 |     3 |               |
-| Premium Repaint                | main  | shoe   |          150.000 |     7 |       ✓       |
-| Midsole Repaint / Recolour     | main  | shoe   |          180.000 |     7 |               |
-| Unyellowing                    | addon | shoe   |           30.000 |     2 |       ✓       |
-| Sepatu putih / mummy           | addon | shoe   |           10.000 |     0 |               |
-| Nubuck / suede                 | addon | shoe   |           10.000 |     0 |               |
-| One Day Service                | addon | shoe   |           10.000 |     0 |               |
-| Tas Small · kanvas / · kulit   | main  | bag    |  40.000 / 60.000 | 3 / 4 |               |
-| Tas Medium · kanvas / · kulit  | main  | bag    |  55.000 / 75.000 | 3 / 4 |               |
-| Tas Large · kanvas / · kulit   | main  | bag    |  70.000 / 85.000 | 4 / 5 |               |
-| Tas X-Large · kanvas / · kulit | main  | bag    | 85.000 / 100.000 | 5 / 5 |               |
-| Helmet Spa Reguler             | main  | helmet |           35.000 |     2 |               |
-| Helmet Spa Premium             | main  | helmet |           70.000 |     3 |               |
+| Name | Type | Kinds | Price (Rp) | Days | Starting from |
+| --- | --- | --- | ---: | ---: | :---: |
+| Mild | main | shoe | 60.000 | 3 | |
+| Medium | main | shoe | 65.000 | 3 | |
+| Hard | main | shoe | 70.000 | 4 | |
+| Premium for Suede | main | shoe | 120.000 | 5 | ✓ |
+| Kids Shoes | main | shoe | 40.000 | 3 | ✓ |
+| Just for Her | main | shoe | 45.000 | 3 | |
+| Premium Repaint | main | shoe | 150.000 | 7 | ✓ |
+| Midsole Repaint / Recolour | main | shoe | 180.000 | 7 | |
+| Unyellowing | addon | shoe | 30.000 | 2 | ✓ |
+| Sepatu putih / mummy | addon | shoe | 10.000 | 0 | |
+| Nubuck / suede | addon | shoe | 10.000 | 0 | |
+| One Day Service | addon | shoe | 10.000 | 0 | |
+| Tas Small · kanvas / · kulit | main | bag | 40.000 / 60.000 | 3 / 4 | |
+| Tas Medium · kanvas / · kulit | main | bag | 55.000 / 75.000 | 3 / 4 | |
+| Tas Large · kanvas / · kulit | main | bag | 70.000 / 85.000 | 4 / 5 | |
+| Tas X-Large · kanvas / · kulit | main | bag | 85.000 / 100.000 | 5 / 5 | |
+| Helmet Spa Reguler | main | helmet | 35.000 | 2 | |
+| Helmet Spa Premium | main | helmet | 70.000 | 3 | |
 
 Bag rows are two services each (kanvas and kulit). Sizes: Small < 25 cm, Medium < 35 cm, Large < 60 cm, X-Large > 60 cm.
 
@@ -58,35 +58,36 @@ Bag rows are two services each (kanvas and kulit). Sizes: Small < 25 cm, Medium 
 - **ORD-1** Order number shown as **`UMC-00042`** (the id, zero-padded). The order page URL is `/pesanan/:id` for everyone; who can open it is defined in `customer.md` CUST-7 and `guest.md` GUEST-4.
 - **ORD-2** Statuses (code → UI label → stage):
 
-| Status                 | Label                | Stage   |
-| ---------------------- | -------------------- | ------- |
-| `awaiting_pickup`      | Menunggu Penjemputan | jemput  |
-| `courier_en_route`     | Kurir Menuju Lokasi  | jemput  |
-| `picked_up`            | Barang Kami Terima   | periksa |
-| `in_inspection`        | Sedang Diperiksa     | periksa |
-| `awaiting_payment`     | Menunggu Pembayaran  | bayar   |
-| `in_cleaning`          | Dalam Pencucian      | cuci    |
-| `ready_for_delivery`   | Siap Diantar         | antar   |
-| `in_delivery`          | Sedang Diantar       | antar   |
-| `ready_for_collection` | Siap Diambil         | antar   |
-| `completed`            | Selesai              | selesai |
-| `cancelled`            | Dibatalkan           | batal   |
+| Status | Label | Stage |
+| --- | --- | --- |
+| `awaiting_pickup` | Menunggu Penjemputan | jemput |
+| `courier_en_route` | Kurir Menuju Lokasi | jemput |
+| `picked_up` | Barang Kami Terima | periksa |
+| `in_inspection` | Sedang Diperiksa | periksa |
+| `awaiting_payment` | Menunggu Pembayaran | bayar |
+| `in_cleaning` | Dalam Pencucian | cuci |
+| `ready_for_delivery` | Siap Diantar | antar |
+| `in_delivery` | Sedang Diantar | antar |
+| `ready_for_collection` | Siap Diambil | antar |
+| `completed` | Selesai | selesai |
+| `cancelled` | Dibatalkan | batal |
 
 - **ORD-3** Allowed transitions (nothing else is possible):
 
-| From                   | To                                                                                  |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| `awaiting_pickup`      | `courier_en_route`, `cancelled`                                                     |
-| `courier_en_route`     | `picked_up`, `awaiting_pickup` (skipped)                                            |
-| `picked_up`            | `in_inspection`                                                                     |
-| `in_inspection`        | `awaiting_payment`                                                                  |
-| `awaiting_payment`     | `in_cleaning` (paid)                                                                |
-| `in_cleaning`          | `ready_for_delivery` (return by delivery), `ready_for_collection` (return at store) |
-| `ready_for_delivery`   | `in_delivery`                                                                       |
-| `in_delivery`          | `completed`, `ready_for_delivery` (skipped)                                         |
-| `ready_for_collection` | `completed`                                                                         |
+| From | To |
+| --- | --- |
+| `awaiting_pickup` | `courier_en_route`, `cancelled` |
+| `courier_en_route` | `picked_up`, `awaiting_pickup` (skipped) |
+| `picked_up` | `in_inspection` |
+| `in_inspection` | `awaiting_payment` |
+| `awaiting_payment` | `in_cleaning` (paid) |
+| `in_cleaning` | `ready_for_delivery` (return by delivery), `ready_for_collection` (return at store) |
+| `ready_for_delivery` | `in_delivery` |
+| `in_delivery` | `completed`, `ready_for_delivery` (skipped) |
+| `ready_for_collection` | `completed` |
+| any status except `completed` and `cancelled` | `cancelled` (**owner only**, `owner.md` OWN-3) |
 
-Online orders start at `awaiting_pickup`; walk-in orders start at `in_inspection`.
+`awaiting_pickup → cancelled` is the only cancellation a customer can make (`customer.md` CUST-8). Customers can't reject a bill. Online orders start at `awaiting_pickup`; walk-in orders start at `in_inspection`.
 
 - **ORD-4** Every status change appends a timeline event (status, actor or system, optional note) that is never edited; staff and owner changes also go to the activity log. Open pages of that order, the staff queues and the owner's order list update live.
 
@@ -96,18 +97,38 @@ Online orders start at `awaiting_pickup`; walk-in orders start at `in_inspection
 - **PAY-2** Midtrans notifications are verified (signature), the status is confirmed with Midtrans, and processing is idempotent. A paid QRIS moves the order to `in_cleaning`. Pages showing a QR also offer "Cek status", which asks Midtrans directly.
 - **PAY-3** Payment statuses: `pending` (Menunggu), `paid` (Lunas), `expired` (Kedaluwarsa), `cancelled` (Dibatalkan), `failed` (Gagal), `cancel_failed` (Gagal dibatalkan), `refund_due` (Perlu refund), `amount_mismatch` (Nominal tidak cocok), `refunded` (Sudah dikembalikan). **At most one `paid` payment per order**, guaranteed by the database.
 - **PAY-4** When an order is paid another way (cash, owner correction), any live QRIS of that order is cancelled at Midtrans; if that fails the payment becomes `cancel_failed`. A QRIS settled after the order was already paid becomes `refund_due`. A settled amount different from the bill becomes `amount_mismatch`.
+- **PAY-7** Payment status transitions (nothing else is possible; `expired`, `failed`, `cancelled` and `refunded` are final):
+
+| From | To | When |
+| --- | --- | --- |
+| (new) | `pending` | A QRIS charge is created (PAY-1) |
+| (new) | `paid` | Cash is received at the counter (`staff.md` STAFF-14) |
+| `pending` | `paid` | Midtrans reports settlement, the amount equals the bill, and the order has no paid payment and isn't cancelled |
+| `pending` | `amount_mismatch` | Midtrans reports settlement with an amount different from the bill |
+| `pending` | `refund_due` | Midtrans reports settlement but the order is already paid or cancelled |
+| `pending` | `expired` | Midtrans reports expiry (or a status check after the 15 minutes confirms it) |
+| `pending` | `failed` | Midtrans reports deny or failure |
+| `pending` | `cancelled` | The charge is cancelled at Midtrans because the order was paid another way or cancelled (PAY-4) |
+| `pending` | `cancel_failed` | That cancellation request failed |
+| `cancel_failed` | `cancelled` | A retry succeeds, or the owner marks it handled (`owner.md` OWN-5) |
+| `cancel_failed` | `refund_due` | Midtrans reports it was settled after all |
+| `amount_mismatch` | `paid` | The owner accepts the amount while the order still has no paid payment (OWN-5) |
+| `amount_mismatch` | `refunded` | The owner records a refund made outside the app (OWN-5) |
+| `refund_due` | `refunded` | The owner records a refund made outside the app (OWN-5) |
+| `paid` | `refund_due` | The owner cancels an order that was already paid (OWN-3) |
+
 - **PAY-5** Each payment method (QRIS, cash) can be switched off by the owner (`owner.md` OWN-8). Without Midtrans keys, QRIS shows as unavailable with a hint to pay at the shop.
-- **PAY-6** **Payment reminders** (online orders only): while an order is `awaiting_payment` without a paid payment, a WhatsApp reminder goes **24 hours after the bill, then every 2 days**, only **between 10:00 and 15:00 Asia/Jakarta**, until paid. Only a successfully sent message counts; a failed send is retried on the next run. Reminders never call Midtrans.
+- **PAY-6** **Payment reminders** (online orders only): while an order is `awaiting_payment` without a paid payment, a WhatsApp reminder goes **24 hours after the bill, then every 2 days after the last sent reminder**, only **between 10:00 and 15:00 Asia/Jakarta**, until paid. A reminder that falls due outside that window goes at the start of the next window (a bill at 17:00 gets its first reminder at 10:00 two days later). Only a successfully sent message counts; a failed send is retried on the next run. Reminders never call Midtrans.
 
 ## 7. WhatsApp messages (`MSG`)
 
 - **MSG-1** Customers (with or without an account) receive **exactly six kinds** of messages, plus OTP codes:
-  1. **Order received**: an online order is placed; a walk-in order **is paid at the counter** (with the order number, the amount paid and a link to follow the order).
+  1. **Order received**: an online order is placed (order number and pickup schedule); a walk-in order **is paid at the counter** (order number, the amount paid, and a link to follow the order). Only the walk-in version mentions an amount.
   2. **Courier on the way**: a pickup trip started.
   3. **Bill** (online orders only): inspection saved, "Rincian dan pembayaran: <link>".
   4. **Payment reminder** (PAY-6).
-  5. **Cancelled by the shop**: the owner cancels (a customer's own cancellation sends nothing).
-  6. **Come back reminder**: sent only when the owner chooses to remind a customer (`owner.md` OWN-6). Never automatic.
+  5. **Cancelled by the shop**: the owner cancels an order the customer was already told about (every online order; a walk-in only after it was paid), with the reason. A customer's own cancellation sends nothing.
+  6. **Come back reminder**: sent only when the owner chooses to remind a customer (`owner.md` OWN-14). Never automatic.
 - **MSG-2** Staff and owner receive no WhatsApp messages; they have the app.
 - **MSG-3** A failed or crashing send is logged and **never fails the action** that triggered it.
 - **MSG-4** Without a Fonnte token (outside production), messages are written to the log instead of sent.
@@ -130,19 +151,19 @@ Rules for every account, whatever the role.
 
 ## 10. Scheduled jobs
 
-| Job                | When             | What                                                                         |
-| ------------------ | ---------------- | ---------------------------------------------------------------------------- |
-| Payment reminders  | every 15 minutes | PAY-6 (the job checks the 10:00–15:00 window itself; safe to run repeatedly) |
-| Prune proof photos | daily            | PHOTO-3                                                                      |
+| Job | When | What |
+| --- | --- | --- |
+| Payment reminders | every 15 minutes | PAY-6 (the job checks the 10:00–15:00 window itself; safe to run repeatedly) |
+| Prune proof photos | daily | PHOTO-3 |
 
 ## 11. Outside services
 
-| Service              | Used for                                   | Data sent                                        |
-| -------------------- | ------------------------------------------ | ------------------------------------------------ |
-| Fonnte               | WhatsApp messages and OTP                  | Phone number, message text                       |
-| Midtrans Core API    | QRIS charge, status, cancel, notifications | Order reference, amount, customer name and phone |
-| Cloudflare Turnstile | Bot check on public forms                  | The Turnstile token and client IP                |
-| OSRM (self-hosted)   | Route lines, distance, queue order         | Nothing leaves our servers                       |
+| Service | Used for | Data sent |
+| --- | --- | --- |
+| Fonnte | WhatsApp messages and OTP | Phone number, message text |
+| Midtrans Core API | QRIS charge, status, cancel, notifications | Order reference, amount, customer name and phone |
+| Cloudflare Turnstile | Bot check on public forms | The Turnstile token and client IP |
+| OSRM (self-hosted) | Route lines, distance, queue order | Nothing leaves our servers |
 
 The privacy page lists these. No other outside service receives personal data.
 

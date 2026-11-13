@@ -8,7 +8,7 @@ These conventions define how code is written and maintained in this project. The
 
 1. **No unexplained workarounds.** A workaround has a short comment saying _why_, what breaks without it, and a link, plus an entry in the decisions log of `docs/ARCHITECTURE.md`. A workaround without an explanation is a bug.
 2. **Find the cause, not the symptom.** When something breaks, find out why before changing code, and explain the cause in the report.
-3. **Explicit state machines.** Order status (`docs/prd/shared.md` ORD-2, ORD-3) and payment status (PAY-3, PAY-4) each change in exactly one place, with every transition tested.
+3. **Explicit state machines.** Order status (`docs/PRD/shared.md` ORD-2, ORD-3) and payment status (PAY-3, PAY-7) each change in exactly one place, with every transition tested.
 4. **Outside services can fail.** Fonnte, Midtrans, Turnstile, OSRM and map data each degrade one feature with a clear message when they fail (NFR-4). Tests swap each one for a fake (`app.container.swap`); a test never calls a real outside service.
 5. **Small, focused changes.** One concern at a time. No drive-by refactors.
 6. **No deprecated code**, ever (§12).
@@ -31,7 +31,7 @@ Use descriptive names that communicate intent.
 
 - Avoid abbreviations. Prefer complete words unless the abbreviation is a widely accepted technical term (`ID`, `URL`, `HTTP`, `JSON`, and the framework's own `ctx`, `db`, `props`, `ref`; map coordinates `lat`, `lng`).
 - Avoid generic names (`data`, `process`, `handle`, `execute`, `item` when a domain word exists).
-- **Use the glossary in `docs/prd/summary.md` §4.** One concept has one name everywhere: `staff`, never `courier` or `kurir` in code; `bill`, never `invoice`; `walk-in order`, never `offline order`. Do not introduce alternative names for the same concept.
+- **Use the glossary in `docs/PRD/summary.md` §4.** One concept has one name everywhere: `staff`, never `courier` or `kurir` in code; `bill`, never `invoice`; `walk-in order`, never `offline order`. Do not introduce alternative names for the same concept.
 
 ```ts
 // Avoid
