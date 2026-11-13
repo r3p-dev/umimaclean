@@ -1,34 +1,54 @@
-# Local services for development and tests, run with rootless Podman: `podman compose up -d db`.
-# Database credentials and the host port come from `.env` (DB_USER, DB_PASSWORD, DB_DATABASE, DB_PORT).
-# Setup, map data and reset commands: docs/ARCHITECTURE.md §6.
+# Local services and data tools for development, run with rootless Podman (docs/ARCHITECTURE.md §6).
+# PostgreSQL + PostGIS is not here: development and tests use the shared database server named in `.env`.
+#   podman compose up -d osrm                     routing, once storage/osrm is built
+#   podman compose run --rm <tool> <command>      one-off tools (profile "tools", never started by `up`)
 name: umimaclean
 
-services:
-  db:
-    image: docker.io/postgis/postgis:18-3.6@sha256:4a43e3c3e5d55b9208240fc71db543b79c638766280c625a425bd0a2390989c4
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_DATABASE}
-    ports:
-      - 127.0.0.1:${DB_PORT}:5432
-    volumes:
-      # PostgreSQL 18 images keep their data under a version folder, so the volume is the parent.
-      - db_data:/var/lib/postgresql
-      - ./database/create_test_database.sql:/docker-entrypoint-initdb.d/20_create_test_database.sql:ro,z
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
-      interval: 5s
-      retries: 10
+x-osrm-image: &osrm-image ghcr.io/project-osrm/osrm-backend:v26.11.0-debian@sha256:e1929ae2818226284d7ef007329098a30851c11528ab3712bc9c8d68da78278b
 
-  # Starts only after the routing files exist in storage/osrm (docs/ARCHITECTURE.md §6.3).
+services:
   osrm:
-    image: ghcr.io/project-osrm/osrm-backend:v26.11.0-debian@sha256:e1929ae2818226284d7ef007329098a30851c11528ab3712bc9c8d68da78278b
+    image: *osrm-image
     command: ['osrm-routed', '--algorithm', 'ch', '/data/bandung-raya.osrm']
     ports:
       - 127.0.0.1:${OSRM_PORT:-5000}:5000
     volumes:
       - ./storage/osrm:/data:ro,z
 
-volumes:
-  db_data:
+  # psql of the production PostgreSQL version, connected with the DB_* values from `.env`.
+  psql:
+    image: docker.io/postgis/postgis:18-3.6@sha256:4a43e3c3e5d55b9208240fc71db543b79c638766280c625a425bd0a2390989c4
+    profiles: [tools]
+    network_mode: host
+    env_file: .env
+    entrypoint:
+      - sh
+      - -c
+      - PGPASSWORD="$$DB_PASSWORD" PGDATABASE="$$DB_DATABASE" exec psql -v ON_ERROR_STOP=1 -h "$$DB_HOST" -p "$$DB_PORT" -U "$$DB_USER" "$$@"
+      - psql
+    volumes:
+      - ./database:/database:ro,z
+      - ./maps:/maps:ro,z
+
+  map-tools:
+    build: ./maps
+    image: localhost/umimaclean-map-tools
+    profiles: [tools]
+    network_mode: host
+    env_file: .env
+    volumes:
+      - ./storage/osm:/data:z
+      - ./maps:/maps:ro,z
+
+  osrm-build:
+    image: *osrm-image
+    profiles: [tools]
+    volumes:
+      - ./storage/osrm:/data:z
+      - ./maps/motorbike.lua:/opt/motorbike.lua:ro,z
+
+  pmtiles:
+    image: docker.io/protomaps/go-pmtiles:v1.31.2@sha256:06574f01f55a78f78f887bc7ebf729a5c093c0d6e17d9876300cfcb0758b59d3
+    profiles: [tools]
+    volumes:
+      - ./public/tiles:/out:z
