@@ -3,7 +3,7 @@ import type { Infer } from '@vinejs/vine/types'
 import { emailRule, passwordRule } from '#validators/rules'
 
 export const createUserValidator = vine.create({
-  fullName: vine.string().nullable(),
+  fullName: vine.string(),
   email: emailRule().unique({ table: 'users', column: 'email' }),
   password: passwordRule().confirmed({ as: 'passwordConfirmation' }),
   passwordConfirmation: vine.string(),

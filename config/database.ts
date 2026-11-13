@@ -25,6 +25,8 @@ const dbConfig = defineConfig({
 
       schemaGeneration: {
         enabled: true,
+        // spatial_ref_sys belongs to the PostGIS extension, not to the app, so it gets no model class.
+        excludeTables: ['spatial_ref_sys'],
         rulesPaths: ['./database/schema_rules.js'],
       },
 

@@ -5,7 +5,7 @@ import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 
 export default class User extends compose(UserSchema, withAuthFinder(hash)) {
   initials() {
-    const parts = this.fullName?.trim().split(/\s+/).filter(Boolean) ?? []
+    const parts = this.fullName.trim().split(/\s+/).filter(Boolean)
 
     if (parts.length > 1) {
       return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()

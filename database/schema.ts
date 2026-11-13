@@ -15,7 +15,7 @@ export class UserSchema extends BaseModel {
   @column()
   declare email: string
   @column()
-  declare fullName: string | null
+  declare fullName: string
   @column({ isPrimary: true })
   declare id: number
   @column({ serializeAs: null })
