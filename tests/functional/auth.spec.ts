@@ -1,13 +1,3 @@
-/*
-|--------------------------------------------------------------------------
-| Authentication Functional Tests
-|--------------------------------------------------------------------------
-|
-| Tests HTTP routes for signup, login, and logout against the database
-| and session lifecycle.
-|
-*/
-
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
@@ -35,7 +25,7 @@ test.group('Authentication Routes', (group) => {
     client,
   }) => {
     const authService = new AuthService()
-    await authService.register({
+    await authService.registerUser({
       fullName: 'Login User',
       email: 'login@example.com',
       password: 'password123',
@@ -52,7 +42,7 @@ test.group('Authentication Routes', (group) => {
 
   test('POST /logout terminates user session and redirects to login', async ({ client }) => {
     const authService = new AuthService()
-    const user = await authService.register({
+    const user = await authService.registerUser({
       fullName: 'Logout User',
       email: 'logout@example.com',
       password: 'password123',

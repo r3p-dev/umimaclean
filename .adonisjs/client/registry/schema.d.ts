@@ -38,10 +38,10 @@ export interface Registry {
     methods: ["POST"]
     pattern: '/signup'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/auth').registerValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#validators/auth').createUserValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/auth').registerValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth').createUserValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/register_controller').default['store']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/register_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/register_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
@@ -64,10 +64,10 @@ export interface Registry {
     methods: ["POST"]
     pattern: '/login'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/auth').loginValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#validators/auth').createSessionValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/auth').loginValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth').createSessionValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }

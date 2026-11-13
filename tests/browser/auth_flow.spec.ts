@@ -1,13 +1,3 @@
-/*
-|--------------------------------------------------------------------------
-| Authentication Browser Flow Tests
-|--------------------------------------------------------------------------
-|
-| End-to-end browser tests verifying user navigation, signup, and login
-| interfaces.
-|
-*/
-
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import AuthService from '#services/auth_service'
@@ -45,7 +35,7 @@ test.group('Authentication Browser Flow', (group) => {
 
   test('user logs in through browser form and lands on dashboard', async ({ visit }) => {
     const authService = new AuthService()
-    await authService.register({
+    await authService.registerUser({
       fullName: 'Browser Test User',
       email: 'browser@example.com',
       password: 'password123',
