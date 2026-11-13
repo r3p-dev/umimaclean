@@ -8,30 +8,33 @@ Rules (`docs/CONVENTIONS.md` §14):
 - Only stable, actively maintained packages. Check before adding that the version you pick isn't deprecated.
 - When something is removed, remove it here too.
 
-## 1. Installed (from the starter)
+## 1. Installed
 
 ### Runtime
 
-| Package                                                    | Purpose                                                                   |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `@adonisjs/core`                                           | Framework core: container, HTTP server, config, ace                       |
-| `@adonisjs/auth`                                           | Session guard and remember-me tokens                                      |
-| `@adonisjs/lucid`                                          | ORM, migrations, seeders                                                  |
-| `@adonisjs/session`                                        | Sessions (database store)                                                 |
-| `@adonisjs/shield`                                         | CSRF and security headers                                                 |
-| `@adonisjs/cors`                                           | CORS (kept closed: same-origin app)                                       |
-| `@adonisjs/static`                                         | Static files from `public/`                                               |
-| `@adonisjs/vite`                                           | Vite integration                                                          |
-| `@adonisjs/inertia`, `@inertiajs/core`, `@inertiajs/react` | Inertia server adapter and React client                                   |
-| `@tuyau/core`                                              | Typed route helpers for the frontend                                      |
-| `@vinejs/vine`                                             | Validation                                                                |
-| `edge.js`                                                  | The single root HTML template for Inertia                                 |
-| `pg`                                                       | PostgreSQL driver                                                         |
-| `luxon`                                                    | Dates and time zones (used by Lucid)                                      |
-| `react`, `react-dom`                                       | UI                                                                        |
-| `reflect-metadata`                                         | Decorator metadata for the container                                      |
-| `sonner`                                                   | Toasts (also what shadcn's toast component uses)                          |
-| `lucide-react`                                             | **To remove in M1b**: icons are Tabler only (`docs/ARCHITECTURE.md` §1.1) |
+| Package                                                    | Purpose                                                                                                                                                   |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@adonisjs/core`                                           | Framework core: container, HTTP server, config, ace                                                                                                       |
+| `@adonisjs/auth`                                           | Session guard and remember-me tokens                                                                                                                      |
+| `@adonisjs/lucid`                                          | ORM, migrations, seeders                                                                                                                                  |
+| `@adonisjs/session`                                        | Sessions (database store)                                                                                                                                 |
+| `@adonisjs/shield`                                         | CSRF and security headers                                                                                                                                 |
+| `@adonisjs/cors`                                           | CORS (kept closed: same-origin app)                                                                                                                       |
+| `@adonisjs/static`                                         | Static files from `public/`                                                                                                                               |
+| `@adonisjs/vite`                                           | Vite integration                                                                                                                                          |
+| `@adonisjs/inertia`, `@inertiajs/core`, `@inertiajs/react` | Inertia server adapter and React client                                                                                                                   |
+| `@tuyau/core`                                              | Typed route helpers for the frontend                                                                                                                      |
+| `@vinejs/vine`                                             | Validation                                                                                                                                                |
+| `edge.js`                                                  | The single root HTML template for Inertia                                                                                                                 |
+| `pg`                                                       | PostgreSQL driver                                                                                                                                         |
+| `luxon`                                                    | Dates and time zones (used by Lucid)                                                                                                                      |
+| `react`, `react-dom`                                       | UI                                                                                                                                                        |
+| `reflect-metadata`                                         | Decorator metadata for the container                                                                                                                      |
+| `sonner`                                                   | Toasts (also what shadcn's toast component uses)                                                                                                          |
+| `react-aria-components`                                    | Accessible primitives under the shadcn components (React Aria base), since M1b                                                                            |
+| `class-variance-authority`, `cn`                           | Installed by the shadcn CLI for the `aria-vega` style: component variants, and class merging (`cn`, by shadcn, replaces clsx + tailwind-merge), since M1b |
+| `@tabler/icons-react`                                      | Icons (CONVENTIONS §9), since M1b                                                                                                                         |
+| `@fontsource-variable/instrument-sans`                     | The design's typeface, self-hosted (no font CDN), since M1b                                                                                               |
 
 ### Development
 
@@ -44,29 +47,28 @@ Rules (`docs/CONVENTIONS.md` §14):
 | `@japa/runner`, `@japa/assert`, `@japa/plugin-adonisjs`, `@japa/api-client`, `@japa/browser-client` | Unit, functional and browser tests                                                                                                                                    |
 | `vite`, `@vitejs/plugin-react`                                                                      | Frontend build                                                                                                                                                        |
 | `pino-pretty`, `youch`                                                                              | Readable logs and error pages in development                                                                                                                          |
+| `tailwindcss`, `@tailwindcss/vite`                                                                  | Styling (Tailwind v4), since M1b                                                                                                                                      |
+| `shadcn`                                                                                            | The CLI that generates `inertia/components/ui/`, and its base stylesheet `shadcn/tailwind.css` imported by `app.css`, since M1b                                       |
+| `tw-animate-css`                                                                                    | Enter and exit animations of the shadcn components, imported by `app.css`, since M1b                                                                                  |
 | `@types/luxon`, `@types/node`, `@types/pg`, `@types/react`, `@types/react-dom`                      | Types                                                                                                                                                                 |
 
 ## 2. Approved to add
 
 Add each in the milestone shown, after checking its current version and docs.
 
-| Package                                                                                                      | Purpose                                                                                          | Milestone |
-| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | --------- |
-| `tailwindcss`, `@tailwindcss/vite`                                                                           | Styling (Tailwind v4)                                                                            | M1b       |
-| `shadcn` (dev)                                                                                               | CLI that generates components into `inertia/components/ui/` (React Aria base)                    | M1b       |
-| `react-aria-components`                                                                                      | Accessible primitives under the shadcn components                                                | M1b       |
-| The helper packages the shadcn CLI installs for the React Aria base (class merging, variants, animation CSS) | Required by generated components; list each one here when the CLI adds it                        | M1        |
-| `@tabler/icons-react`                                                                                        | Icons                                                                                            | M1b       |
-| `@fontsource-variable/*` for the design's fonts                                                              | Self-hosted fonts (no request to a font CDN)                                                     | M1b       |
-| `playwright` (dev)                                                                                           | Browser engine for `@japa/browser-client` and screenshots                                        | M1b       |
-| `@adonisjs/limiter`                                                                                          | Rate limits (database store)                                                                     | M2        |
-| `@adonisjs/bouncer`                                                                                          | Authorization policies                                                                           | M2        |
-| `proxy-addr`, `@types/proxy-addr`                                                                            | Trusted proxy list for `http.trustProxy` in `config/app.ts` (`docs/ARCHITECTURE.md` §1.2 rule 1) | M2        |
-| `maplibre-gl`                                                                                                | Map UI (WebGL vector maps), loaded only on pages with a map                                      | M4        |
-| `pmtiles`, `@protomaps/basemaps`                                                                             | Reads the self-hosted PMTiles file in MapLibre, and its base map style                           | M4        |
-| `@adonisjs/transmit`, `@adonisjs/transmit-client`                                                            | Live updates over SSE                                                                            | M11       |
+| Package                                                                                                                       | Purpose                                                                                          | Milestone |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------- |
+| `playwright` (dev; `@japa/browser-client` already brings it, so it is added directly only if a script needs a pinned version) | Browser engine for `@japa/browser-client` and screenshots                                        | M1b       |
+| `@adonisjs/limiter`                                                                                                           | Rate limits (database store)                                                                     | M2        |
+| `@adonisjs/bouncer`                                                                                                           | Authorization policies                                                                           | M2        |
+| `proxy-addr`, `@types/proxy-addr`                                                                                             | Trusted proxy list for `http.trustProxy` in `config/app.ts` (`docs/ARCHITECTURE.md` §1.2 rule 1) | M2        |
+| `maplibre-gl`                                                                                                                 | Map UI (WebGL vector maps), loaded only on pages with a map                                      | M4        |
+| `pmtiles`, `@protomaps/basemaps`                                                                                              | Reads the self-hosted PMTiles file in MapLibre, and its base map style                           | M4        |
+| `@adonisjs/transmit`, `@adonisjs/transmit-client`                                                                             | Live updates over SSE                                                                            | M11       |
 
-**To propose when needed** (with a comparison, before adding): a maintained library for the Excel export (OWN-12, M10).
+**To propose when needed** (with a comparison, before adding): a maintained library for the Excel export (OWN-12, M10); an accessibility checker for the browser tests (NFR-2, see the M1b report).
+
+Removed in M1b: `lucide-react` (icons are Tabler only). `next-themes`, which the shadcn CLI adds with the toast component, is not kept: the app has one light theme (`docs/ARCHITECTURE.md` D27).
 
 ## 3. Container images (rootless Podman)
 
@@ -91,8 +93,8 @@ Tools run from the images above, so nothing is installed on the host except Podm
 | Build the OSRM motorbike graph                                    | `osrm-extract` + `osrm-contract` (OSRM v26.11.0), `maps/motorbike.lua`                                           | same                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Produce the PMTiles extract                                       | `pmtiles extract` (go-pmtiles v1.31.2)                                                                           | Protomaps Basemap daily build (tileset v4.15.2), <https://build.protomaps.com/>, data © OpenStreetMap contributors (ODbL); the attribution "© OpenStreetMap contributors" is shown on every map (MAP-2)                                                                                                                                                                                                                                                                                                                      |
 | Kecamatan boundaries (file produced in M3)                        | `curl`, `unzip`, `mapshaper` through `npx` (not a project dependency)                                            | "Indonesia – Subnational Administrative Boundaries" (OCHA COD-AB, data from Badan Pusat Statistik), <https://data.humdata.org/dataset/cod-ab-idn>, [CC BY-IGO 3.0](https://creativecommons.org/licenses/by/3.0/igo/); resource `idn_admin_boundaries.geojson.zip`, 456,203,094 bytes, updated on HDX 2026-06-23 (checked 2026-11-13). Only the filtered, simplified result for Kota Bandung, Kota Cimahi and Kabupaten Bandung (64 kecamatan) will be committed                                                              |
-| Landing hero, "before" photo (GUEST-1, added in M1b)              | resized and cropped for the web in M1b                                                                           | "Muddy white shoes" by Pavel Ševela, 2010, Wikimedia Commons, <https://commons.wikimedia.org/wiki/File:Muddy_white_shoes.jpg> (3456 × 2592, SHA-1 `67200a489ba5cf6678ded5525d849c67726605ae`), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). Attribution required; the resized versions are shared under the same license; the author asks to be notified of use outside Wikimedia (a request, not a license condition). A pair of white sneakers covered in dried mud, seen from above on a wooden floor |
-| Landing hero, "after" photo (GUEST-1, added in M1b)               | resized and cropped for the web in M1b                                                                           | "A pair of white shoes" by JustinLiang522, 2022, Wikimedia Commons, <https://commons.wikimedia.org/wiki/File:A_pair_of_white_shoes.jpg> (3024 × 4032, SHA-1 `51f5e3e662a0da1e0baff5217bd2feb4053f7e32`), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Attribution required; the resized versions are shared under the same license. A clean pair of white sneakers with black lining, seen from above, framed like the "before" photo                                                                    |
+| Landing hero, "before" photo (GUEST-1, added in M1c)              | resized and cropped for the web in M1c                                                                           | "Muddy white shoes" by Pavel Ševela, 2010, Wikimedia Commons, <https://commons.wikimedia.org/wiki/File:Muddy_white_shoes.jpg> (3456 × 2592, SHA-1 `67200a489ba5cf6678ded5525d849c67726605ae`), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). Attribution required; the resized versions are shared under the same license; the author asks to be notified of use outside Wikimedia (a request, not a license condition). A pair of white sneakers covered in dried mud, seen from above on a wooden floor |
+| Landing hero, "after" photo (GUEST-1, added in M1c)               | resized and cropped for the web in M1c                                                                           | "A pair of white shoes" by JustinLiang522, 2022, Wikimedia Commons, <https://commons.wikimedia.org/wiki/File:A_pair_of_white_shoes.jpg> (3024 × 4032, SHA-1 `51f5e3e662a0da1e0baff5217bd2feb4053f7e32`), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Attribution required; the resized versions are shared under the same license. A clean pair of white sneakers with black lining, seen from above, framed like the "before" photo                                                                    |
 
 The two photos are placeholders until the shop provides its own (GUEST-1). They show different shoes: no free-license photo pair of the same shoes before and after cleaning was found (Wikimedia Commons, Unsplash and Pexels searched on 2026-11-13). The credit line on the site: "Foto: Pavel Ševela (CC BY-SA 3.0), JustinLiang522 (CC BY-SA 4.0), via Wikimedia Commons".
 

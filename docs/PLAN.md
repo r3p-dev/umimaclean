@@ -7,8 +7,9 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | #    | Version | Milestone                                      | Status                | Hours |
 | ---- | ------- | ---------------------------------------------- | --------------------- | ----- |
 | M0   | –       | Spikes and plan                                | done                  | 8     |
-| M1a  | –       | Conventions across the existing code           | done, awaiting review | 8     |
-| M1b  | 0.1.0   | Foundation and look                            | not started           | 16    |
+| M1a  | –       | Conventions across the existing code           | done                  | 8     |
+| M1b  | –       | Foundation and look                            | done, awaiting review | 10    |
+| M1c  | 0.1.0   | Landing, legal pages, SEO                      | not started           | 10    |
 | M2   | 0.2.0   | Accounts                                       | not started           | 24    |
 | M3   | 0.3.0   | Services, service areas, store settings        | not started           | 16    |
 | M4   | 0.4.0   | Addresses and maps                             | not started           | 20    |
@@ -23,9 +24,9 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M11  | 0.11.0  | Live updates and jobs                          | not started           | 10    |
 | M12  | 1.0.0   | Hardening and release                          | not started           | 20    |
 
-Hours are the implementer's estimate for building, testing and writing the evidence of each milestone; review time is not included. Total M1a–M12: 256 hours.
+Hours are the implementer's estimate for building, testing and writing the evidence of each milestone; review time is not included. Total M1a–M12: 260 hours.
 
-**Checkpoints:** M5 and M10 each became two checkpoints (`a`, `b`) in M0 so that each stop stays reviewable in one sitting; M1 became M1a (conventions applied to the existing code, added by the owner after M0) and M1b. A checkpoint `a` ends with a report and suggested commits but no version bump; the minor version is bumped at the end of checkpoint `b`.
+**Checkpoints:** M5 and M10 each became two checkpoints (`a`, `b`) in M0 so that each stop stays reviewable in one sitting; M1 became M1a (conventions applied to the existing code, added by the owner after M0), M1b (foundation and look) and M1c (landing, legal pages, SEO). A checkpoint `a` ends with a report and suggested commits but no version bump; the minor version is bumped at the end of checkpoint `b`.
 
 **Every milestone** also meets the general acceptance criteria of `AGENTS.md` §2: tests for its criteria (unit for services, state machines and helpers; functional for every route, including authorization and the PRD rule, named by requirement ID; browser tests for the main journeys), `npm run lint`, `npm run typecheck` and `npm test` pass without deprecation warnings, seed data updated, `docs/ARCHITECTURE.md` and `docs/DEPENDENCIES.md` current, `docs/evidence/M{N}/EVIDENCE.md` with desktop and mobile screenshots and logs in the same folder.
 
@@ -52,19 +53,30 @@ Acceptance criteria:
 - Behavior unchanged: the same routes answer with the same status codes, and the existing pages look the same (screenshots compared with the previous commit).
 - Development and tests use their own databases on the shared PostgreSQL server (`database/create_databases.sql`); `compose.yaml` keeps only OSRM and the data tools.
 
-## M1b (0.1.0): Foundation and look
+## M1b (checkpoint of 0.1.0): Foundation and look
 
-Tailwind, shadcn (React Aria base) with the brand values in shadcn's theme variables, the page templates per area, error pages. Public: landing with its static sections, terms and privacy (GUEST-1 static parts, GUEST-2, GUEST-3). Review focus: does it look right.
+Tailwind, shadcn (React Aria base) with the brand values in shadcn's theme variables, one light theme, the page templates per area, error pages, and the existing pages in the new look. Review focus: does it look right.
 
 Acceptance criteria:
 
 - Tailwind v4 and shadcn initialized with `--base aria` (style `aria-vega`), `iconLibrary` set to Tabler; every package the CLI adds is listed in `docs/DEPENDENCIES.md`; `lucide-react` removed.
-- The starter's look (its CSS classes in `inertia/css/app.css`, inline styles, English copy) replaced by Tailwind classes, shadcn components and Indonesian copy (CONVENTIONS §9.1, §15).
-- Brand colors only in shadcn's existing theme variables in `inertia/css/app.css`; no new CSS variables; status colors in one map from stage to Tailwind classes (CONVENTIONS §9.1).
-- Fonts self-hosted through `@fontsource-variable/*`; no request to a font or map CDN (checked in a browser test that blocks outside hosts).
-- One template per area (public, auth, customer, flow, staff, owner, print) and the error pages (404, 500), viewable in development.
-- GUEST-1 static sections (hero with the before/after photos chosen in M1a, with each photo's source, author and license documented in `docs/DEPENDENCIES.md` §4 and credited on the site as their license requires, how it works, items, reviews, FAQ, footer from placeholder store data until M3); GUEST-2 terms and privacy; GUEST-3 titles, descriptions, Open Graph, `/sitemap.xml`, `/robots.txt` listing public pages only.
-- NFR-2 on the new pages: keyboard reachable, visible focus, native headings, AA contrast (automated check in the browser test).
+- One light theme: no theme toggle, no dark variant or dark values, and the generated components carry no `dark:` classes (unit test); the page stays light when the device prefers dark (browser test).
+- The starter's look (its CSS classes in `inertia/css/app.css`, inline styles, English copy) replaced by Tailwind classes, shadcn components and Indonesian copy on every existing page (CONVENTIONS §9.1, §15).
+- Brand colors only in shadcn's existing theme variables in `inertia/css/app.css`; no new CSS variables. Every design token without a shadcn equivalent is listed with a proposal, and the owner decides before anything is added to `app.css`.
+- Fonts self-hosted through `@fontsource-variable/*`; no request to any outside host (browser test that blocks outside hosts, on every page).
+- One template per area (public, auth, customer, flow, staff, owner, print) and the error pages (404, 500), viewable in development (`/_preview/...`).
+- NFR-2 on the new pages: keyboard reachable with a visible focus ring, `lang="id"`, one `h1` per page (browser tests).
+
+## M1c (0.1.0): Landing, legal pages, SEO
+
+Public: the landing with its static sections, terms and privacy (GUEST-1 static parts, GUEST-2, GUEST-3). Ends with version 0.1.0.
+
+Acceptance criteria:
+
+- GUEST-1 static sections: hero with the before/after photos (resized for the web, each photo's source, author and license documented in `docs/DEPENDENCIES.md` §4), how it works, items, reviews, FAQ; the footer with placeholder store data until M3 and, on the landing, the one-line photo credit with each name linked to the photo's source page.
+- GUEST-2 terms (`/syarat`) and privacy (`/privasi`); the privacy page lists the outside services of `docs/PRD/shared.md` §11.
+- GUEST-3 titles, descriptions and Open Graph on public pages; `/sitemap.xml` and `/robots.txt` list public pages only.
+- NFR-2: AA contrast checked automatically in the browser tests (tool to be approved, see the M1b report).
 
 ## M2 (0.2.0): Accounts
 

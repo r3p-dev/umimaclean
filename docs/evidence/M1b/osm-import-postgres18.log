@@ -1,0 +1,51 @@
+++ podman compose --profile tools run --rm -T psql -q -f /maps/osm_schema.sql
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0mpsql:/maps/osm_schema.sql:11: NOTICE:  extension "postgis" already exists, skipping
+psql:/maps/osm_schema.sql:12: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/maps/osm_schema.sql:13: NOTICE:  extension "unaccent" already exists, skipping
+++ podman compose --profile tools run --rm -T psql -q -c 'CREATE SCHEMA IF NOT EXISTS osm_import'
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0m++ podman compose --profile tools run --rm -T map-tools sh -c 'PGPASSWORD="$DB_PASSWORD" osm2pgsql --create --output=flex --style=/maps/osm_import.lua --schema=osm_import --host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER" --database="$DB_DATABASE" /data/bandung-raya.osm.pbf'
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0m2026-11-13 22:10:23  osm2pgsql version 2.3.1
+2026-11-13 22:10:23  Database version: 18.6 (Debian 18.6-1.pgdg13+2)
+2026-11-13 22:10:23  PostGIS version: 3.6
+2026-11-13 22:10:23  Initializing properties table '"osm_import"."osm2pgsql_properties"'.
+2026-11-13 22:10:23  Storing properties to table '"osm_import"."osm2pgsql_properties"'.
+
+                                                                                          
+2026-11-13 22:10:34  Reading input files done in 11s.
+2026-11-13 22:10:34    Processed 12770432 nodes in 1s - 12770k/s
+2026-11-13 22:10:34    Processed 2482888 ways in 10s - 248k/s
+2026-11-13 22:10:34    Processed 3595 relations in 0s - 4k/s
+2026-11-13 22:10:34  No marked nodes or ways (Skipping stage 2).
+2026-11-13 22:10:34  Clustering table 'roads' by geometry...
+2026-11-13 22:10:34  Clustering table 'pois' by geometry...
+2026-11-13 22:10:34  Clustering table 'boundaries' by geometry...
+2026-11-13 22:10:34  Creating index on table 'pois' ("geom")...
+2026-11-13 22:10:34  Analyzing table 'pois'...
+2026-11-13 22:10:34  Creating index on table 'boundaries' ("geom")...
+2026-11-13 22:10:34  Creating index on table 'roads' ("geom")...
+2026-11-13 22:10:34  Analyzing table 'boundaries'...
+2026-11-13 22:10:34  Analyzing table 'roads'...
+2026-11-13 22:10:34  All postprocessing on table 'roads' done in 0s.
+2026-11-13 22:10:34  All postprocessing on table 'pois' done in 0s.
+2026-11-13 22:10:34  All postprocessing on table 'boundaries' done in 0s.
+2026-11-13 22:10:34  Storing properties to table '"osm_import"."osm2pgsql_properties"'.
+2026-11-13 22:10:34  osm2pgsql took 11s overall.
+++ podman compose --profile tools run --rm -T psql -q --single-transaction -f /maps/osm_build.sql
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0mpsql:/maps/osm_build.sql:34: NOTICE:  drop cascades to 4 other objects
+DETAIL:  drop cascades to table osm_import.osm2pgsql_properties
+drop cascades to table osm_import.roads
+drop cascades to table osm_import.pois
+drop cascades to table osm_import.boundaries
+++ podman compose --profile tools run --rm -T psql -Atc 'select current_database(), current_setting('\''server_version'\''), postgis_lib_version(), (select count(*) from osm.roads), (select count(*) from osm.pois), (select count(*) from osm.areas)'
+[4m>>>> Executing external compose provider "/usr/bin/podman-compose". Please see podman-compose(1) for how to disable this message. <<<<
+
+[0mumimaclean_dev|18.6 (Debian 18.6-1.pgdg13+2)|3.6.4|13213|14457|500
+++ set +x

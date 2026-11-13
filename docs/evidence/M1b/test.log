@@ -1,0 +1,18 @@
+$ npm test
+
+> umimaclean@0.0.0 test
+> node ace test
+
+c[ info ] loading hooks...
+[ info ] generating indexes...
+[ info ] codegen: created 6 file(s)
+[ info ] booting application to run tests...
+❯ Executed 1 migrations (62 ms)
+✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔❯ Reverted 1 migrations (14 ms)
+
+
+ PASSED 
+
+Tests  24 passed (24)
+ Time  15s
+exit=0
