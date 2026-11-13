@@ -1,56 +1,97 @@
-# Approved External Dependencies
+# Dependencies
 
-This document tracks approved external dependencies in accordance with repository engineering protocols. All dependencies listed below are direct dependencies declared in the project's package.json.
+Every package, container image and data tool this project uses, and why. **Exact versions live in `package.json` / `package-lock.json` and in the container setup**, not here, so this file doesn't go stale.
 
-## Core Runtime Dependencies
+Rules (`docs/CONVENTIONS.md` §14):
 
-- @adonisjs/core (^7.5.2): AdonisJS framework core, IoC container, HTTP server, and configuration system.
-- @adonisjs/auth (^10.1.0): Authentication framework providing session guard and user providers.
-- @adonisjs/lucid (^22.4.2): SQL query builder and Active Record ORM based on Knex.
-- @adonisjs/inertia (^5.0.1): Server-side adapter for Inertia.js.
-- @adonisjs/session (^8.1.0): Session management for HTTP requests.
-- @adonisjs/shield (^9.0.0): Security middleware for CSRF protection, Content Security Policy, and secure HTTP headers.
-- @adonisjs/cors (^3.0.0): CORS middleware for handling cross-origin requests.
-- @adonisjs/static (^2.0.1): Middleware for serving static assets.
-- @adonisjs/vite (^6.0.2): Asset bundling integration for Vite.
-- @inertiajs/core (^3.7.1) & @inertiajs/react (^3.7.1): Client-side routing and React integration for Inertia.js.
-- @tuyau/core (^1.2.2): Core library for type-safe API integration with Tuyau.
-- @vinejs/vine (^4.4.0): Schema-based validation library.
-- edge.js (^6.5.1): Server-side template engine.
-- pg (^8.23.1): PostgreSQL driver for Node.js.
-- luxon (^3.7.2): Date and time handling library used by Lucid models.
-- react (^19.3.0) & react-dom (^19.3.0): UI framework and DOM rendering library.
-- lucide-react (^1.48.0): Icon library for React.
-- sonner (^2.0.8): Toast notification library.
-- reflect-metadata (^0.2.2): Metadata reflection API for JavaScript and TypeScript.
+- Add nothing that isn't listed here. To add something, list it with its purpose and **why AdonisJS, its official packages or the platform are not enough**, in the same change.
+- Only stable, actively maintained packages. Check before adding that the version you pick isn't deprecated.
+- When something is removed, remove it here too.
 
-## Development Dependencies
+## 1. Installed (from the starter)
 
-- @adonisjs/assembler (^8.5.2): Build tooling and development utilities for AdonisJS.
-- @adonisjs/eslint-config (^3.1.0): ESLint configuration for AdonisJS projects.
-- @adonisjs/prettier-config (^1.5.0): Prettier configuration for consistent code formatting.
-- @adonisjs/tsconfig (^2.0.0): Shared TypeScript configuration for AdonisJS projects.
-- @japa/assert (^4.2.0): Assertion library for automated tests.
-- @japa/runner (^5.3.0): Test runner for executing automated test suites.
-- @japa/plugin-adonisjs (^5.2.0): AdonisJS integration for the Japa testing framework.
-- @japa/api-client (^3.2.1): HTTP API client for functional endpoint testing, including session, authentication, and security middleware integrations.
-- @japa/browser-client (^2.3.0): Browser-based end-to-end testing using Playwright.
-- @poppinss/ts-exec (^1.4.4): TypeScript execution utility.
-- @types/luxon (^3.7.5): TypeScript definitions for Luxon.
-- @types/node (~26.6.2): TypeScript definitions for Node.js.
-- @types/pg (^8.23.1): TypeScript definitions for the PostgreSQL client.
-- @types/react (^19.3.0) & @types/react-dom (^19.3.0): TypeScript definitions for React and React DOM.
-- @vitejs/plugin-react (^6.1.1): React integration plugin for Vite.
-- eslint (^10.11.0): JavaScript and TypeScript linting tool.
-- eslint-plugin-react (^7.37.5): ESLint rules for React.
-- eslint-plugin-react-hooks (^7.1.1): ESLint rules for React Hooks.
-- hot-hook (^1.0.0): Hot module replacement tooling for development.
-- pino-pretty (^13.1.3): Pretty-printing utility for Pino logs.
-- prettier (^3.9.9): Code formatter.
-- typescript (~6.0.3): TypeScript compiler and type-checking tool.
-- vite (^8.3.0): Frontend build tool and development server.
-- youch (^4.1.1): Error reporting and stack trace formatting utility.
+### Runtime
 
-## Runtime Requirements
+| Package                                                    | Purpose                                                                  |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `@adonisjs/core`                                           | Framework core: container, HTTP server, config, ace                      |
+| `@adonisjs/auth`                                           | Session guard and remember-me tokens                                     |
+| `@adonisjs/lucid`                                          | ORM, migrations, seeders                                                 |
+| `@adonisjs/session`                                        | Sessions (database store)                                                |
+| `@adonisjs/shield`                                         | CSRF and security headers                                                |
+| `@adonisjs/cors`                                           | CORS (kept closed: same-origin app)                                      |
+| `@adonisjs/static`                                         | Static files from `public/`                                              |
+| `@adonisjs/vite`                                           | Vite integration                                                         |
+| `@adonisjs/inertia`, `@inertiajs/core`, `@inertiajs/react` | Inertia server adapter and React client                                  |
+| `@tuyau/core`                                              | Typed route helpers for the frontend                                     |
+| `@vinejs/vine`                                             | Validation                                                               |
+| `edge.js`                                                  | The single root HTML template for Inertia                                |
+| `pg`                                                       | PostgreSQL driver                                                        |
+| `luxon`                                                    | Dates and time zones (used by Lucid)                                     |
+| `react`, `react-dom`                                       | UI                                                                       |
+| `reflect-metadata`                                         | Decorator metadata for the container                                     |
+| `sonner`                                                   | Toasts (also what shadcn's toast component uses)                         |
+| `lucide-react`                                             | **To remove in M1**: icons are Tabler only (`docs/ARCHITECTURE.md` §1.1) |
 
-- Node.js (>=24.0.0): Minimum supported Node.js version.
+### Development
+
+| Package                                                                                             | Purpose                                                                          |
+| --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `@adonisjs/assembler`, `hot-hook`, `@poppinss/ts-exec`                                              | Dev server, build, hot reload, TypeScript execution                              |
+| `@adonisjs/eslint-config`, `eslint`, `eslint-plugin-react`, `eslint-plugin-react-hooks`             | Linting (M1 also enables the type-aware `@typescript-eslint/no-deprecated` rule) |
+| `@adonisjs/prettier-config`, `prettier`                                                             | Formatting                                                                       |
+| `@adonisjs/tsconfig`, `typescript`                                                                  | Type checking                                                                    |
+| `@japa/runner`, `@japa/assert`, `@japa/plugin-adonisjs`, `@japa/api-client`, `@japa/browser-client` | Unit, functional and browser tests                                               |
+| `vite`, `@vitejs/plugin-react`                                                                      | Frontend build                                                                   |
+| `pino-pretty`, `youch`                                                                              | Readable logs and error pages in development                                     |
+| `@types/luxon`, `@types/node`, `@types/pg`, `@types/react`, `@types/react-dom`                      | Types                                                                            |
+
+## 2. Approved to add
+
+Add each in the milestone shown, after checking its current version and docs.
+
+| Package                                                                                                      | Purpose                                                                                          | Milestone |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | --------- |
+| `tailwindcss`, `@tailwindcss/vite`                                                                           | Styling (Tailwind v4)                                                                            | M1        |
+| `shadcn` (dev)                                                                                               | CLI that generates components into `inertia/components/ui/` (React Aria base)                    | M1        |
+| `react-aria-components`                                                                                      | Accessible primitives under the shadcn components                                                | M1        |
+| The helper packages the shadcn CLI installs for the React Aria base (class merging, variants, animation CSS) | Required by generated components; list each one here when the CLI adds it                        | M1        |
+| `@tabler/icons-react`                                                                                        | Icons                                                                                            | M1        |
+| `@fontsource-variable/*` for the design's fonts                                                              | Self-hosted fonts (no request to a font CDN)                                                     | M1        |
+| `playwright` (dev)                                                                                           | Browser engine for `@japa/browser-client` and screenshots                                        | M1        |
+| `@adonisjs/limiter`                                                                                          | Rate limits (database store)                                                                     | M2        |
+| `@adonisjs/bouncer`                                                                                          | Authorization policies                                                                           | M2        |
+| `proxy-addr`, `@types/proxy-addr`                                                                            | Trusted proxy list for `http.trustProxy` in `config/app.ts` (`docs/ARCHITECTURE.md` §1.2 rule 1) | M2        |
+| `leaflet`, `@types/leaflet`                                                                                  | Map UI                                                                                           | M4        |
+| `protomaps-leaflet`                                                                                          | Draws the self-hosted PMTiles vector tiles in Leaflet                                            | M4        |
+| `@adonisjs/transmit`, `@adonisjs/transmit-client`                                                            | Live updates over SSE                                                                            | M11       |
+
+**To propose when needed** (with a comparison, before adding): a maintained library for the Excel export (OWN-12, M10).
+
+## 3. Container images (rootless Podman)
+
+Pinned to exact tags in M0; record the tag and the reason for it here.
+
+| Image                                                           | Purpose                                           |
+| --------------------------------------------------------------- | ------------------------------------------------- |
+| PostGIS (official `postgis/postgis`)                            | PostgreSQL with PostGIS for development and tests |
+| OSRM (official `osrm/osrm-backend` or its maintained successor) | Routing with the motorbike profile                |
+
+## 4. Data tools
+
+Chosen in M0 (prefer running them from container images so nothing extra is installed on the host). Record the tool, version, source and license of every dataset.
+
+| Need                                                              | Data                                                |
+| ----------------------------------------------------------------- | --------------------------------------------------- |
+| Clip an OpenStreetMap extract to Bandung Raya                     | OpenStreetMap (ODbL)                                |
+| Load roads, places, kelurahan and postcodes into the `osm` schema | OpenStreetMap (ODbL)                                |
+| Build the OSRM motorbike graph                                    | OpenStreetMap (ODbL)                                |
+| Produce the PMTiles extract                                       | A maintained OpenStreetMap vector tile build (ODbL) |
+| Kecamatan boundaries                                              | A licensed public boundary dataset (AREA-1)         |
+
+## 5. Runtime requirements
+
+| Requirement       | Source                                |
+| ----------------- | ------------------------------------- |
+| Node.js           | The `engines` field in `package.json` |
+| Podman (rootless) | Local services                        |
