@@ -1,4 +1,4 @@
-import AuthLayout from '~/layouts/auth'
+import AuthLayout from '~/components/templates/auth_layout'
 import { Form, Link } from '@adonisjs/inertia/react'
 
 export default function Signup() {

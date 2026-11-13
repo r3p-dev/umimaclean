@@ -1,5 +1,5 @@
 import { ArrowUpRight } from 'lucide-react'
-import MarketingLayout from '~/layouts/marketing'
+import MarketingLayout from '~/components/templates/marketing_layout'
 
 export default function Home() {
   return (

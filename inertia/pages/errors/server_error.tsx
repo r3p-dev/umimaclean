@@ -1,4 +1,4 @@
-import MarketingLayout from '~/layouts/marketing'
+import MarketingLayout from '~/components/templates/marketing_layout'
 
 export default function ServerError() {
   return (

@@ -1,10 +1,10 @@
-import Page from '~/components/page'
 import { LayoutGrid } from 'lucide-react'
-import AppLayout from '~/layouts/app'
+import Page from '~/components/organisms/page'
+import AppLayout from '~/components/templates/app_layout'
 
 export default function Dashboard() {
   return (
-    <Page title="Dashboard" hideTitle>
+    <Page title="Dashboard" isTitleHidden>
       <div className="empty">
         <div className="empty__mark">
           <LayoutGrid size={22} />
@@ -15,7 +15,7 @@ export default function Dashboard() {
           route and component to begin.
         </p>
         <p className="mono" style={{ fontSize: 12.5, color: 'var(--subtle)', marginTop: 4 }}>
-          Start in <span className="kbd">inertia/pages/dashboard.tsx</span>
+          Start in <span className="kbd">inertia/pages/customer/dashboard.tsx</span>
         </p>
       </div>
     </Page>

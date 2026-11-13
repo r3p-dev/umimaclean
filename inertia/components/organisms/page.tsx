@@ -1,25 +1,22 @@
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Head } from '@inertiajs/react'
 
-/**
- * The frame for an app page: sets the document title and renders the page
- * heading, an optional description and optional actions (buttons, links)
- * aligned to the right. Pass `hideTitle` to only set the document title.
- */
+// Sets the document title and renders the page heading, description and actions.
+// With isTitleHidden only the document title is set.
 export default function Page({
   title,
-  hideTitle = false,
+  isTitleHidden = false,
   description,
   actions,
   children,
 }: {
   title: string
-  hideTitle?: boolean
+  isTitleHidden?: boolean
   description?: ReactNode
   actions?: ReactNode
   children?: ReactNode
 }) {
-  const hasHeader = !hideTitle || description || actions
+  const hasHeader = !isTitleHidden || description || actions
 
   return (
     <div className="page">
@@ -27,7 +24,7 @@ export default function Page({
       {hasHeader && (
         <header className="page__header">
           <div>
-            {!hideTitle && <h1 className="page__title">{title}</h1>}
+            {!isTitleHidden && <h1 className="page__title">{title}</h1>}
             {description && <p className="page__description">{description}</p>}
           </div>
           {actions && <div className="page__actions">{actions}</div>}

@@ -1,15 +1,7 @@
-import { type Data } from '@generated/data'
-import { type PropsWithChildren } from 'react'
-import { type JSONDataTypes } from '@adonisjs/core/types/transformers'
+import type { Data } from '@generated/data'
 
-export type InertiaProps<T extends JSONDataTypes = {}> = PropsWithChildren<Data.SharedProps & T>
-
-/**
- * Bridge the shared props and flash data inferred from the Inertia
- * middleware into the Inertia client, so `usePage().props`, `usePage().flash`,
- * and layout callbacks are typed globally without passing a generic at each
- * call site.
- */
+// Types usePage().props and usePage().flash with the shared props and flash data inferred from the
+// Inertia middleware, so no call site has to pass a generic.
 declare module '@inertiajs/core' {
   interface InertiaConfig {
     sharedPageProps: Data.SharedProps

@@ -1,5 +1,5 @@
-import './css/app.css'
-import { client } from './client'
+import '~/css/app.css'
+import { client } from '~/client'
 import { createRoot } from 'react-dom/client'
 import { TuyauProvider } from '@adonisjs/inertia/react'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
