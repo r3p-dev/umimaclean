@@ -1,0 +1,34 @@
+# Local services for development and tests, run with rootless Podman: `podman compose up -d db`.
+# Database credentials and the host port come from `.env` (DB_USER, DB_PASSWORD, DB_DATABASE, DB_PORT).
+# Setup, map data and reset commands: docs/ARCHITECTURE.md §6.
+name: umimaclean
+
+services:
+  db:
+    image: docker.io/postgis/postgis:18-3.6@sha256:4a43e3c3e5d55b9208240fc71db543b79c638766280c625a425bd0a2390989c4
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    ports:
+      - 127.0.0.1:${DB_PORT}:5432
+    volumes:
+      # PostgreSQL 18 images keep their data under a version folder, so the volume is the parent.
+      - db_data:/var/lib/postgresql
+      - ./database/create_test_database.sql:/docker-entrypoint-initdb.d/20_create_test_database.sql:ro,z
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      retries: 10
+
+  # Starts only after the routing files exist in storage/osrm (docs/ARCHITECTURE.md §6.3).
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend:v26.11.0-debian@sha256:e1929ae2818226284d7ef007329098a30851c11528ab3712bc9c8d68da78278b
+    command: ['osrm-routed', '--algorithm', 'ch', '/data/bandung-raya.osrm']
+    ports:
+      - 127.0.0.1:${OSRM_PORT:-5000}:5000
+    volumes:
+      - ./storage/osrm:/data:ro,z
+
+volumes:
+  db_data:

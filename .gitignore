@@ -12,6 +12,10 @@ tmp
 # Frontend assets compiled code
 public/assets
 
+# Map data (OSM extract, OSRM routing files, PMTiles) and uploads: docs/ARCHITECTURE.md §6
+/storage
+/public/tiles
+
 # Build tools specific
 npm-debug.log
 yarn-error.log
