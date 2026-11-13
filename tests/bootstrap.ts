@@ -1,13 +1,3 @@
-/*
-|--------------------------------------------------------------------------
-| Test Bootstrap Configuration
-|--------------------------------------------------------------------------
-|
-| Configures Japa plugins, runners, hooks, and test suites for unit,
-| functional, and browser testing.
-|
-*/
-
 import { assert } from '@japa/assert'
 import { apiClient } from '@japa/api-client'
 import app from '@adonisjs/core/services/app'
@@ -36,7 +26,9 @@ export const plugins: Config['plugins'] = [
 ]
 
 export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
-  setup: [],
+  // Migrates the test database before the first test and rolls it back after the last one,
+  // so a freshly created test database needs nothing else (docs/ARCHITECTURE.md §6.6).
+  setup: [() => testUtils.db().migrate()],
   teardown: [],
 }
 
