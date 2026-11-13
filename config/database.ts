@@ -1,27 +1,11 @@
-/*
-|--------------------------------------------------------------------------
-| Database configuration
-|--------------------------------------------------------------------------
-|
-| The database configuration file is used for defining database
-| connections and their configuration options.
-|
-*/
-
 import app from '@adonisjs/core/services/app'
 import env from '#start/env'
 import { defineConfig } from '@adonisjs/lucid'
 
 const dbConfig = defineConfig({
-  /**
-   * Default connection used for all queries.
-   */
   connection: 'postgres',
 
   connections: {
-    /**
-     * PostgreSQL database connection.
-     */
     postgres: {
       client: 'pg',
 
@@ -34,14 +18,8 @@ const dbConfig = defineConfig({
       },
 
       migrations: {
-        /**
-         * Sort migration files naturally by filename.
-         */
         naturalSort: true,
 
-        /**
-         * Paths containing migration files.
-         */
         paths: ['database/migrations'],
       },
 
