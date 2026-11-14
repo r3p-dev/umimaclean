@@ -171,6 +171,7 @@ Follow the official AdonisJS, Lucid and VineJS conventions first; these rules ad
 - **Atomic components**: shadcn primitives in `inertia/components/ui/`; everything else in `atoms/` (smallest pieces: logo, status badge), `molecules/` (a few atoms with one job: phone input, quantity stepper), `organisms/` (a section of a page: site header, order summary card, map panel) and `templates/` (page layouts per area). A component lives at the lowest level that fits.
 - **Pages own state and navigation.** Non-visual logic used by more than one component lives in `inertia/lib/<feature>/`, not inside components.
 - **shadcn on React Aria**: components come from the shadcn CLI with the React Aria base (`style: "aria-vega"` in `components.json`). Compose them instead of rewriting them; change a file in `ui/` only when a composition can't do it, and record why.
+- **Prefer official shadcn/ui primitives**: Always prefer official shadcn/ui primitives (`inertia/components/ui/*`) over building custom UI hooks or bespoke interactive components from scratch. When a new interactive pattern is needed in future milestones (dialogs, drawers, sheets, tabs, carousels, popovers, forms, etc.), add and compose the corresponding shadcn/ui component.
 - **Icons**: `@tabler/icons-react` only.
 - **Data from the server**: through Inertia props and Inertia forms; no client-side fetching where a prop or a form submit does the job. URLs come from the typed route helper (Tuyau), never hand-written strings.
 

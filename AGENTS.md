@@ -14,6 +14,7 @@ Read these at the start of every session:
 | `docs/PRD/` (start with `summary.md`) | What the app does, per audience, with requirement IDs                                                   | Owner                       |
 | `docs/CONVENTIONS.md`                 | How code is written: project rules, naming, layers, frontend, styling, comments                         | Owner                       |
 | `docs/ARCHITECTURE.md`                | §1 fixed decisions and security (owner); §2+ components, data flow, state machines, decisions log (you) | Both                        |
+| `docs/SETUP.md`                       | Zero-to-running reproduction and complete teardown/cleanup steps                                        | You                         |
 | `docs/PLAN.md`                        | Milestones, versions, acceptance criteria, estimates, status                                            | You (approved by the owner) |
 | `docs/DEPENDENCIES.md`                | Approved packages and container images, with reasons                                                    | You                         |
 | `docs/evidence/M{N}/EVIDENCE.md`      | Proof that a milestone is done                                                                          | You                         |
