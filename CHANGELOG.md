@@ -6,6 +6,23 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-14
+
+### Added
+
+- `docs/SETUP.md` with reproducible zero-to-running bootstrap instructions and complete teardown/cleanup steps.
+- Official shadcn/ui components: `Carousel` (backed by `embla-carousel-react`), `Card`, and `Badge`.
+- Locked rule in `docs/CONVENTIONS.md` mandating the use of official shadcn/ui primitives over bespoke UI hooks.
+- `eslint-plugin-tailwind-canonical-classes` linter rule to enforce canonical Tailwind CSS v4 class names across Inertia components.
+- Mobile reviews carousel powered by shadcn `Carousel` with pagination indicators and touch-friendly controls.
+- Original store asset photos for the "Yang kami cuci" section (shoes, bag, helmet in WebP and JPEG, EXIF stripped).
+
+### Changed
+
+- Updated D39 in `docs/ARCHITECTURE.md` to document the use of original archive store photos as internal assets for "Yang kami cuci".
+- Refactored `reviews_section.tsx`, `laundry_items.tsx`, and `hero.tsx` to compose official shadcn/ui primitives (`Carousel`, `Card`, `Badge`).
+- Revised privacy policy on `/privasi` to reflect that external navigation links (Google Maps and Waze) open anonymous coordinates without transmitting customer PII.
+
 ## [0.1.0] - 2026-11-14
 
 ### Added
