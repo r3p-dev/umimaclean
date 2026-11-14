@@ -3,6 +3,7 @@ import { IconArrowRight, IconTruckDelivery } from '@tabler/icons-react'
 import { cn } from 'cn'
 import Photo from '~/components/atoms/photo'
 import CompareSlider from '~/components/molecules/compare_slider'
+import { Badge } from '~/components/ui/badge'
 import { buttonVariants } from '~/components/ui/button'
 
 const PHOTO = {
@@ -15,10 +16,13 @@ export default function Hero() {
   return (
     <section className="mx-auto grid max-w-6xl items-center gap-8 px-5 pt-8 pb-6 sm:grid-cols-2 sm:pt-12">
       <div className="flex flex-col gap-5">
-        <p className="inline-flex items-center gap-2 self-start rounded-full bg-accent px-3 py-1.5 text-sm font-semibold text-accent-foreground">
+        <Badge
+          variant="accent"
+          className="h-auto gap-2 self-start rounded-full px-3 py-1.5 text-sm font-semibold"
+        >
           <IconTruckDelivery className="size-4.5" />
           Antar-jemput gratis · Bandung Raya
-        </p>
+        </Badge>
         <h1 className="text-4xl leading-tight font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl lg:leading-none">
           Sepatu dan tas bersih tanpa keluar rumah.
         </h1>
