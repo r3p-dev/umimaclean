@@ -9,12 +9,15 @@ export type ScannedRoutes = {
     'legal.privacy': { paramsTuple?: []; params?: {} }
     'seo.robots': { paramsTuple?: []; params?: {} }
     'seo.sitemap': { paramsTuple?: []; params?: {} }
-    'register.create': { paramsTuple?: []; params?: {} }
-    'register.store': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
-    'dashboard': { paramsTuple?: []; params?: {} }
+    'session.createStaff': { paramsTuple?: []; params?: {} }
+    'session.storeStaff': { paramsTuple?: []; params?: {} }
+    'register.create': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
+    'customer.home': { paramsTuple?: []; params?: {} }
+    'staff.home': { paramsTuple?: []; params?: {} }
+    'admin.home': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -22,9 +25,12 @@ export type ScannedRoutes = {
     'legal.privacy': { paramsTuple?: []; params?: {} }
     'seo.robots': { paramsTuple?: []; params?: {} }
     'seo.sitemap': { paramsTuple?: []; params?: {} }
-    'register.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
-    'dashboard': { paramsTuple?: []; params?: {} }
+    'session.createStaff': { paramsTuple?: []; params?: {} }
+    'register.create': { paramsTuple?: []; params?: {} }
+    'customer.home': { paramsTuple?: []; params?: {} }
+    'staff.home': { paramsTuple?: []; params?: {} }
+    'admin.home': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -32,13 +38,16 @@ export type ScannedRoutes = {
     'legal.privacy': { paramsTuple?: []; params?: {} }
     'seo.robots': { paramsTuple?: []; params?: {} }
     'seo.sitemap': { paramsTuple?: []; params?: {} }
-    'register.create': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
-    'dashboard': { paramsTuple?: []; params?: {} }
+    'session.createStaff': { paramsTuple?: []; params?: {} }
+    'register.create': { paramsTuple?: []; params?: {} }
+    'customer.home': { paramsTuple?: []; params?: {} }
+    'staff.home': { paramsTuple?: []; params?: {} }
+    'admin.home': { paramsTuple?: []; params?: {} }
   }
   POST: {
-    'register.store': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
+    'session.storeStaff': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
   }
 }

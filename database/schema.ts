@@ -7,19 +7,63 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class ActivityLogSchema extends BaseModel {
+  static $columns = ['action', 'category', 'createdAt', 'description', 'id', 'isSensitive', 'orderId', 'userId'] as const
+  $columns = ActivityLogSchema.$columns
+  @column()
+  declare action: string
+  @column()
+  declare category: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isSensitive: boolean
+  @column()
+  declare orderId: number | null
+  @column()
+  declare userId: number | null
+}
+
+export class RememberMeTokenSchema extends BaseModel {
+  static $columns = ['createdAt', 'expiresAt', 'hash', 'id', 'tokenableId', 'updatedAt'] as const
+  $columns = RememberMeTokenSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column()
+  declare hash: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare tokenableId: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const
+  static $columns = ['createdAt', 'fullName', 'id', 'isActive', 'lastSeenAt', 'password', 'phone', 'role', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
-  declare email: string
-  @column()
   declare fullName: string
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare isActive: boolean
+  @column.dateTime()
+  declare lastSeenAt: DateTime | null
   @column({ serializeAs: null })
   declare password: string
+  @column()
+  declare phone: string
+  @column()
+  declare role: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

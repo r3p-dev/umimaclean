@@ -73,35 +73,9 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/seo_controller').default['sitemap']>>>
     }
   }
-  'register.create': {
-    methods: ["GET","HEAD"]
-    pattern: '/signup'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/register_controller').default['create']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/register_controller').default['create']>>>
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/register_controller').default['create']>>>
-    }
-  }
-  'register.store': {
-    methods: ["POST"]
-    pattern: '/signup'
-    types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/auth').createUserValidator)>>
-      paramsTuple: []
-      params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/auth').createUserValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/register_controller').default['store']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/register_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/register_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
   'session.create': {
     methods: ["GET","HEAD"]
-    pattern: '/login'
+    pattern: '/masuk'
     types: {
       body: {}
       paramsTuple: []
@@ -114,7 +88,7 @@ export interface Registry {
   }
   'session.store': {
     methods: ["POST"]
-    pattern: '/login'
+    pattern: '/masuk'
     types: {
       body: ExtractBody<InferInput<(typeof import('#validators/auth').createSessionValidator)>>
       paramsTuple: []
@@ -125,9 +99,35 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'dashboard': {
+  'session.createStaff': {
     methods: ["GET","HEAD"]
-    pattern: '/dashboard'
+    pattern: '/staf/masuk'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['createStaff']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['createStaff']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/session_controller').default['createStaff']>>>
+    }
+  }
+  'session.storeStaff': {
+    methods: ["POST"]
+    pattern: '/staf/masuk'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth').createSessionValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth').createSessionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['storeStaff']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['storeStaff']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/session_controller').default['storeStaff']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'register.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/daftar'
     types: {
       body: {}
       paramsTuple: []
@@ -140,7 +140,7 @@ export interface Registry {
   }
   'session.destroy': {
     methods: ["POST"]
-    pattern: '/logout'
+    pattern: '/keluar'
     types: {
       body: {}
       paramsTuple: []
@@ -149,6 +149,45 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['destroy']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['destroy']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/session_controller').default['destroy']>>>
+    }
+  }
+  'customer.home': {
+    methods: ["GET","HEAD"]
+    pattern: '/beranda'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'staff.home': {
+    methods: ["GET","HEAD"]
+    pattern: '/staf'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'admin.home': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
     }
   }
 }

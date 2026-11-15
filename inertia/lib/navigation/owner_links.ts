@@ -12,7 +12,7 @@ export type OwnerSection =
   | 'profil'
 
 export const OWNER_NAVIGATION: NavigationItem<Exclude<OwnerSection, 'profil'>>[] = [
-  { key: 'ringkasan', label: 'Ringkasan' },
+  { key: 'ringkasan', label: 'Ringkasan', route: 'admin.home' },
   { key: 'pesanan', label: 'Pesanan' },
   { key: 'rekonsiliasi', label: 'Rekonsiliasi' },
   { key: 'layanan', label: 'Layanan & Harga' },

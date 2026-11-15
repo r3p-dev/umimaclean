@@ -1,9 +1,12 @@
 import type { ComponentType, SVGProps } from 'react'
+import { Form } from '@adonisjs/inertia/react'
+import CsrfField from '~/components/atoms/csrf_field'
 import {
   IconArrowDownLeft,
   IconArrowUpRight,
   IconHome,
   IconHomeFilled,
+  IconLogout,
   IconMenu2,
   IconWashMachine,
 } from '@tabler/icons-react'
@@ -57,6 +60,18 @@ export function StaffSidebar({ active }: { active: StaffSection }) {
           )
         })}
       </nav>
+      <div className="mt-auto flex flex-col gap-1 border-t border-border pt-3">
+        <Form route="session.destroy">
+          <CsrfField />
+          <button
+            type="submit"
+            className="flex h-11 w-full items-center gap-2.5 rounded-md px-2.5 text-sm font-medium text-foreground hover:bg-accent max-lg:justify-center cursor-pointer"
+          >
+            <IconLogout className="size-5 shrink-0" />
+            <span className="sr-only lg:not-sr-only">Keluar</span>
+          </button>
+        </Form>
+      </div>
     </aside>
   )
 }

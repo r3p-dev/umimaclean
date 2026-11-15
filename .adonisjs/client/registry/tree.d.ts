@@ -11,14 +11,23 @@ export interface ApiDefinition {
     robots: typeof routes['seo.robots']
     sitemap: typeof routes['seo.sitemap']
   }
-  register: {
-    create: typeof routes['register.create']
-    store: typeof routes['register.store']
-  }
   session: {
     create: typeof routes['session.create']
     store: typeof routes['session.store']
+    createStaff: typeof routes['session.createStaff']
+    storeStaff: typeof routes['session.storeStaff']
     destroy: typeof routes['session.destroy']
   }
-  dashboard: typeof routes['dashboard']
+  register: {
+    create: typeof routes['register.create']
+  }
+  customer: {
+    home: typeof routes['customer.home']
+  }
+  staff: {
+    home: typeof routes['staff.home']
+  }
+  admin: {
+    home: typeof routes['admin.home']
+  }
 }

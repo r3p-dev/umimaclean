@@ -35,7 +35,7 @@ export function CustomerHeader({ active }: { active: CustomerSection }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-card">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-5 sm:h-16">
-        <Link route="dashboard" className="rounded-sm">
+        <Link route="customer.home" className="rounded-sm">
           <Logo />
         </Link>
         <nav aria-label="Navigasi akun" className="hidden h-full items-stretch gap-1 sm:flex">

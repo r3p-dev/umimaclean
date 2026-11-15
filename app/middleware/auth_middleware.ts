@@ -3,7 +3,7 @@ import type { NextFn } from '@adonisjs/core/types/http'
 import type { Authenticators } from '@adonisjs/auth/types'
 
 export default class AuthMiddleware {
-  redirectTo = '/login'
+  redirectTo = '/masuk'
 
   async handle(
     ctx: HttpContext,

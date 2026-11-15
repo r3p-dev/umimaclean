@@ -159,14 +159,15 @@ Rules for every account, whatever the role.
 
 ## 11. Outside services
 
-| Service              | Used for                                   | Data sent                                        |
-| -------------------- | ------------------------------------------ | ------------------------------------------------ |
-| Fonnte               | WhatsApp messages and OTP                  | Phone number, message text                       |
-| Midtrans Core API    | QRIS charge, status, cancel, notifications | Order reference, amount, customer name and phone |
-| Cloudflare Turnstile | Bot check on public forms                  | The Turnstile token and client IP                |
-| OSRM (self-hosted)   | Route lines, distance, queue order         | Nothing leaves our servers                       |
+| Service              | Used for                                   | Data sent                                              |
+| -------------------- | ------------------------------------------ | ------------------------------------------------------ |
+| Fonnte               | WhatsApp messages and OTP                  | Phone number, message text                             |
+| Midtrans Core API    | QRIS charge, status, cancel, notifications | Order reference, amount, customer name and phone       |
+| Cloudflare Turnstile | Bot check on public forms                  | The Turnstile token and client IP                      |
+| OSRM (self-hosted)   | Route lines, distance, queue order         | Nothing leaves our servers                             |
+| Google Maps / Waze   | Navigation, opened by staff on their phone | Destination coordinates only (no name, phone or order) |
 
-The privacy page lists these. No other outside service receives personal data.
+The privacy page lists these. No other outside service receives personal data; the navigation apps receive only a destination point.
 
 ## 12. Data (summary)
 

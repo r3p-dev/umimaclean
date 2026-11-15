@@ -9,8 +9,10 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M0   | –       | Spikes and plan                                | done                  | 8     |
 | M1a  | –       | Conventions across the existing code           | done                  | 8     |
 | M1b  | –       | Foundation and look                            | done                  | 10    |
-| M1c  | 0.1.0   | Landing, legal pages, SEO                      | done, awaiting review | 10    |
-| M2   | 0.2.0   | Accounts                                       | not started           | 24    |
+| M1c  | 0.1.0   | Landing, legal pages, SEO                      | done                  | 10    |
+| M2a  | –       | Accounts: phone login, role redirects, seeders | in progress           | 10    |
+| M2b  | –       | Accounts: register, OTP, forgot password       | not started           | 8     |
+| M2c  | 0.2.0   | Accounts: profile, security, rate limits       | not started           | 6     |
 | M3   | 0.3.0   | Services, service areas, store settings        | not started           | 16    |
 | M4   | 0.4.0   | Addresses and maps                             | not started           | 20    |
 | M5a  | 0.5.0   | Online ordering: slots, new order, confirm     | not started           | 14    |
@@ -78,22 +80,47 @@ Acceptance criteria:
 - GUEST-3 titles, descriptions and Open Graph on public pages; `/sitemap.xml` and `/robots.txt` list public pages only.
 - NFR-2: AA contrast checked automatically in the browser tests (tool to be approved, see the M1b report).
 
-## M2 (0.2.0): Accounts
+## M2a (checkpoint of 0.2.0): Phone-number accounts, sign-in and sign-out per role, seeders
 
-Replace the starter's email login with phone + password. GUEST-10, GUEST-11, GUEST-12, STAFF-1 (sign-in part), ACC-1…ACC-5, CUST-12, CUST-13 (without walk-in linking), OWN-13 (OTP over WhatsApp with the log driver), Turnstile, role redirects, empty home pages per role, the first owner account (ace command or seeder).
+Replace the starter's email login with phone + password accounts. GUEST-11, STAFF-1 (sign-in part), ACC-1 (normalization and masking), ACC-3 (credentials check, remember-me, inactive accounts refused, activity log on staff/owner sign-in), role redirects, empty home pages per role, the first owner account and demo seeders (`SETUP.md` updated with `db:seed`), and Bouncer authorization across routes.
 
 Acceptance criteria:
 
-- ACC-1: one phone rule normalizes every phone input to `62…`; phones masked in logs.
-- GUEST-10: sign-up with Turnstile; the account exists only after the OTP; pending data only in the database session; an existing number is refused.
-- ACC-2: OTP of 6 digits, 5 minutes, 5 wrong tries, 60 s resend, 5 sends per number and 20 per IP per hour, stored as a keyed hash, compared in constant time, tied to its purpose; sent through `FonnteGateway` (log driver without a token).
-- GUEST-11, STAFF-1, ACC-3: `/masuk` accepts only customers, `/staf/masuk` only staff and owner (each pointing the other way); "Ingat saya" for 180 days; rate limits per number and per IP; the single wrong-credentials message; inactive accounts refused; staff sign-in updates last-seen and writes an activity log entry (the `activity_logs` table is created here).
-- GUEST-12, ACC-5: forgot password never reveals whether a number exists; a reset signs out every other device.
-- ACC-4, CUST-12, OWN-13, STAFF-16 (profile part): change password (current required, rate limited), active device count, sign out other devices, change name.
-- CUST-13 (without walk-in linking): phone change through an OTP to the new number; a taken number is refused; other devices signed out.
-- Role redirects after sign-in; empty home pages for customer, staff and owner; the first owner account from a seeder (`ADMIN_PHONE` in production); seed data with one owner and two staff accounts; demo accounts printed by the seeder.
-- All validation messages in Indonesian in `start/validator.ts` (CONVENTIONS §8); the starter's email sign-up and sign-in and its `AuthService` are replaced.
-- `docs/ARCHITECTURE.md` §1.2 rules 1–4 and 7 covered by tests (trusted proxy IP, Bouncer on every route, rate limits, OTP storage).
+- ACC-1: one phone rule normalizes every phone input to `62…`; phone masking helper masks full numbers in logs.
+- Schema: `users` table uses phone instead of email, `role` (`customer`, `staff`, `admin`), `is_active`, and `last_seen_at`. `remember_me_tokens` and `activity_logs` tables created; `database/schema.ts` regenerated from migrations.
+- GUEST-11, ACC-3: `/masuk` accepts only customers; staff and owner accounts are pointed to `/staf/masuk`. "Ingat saya" for 180 days via remember-me tokens. Generic wrong-credentials message ("Nomor WhatsApp atau kata sandi salah."). Inactive accounts refused with clear Indonesian message.
+- STAFF-1, ACC-3: `/staf/masuk` accepts only staff and owner (admin); customer accounts are pointed to `/masuk`. Successful sign-in updates `last_seen_at` and appends an entry to `activity_logs`.
+- Role redirects after sign-in: customer lands on `/beranda`, staff on `/staf`, owner on `/admin`.
+- Sign out (`POST /keluar`): terminates session and remember-me token, redirects to `/masuk`.
+- Empty home pages: customer (`/beranda`), staff (`/staf`), and owner (`/admin`) using their respective templates (`CustomerLayout`, `StaffLayout`, `OwnerLayout`), with zero axe violations and proper mobile/desktop responsive design.
+- Bouncer authorization (`app/abilities/main.ts`): functional tests prove that every role is refused where it doesn't belong (guest vs customer vs staff vs owner).
+- Seed data (`database/seeders/`): one owner (`081200000001`), two staff (`081200000002`, `081200000003`), sample customers; demo accounts printed to console. `docs/SETUP.md` includes `node ace db:seed` again in Step 4.
+- All validation messages in Indonesian in `start/validator.ts` (CONVENTIONS §8).
+- Evidence in `docs/evidence/M2a/EVIDENCE.md` with screenshots at 360, 390, and 1440 px, axe audit, and functional tests.
+
+## M2b (checkpoint of 0.2.0): Registration, WhatsApp OTP, password reset, Turnstile
+
+GUEST-10 (registration with Turnstile and WhatsApp OTP), GUEST-12 and ACC-5 (forgot password with WhatsApp OTP and signing out other devices), ACC-2 (OTP keyed hash, expiry, retry limits, FonnteGateway log driver), and database session store for pending registration data.
+
+Acceptance criteria:
+
+- ACC-2: OTP of 6 digits, 5 minutes validity, 5 wrong attempts limit, 60 s resend cooldown, at most 5 sends per number and 20 per IP per hour; stored only as keyed hash, compared in constant time, tied to purpose (`register`, `reset_password`). Sent through `FonnteGateway` (log driver outside production).
+- GUEST-10: register (`/daftar`) with name, WhatsApp number, password + confirmation, terms checkbox, and Turnstile; pending data kept in server database session; account created only after OTP confirmation on `/verifikasi`; existing numbers refused.
+- GUEST-12, ACC-5: forgot password (`/lupa-kata-sandi` → `/verifikasi` → `/kata-sandi-baru`); response never reveals if number exists; successful reset invalidates other active device sessions and tokens.
+- Evidence in `docs/evidence/M2b/EVIDENCE.md` with screenshots, axe audit, and tests.
+
+## M2c (0.2.0): Profile, account security, phone change, rate limits
+
+ACC-4, CUST-12, OWN-13, STAFF-16 (profile part): change password, device count, sign out other devices, change name; CUST-13 phone change via OTP; rate limits on sign-in and public endpoints (`@adonisjs/limiter`); ends with version 0.2.0.
+
+Acceptance criteria:
+
+- ACC-4, CUST-12, OWN-13, STAFF-16: view profile, change name, change password (current password required, rate limited), view active session count, sign out other devices.
+- CUST-13: phone change through OTP to new number; already registered number refused; signs out other devices upon success.
+- Rate limits: sign-in attempts per phone and per IP, OTP requests per IP, password change attempts.
+- Trusted proxy configuration (`proxy-addr`, `http.trustProxy`).
+- Version bump to 0.2.0 (`package.json`, `package-lock.json`, `CHANGELOG.md`).
+- Evidence in `docs/evidence/M2c/EVIDENCE.md`.
 
 ## M3 (0.3.0): Services, service areas, store settings
 

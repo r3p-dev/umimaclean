@@ -11,7 +11,7 @@ export default function FormField({
 }: {
   id: string
   label: string
-  type?: 'text' | 'email' | 'password'
+  type?: 'text' | 'email' | 'password' | 'tel'
   autoComplete?: string
   description?: string
   error?: string

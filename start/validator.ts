@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { VineDate } from '@vinejs/vine'
+import vine, { SimpleMessagesProvider, VineDate } from '@vinejs/vine'
 
 declare module '@vinejs/vine/types' {
   interface VineGlobalTransforms {
@@ -7,5 +7,19 @@ declare module '@vinejs/vine/types' {
   }
 }
 
-// Validated dates become Luxon DateTime values, the type Lucid models use.
 VineDate.transform((value) => DateTime.fromJSDate(value))
+
+vine.messagesProvider = new SimpleMessagesProvider({
+  'required': 'Bagian ini wajib diisi.',
+  'string': 'Bagian ini harus berupa teks.',
+  'boolean': 'Bagian ini harus bernilai ya atau tidak.',
+  'email': 'Format email tidak valid.',
+  'minLength': 'Minimal {{ min }} karakter.',
+  'maxLength': 'Maksimal {{ max }} karakter.',
+  'confirmed': 'Konfirmasi {{ field }} tidak cocok.',
+  'database.unique': '{{ field }} sudah terdaftar.',
+  'database.exists': '{{ field }} tidak ditemukan.',
+  'phone.required': 'Nomor WhatsApp wajib diisi.',
+  'password.required': 'Kata sandi wajib diisi.',
+  'fullName.required': 'Nama lengkap wajib diisi.',
+})

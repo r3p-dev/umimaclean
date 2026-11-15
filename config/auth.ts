@@ -7,7 +7,8 @@ const authConfig = defineConfig({
 
   guards: {
     web: sessionGuard({
-      useRememberMeTokens: false,
+      useRememberMeTokens: true,
+      rememberMeTokensAge: '180d',
 
       provider: sessionUserProvider({
         model: () => import('#models/user'),

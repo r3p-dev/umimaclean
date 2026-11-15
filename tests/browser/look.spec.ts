@@ -1,23 +1,25 @@
 import { test } from '@japa/runner'
 import { AxeBuilder } from '@axe-core/playwright'
+import testUtils from '@adonisjs/core/services/test_utils'
+import User from '#models/user'
 
-const PAGES = [
+const PUBLIC_PAGES = [
   '/',
   '/syarat',
   '/privasi',
-  '/login',
-  '/signup',
-  '/_preview/staf',
-  '/_preview/admin',
+  '/masuk',
+  '/staf/masuk',
   '/_preview/alur',
   '/_preview/cetak',
   '/_preview/404',
   '/_preview/500',
 ]
 
-test.group('Look and feel', () => {
+test.group('Look and feel', (group) => {
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
+
   test('{$self} loads nothing from another host, in Indonesian, with one main heading')
-    .with(PAGES)
+    .with(PUBLIC_PAGES)
     .run(async ({ visit, browserContext, assert }, path) => {
       const outsideRequests: string[] = []
       await browserContext.route('**/*', (route) => {
@@ -48,7 +50,7 @@ test.group('Look and feel', () => {
   })
 
   test('the first Tab press shows a visible focus ring', async ({ visit, assert }) => {
-    const page = await visit('/login')
+    const page = await visit('/masuk')
     await page.waitForLoadState('networkidle')
     await page.keyboard.press('Tab')
 
@@ -63,7 +65,7 @@ test.group('Look and feel', () => {
   })
 
   test('{$self} has no WCAG 2.1 AA violations (axe)')
-    .with(['/', '/syarat', '/privasi', '/login', '/signup', '/_preview/404', '/_preview/500'])
+    .with(['/', '/syarat', '/privasi', '/masuk', '/staf/masuk', '/_preview/404', '/_preview/500'])
     .run(async ({ visit, assert }, path) => {
       const page = await visit(path)
       await page.waitForLoadState('networkidle')
@@ -78,10 +80,72 @@ test.group('Look and feel', () => {
       assert.deepEqual(violations, [])
     })
 
+  test('authenticated page {$self} has no WCAG 2.1 AA violations (axe)')
+    .with([
+      { role: 'customer', path: '/beranda' },
+      { role: 'staff', path: '/staf' },
+      { role: 'admin', path: '/admin' },
+    ] as const)
+    .run(async ({ visit, browserContext, assert }, item) => {
+      const user = await User.create({
+        fullName: `User ${item.role}`,
+        phone:
+          item.role === 'customer'
+            ? '6281200000010'
+            : item.role === 'staff'
+              ? '6281200000003'
+              : '6281200000001',
+        password: 'password123',
+        role: item.role,
+        isActive: true,
+      })
+
+      await browserContext.loginAs(user)
+      const page = await visit(item.path)
+      await page.waitForLoadState('networkidle')
+
+      const results = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze()
+
+      const violations = results.violations.map(
+        (violation) => `${violation.id}: ${violation.nodes.map((node) => node.target).join(' | ')}`
+      )
+      assert.deepEqual(violations, [])
+    })
+
   test('{$self} does not scroll sideways at 360 px')
-    .with(PAGES)
+    .with(PUBLIC_PAGES)
     .run(async ({ visit, assert }, path) => {
       const page = await visit(path)
+      await page.setViewportSize({ width: 360, height: 780 })
+      await page.waitForLoadState('networkidle')
+
+      assert.isAtMost(Number(await page.evaluate('document.documentElement.scrollWidth')), 360)
+    })
+
+  test('authenticated page {$self} does not scroll sideways at 360 px')
+    .with([
+      { role: 'customer', path: '/beranda' },
+      { role: 'staff', path: '/staf' },
+      { role: 'admin', path: '/admin' },
+    ] as const)
+    .run(async ({ visit, browserContext, assert }, item) => {
+      const user = await User.create({
+        fullName: `User ${item.role}`,
+        phone:
+          item.role === 'customer'
+            ? '6281200000010'
+            : item.role === 'staff'
+              ? '6281200000003'
+              : '6281200000001',
+        password: 'password123',
+        role: item.role,
+        isActive: true,
+      })
+
+      await browserContext.loginAs(user)
+      const page = await visit(item.path)
       await page.setViewportSize({ width: 360, height: 780 })
       await page.waitForLoadState('networkidle')
 

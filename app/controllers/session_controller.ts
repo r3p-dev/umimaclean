@@ -1,26 +1,77 @@
 import { inject } from '@adonisjs/core'
-import AuthService from '#services/auth_service'
+import AccountService, {
+  InactiveAccountException,
+  RoleMismatchException,
+} from '#services/account_service'
 import { createSessionValidator } from '#validators/auth'
 import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class SessionController {
-  constructor(protected authService: AuthService) {}
+  constructor(protected accountService: AccountService) {}
 
   async create({ inertia }: HttpContext) {
     return inertia.render('auth/login', {})
   }
 
-  async store({ request, auth, response }: HttpContext) {
+  async store({ request, auth, response, session }: HttpContext) {
     const payload = await request.validateUsing(createSessionValidator)
-    const user = await this.authService.verifyUserCredentials(payload)
 
-    await auth.use('web').login(user)
-    response.redirect().toRoute('dashboard')
+    try {
+      const user = await this.accountService.verifyCustomerCredentials(payload)
+      await auth.use('web').login(user, !!payload.rememberMe)
+      return response.redirect().toRoute('customer.home')
+    } catch (error) {
+      const message =
+        error instanceof InactiveAccountException || error instanceof RoleMismatchException
+          ? error.message
+          : 'Nomor WhatsApp atau kata sandi salah.'
+
+      session.flash({
+        errors: { phone: [message] },
+        inputErrorsBag: { phone: [message] },
+        errorsBag: { phone: message },
+      })
+      session.flashExcept(['_csrf', '_method', 'password', 'password_confirmation'])
+      return response.redirect().toRoute('session.create')
+    }
+  }
+
+  async createStaff({ inertia }: HttpContext) {
+    return inertia.render('auth/staff_login', {})
+  }
+
+  async storeStaff({ request, auth, response, session }: HttpContext) {
+    const payload = await request.validateUsing(createSessionValidator)
+
+    try {
+      const user = await this.accountService.verifyStaffCredentials(payload)
+      await auth.use('web').login(user, !!payload.rememberMe)
+      await this.accountService.logStaffSignIn(user)
+
+      if (user.role === 'admin') {
+        return response.redirect().toRoute('admin.home')
+      }
+
+      return response.redirect().toRoute('staff.home')
+    } catch (error) {
+      const message =
+        error instanceof InactiveAccountException || error instanceof RoleMismatchException
+          ? error.message
+          : 'Nomor WhatsApp atau kata sandi salah.'
+
+      session.flash({
+        errors: { phone: [message] },
+        inputErrorsBag: { phone: [message] },
+        errorsBag: { phone: message },
+      })
+      session.flashExcept(['_csrf', '_method', 'password', 'password_confirmation'])
+      return response.redirect().toRoute('session.createStaff')
+    }
   }
 
   async destroy({ auth, response }: HttpContext) {
     await auth.use('web').logout()
-    response.redirect().toRoute('session.create')
+    return response.redirect().toRoute('session.create')
   }
 }

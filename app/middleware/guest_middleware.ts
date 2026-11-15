@@ -3,8 +3,6 @@ import type { NextFn } from '@adonisjs/core/types/http'
 import type { Authenticators } from '@adonisjs/auth/types'
 
 export default class GuestMiddleware {
-  redirectTo = '/'
-
   async handle(
     ctx: HttpContext,
     next: NextFn,
@@ -13,7 +11,14 @@ export default class GuestMiddleware {
     for (const guard of options.guards || [ctx.auth.defaultGuard]) {
       if (await ctx.auth.use(guard).check()) {
         ctx.session.reflash()
-        return ctx.response.redirect(this.redirectTo, true)
+        const user = ctx.auth.use(guard).user
+        if (user?.role === 'admin') {
+          return ctx.response.redirect('/admin', true)
+        }
+        if (user?.role === 'staff') {
+          return ctx.response.redirect('/staf', true)
+        }
+        return ctx.response.redirect('/beranda', true)
       }
     }
 

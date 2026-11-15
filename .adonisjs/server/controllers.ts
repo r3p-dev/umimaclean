@@ -4,7 +4,6 @@
  */
 
 export const controllers = {
-  Register: () => import('#controllers/register_controller'),
   Seo: () => import('#controllers/seo_controller'),
   Session: () => import('#controllers/session_controller'),
 }

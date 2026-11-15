@@ -17,9 +17,13 @@ router.use([
   () => import('@adonisjs/shield/shield_middleware'),
   () => import('@adonisjs/auth/initialize_auth_middleware'),
   () => import('#middleware/silent_auth_middleware'),
+  () => import('#middleware/initialize_bouncer_middleware'),
 ])
 
 export const middleware = router.named({
   guest: () => import('#middleware/guest_middleware'),
   auth: () => import('#middleware/auth_middleware'),
+  customer: () => import('#middleware/customer_middleware'),
+  staff: () => import('#middleware/staff_middleware'),
+  admin: () => import('#middleware/admin_middleware'),
 })

@@ -59,13 +59,14 @@ _(Alternatively, via host psql: `PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p
 
 This creates `umimaclean_dev` and `umimaclean_dev_test` from `template0` and enables `postgis`, `pg_trgm`, and `unaccent`.
 
-### Step 4: Run migrations
+### Step 4: Run migrations and seed demo data
 
 ```sh
 node ace migration:run
+node ace db:seed
 ```
 
-_(Note: There are no seeders yet; sample seed data will be added in a future milestone. Do not run `node ace db:seed`)._
+This creates the application tables (`users`, `remember_me_tokens`, `activity_logs`) and seeds demo accounts (one owner, two staff, sample customers). The seeder prints the demo credentials to the console upon completion.
 
 ### Step 5: (Optional) Map data and routing setup
 

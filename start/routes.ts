@@ -11,27 +11,43 @@ router.get('/sitemap.xml', [controllers.Seo, 'sitemap'])
 
 router
   .group(() => {
-    router.get('signup', [controllers.Register, 'create'])
-    router.post('signup', [controllers.Register, 'store'])
+    router.get('/masuk', [controllers.Session, 'create']).as('session.create')
+    router.post('/masuk', [controllers.Session, 'store']).as('session.store')
 
-    router.get('login', [controllers.Session, 'create'])
-    router.post('login', [controllers.Session, 'store'])
+    router.get('/staf/masuk', [controllers.Session, 'createStaff']).as('session.createStaff')
+    router.post('/staf/masuk', [controllers.Session, 'storeStaff']).as('session.storeStaff')
+
+    router.on('/daftar').redirect('session.create').as('register.create')
   })
   .use(middleware.guest())
 
 router
-  .group(() => {
-    router.on('/dashboard').renderInertia('customer/dashboard', {}).as('dashboard')
-    router.post('logout', [controllers.Session, 'destroy'])
-  })
+  .post('/keluar', [controllers.Session, 'destroy'])
+  .as('session.destroy')
   .use(middleware.auth())
+
+router
+  .group(() => {
+    router.on('/beranda').renderInertia('customer/dashboard', {}).as('customer.home')
+  })
+  .use(middleware.customer())
+
+router
+  .group(() => {
+    router.on('/staf').renderInertia('staff/dashboard', {}).as('staff.home')
+  })
+  .use(middleware.staff())
+
+router
+  .group(() => {
+    router.on('/admin').renderInertia('admin/dashboard', {}).as('admin.home')
+  })
+  .use(middleware.admin())
 
 // Previews of the page templates and error pages that have no real page yet; never in production.
 if (!app.inProduction) {
   router
     .group(() => {
-      router.on('/staf').renderInertia('staff/template_preview', {})
-      router.on('/admin').renderInertia('admin/template_preview', {})
       router.on('/alur').renderInertia('customer/flow_template_preview', {})
       router.on('/cetak').renderInertia('staff/print_template_preview', {})
       router.on('/404').renderInertia('errors/not_found', {})
