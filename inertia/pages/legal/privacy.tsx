@@ -48,12 +48,15 @@ export default function Privacy() {
             Cloudflare Turnstile, untuk pemeriksaan anti-bot di formulir: token pemeriksaan dan
             alamat IP.
           </li>
+          <li>
+            Google Maps atau Waze, saat staf membuka navigasi di ponselnya: hanya menerima titik
+            koordinat tujuan, tidak pernah menerima nama, nomor telepon, atau pesanan Anda.
+          </li>
         </LegalList>
         <p>
           Peta, pencarian alamat, pengecekan area layanan, serta rute dan perkiraan jarak untuk
           kurir diproses di server kami sendiri dengan data OpenStreetMap (© kontributor
-          OpenStreetMap). Tautan navigasi eksternal (Google Maps atau Waze) di aplikasi staf kurir
-          hanya membuka titik koordinat tujuan secara anonim tanpa data identitas atau pesanan Anda.
+          OpenStreetMap). Data tersebut tidak dikirim ke pihak lain.
         </p>
       </LegalSection>
       <LegalSection title="Hak Anda">
