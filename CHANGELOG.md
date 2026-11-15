@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-15
+
+### Fixed
+
+- Recorded "Yang kami cuci" item photos honestly in `docs/DEPENDENCIES.md` §4 and D39 as Unsplash stock photos under the Unsplash License (Peter Olexa for shoes, source page not recorded for bag and helmet); removed duplicate photo row in DEPENDENCIES and duplicate D43 row in ARCHITECTURE.
+- Removed all mentions of archive, thesis, or earlier implementations across documentation (`docs/ARCHITECTURE.md`, `docs/DEPENDENCIES.md`, `CHANGELOG.md`).
+- Clarified privacy wording on `/privasi` (GUEST-2) by listing Google Maps/Waze as external services receiving only destination coordinates, without customer PII.
+- Preserved shadcn `Card` styling and semantic slots (`CardContent`, `CardFooter`) in `reviews_section.tsx`; used semantic `<figure>` and `<figcaption>` for `laundry_items.tsx`; locked convention against class-by-class styling cancellation in `docs/CONVENTIONS.md` §9.
+- Cleaned reviews carousel: replaced arbitrary `basis-[84%]` with scale value `basis-5/6`, added braces to `if`, removed redundant `queueMicrotask`, and stripped what-comments.
+- Upgraded ESLint rule `tailwind-canonical-classes` from `'warn'` to `'error'` in `eslint.config.js` to ensure zero warnings.
+- Fixed `docs/SETUP.md` for clean environments (removed seed step, added `node ace generate:key`, `playwright install chromium`, and Protomaps build selection guidance); consolidated map commands in SETUP.md and linked from ARCHITECTURE §6.
+
 ## [0.1.1] - 2026-11-14
 
 ### Added
@@ -15,11 +27,11 @@ All notable changes to this project are documented here. The format follows
 - Locked rule in `docs/CONVENTIONS.md` mandating the use of official shadcn/ui primitives over bespoke UI hooks.
 - `eslint-plugin-tailwind-canonical-classes` linter rule to enforce canonical Tailwind CSS v4 class names across Inertia components.
 - Mobile reviews carousel powered by shadcn `Carousel` with pagination indicators and touch-friendly controls.
-- Original store asset photos for the "Yang kami cuci" section (shoes, bag, helmet in WebP and JPEG, EXIF stripped).
+- Item photos for the "Yang kami cuci" section (shoes, bag, helmet from Unsplash in WebP and JPEG, EXIF stripped).
 
 ### Changed
 
-- Updated D39 in `docs/ARCHITECTURE.md` to document the use of original archive store photos as internal assets for "Yang kami cuci".
+- Updated D39 in `docs/ARCHITECTURE.md` to document the use of Unsplash stock photos under the Unsplash License for "Yang kami cuci".
 - Refactored `reviews_section.tsx`, `laundry_items.tsx`, and `hero.tsx` to compose official shadcn/ui primitives (`Carousel`, `Card`, `Badge`).
 - Revised privacy policy on `/privasi` to reflect that external navigation links (Google Maps and Waze) open anonymous coordinates without transmitting customer PII.
 
