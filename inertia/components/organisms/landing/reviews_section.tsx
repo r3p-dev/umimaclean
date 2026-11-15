@@ -2,7 +2,7 @@ import * as React from 'react'
 import { IconExternalLink } from '@tabler/icons-react'
 import { cn } from 'cn'
 import Stars from '~/components/atoms/stars'
-import { Card } from '~/components/ui/card'
+import { Card, CardContent, CardFooter } from '~/components/ui/card'
 import {
   Carousel,
   CarouselContent,
@@ -25,10 +25,12 @@ function initialsOf(name: string) {
 
 function ReviewCard({ review }: { review: (typeof GOOGLE_REVIEWS)[number] }) {
   return (
-    <Card className="flex h-full flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-none ring-0">
-      <Stars rating={review.rating} />
-      <blockquote className="text-base text-pretty">“{review.text}”</blockquote>
-      <div className="mt-auto flex items-center gap-3">
+    <Card className="h-full justify-between">
+      <CardContent>
+        <Stars rating={review.rating} />
+        <blockquote className="text-base text-pretty">“{review.text}”</blockquote>
+      </CardContent>
+      <CardFooter className="mt-auto gap-3">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
           {initialsOf(review.name)}
         </span>
@@ -45,7 +47,7 @@ function ReviewCard({ review }: { review: (typeof GOOGLE_REVIEWS)[number] }) {
         >
           <IconExternalLink className="size-4.5" />
         </a>
-      </div>
+      </CardFooter>
     </Card>
   )
 }
@@ -57,14 +59,16 @@ export default function ReviewsSection() {
   const [count, setCount] = React.useState(0)
 
   React.useEffect(() => {
-    if (!api) return
+    if (!api) {
+      return
+    }
 
     const onSelect = () => {
       setCurrent(api.selectedScrollSnap())
       setCount(api.scrollSnapList().length)
     }
 
-    queueMicrotask(onSelect)
+    onSelect()
     api.on('select', onSelect)
     api.on('reInit', onSelect)
 
@@ -102,7 +106,6 @@ export default function ReviewsSection() {
         </a>
       </div>
 
-      {/* Mobile view: official shadcn Carousel */}
       <div className="sm:hidden">
         <Carousel
           setApi={setApi}
@@ -114,7 +117,7 @@ export default function ReviewsSection() {
             {GOOGLE_REVIEWS.map((review, i) => (
               <CarouselItem
                 key={review.url}
-                className="basis-[84%] pl-3"
+                className="basis-5/6 pl-3"
                 aria-label={`Ulasan ${i + 1} dari ${GOOGLE_REVIEWS.length}`}
               >
                 <ReviewCard review={review} />
@@ -149,7 +152,6 @@ export default function ReviewsSection() {
         </Carousel>
       </div>
 
-      {/* Desktop view: multi-column masonry */}
       <ul
         aria-label="Daftar ulasan pelanggan"
         className="hidden sm:block sm:columns-2 sm:gap-4 lg:columns-3"

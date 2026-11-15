@@ -1,5 +1,4 @@
 import Photo from '~/components/atoms/photo'
-import { Card } from '~/components/ui/card'
 
 const ITEMS = [
   {
@@ -29,7 +28,7 @@ export default function LaundryItems() {
       <ul className="grid grid-cols-3 gap-3">
         {ITEMS.map((item) => (
           <li key={item.name}>
-            <Card className="gap-2 border-0 bg-transparent p-0 shadow-none ring-0">
+            <figure className="flex flex-col gap-2">
               <Photo
                 src={item.src}
                 widths={[360, 720]}
@@ -38,11 +37,11 @@ export default function LaundryItems() {
                 isLazy
                 className="aspect-square w-full rounded-xl object-cover"
               />
-              <span className="flex flex-col gap-0.5">
+              <figcaption className="flex flex-col gap-0.5">
                 <span className="text-base font-semibold">{item.name}</span>
                 <span className="text-sm text-muted-foreground">{item.description}</span>
-              </span>
-            </Card>
+              </figcaption>
+            </figure>
           </li>
         ))}
       </ul>
