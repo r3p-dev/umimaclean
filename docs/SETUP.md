@@ -23,14 +23,16 @@ Ensure your host system has the following tools installed:
 git clone <repository-url> umimaclean
 cd umimaclean
 npm install
+npx playwright install chromium
 ```
 
 ### Step 2: Environment configuration
 
-Copy the template environment file:
+Copy the template environment file and generate the application key:
 
 ```sh
 cp .env.example .env
+node ace generate:key
 ```
 
 Ensure the database connection variables in `.env` match your local PostgreSQL server:
@@ -57,12 +59,13 @@ _(Alternatively, via host psql: `PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p
 
 This creates `umimaclean_dev` and `umimaclean_dev_test` from `template0` and enables `postgis`, `pg_trgm`, and `unaccent`.
 
-### Step 4: Run migrations and seed data
+### Step 4: Run migrations
 
 ```sh
 node ace migration:run
-node ace db:seed
 ```
+
+_(Note: There are no seeders yet; sample seed data will be added in a future milestone. Do not run `node ace db:seed`)._
 
 ### Step 5: (Optional) Map data and routing setup
 
@@ -102,13 +105,19 @@ For features involving spatial lookups, routing, and interactive maps:
    podman compose --profile tools run --rm -T osrm-build osrm-contract /data/bandung-raya.osrm
    rm storage/osrm/bandung-raya.osm.pbf
    podman compose up -d osrm
+   curl -s --retry 10 --retry-connrefused 'http://127.0.0.1:5000/nearest/v1/driving/107.6186,-6.9026'
    ```
 
 5. **Download base map PMTiles**:
+
+   Protomaps publishes daily builds at `https://build.protomaps.com/<YYYYMMDD>.pmtiles` (historical builds remain archived and accessible; metadata is listed at `https://build-metadata.protomaps.dev/builds.json`). To pick a build, ensure its tileset major version matches `@protomaps/basemaps` (v4.x). For example, using build `20261112.pmtiles`:
+
    ```sh
    mkdir -p public/tiles
    podman compose --profile tools run --rm -T pmtiles extract https://build.protomaps.com/20261112.pmtiles /out/bandung-raya-20261112.pmtiles --bbox=107.20,-7.37,107.99,-6.76
    ```
+
+   _(Optional verification: `podman compose --profile tools run --rm -T pmtiles show /out/bandung-raya-20261112.pmtiles`)_
 
 ### Step 6: Start development server
 
