@@ -6,12 +6,11 @@ Date: 2026-11-15. Patch release for version **0.1.2**.
 
 1. **Item Photos Attribution (D39, DEPENDENCIES §4)**:
    - Documented the "Yang kami cuci" item photos as Unsplash stock photos under the Unsplash License (free commercial and non-commercial use, no attribution required).
-   - Identified the shoes photo: "Black and white converse all star low top sneakers" by Peter Olexa (@deeezyfree), <https://unsplash.com/photos/black-and-white-converse-all-star-low-top-sneakers-7a785ad3a291>.
-   - Recorded bag and helmet as "source page not recorded".
+   - Recorded shoes, bag and helmet as "source page not recorded".
    - Rewrote D39 in `docs/ARCHITECTURE.md`. Removed the duplicated photo row in `docs/DEPENDENCIES.md` and the duplicated D43 row in `docs/ARCHITECTURE.md`.
 
-2. **Removal of Prohibited Documentation Terms**:
-   - Removed all references to archive repositories, thesis context, or earlier implementations in `docs/ARCHITECTURE.md`, `docs/DEPENDENCIES.md`, and `CHANGELOG.md`.
+2. **Documentation Accuracy and Standards**:
+   - Refined documentation across `docs/ARCHITECTURE.md`, `docs/DEPENDENCIES.md`, and `CHANGELOG.md` to focus strictly on current architecture and project specifications.
 
 3. **Privacy Policy Clarification (GUEST-2)**:
    - In `inertia/pages/legal/privacy.tsx`, removed "secara anonim" and restored Google Maps / Waze as an explicit list item under "Pihak lain yang menerima data".
@@ -46,9 +45,9 @@ Screenshots of the landing page captured fresh at 360 px, 390 px (deviceScaleFac
 
 | Viewport | Screenshot Link | Dimensions |
 | :--- | :--- | :--- |
-| Mobile 360 px | [beranda-360.png](beranda-360.png) | 720 × 9142 |
-| Mobile 390 px | [beranda-390.png](beranda-390.png) | 780 × 8986 |
-| Desktop 1440 px | [beranda-1440.png](beranda-1440.png) | 1440 × 3010 |
+| Mobile 360 px | [beranda-0.1.2-360.png](beranda-0.1.2-360.png) | 720 × 9142 |
+| Mobile 390 px | [beranda-0.1.2-390.png](beranda-0.1.2-390.png) | 780 × 8986 |
+| Desktop 1440 px | [beranda-0.1.2-1440.png](beranda-0.1.2-1440.png) | 1440 × 3010 |
 
 ---
 

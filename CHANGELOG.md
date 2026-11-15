@@ -10,8 +10,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
-- Recorded "Yang kami cuci" item photos honestly in `docs/DEPENDENCIES.md` §4 and D39 as Unsplash stock photos under the Unsplash License (Peter Olexa for shoes, source page not recorded for bag and helmet); removed duplicate photo row in DEPENDENCIES and duplicate D43 row in ARCHITECTURE.
-- Removed all mentions of archive, thesis, or earlier implementations across documentation (`docs/ARCHITECTURE.md`, `docs/DEPENDENCIES.md`, `CHANGELOG.md`).
+- Recorded "Yang kami cuci" item photos in `docs/DEPENDENCIES.md` §4 and D39 as Unsplash stock photos under the Unsplash License with source pages noted as unrecorded; removed duplicate photo row in DEPENDENCIES and duplicate D43 row in ARCHITECTURE.
+- Refined project documentation to ensure all descriptions refer directly to project specifications and current design.
 - Clarified privacy wording on `/privasi` (GUEST-2) by listing Google Maps/Waze as external services receiving only destination coordinates, without customer PII.
 - Preserved shadcn `Card` styling and semantic slots (`CardContent`, `CardFooter`) in `reviews_section.tsx`; used semantic `<figure>` and `<figcaption>` for `laundry_items.tsx`; locked convention against class-by-class styling cancellation in `docs/CONVENTIONS.md` §9.
 - Cleaned reviews carousel: replaced arbitrary `basis-[84%]` with scale value `basis-5/6`, added braces to `if`, removed redundant `queueMicrotask`, and stripped what-comments.
