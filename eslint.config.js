@@ -13,7 +13,7 @@ export default configApp(
     },
     rules: {
       'tailwind-canonical-classes/tailwind-canonical-classes': [
-        'warn',
+        'error',
         { cssPath: './inertia/css/app.css' },
       ],
     },
