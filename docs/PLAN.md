@@ -12,7 +12,7 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M1c  | 0.1.0   | Landing, legal pages, SEO                      | done        | 10    |
 | M2a  | –       | Accounts: phone login, role redirects, seeders | done        | 10    |
 | M2b  | –       | Accounts: register, OTP, forgot password       | done        | 8     |
-| M2c  | 0.2.0   | Accounts: profile, security, rate limits       | not started | 6     |
+| M2c  | 0.2.0   | Accounts: profile, security, rate limits       | done        | 6     |
 | M3   | 0.3.0   | Services, service areas, store settings        | not started | 16    |
 | M4   | 0.4.0   | Addresses and maps                             | not started | 20    |
 | M5a  | 0.5.0   | Online ordering: slots, new order, confirm     | not started | 14    |
@@ -88,7 +88,7 @@ Acceptance criteria:
 
 - ACC-1: one phone rule normalizes every phone input to `62…`; phone masking helper masks full numbers in logs.
 - Schema: `users` table uses phone instead of email, `role` (`customer`, `staff`, `admin`), `is_active`, and `last_seen_at`. `remember_me_tokens` and `activity_logs` tables created; `database/schema.ts` regenerated from migrations.
-- GUEST-11, ACC-3: `/masuk` accepts only customers; staff and owner accounts are pointed to `/staf/masuk`. "Ingat saya" for 180 days via remember-me tokens. Generic wrong-credentials message ("Nomor WhatsApp atau kata sandi salah."). Inactive accounts refused with clear Indonesian message.
+- GUEST-11, ACC-3: `/masuk` accepts only customers; staff and owner accounts are pointed to `/staf/masuk`. "Ingat saya" for 180 days via remember-me tokens. Generic wrong-credentials message ("Nomor atau kata sandi salah."). Inactive accounts refused with clear Indonesian message.
 - STAFF-1, ACC-3: `/staf/masuk` accepts only staff and owner (admin); customer accounts are pointed to `/masuk`. Successful sign-in updates `last_seen_at` and appends an entry to `activity_logs`.
 - Role redirects after sign-in: customer lands on `/beranda`, staff on `/staf`, owner on `/admin`.
 - Sign out (`POST /keluar`): terminates session and remember-me token, redirects to `/masuk`.
@@ -111,14 +111,16 @@ Acceptance criteria:
 
 ## M2c (0.2.0): Profile, account security, phone change, rate limits
 
-ACC-4, CUST-12, OWN-13, STAFF-16 (profile part): change password, device count, sign out other devices, change name; CUST-13 phone change via OTP; rate limits on sign-in and public endpoints (`@adonisjs/limiter`); ends with version 0.2.0.
+ACC-4 on every profile, CUST-12 (customer profile and name), OWN-13, STAFF-16 (profile part only): change password, device count, sign out other devices; CUST-13 phone change via OTP (walk-in linking in M9); sign-in and password change rate limits (`@adonisjs/limiter`); trusted proxies; ends with version 0.2.0.
 
 Acceptance criteria:
 
-- ACC-4, CUST-12, OWN-13, STAFF-16: view profile, change name, change password (current password required, rate limited), view active session count, sign out other devices.
-- CUST-13: phone change through OTP to new number; already registered number refused; signs out other devices upon success.
-- Rate limits: sign-in attempts per phone and per IP, OTP requests per IP, password change attempts.
-- Trusted proxy configuration (`proxy-addr`, `http.trustProxy`).
+- CUST-12: the customer views the profile and changes the name. Staff and owner names are not editable here (the owner manages staff names, OWN-10).
+- ACC-4, CUST-12, OWN-13, STAFF-16: every profile changes the password (current password required), shows the number of active devices and signs out other devices, including their remember-me tokens.
+- CUST-13: phone change through an OTP to the new number (`change_phone`); a number used by another account is refused; success signs out every other device (ACC-5).
+- ACC-3: sign-in limited on failed attempts to 5 per number and 50 per IP per 15 minutes; a successful sign-in clears that number's counter. ACC-4: 5 wrong current passwords per account per 15 minutes. OTP limits stay as in M2b (ACC-2). A blocked attempt says how long to wait.
+- Trusted proxies (`TRUSTED_PROXIES`, `proxy-addr`, `http.trustProxy`): X-Forwarded-For honoured only from configured addresses, default loopback.
+- Navigation shows "Profil" for every role (interim staff placement until "Lainnya", D66).
 - Version bump to 0.2.0 (`package.json`, `package-lock.json`, `CHANGELOG.md`).
 - Evidence in `docs/evidence/M2c/EVIDENCE.md`.
 
@@ -224,7 +226,7 @@ Acceptance criteria:
 - STAFF-14, GUEST-8: counter payment by cash (received and change shown) or counter QRIS, only the switched-on methods; no payment link and no reminders.
 - GUEST-9, MSG-1.1: "order received" (with the amount paid and the order link) sent only after the counter payment.
 - STAFF-15: an unsent walk-in form survives a reload on that device.
-- GUEST-13, CUST-13: creating an account or changing to a number links that number's earlier unlinked walk-in orders. For account registration, this linking happens in `AccountService.createCustomer`, which is the single entry point for all customer creation paths.
+- GUEST-13, CUST-13: creating an account or changing to a number links that number's earlier unlinked walk-in orders. For account registration, this linking happens in `AccountService.createCustomer`, which is the single entry point for all customer creation paths; for a phone change, in `AccountService.changePhone`.
 
 ## M10a (checkpoint of 0.10.0): Owner area: orders, money, activity
 

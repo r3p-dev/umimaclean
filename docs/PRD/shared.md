@@ -140,8 +140,8 @@ Rules for every account, whatever the role.
 
 - **ACC-1** Phone numbers are normalized to `62…` everywhere, and masked in logs and in owner lists where the full number isn't needed.
 - **ACC-2** **OTP**: 6 digits, valid 5 minutes, dies after 5 wrong tries, resend after 60 s, at most 5 sends per number and 20 per IP per hour, stored only as a keyed hash, tied to one purpose (`register`, `reset_password`, `change_phone`).
-- **ACC-3** **Sign-in** with number + password and "Ingat saya" (remembered for 180 days), rate limited per number and per IP. Wrong credentials always show "Nomor atau kata sandi salah." Inactive accounts can't sign in.
-- **ACC-4** **Account security** on every profile: change password (current password required, rate limited), see the number of active devices, and **sign out other devices**.
+- **ACC-3** **Sign-in** with number + password and "Ingat saya" (remembered for 180 days), rate limited on failed attempts: 5 per number and 50 per IP per 15 minutes (mobile carriers share one IP among many customers); a successful sign-in clears that number's count. A blocked attempt says how long to wait. Wrong credentials always show "Nomor atau kata sandi salah." Inactive accounts can't sign in.
+- **ACC-4** **Account security** on every profile: change password (current password required; 5 wrong current passwords per account per 15 minutes, then a wait), see the number of active devices, and **sign out other devices** (their remembered sign-ins end too).
 - **ACC-5** A password reset or a phone change signs out every other device.
 
 ## 9. Photos (`PHOTO`)
