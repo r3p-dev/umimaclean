@@ -7,6 +7,18 @@ import { Role } from '#enums/role_enum'
 test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (group) => {
   group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
+  test('GET /masuk renders customer sign-in form', async ({ client }) => {
+    const response = await client.get('/masuk').withInertia()
+    response.assertStatus(200)
+    response.assertInertiaComponent('auth/login')
+  })
+
+  test('GET /staf/masuk renders staff sign-in form', async ({ client }) => {
+    const response = await client.get('/staf/masuk').withInertia()
+    response.assertStatus(200)
+    response.assertInertiaComponent('auth/staff_login')
+  })
+
   test('POST /masuk authenticates valid customer credentials and redirects to /beranda', async ({
     client,
   }) => {
@@ -248,8 +260,9 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
     guestAdmin.assertRedirectsTo('/staf/masuk')
 
     // 2. Customer
-    const custOnCustomer = await client.get('/beranda').loginAs(customer)
+    const custOnCustomer = await client.get('/beranda').loginAs(customer).withInertia()
     custOnCustomer.assertStatus(200)
+    custOnCustomer.assertInertiaComponent('customer/dashboard')
 
     const custOnStaff = await client.get('/staf').loginAs(customer)
     custOnStaff.assertStatus(403)
@@ -261,8 +274,9 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
     const staffOnCustomer = await client.get('/beranda').loginAs(staff)
     staffOnCustomer.assertStatus(403)
 
-    const staffOnStaff = await client.get('/staf').loginAs(staff)
+    const staffOnStaff = await client.get('/staf').loginAs(staff).withInertia()
     staffOnStaff.assertStatus(200)
+    staffOnStaff.assertInertiaComponent('staff/dashboard')
 
     const staffOnAdmin = await client.get('/admin').loginAs(staff)
     staffOnAdmin.assertStatus(403)
@@ -274,7 +288,8 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
     const adminOnStaff = await client.get('/staf').loginAs(admin)
     adminOnStaff.assertStatus(200)
 
-    const adminOnAdmin = await client.get('/admin').loginAs(admin)
+    const adminOnAdmin = await client.get('/admin').loginAs(admin).withInertia()
     adminOnAdmin.assertStatus(200)
+    adminOnAdmin.assertInertiaComponent('admin/dashboard')
   })
 })

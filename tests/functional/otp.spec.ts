@@ -7,6 +7,7 @@ import { OtpPurpose } from '#enums/otp_purpose_enum'
 import OtpCode, { OTP_MAX_PHONE_HOURLY } from '#models/otp_code'
 import OtpService, { OTP_INVALID_MESSAGE, OTP_LOCKED_MESSAGE } from '#services/otp_service'
 import { fakeWhatsApp } from '../helpers/fake_whatsapp_service.js'
+import { TEST_TURNSTILE_TOKEN } from '../helpers/fake_turnstile_gateway.js'
 import limiter from '@adonisjs/limiter/services/main'
 
 function makeMockSession(): Session {
@@ -43,10 +44,12 @@ test.group('OTP (ACC-2) Functional Tests', (group) => {
       },
     }
 
-    const response = await client.get('/verifikasi').withSession(sessionData)
+    const response = await client.get('/verifikasi').withInertia().withSession(sessionData)
     response.assertStatus(200)
-    response.assertTextIncludes('Verifikasi Nomor WhatsApp')
-    response.assertTextIncludes('62812****7890')
+    response.assertInertiaComponent('auth/otp')
+    response.assertInertiaPropsContains({
+      maskedPhone: '62812****7890',
+    })
   })
 
   test('POST /verifikasi validates code format (6 digits required)', async ({ client }) => {
@@ -194,7 +197,7 @@ test.group('OTP (ACC-2) Functional Tests', (group) => {
       .withSession(sessionData)
       .redirects(0)
       .withCsrfToken()
-      .form({ turnstile: 'valid_token' })
+      .form({ turnstile: TEST_TURNSTILE_TOKEN })
 
     response.assertStatus(302)
     response.assertHeader('location', '/verifikasi')

@@ -3,6 +3,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
 import { Role } from '#enums/role_enum'
 import { fakeWhatsApp } from '../helpers/fake_whatsapp_service.js'
+import { TEST_TURNSTILE_TOKEN } from '../helpers/fake_turnstile_gateway.js'
 import OtpCode from '#models/otp_code'
 
 test.group('Registration (GUEST-10)', (group) => {
@@ -12,11 +13,9 @@ test.group('Registration (GUEST-10)', (group) => {
   })
 
   test('GET /daftar renders registration form', async ({ client }) => {
-    const response = await client.get('/daftar')
+    const response = await client.get('/daftar').withInertia()
     response.assertStatus(200)
-    response.assertTextIncludes('Buat Akun Umima Clean')
-    response.assertTextIncludes('Syarat Layanan')
-    response.assertTextIncludes('Kebijakan Privasi')
+    response.assertInertiaComponent('auth/register')
   })
 
   test('POST /daftar refuses registration if phone number is already registered', async ({
@@ -41,7 +40,7 @@ test.group('Registration (GUEST-10)', (group) => {
         password: 'password123',
         passwordConfirmation: 'password123',
         terms: true,
-        turnstile: 'dummy_token',
+        turnstile: TEST_TURNSTILE_TOKEN,
       })
 
     response.assertStatus(302)
@@ -86,7 +85,7 @@ test.group('Registration (GUEST-10)', (group) => {
         password: 'password123',
         passwordConfirmation: 'password123',
         terms: false,
-        turnstile: 'dummy_token',
+        turnstile: TEST_TURNSTILE_TOKEN,
       })
 
     response.assertStatus(302)
@@ -108,7 +107,7 @@ test.group('Registration (GUEST-10)', (group) => {
         password: 'password123',
         passwordConfirmation: 'differentpassword',
         terms: true,
-        turnstile: 'dummy_token',
+        turnstile: TEST_TURNSTILE_TOKEN,
       })
 
     response.assertStatus(302)
@@ -130,7 +129,7 @@ test.group('Registration (GUEST-10)', (group) => {
       password: 'securepassword123',
       passwordConfirmation: 'securepassword123',
       terms: true,
-      turnstile: 'valid_token',
+      turnstile: TEST_TURNSTILE_TOKEN,
     })
 
     regResponse.assertStatus(302)

@@ -201,4 +201,98 @@ test.group('Authentication Browser Flow (M2a)', (group) => {
     assert.equal(user!.fullName, 'Daftar Baru')
     assert.equal(user!.role, Role.CUSTOMER)
   })
+
+  test('password reset revokes sessions and remember-me tokens on other devices (ACC-5)', async ({
+    browser,
+    assert,
+  }) => {
+    const phone = '081266667777'
+    const normalizedPhone = '6281266667777'
+    const initialPassword = 'Password123!'
+    const newPassword = 'NewPassword456!'
+
+    const user = await User.create({
+      fullName: 'Customer Multi Device',
+      phone: normalizedPhone,
+      password: initialPassword,
+      role: Role.CUSTOMER,
+      isActive: true,
+    })
+
+    const baseURL = `http://${env.get('HOST')}:${env.get('PORT')}`
+
+    // Device 1: Signs in with remember-me checked
+    const context1 = await browser.newContext({ baseURL })
+    const page1 = await context1.newPage()
+    await page1.goto('/masuk')
+    await page1.waitForLoadState('networkidle')
+    await page1.locator('input[name="phone"]').fill(phone)
+    await page1.locator('input[name="password"]').fill(initialPassword)
+    await page1.locator('label[data-slot="checkbox-button"]').click()
+    await page1.locator('button[type="submit"]').click()
+    await page1.waitForURL('**/beranda')
+    await page1.assertPath('/beranda')
+
+    // Verify 1 remember-me token was generated for Device 1
+    const tokensBefore = await User.rememberMeTokens.all(user)
+    assert.equal(tokensBefore.length, 1)
+
+    // Device 2: Signs in without remember-me
+    const context2 = await browser.newContext({ baseURL })
+    const page2 = await context2.newPage()
+    await page2.goto('/masuk')
+    await page2.waitForLoadState('networkidle')
+    await page2.locator('input[name="phone"]').fill(phone)
+    await page2.locator('input[name="password"]').fill(initialPassword)
+    await page2.locator('button[type="submit"]').click()
+    await page2.waitForURL('**/beranda')
+    await page2.assertPath('/beranda')
+
+    // Device 3: Resets password through /lupa-kata-sandi -> /verifikasi -> /kata-sandi-baru
+    const context3 = await browser.newContext({ baseURL })
+    const page3 = await context3.newPage()
+    await page3.goto('/lupa-kata-sandi')
+    await page3.waitForLoadState('networkidle')
+    await page3
+      .waitForFunction('Boolean(document.querySelector("input[name=\\"turnstile\\"]")?.value)')
+      .catch(() => {})
+    await page3.locator('input[name="phone"]').fill(phone)
+    await page3.locator('button[type="submit"]').click()
+    await page3.waitForURL('**/verifikasi')
+    await page3.assertPath('/verifikasi')
+
+    const otpCode = fakeWhatsApp.getLatestOtpCode(normalizedPhone)
+    assert.isDefined(otpCode)
+
+    for (let i = 0; i < 6; i++) {
+      await page3.locator(`input[aria-label="Digit ${i + 1} dari 6"]`).fill(otpCode![i])
+    }
+    await page3.locator('button[type="submit"]').click()
+    await page3.waitForURL('**/kata-sandi-baru')
+    await page3.waitForLoadState('networkidle')
+    await page3.assertPath('/kata-sandi-baru')
+
+    await page3.locator('input[name="password"]').fill(newPassword)
+    await page3.locator('input[name="passwordConfirmation"]').fill(newPassword)
+    await page3.locator('button[type="submit"]').click()
+    await page3.waitForURL('**/beranda')
+    await page3.assertPath('/beranda')
+
+    // Both first contexts (Device 1 and Device 2) are sent to /masuk on their next page load
+    await page1.goto('/beranda')
+    await page1.waitForURL('**/masuk')
+    await page1.assertPath('/masuk')
+
+    await page2.goto('/beranda')
+    await page2.waitForURL('**/masuk')
+    await page2.assertPath('/masuk')
+
+    // Verify all remember-me tokens are gone in database
+    const tokensAfter = await User.rememberMeTokens.all(user)
+    assert.lengthOf(tokensAfter, 0)
+
+    await context1.close()
+    await context2.close()
+    await context3.close()
+  })
 })
