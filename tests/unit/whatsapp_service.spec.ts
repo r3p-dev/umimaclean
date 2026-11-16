@@ -1,6 +1,8 @@
 import { test } from '@japa/runner'
 import WhatsAppService from '#services/whatsapp_service'
 import env from '#start/env'
+import logger from '@adonisjs/core/services/logger'
+import { maskPhone } from '#helpers/phone'
 
 test.group('WhatsAppService', () => {
   test('outside production, sends only to numbers in WHATSAPP_ALLOWED_PHONES and logs others', async ({
@@ -33,5 +35,37 @@ test.group('WhatsAppService', () => {
     const result = await service.sendMessage('081298765432', 'Halo')
     assert.isFalse(result.sent)
     assert.equal(result.reason, 'logged_not_in_allowlist')
+  })
+
+  test('outside development, logging masks phone and never logs message text', async ({
+    assert,
+  }) => {
+    const service = new WhatsAppService()
+    env.set('NODE_ENV', 'test')
+    env.set('WHATSAPP_ALLOWED_PHONES', '081298765432')
+
+    const logged: string[] = []
+    const originalInfo = logger.info.bind(logger)
+    logger.info = ((data: any, msg?: any) => {
+      logged.push(JSON.stringify(data) + ' ' + String(msg || ''))
+      return originalInfo(data, msg)
+    }) as any
+
+    try {
+      const code = '654321'
+      const text = `Kode verifikasi Anda adalah ${code}`
+      await service.sendMessage('081298765432', text)
+
+      assert.isTrue(logged.length > 0)
+      for (const entry of logged) {
+        assert.notInclude(entry, '081298765432')
+        assert.notInclude(entry, '6281298765432')
+        assert.notInclude(entry, code)
+        assert.notInclude(entry, text)
+        assert.include(entry, maskPhone('081298765432'))
+      }
+    } finally {
+      logger.info = originalInfo
+    }
   })
 })

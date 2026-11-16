@@ -2,11 +2,14 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
 import { Role } from '#enums/role_enum'
-import WhatsAppService from '#services/whatsapp_service'
+import { fakeWhatsApp } from '../helpers/fake_whatsapp_service.js'
 import OtpCode from '#models/otp_code'
 
 test.group('Registration (GUEST-10)', (group) => {
-  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
+  group.each.setup(() => {
+    fakeWhatsApp.clear()
+    return testUtils.db().wrapInGlobalTransaction()
+  })
 
   test('GET /daftar renders registration form', async ({ client }) => {
     const response = await client.get('/daftar')
@@ -137,8 +140,8 @@ test.group('Registration (GUEST-10)', (group) => {
     const userBeforeOtp = await User.findBy('phone', normalizedPhone)
     assert.isNull(userBeforeOtp)
 
-    // Retrieve OTP code from WhatsApp log driver
-    const otpCode = WhatsAppService.getLatestOtpCode(normalizedPhone)
+    // Retrieve OTP code from WhatsApp fake
+    const otpCode = fakeWhatsApp.getLatestOtpCode(normalizedPhone)
     assert.isDefined(otpCode)
 
     // 2. Submit OTP verification using the same session

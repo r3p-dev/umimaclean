@@ -3,10 +3,13 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
 import { Role } from '#enums/role_enum'
 import env from '#start/env'
-import WhatsAppService from '#services/whatsapp_service'
+import { fakeWhatsApp } from '../helpers/fake_whatsapp_service.js'
 
 test.group('Authentication Browser Flow (M2a)', (group) => {
-  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
+  group.each.setup(() => {
+    fakeWhatsApp.clear()
+    return testUtils.db().wrapInGlobalTransaction()
+  })
 
   test('home page renders and displays authentication entry points', async ({ visit }) => {
     const page = await visit('/')
@@ -176,9 +179,9 @@ test.group('Authentication Browser Flow (M2a)', (group) => {
     await page.waitForURL('**/verifikasi')
     await page.assertPath('/verifikasi')
 
-    // Retrieve OTP from WhatsApp log driver
+    // Retrieve OTP from fake WhatsApp service
     const normalizedPhone = '6281277778888'
-    const otpCode = WhatsAppService.getLatestOtpCode(normalizedPhone)
+    const otpCode = fakeWhatsApp.getLatestOtpCode(normalizedPhone)
     assert.isDefined(otpCode)
 
     // Fill OTP digits into OTP input

@@ -6,7 +6,7 @@ import type { Session } from '@adonisjs/session'
 import { OtpPurpose } from '#enums/otp_purpose_enum'
 import OtpCode, { OTP_MAX_PHONE_HOURLY } from '#models/otp_code'
 import OtpService, { OTP_INVALID_MESSAGE, OTP_LOCKED_MESSAGE } from '#services/otp_service'
-import WhatsAppService from '#services/whatsapp_service'
+import { fakeWhatsApp } from '../helpers/fake_whatsapp_service.js'
 import limiter from '@adonisjs/limiter/services/main'
 
 function makeMockSession(): Session {
@@ -19,7 +19,10 @@ function makeMockSession(): Session {
 }
 
 test.group('OTP (ACC-2) Functional Tests', (group) => {
-  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
+  group.each.setup(() => {
+    fakeWhatsApp.clear()
+    return testUtils.db().wrapInGlobalTransaction()
+  })
 
   test('GET /verifikasi redirects to /masuk if no active session flow', async ({ client }) => {
     const response = await client.get('/verifikasi').redirects(0)
@@ -145,7 +148,7 @@ test.group('OTP (ACC-2) Functional Tests', (group) => {
       { name: 'Budi Test', phone, password: 'password123' },
       '127.0.0.1'
     )
-    const code = WhatsAppService.getLatestOtpCode(phone)
+    const code = fakeWhatsApp.getLatestOtpCode(phone)
     assert.isDefined(code)
 
     // Expire the OTP record in the database

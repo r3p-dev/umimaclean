@@ -4,9 +4,13 @@ import OtpService from '#services/otp_service'
 import OtpCode from '#models/otp_code'
 import { OtpPurpose } from '#enums/otp_purpose_enum'
 import WhatsAppService from '#services/whatsapp_service'
+import { fakeWhatsApp } from '../helpers/fake_whatsapp_service.js'
 import app from '@adonisjs/core/services/app'
 import { DateTime } from 'luxon'
 import type { Session } from '@adonisjs/session'
+import logger from '@adonisjs/core/services/logger'
+import AccountService from '#services/account_service'
+import { maskPhone } from '#helpers/phone'
 
 function makeMockSession(): Session {
   const data = new Map<string, any>()
@@ -18,7 +22,10 @@ function makeMockSession(): Session {
 }
 
 test.group('OTP rules (ACC-2)', (group) => {
-  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
+  group.each.setup(() => {
+    fakeWhatsApp.clear()
+    return testUtils.db().wrapInGlobalTransaction()
+  })
 
   test('OTP is generated as 6 digits, stored only as keyed hash, and dispatched via WhatsApp', async ({
     assert,
@@ -43,7 +50,7 @@ test.group('OTP rules (ACC-2)', (group) => {
     assert.match(codeRecord.codeHash, /^[0-9a-f]{64}$/)
 
     // Dispatched message contains 6 digits
-    const code = WhatsAppService.getLatestOtpCode(phone)
+    const code = fakeWhatsApp.getLatestOtpCode(phone)
     assert.isDefined(code)
     assert.match(code!, /^\d{6}$/)
   })
@@ -96,7 +103,7 @@ test.group('OTP rules (ACC-2)', (group) => {
     )
 
     const flow = service.currentOtpFlow(session)!
-    const validCode = WhatsAppService.getLatestOtpCode(phone)!
+    const validCode = fakeWhatsApp.getLatestOtpCode(phone)!
 
     // Manually expire the code
     await OtpCode.query()
@@ -145,7 +152,7 @@ test.group('OTP rules (ACC-2)', (group) => {
       '127.0.0.1'
     )
 
-    const code = WhatsAppService.getLatestOtpCode(phone)!
+    const code = fakeWhatsApp.getLatestOtpCode(phone)!
 
     // Attempt to verify with a reset_password flow
     const fakeResetFlow = {
@@ -188,6 +195,58 @@ test.group('OTP rules (ACC-2)', (group) => {
     } catch (error: any) {
       assert.equal(error.messages?.[0]?.field, 'phone')
       assert.include(error.messages?.[0]?.message, 'Terlalu banyak permintaan kode.')
+    }
+  })
+
+  test('OTP flow outside development never logs OTP code or unmasked phone number', async ({
+    assert,
+  }) => {
+    // Instantiate OtpService with the REAL WhatsAppService to test real logging behavior
+    const realWhatsApp = new WhatsAppService()
+    const service = new OtpService(realWhatsApp, (await app.container.make(AccountService)) as any)
+    const session = makeMockSession()
+    const phone = '081299990000'
+    const normalizedPhone = '6281299990000'
+
+    const loggedMessages: string[] = []
+    const originalInfo = logger.info.bind(logger)
+    const originalWarn = logger.warn.bind(logger)
+    const originalError = logger.error.bind(logger)
+
+    logger.info = ((data: any, msg?: any) => {
+      loggedMessages.push(JSON.stringify(data) + ' ' + String(msg || ''))
+      return originalInfo(data, msg)
+    }) as any
+    logger.warn = ((data: any, msg?: any) => {
+      loggedMessages.push(JSON.stringify(data) + ' ' + String(msg || ''))
+      return originalWarn(data, msg)
+    }) as any
+    logger.error = ((data: any, msg?: any) => {
+      loggedMessages.push(JSON.stringify(data) + ' ' + String(msg || ''))
+      return originalError(data, msg)
+    }) as any
+
+    try {
+      await service.startRegistration(
+        session,
+        { name: 'Logging Check', phone: normalizedPhone, password: 'password123' },
+        '127.0.0.1'
+      )
+
+      assert.isTrue(loggedMessages.length > 0)
+      for (const logLine of loggedMessages) {
+        // Assert unmasked phone is NEVER logged
+        assert.notInclude(logLine, phone)
+        assert.notInclude(logLine, normalizedPhone)
+        // Assert masked phone IS logged
+        assert.include(logLine, maskPhone(normalizedPhone))
+        // Assert OTP message text is never logged outside development
+        assert.notInclude(logLine, 'Berlaku selama 5 menit')
+      }
+    } finally {
+      logger.info = originalInfo
+      logger.warn = originalWarn
+      logger.error = originalError
     }
   })
 })

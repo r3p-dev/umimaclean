@@ -1,5 +1,5 @@
 import { assert } from '@japa/assert'
-import { ApiResponse, apiClient } from '@japa/api-client'
+import { ApiResponse, ApiRequest, apiClient } from '@japa/api-client'
 import app from '@adonisjs/core/services/app'
 import type { Config } from '@japa/runner/types'
 import { pluginAdonisJS } from '@japa/plugin-adonisjs'
@@ -10,7 +10,16 @@ import { authBrowserClient } from '@adonisjs/auth/plugins/browser_client'
 import { sessionBrowserClient } from '@adonisjs/session/plugins/browser_client'
 import { authApiClient } from '@adonisjs/auth/plugins/api_client'
 import { sessionApiClient } from '@adonisjs/session/plugins/api_client'
+import { SessionClient } from '@adonisjs/session/client'
 import { shieldApiClient } from '@adonisjs/shield/plugins/api_client'
+import WhatsAppService from '#services/whatsapp_service'
+import { fakeWhatsApp } from './helpers/fake_whatsapp_service.js'
+
+// Japa's sessionApiClient teardown calls request.sessionClient.destroy(sessionId)
+// on every request, deleting server-persisted database sessions immediately.
+// For testing real multi-request session continuity and session invalidation (ACC-5),
+// prevent teardown from destroying persisted sessions.
+SessionClient.prototype.destroy = async function () {}
 
 export const plugins: Config['plugins'] = [
   assert(),
@@ -29,6 +38,9 @@ declare module '@japa/api-client' {
   interface ApiResponse {
     assertValidationError(field: string, message: string | RegExp): void
   }
+  interface ApiRequest {
+    withAuthCookiesFrom(response: ApiResponse): this
+  }
 }
 
 export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
@@ -36,6 +48,9 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
   // so a freshly created test database needs nothing else (docs/ARCHITECTURE.md §6.6).
   setup: [
     () => testUtils.db().migrate(),
+    () => {
+      app.container.swap(WhatsAppService, () => fakeWhatsApp)
+    },
     () => {
       ApiResponse.macro(
         'assertValidationError',
@@ -71,6 +86,17 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
           this.assert.deepEqual(errors, messages)
         }
       )
+      ApiRequest.macro('withAuthCookiesFrom', function (this: any, res: ApiResponse) {
+        const sessionVal = res.cookie('adonis-session')?.value
+        if (sessionVal) {
+          this.sessionClient.sessionId = sessionVal
+        }
+        const rememberVal = res.cookie('remember_web')?.value
+        if (rememberVal) {
+          this.withEncryptedCookie('remember_web', rememberVal)
+        }
+        return this
+      })
     },
   ],
   teardown: [],
