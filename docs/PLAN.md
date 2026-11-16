@@ -124,29 +124,42 @@ Acceptance criteria:
 - Version bump to 0.2.0 (`package.json`, `package-lock.json`, `CHANGELOG.md`).
 - Evidence in `docs/evidence/M2c/EVIDENCE.md`.
 
-## M3 (0.3.0): Services, service areas, store settings
+## M3a (checkpoint of 0.3.0): Services and landing price list
 
-SVC-1…SVC-5, AREA-1…AREA-3, OWN-7, OWN-8 (shop info and slots), OWN-9, the landing price list and coverage check (GUEST-1).
+SVC-1…SVC-5, OWN-7, the landing price list (GUEST-1 price list portion).
 
 Acceptance criteria:
 
-- SVC-1, SVC-2, OWN-7: owner creates, edits, switches on/off (also several at once) and soft-deletes services; every change in the activity log; inactive services hidden from staff lists, deleted ones never switched back on.
-- SVC-5: the seeded price list exactly as the PRD table (bag rows as two services each).
-- AREA-1, AREA-2: the 64 kecamatan of Kota Bandung, Kota Cimahi and Kabupaten Bandung loaded from a committed GeoJSON whose source, license, date and processing are documented; initial active set as AREA-2; the license credit shown with pin maps.
-- AREA-3, OWN-9: the owner switches kecamatan on/off (grouped by kota/kabupaten, with a map); the change applies to the next pin check; logged.
-- OWN-8 (shop info, slots), SLOT-2: shop name, WhatsApp, address, opening hours, pickup slots (label, capacity 1–20, on/off, defaults); logged; footer and privacy page read these settings.
-- GUEST-1: the landing price list from active services ("mulai dari" where flagged); the coverage check (AREA-4 point-in-area) with a per-IP rate limit.
+- SVC-1, SVC-2, OWN-7: owner creates, edits, switches on/off (also several at once) and soft-deletes services (/admin/layanan); every change in the activity log; inactive services hidden from public price list, deleted ones never switched back on.
+- SVC-3: service snapshot rules documented and prepared for billing in M7.
+- SVC-4: helmet services are shop-only (no pickup/delivery).
+- SVC-5: the seeded price list exactly as the PRD table (bag rows as two services each, verified with unit test).
+- GUEST-1 (price list portion): the landing price list from active services grouped by item kinds with "mulai dari" where flagged, duration display, formatted Rupiah prices, and helmet shop-only notice.
+- Evidence in `docs/evidence/M3a/EVIDENCE.md`.
 
-## M4 (0.4.0): Addresses and maps
+## M3b (0.3.0): Service areas, store settings, and coverage service
 
-AREA-4, MAP-1, MAP-2, CUST-2, CUST-3, CUST-14.
+AREA-1…AREA-3, AREA-4 (server-side check service), OWN-8 (shop info and slots), OWN-9.
+
+Acceptance criteria:
+
+- AREA-1, AREA-2: the 64 kecamatan of Kota Bandung, Kota Cimahi and Kabupaten Bandung loaded from a committed GeoJSON whose source, license, date and processing are documented; initial active set as AREA-2; the license credit documented.
+- AREA-3, OWN-9: the owner switches kecamatan on/off (grouped by kota/kabupaten) on /admin/pengaturan/area without a map (no placeholder per D33; interactive map deferred to M4 per D73); logged.
+- AREA-4 (service): server-side point-in-polygon check against active districts built as a service with unit tests (public endpoint and UI deferred to M4 per D73).
+- OWN-8 (shop info, slots), SLOT-2: shop name, WhatsApp, address, opening hours, pickup slots (label, capacity 1–20, on/off, defaults) validated with VineJS schemas per key; logged; footer and privacy page read these settings.
+- Version bump to 0.3.0 (`package.json`, `package-lock.json`, `CHANGELOG.md`).
+- Evidence in `docs/evidence/M3b/EVIDENCE.md`.
+
+## M4 (0.4.0): Addresses, maps, and coverage check UI
+
+AREA-4, MAP-1, MAP-2, CUST-2, CUST-3, CUST-14, GUEST-1 (coverage check UI).
 
 Acceptance criteria:
 
 - `node ace osm:import` runs the pipeline of `docs/ARCHITECTURE.md` §6.2 (checks that the clip box contains every service area first).
 - MAP-1: place search for signed-in users only (per-user rate limit), typo and spacing tolerant ("dipati ukur" finds "Jalan Dipatiukur"), generic words ignored; nearby places and the street label under a pin; without the `osm` schema the pin can still be placed by hand.
-- MAP-2: maps are drawn by MapLibre GL JS from the self-hosted PMTiles file (`pmtiles` protocol, `@protomaps/basemaps` style), loaded only on pages that show a map; the browser contacts no map provider (browser test blocks outside hosts); "© OpenStreetMap contributors" on every map; without the file a plain background and pins still work.
-- AREA-4: every saved pin is checked against active areas on the server; instant inside/outside feedback while moving the pin.
+- MAP-2: maps are drawn by MapLibre GL JS from the self-hosted PMTiles file (`pmtiles` protocol, `@protomaps/basemaps` style), loaded only on pages that show a map (including `/admin/pengaturan/area` per D73); the browser contacts no map provider (browser test blocks outside hosts); "© OpenStreetMap contributors" on every map; without the file a plain background and pins still work.
+- GUEST-1 (coverage check UI) & AREA-4: landing coverage check with a per-IP rate limit and map pin interaction; every saved pin is checked against active areas on the server; instant inside/outside feedback while moving the pin.
 - CUST-2, CUST-3, CUST-14: at most 3 addresses, exactly one primary (database-enforced), deleting the primary promotes the newest; label, recipient name and phone, address text, landmark, pin; list, add, edit, make primary, delete.
 
 ## M5a (checkpoint of 0.5.0): Online ordering: slots, new order, confirm
