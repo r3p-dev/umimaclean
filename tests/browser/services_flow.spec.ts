@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import { AxeBuilder } from '@axe-core/playwright'
 import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
+import Service from '#models/service'
 import { Role } from '#enums/role_enum'
 import path from 'node:path'
 import fs from 'node:fs/promises'
@@ -12,9 +13,9 @@ const VIEWPORTS = [
   { name: '1440', width: 1440, height: 900 },
 ] as const
 
-const EVIDENCE_DIR = path.resolve('docs/evidence/M3a')
+const EVIDENCE_DIR = path.resolve('docs/evidence/M3a-fix')
 
-test.group('Services & Pricing Browser Flow (M3a)', (group) => {
+test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
   group.each.setup(async () => {
     await fs.mkdir(EVIDENCE_DIR, { recursive: true })
     await testUtils.db().seed()
@@ -106,7 +107,7 @@ test.group('Services & Pricing Browser Flow (M3a)', (group) => {
     assert.isFalse(await dialog.isVisible())
   })
 
-  test('captures responsive screenshots and verifies axe accessibility for M3a', async ({
+  test('captures responsive screenshots and verifies axe accessibility for M3a-fix missing states', async ({
     visit,
     browserContext,
     assert,
@@ -114,12 +115,116 @@ test.group('Services & Pricing Browser Flow (M3a)', (group) => {
     const owner = await User.query().where('role', Role.ADMIN).firstOrFail()
     const axeLogs: string[] = []
 
+    // Prepare an inactive service in the database for the inactive state check
+    const medium = await Service.findByOrFail('name', 'Medium')
+    medium.isActive = false
+    await medium.save()
+
     for (const vp of VIEWPORTS) {
-      // 1. Landing page with pricing section
+      // 1. Landing price list filtered to Helm (landing-harga-helm-*)
       {
         const page = await visit('/')
         await page.setViewportSize({ width: vp.width, height: vp.height })
         await page.waitForLoadState('networkidle')
+
+        const pricing = page.locator('#harga')
+        await pricing.scrollIntoViewIfNeeded()
+        const helmetBtn = pricing.getByRole('button', { name: /Helm/i })
+        await helmetBtn.click()
+        await pricing
+          .getByText(/Khusus Bawa Langsung ke Toko/i)
+          .first()
+          .waitFor({ state: 'visible' })
+
+        const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
+        assert.isAtMost(
+          scrollWidth,
+          vp.width,
+          `Horizontal scroll detected on landing helm at ${vp.name}px`
+        )
+
+        const axe = await new AxeBuilder({ page })
+          .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+          .exclude('iframe[src*="cloudflare"]')
+          .analyze()
+        const violations = axe.violations.map(
+          (v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' | ')}`
+        )
+        assert.deepEqual(violations, [], `Landing helm axe violations at ${vp.name}px`)
+
+        await page.screenshot({
+          path: path.join(EVIDENCE_DIR, `landing-harga-helm-${vp.name}.png`),
+          fullPage: true,
+        })
+        axeLogs.push(
+          `landing-harga-helm-${vp.name}: path=/#harga (filter=helm) scrollWidth=${scrollWidth} axe=none`
+        )
+      }
+
+      // Login as owner for owner area screenshots
+      await browserContext.loginAs(owner)
+      const page = await visit('/admin/layanan')
+      await page.setViewportSize({ width: vp.width, height: vp.height })
+      await page.waitForLoadState('networkidle')
+
+      // 2. Owner mobile menu showing "Layanan" (admin-menu-layanan-*)
+      {
+        if (vp.width < 640) {
+          const menuButton = page.getByRole('button', { name: 'Buka menu navigasi' })
+          await menuButton.click()
+          await page.getByRole('dialog').waitFor({ state: 'visible' })
+
+          const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
+          assert.isAtMost(scrollWidth, vp.width, `Scroll detected on owner menu at ${vp.name}px`)
+
+          const axe = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+            .exclude('iframe[src*="cloudflare"]')
+            .analyze()
+          const violations = axe.violations.map(
+            (v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' | ')}`
+          )
+          assert.deepEqual(violations, [], `Owner menu axe violations at ${vp.name}px`)
+
+          await page.screenshot({
+            path: path.join(EVIDENCE_DIR, `admin-menu-layanan-${vp.name}.png`),
+            fullPage: true,
+          })
+          axeLogs.push(
+            `admin-menu-layanan-${vp.name}: path=/admin/layanan (nav menu) scrollWidth=${scrollWidth} axe=none`
+          )
+
+          const closeMenu = page.getByRole('button', { name: 'Tutup menu' })
+          await closeMenu.click()
+          await page.getByRole('dialog').waitFor({ state: 'hidden' })
+        } else {
+          const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
+          assert.isAtMost(scrollWidth, vp.width)
+
+          const axe = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+            .exclude('iframe[src*="cloudflare"]')
+            .analyze()
+          const violations = axe.violations.map(
+            (v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' | ')}`
+          )
+          assert.deepEqual(violations, [], `Owner desktop menu axe violations at ${vp.name}px`)
+
+          await page.screenshot({
+            path: path.join(EVIDENCE_DIR, `admin-menu-layanan-${vp.name}.png`),
+            fullPage: true,
+          })
+          axeLogs.push(
+            `admin-menu-layanan-${vp.name}: path=/admin/layanan (sidebar) scrollWidth=${scrollWidth} axe=none`
+          )
+        }
+      }
+
+      // 3. Empty search result (admin-layanan-empty-*)
+      {
+        const searchInput = page.getByPlaceholder(/Cari layanan/i)
+        await searchInput.fill('layanan-tidak-ada-xyz')
+        await page.getByText('Tidak ada layanan yang cocok').waitFor({ state: 'visible' })
 
         const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
         assert.isAtMost(scrollWidth, vp.width)
@@ -131,80 +236,158 @@ test.group('Services & Pricing Browser Flow (M3a)', (group) => {
         const violations = axe.violations.map(
           (v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' | ')}`
         )
-        assert.deepEqual(violations, [], `Landing axe violations at ${vp.name}px`)
+        assert.deepEqual(violations, [], `Empty search axe violations at ${vp.name}px`)
 
         await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `landing-harga-${vp.name}.png`),
+          path: path.join(EVIDENCE_DIR, `admin-layanan-empty-${vp.name}.png`),
           fullPage: true,
         })
-        axeLogs.push(`landing-harga-${vp.name}: path=/ scrollWidth=${scrollWidth} axe=none`)
+        axeLogs.push(
+          `admin-layanan-empty-${vp.name}: path=/admin/layanan (empty search) scrollWidth=${scrollWidth} axe=none`
+        )
+
+        await searchInput.fill('')
+        await page.getByText('Tidak ada layanan yang cocok').waitFor({ state: 'hidden' })
       }
 
-      // 2. Admin Layanan page
+      // 4. Inactive service visible in table (admin-layanan-inactive-*)
       {
-        await browserContext.loginAs(owner)
-        const page = await visit('/admin/layanan')
-        await page.setViewportSize({ width: vp.width, height: vp.height })
-        await page.waitForLoadState('networkidle')
+        const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
+        assert.isAtMost(scrollWidth, vp.width)
+
+        const axe = await new AxeBuilder({ page })
+          .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+          .exclude('iframe[src*="cloudflare"]')
+          .analyze()
+        const violations = axe.violations.map(
+          (v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' | ')}`
+        )
+        assert.deepEqual(violations, [], `Inactive service axe violations at ${vp.name}px`)
+
+        await page.screenshot({
+          path: path.join(EVIDENCE_DIR, `admin-layanan-inactive-${vp.name}.png`),
+          fullPage: true,
+        })
+        axeLogs.push(
+          `admin-layanan-inactive-${vp.name}: path=/admin/layanan (inactive visible) scrollWidth=${scrollWidth} axe=none`
+        )
+      }
+
+      // 5. Bulk selection bar (admin-layanan-bulk-*)
+      {
+        if (vp.width < 640) {
+          const cards = page.locator('section div.divide-y > div')
+          await cards.nth(0).getByRole('checkbox').click({ force: true })
+          await cards.nth(1).getByRole('checkbox').click({ force: true })
+        } else {
+          const rows = page.locator('tbody tr')
+          await rows.nth(0).getByRole('checkbox').click({ force: true })
+          await rows.nth(1).getByRole('checkbox').click({ force: true })
+        }
+
+        await page.getByText(/layanan dipilih/i).waitFor({ state: 'visible' })
 
         const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
         assert.isAtMost(scrollWidth, vp.width)
 
         const axe = await new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+          .exclude('iframe[src*="cloudflare"]')
           .analyze()
         const violations = axe.violations.map(
           (v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' | ')}`
         )
-        assert.deepEqual(violations, [], `Admin layanan axe violations at ${vp.name}px`)
+        assert.deepEqual(violations, [], `Bulk bar axe violations at ${vp.name}px`)
 
         await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-layanan-${vp.name}.png`),
+          path: path.join(EVIDENCE_DIR, `admin-layanan-bulk-${vp.name}.png`),
           fullPage: true,
         })
         axeLogs.push(
-          `admin-layanan-${vp.name}: path=/admin/layanan scrollWidth=${scrollWidth} axe=none`
+          `admin-layanan-bulk-${vp.name}: path=/admin/layanan (bulk active) scrollWidth=${scrollWidth} axe=none`
         )
 
-        // 3. Admin Layanan Dialog open
-        const addButton = page.getByRole('button', { name: /Tambah Layanan/i })
-        await addButton.click()
-        await page.waitForSelector('[role="dialog"]')
+        // Deselect
+        const cancelBulk = page.getByRole('button', { name: 'Batal' }).first()
+        await cancelBulk.click()
+        await page.getByText(/layanan dipilih/i).waitFor({ state: 'hidden' })
+      }
 
-        const axeDialog = await new AxeBuilder({ page })
+      // 6. Delete confirmation dialog (admin-layanan-delete-*)
+      {
+        const deleteButton = page.locator('button[aria-label="Hapus Medium"]:visible')
+        await deleteButton.click()
+        const deleteDialog = page.getByRole('dialog')
+        await deleteDialog.waitFor({ state: 'visible' })
+        await deleteDialog
+          .getByText(/Hapus Layanan/i)
+          .first()
+          .waitFor({ state: 'visible' })
+
+        const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
+        assert.isAtMost(scrollWidth, vp.width)
+
+        const axe = await new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+          .exclude('iframe[src*="cloudflare"]')
           .analyze()
-        const dialogViolations = axeDialog.violations.map(
+        const violations = axe.violations.map(
           (v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' | ')}`
         )
-        assert.deepEqual(
-          dialogViolations,
-          [],
-          `Admin layanan dialog axe violations at ${vp.name}px`
-        )
+        assert.deepEqual(violations, [], `Delete dialog axe violations at ${vp.name}px`)
 
         await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-layanan-dialog-${vp.name}.png`),
+          path: path.join(EVIDENCE_DIR, `admin-layanan-delete-${vp.name}.png`),
           fullPage: true,
         })
         axeLogs.push(
-          `admin-layanan-dialog-${vp.name}: path=/admin/layanan (dialog) scrollWidth=${scrollWidth} axe=none`
+          `admin-layanan-delete-${vp.name}: path=/admin/layanan (delete dialog) scrollWidth=${scrollWidth} axe=none`
         )
 
-        // Close dialog
-        const cancelButton = page.getByRole('button', { name: /Batal/i })
-        await cancelButton.click()
+        const cancelDelete = deleteDialog.getByRole('button', { name: 'Batal' })
+        await cancelDelete.click()
+        await deleteDialog.waitFor({ state: 'hidden' })
+      }
 
-        // 4. Admin Layanan Filter active (search for 'Helm')
-        const searchInput = page.getByPlaceholder(/Cari layanan/i)
-        await searchInput.fill('Helm')
+      // 7. Validation errors in add dialog (admin-layanan-error-*)
+      {
+        const addButton = page.getByRole('button', { name: /Tambah Layanan/i })
+        await addButton.click()
+        const formDialog = page.getByRole('dialog')
+        await formDialog.waitFor({ state: 'visible' })
+
+        // Clear name input if any and submit
+        const nameInput = formDialog.locator('#field-name')
+        await nameInput.fill('')
+        const submitBtn = formDialog.getByRole('button', { name: 'Tambah Layanan' })
+        await submitBtn.click()
+
+        await formDialog.getByText('Nama layanan wajib diisi.').waitFor({ state: 'visible' })
+
+        const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
+        assert.isAtMost(scrollWidth, vp.width)
+
+        const axe = await new AxeBuilder({ page })
+          .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+          .exclude('iframe[src*="cloudflare"]')
+          .analyze()
+        const violations = axe.violations.map(
+          (v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' | ')}`
+        )
+        assert.deepEqual(violations, [], `Add form error axe violations at ${vp.name}px`)
+
         await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-layanan-filter-${vp.name}.png`),
+          path: path.join(EVIDENCE_DIR, `admin-layanan-error-${vp.name}.png`),
           fullPage: true,
         })
         axeLogs.push(
-          `admin-layanan-filter-${vp.name}: path=/admin/layanan?q=Helm scrollWidth=${scrollWidth} axe=none`
+          `admin-layanan-error-${vp.name}: path=/admin/layanan (add form validation errors) scrollWidth=${scrollWidth} axe=none`
         )
+
+        const cancelAdd = formDialog.getByRole('button', { name: 'Batal' })
+        await cancelAdd.scrollIntoViewIfNeeded()
+        await cancelAdd.click({ force: true })
+        await formDialog.waitFor({ state: 'hidden' })
       }
     }
 
