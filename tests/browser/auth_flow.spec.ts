@@ -14,6 +14,35 @@ test.group('Authentication Browser Flow (M2a)', (group) => {
     await page.assertExists('a[href="/masuk"]')
   })
 
+  test('password input allows toggling password visibility without submitting form', async ({
+    visit,
+    assert,
+  }) => {
+    const page = await visit('/masuk')
+    await page.waitForLoadState('networkidle')
+    await page.assertPath('/masuk')
+
+    const passwordInput = page.locator('input[name="password"]')
+    const toggleButton = page.locator('button[aria-label="Tampilkan kata sandi"]')
+
+    assert.equal(await passwordInput.getAttribute('type'), 'password')
+    assert.equal(await toggleButton.getAttribute('aria-pressed'), 'false')
+    assert.equal(await toggleButton.getAttribute('type'), 'button')
+
+    // Click toggle to reveal password
+    await toggleButton.click()
+    await page.assertPath('/masuk')
+    assert.equal(await passwordInput.getAttribute('type'), 'text')
+    const hideButton = page.locator('button[aria-label="Sembunyikan kata sandi"]')
+    assert.equal(await hideButton.getAttribute('aria-pressed'), 'true')
+
+    // Click toggle again to hide password
+    await hideButton.click()
+    await page.assertPath('/masuk')
+    assert.equal(await passwordInput.getAttribute('type'), 'password')
+    assert.equal(await toggleButton.getAttribute('aria-pressed'), 'false')
+  })
+
   test('customer signs in through browser form and lands on /beranda', async ({ visit }) => {
     await User.create({
       fullName: 'Pelanggan Browser',
