@@ -6,11 +6,21 @@
 /// <reference path="./manifest.d.ts" />
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
 import type { InferSharedProps, InferFlashData } from '@adonisjs/inertia/types'
+import type PickupSlotTransformer from '#transformers/pickup_slot_transformer'
+import type ServiceAreaTransformer from '#transformers/service_area_transformer'
 import type ServiceTransformer from '#transformers/service_transformer'
 import type UserTransformer from '#transformers/user_transformer'
 import type InertiaMiddleware from '#middleware/inertia_middleware'
 
 export namespace Data {
+  export type PickupSlot = InferData<PickupSlotTransformer>
+  export namespace PickupSlot {
+    export type Variants = InferVariants<PickupSlotTransformer>
+  }
+  export type ServiceArea = InferData<ServiceAreaTransformer>
+  export namespace ServiceArea {
+    export type Variants = InferVariants<ServiceAreaTransformer>
+  }
   export type Service = InferData<ServiceTransformer>
   export namespace Service {
     export type Variants = InferVariants<ServiceTransformer>
