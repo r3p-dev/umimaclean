@@ -3,7 +3,7 @@ import { controllers } from '#generated/controllers'
 import app from '@adonisjs/core/services/app'
 import router from '@adonisjs/core/services/router'
 
-router.on('/').renderInertia('home', {}).as('home')
+router.get('/', [controllers.Home, 'index']).as('home')
 router.on('/syarat').renderInertia('legal/terms', {}).as('legal.terms')
 router.on('/privasi').renderInertia('legal/privacy', {}).as('legal.privacy')
 router.get('/robots.txt', [controllers.Seo, 'robots'])
@@ -71,6 +71,18 @@ router
   .group(() => {
     router.on('/admin').renderInertia('admin/dashboard', {}).as('admin.home')
     router.get('/admin/profil', [controllers.Profile, 'showOwner']).as('admin.profile')
+    router.get('/admin/layanan', [controllers.Services, 'index']).as('admin.services.index')
+    router.post('/admin/layanan', [controllers.Services, 'store']).as('admin.services.store')
+    router.put('/admin/layanan/:id', [controllers.Services, 'update']).as('admin.services.update')
+    router
+      .patch('/admin/layanan/:id/toggle', [controllers.Services, 'toggleActive'])
+      .as('admin.services.toggle')
+    router
+      .post('/admin/layanan/bulk-toggle', [controllers.Services, 'bulkToggleActive'])
+      .as('admin.services.bulk_toggle')
+    router
+      .delete('/admin/layanan/:id', [controllers.Services, 'destroy'])
+      .as('admin.services.destroy')
   })
   .use(middleware.admin())
 

@@ -5,11 +5,13 @@
 
 export const controllers = {
   AccountSecurity: () => import('#controllers/account_security_controller'),
+  Home: () => import('#controllers/home_controller'),
   Otp: () => import('#controllers/otp_controller'),
   PasswordReset: () => import('#controllers/password_reset_controller'),
   PhoneChange: () => import('#controllers/phone_change_controller'),
   Profile: () => import('#controllers/profile_controller'),
   Registration: () => import('#controllers/registration_controller'),
   Seo: () => import('#controllers/seo_controller'),
+  Services: () => import('#controllers/services_controller'),
   Session: () => import('#controllers/session_controller'),
 }

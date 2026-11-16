@@ -35,6 +35,12 @@ export type ScannedRoutes = {
     'staff.profile': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
     'admin.profile': { paramsTuple?: []; params?: {} }
+    'admin.services.index': { paramsTuple?: []; params?: {} }
+    'admin.services.store': { paramsTuple?: []; params?: {} }
+    'admin.services.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.services.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.services.bulk_toggle': { paramsTuple?: []; params?: {} }
+    'admin.services.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -56,6 +62,7 @@ export type ScannedRoutes = {
     'staff.profile': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
     'admin.profile': { paramsTuple?: []; params?: {} }
+    'admin.services.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -77,6 +84,7 @@ export type ScannedRoutes = {
     'staff.profile': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
     'admin.profile': { paramsTuple?: []; params?: {} }
+    'admin.services.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'session.store': { paramsTuple?: []; params?: {} }
@@ -89,10 +97,19 @@ export type ScannedRoutes = {
     'session.destroy': { paramsTuple?: []; params?: {} }
     'account_security.sign_out_other_devices': { paramsTuple?: []; params?: {} }
     'customer.phone.store': { paramsTuple?: []; params?: {} }
+    'admin.services.store': { paramsTuple?: []; params?: {} }
+    'admin.services.bulk_toggle': { paramsTuple?: []; params?: {} }
   }
   PUT: {
     'account_security.update_password': { paramsTuple?: []; params?: {} }
     'customer.profile.update': { paramsTuple?: []; params?: {} }
+    'admin.services.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+  }
+  PATCH: {
+    'admin.services.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+  }
+  DELETE: {
+    'admin.services.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

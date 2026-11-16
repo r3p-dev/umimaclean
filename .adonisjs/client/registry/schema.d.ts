@@ -16,9 +16,9 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
-      rawResponse: ExtractRawResponse<unknown>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
     }
   }
   'legal.terms': {
@@ -409,6 +409,84 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showOwner']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showOwner']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showOwner']>>>
+    }
+  }
+  'admin.services.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/layanan'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/services_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/services_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/services_controller').default['index']>>>
+    }
+  }
+  'admin.services.store': {
+    methods: ["POST"]
+    pattern: '/admin/layanan'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/service_validator').createServiceValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/service_validator').createServiceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/services_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/services_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/services_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.services.update': {
+    methods: ["PUT"]
+    pattern: '/admin/layanan/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/service_validator').updateServiceValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/service_validator').updateServiceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/services_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/services_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/services_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.services.toggle': {
+    methods: ["PATCH"]
+    pattern: '/admin/layanan/:id/toggle'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/service_validator').toggleServiceValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/service_validator').toggleServiceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/services_controller').default['toggleActive']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/services_controller').default['toggleActive']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/services_controller').default['toggleActive']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.services.bulk_toggle': {
+    methods: ["POST"]
+    pattern: '/admin/layanan/bulk-toggle'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/service_validator').bulkToggleServiceValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/service_validator').bulkToggleServiceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/services_controller').default['bulkToggleActive']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/services_controller').default['bulkToggleActive']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/services_controller').default['bulkToggleActive']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.services.destroy': {
+    methods: ["DELETE"]
+    pattern: '/admin/layanan/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/services_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/services_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/services_controller').default['destroy']>>>
     }
   }
 }

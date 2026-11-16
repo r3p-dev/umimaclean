@@ -194,6 +194,42 @@ const routes = {
     tokens: [[0,"admin"],[0,"profil"]],
     types: placeholder as Registry['admin.profile']['types'],
   },
+  'admin.services.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/layanan',
+    tokens: [[0,"admin"],[0,"layanan"]],
+    types: placeholder as Registry['admin.services.index']['types'],
+  },
+  'admin.services.store': {
+    methods: ["POST"],
+    pattern: '/admin/layanan',
+    tokens: [[0,"admin"],[0,"layanan"]],
+    types: placeholder as Registry['admin.services.store']['types'],
+  },
+  'admin.services.update': {
+    methods: ["PUT"],
+    pattern: '/admin/layanan/:id',
+    tokens: [[0,"admin"],[0,"layanan"],[1,"id"]],
+    types: placeholder as Registry['admin.services.update']['types'],
+  },
+  'admin.services.toggle': {
+    methods: ["PATCH"],
+    pattern: '/admin/layanan/:id/toggle',
+    tokens: [[0,"admin"],[0,"layanan"],[1,"id"],[0,"toggle"]],
+    types: placeholder as Registry['admin.services.toggle']['types'],
+  },
+  'admin.services.bulk_toggle': {
+    methods: ["POST"],
+    pattern: '/admin/layanan/bulk-toggle',
+    tokens: [[0,"admin"],[0,"layanan"],[0,"bulk-toggle"]],
+    types: placeholder as Registry['admin.services.bulk_toggle']['types'],
+  },
+  'admin.services.destroy': {
+    methods: ["DELETE"],
+    pattern: '/admin/layanan/:id',
+    tokens: [[0,"admin"],[0,"layanan"],[1,"id"]],
+    types: placeholder as Registry['admin.services.destroy']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }

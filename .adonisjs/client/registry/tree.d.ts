@@ -56,5 +56,13 @@ export interface ApiDefinition {
   admin: {
     home: typeof routes['admin.home']
     profile: typeof routes['admin.profile']
+    services: {
+      index: typeof routes['admin.services.index']
+      store: typeof routes['admin.services.store']
+      update: typeof routes['admin.services.update']
+      toggle: typeof routes['admin.services.toggle']
+      bulkToggle: typeof routes['admin.services.bulk_toggle']
+      destroy: typeof routes['admin.services.destroy']
+    }
   }
 }
