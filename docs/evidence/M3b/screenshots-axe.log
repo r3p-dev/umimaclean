@@ -1,0 +1,21 @@
+admin-area-360: path=/admin/pengaturan/area scrollWidth=360 axe=none
+admin-area-toggle-360: path=/admin/pengaturan/area (district toggled) scrollWidth=360 axe=none
+admin-pengaturan-toko-360: path=/admin/pengaturan/toko scrollWidth=360 axe=none
+admin-pengaturan-toko-error-360: path=/admin/pengaturan/toko (validation error) scrollWidth=360 axe=none
+admin-pengaturan-slot-360: path=/admin/pengaturan/toko (slot section) scrollWidth=360 axe=none
+admin-nav-mobile-360: path=/admin/pengaturan/toko (navigation menu) scrollWidth=360 axe=none
+landing-footer-360: path=/ (footer section) scrollWidth=360 axe=none
+admin-area-390: path=/admin/pengaturan/area scrollWidth=390 axe=none
+admin-area-toggle-390: path=/admin/pengaturan/area (district toggled) scrollWidth=390 axe=none
+admin-pengaturan-toko-390: path=/admin/pengaturan/toko scrollWidth=390 axe=none
+admin-pengaturan-toko-error-390: path=/admin/pengaturan/toko (validation error) scrollWidth=390 axe=none
+admin-pengaturan-slot-390: path=/admin/pengaturan/toko (slot section) scrollWidth=390 axe=none
+admin-nav-mobile-390: path=/admin/pengaturan/toko (navigation menu) scrollWidth=390 axe=none
+landing-footer-390: path=/ (footer section) scrollWidth=390 axe=none
+admin-area-1440: path=/admin/pengaturan/area scrollWidth=1440 axe=none
+admin-area-toggle-1440: path=/admin/pengaturan/area (district toggled) scrollWidth=1440 axe=none
+admin-pengaturan-toko-1440: path=/admin/pengaturan/toko scrollWidth=1440 axe=none
+admin-pengaturan-toko-error-1440: path=/admin/pengaturan/toko (validation error) scrollWidth=1440 axe=none
+admin-pengaturan-slot-1440: path=/admin/pengaturan/toko (slot section) scrollWidth=1440 axe=none
+admin-nav-mobile-1440: path=/admin/pengaturan/toko (navigation menu) scrollWidth=1440 axe=none
+landing-footer-1440: path=/ (footer section) scrollWidth=1440 axe=none
