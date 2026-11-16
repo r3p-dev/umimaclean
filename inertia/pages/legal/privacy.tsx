@@ -1,20 +1,23 @@
 import LegalPage, { LegalList, LegalSection } from '~/components/organisms/legal_page'
 import PublicLayout from '~/components/templates/public_layout'
-import { STORE_CONTACT } from '~/lib/store/contact'
+import { usePage } from '@inertiajs/react'
 
 // PHOTO-3: proof photo files are deleted after this many days.
 const PHOTO_RETENTION_DAYS = 90
 
 export default function Privacy() {
+  const { store } = usePage().props
+  const storeName = store?.name ?? 'Umima Clean'
+
   return (
     <LegalPage
       title="Kebijakan privasi"
-      description="Data apa yang disimpan Umima Clean, untuk apa, berapa lama, dan pihak lain mana yang menerimanya."
+      description={`Data apa yang disimpan ${storeName}, untuk apa, berapa lama, dan pihak lain mana yang menerimanya.`}
       updated="14 November 2026"
     >
       <p>
-        Halaman ini menjelaskan data apa yang disimpan {STORE_CONTACT.name}, untuk apa, berapa lama,
-        dan pihak lain mana yang menerimanya.
+        Halaman ini menjelaskan data apa yang disimpan {storeName}, untuk apa, berapa lama, dan
+        pihak lain mana yang menerimanya.
       </p>
       <LegalSection title="Data yang kami simpan">
         <LegalList>
@@ -63,7 +66,12 @@ export default function Privacy() {
         <p>
           Anda bisa mengubah nama, nomor, kata sandi, dan alamat di halaman Profil, serta
           mengeluarkan akun dari perangkat lain. Untuk menghapus akun, hubungi WhatsApp{' '}
-          {STORE_CONTACT.whatsapp}.
+          {store?.whatsapp
+            ? store.whatsapp.startsWith('62')
+              ? '0' + store.whatsapp.slice(2)
+              : store.whatsapp
+            : '0851-5790-0974'}
+          .
         </p>
       </LegalSection>
     </LegalPage>
