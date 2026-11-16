@@ -13,7 +13,8 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M2a  | –       | Accounts: phone login, role redirects, seeders | done        | 10    |
 | M2b  | –       | Accounts: register, OTP, forgot password       | done        | 8     |
 | M2c  | 0.2.0   | Accounts: profile, security, rate limits       | done        | 6     |
-| M3   | 0.3.0   | Services, service areas, store settings        | not started | 16    |
+| M3a  | –       | Services and landing price list                | done        | 8     |
+| M3b  | 0.3.0   | Service areas, store settings, coverage service| done        | 8     |
 | M4   | 0.4.0   | Addresses and maps                             | not started | 20    |
 | M5a  | 0.5.0   | Online ordering: slots, new order, confirm     | not started | 14    |
 | M5b  | 0.5.0   | Order pages and tracking                       | not started | 12    |
