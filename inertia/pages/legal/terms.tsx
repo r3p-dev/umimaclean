@@ -1,18 +1,28 @@
 import LegalPage, { LegalList, LegalSection } from '~/components/organisms/legal_page'
 import PublicLayout from '~/components/templates/public_layout'
-import { STORE_CONTACT } from '~/lib/store/contact'
+import { usePage } from '@inertiajs/react'
 
 export default function Terms() {
+  const { store } = usePage().props
+  const storeInfo = store ?? {
+    name: 'Umima Clean',
+    whatsapp: '6285157900974',
+    address: 'Jl. Margacinta No. 132, Margasari, Buahbatu, Kota Bandung 40286',
+    hours: '09.00–20.00',
+  }
+  const waDisplay = storeInfo.whatsapp.startsWith('62')
+    ? '0' + storeInfo.whatsapp.slice(2)
+    : storeInfo.whatsapp
+
   return (
     <LegalPage
       title="Syarat layanan"
-      description="Syarat pemesanan, pemeriksaan, pembayaran, dan pengembalian barang di Umima Clean."
+      description={`Syarat pemesanan, pemeriksaan, pembayaran, dan pengembalian barang di ${storeInfo.name}.`}
       updated="14 November 2026"
     >
       <p>
-        Syarat ini berlaku untuk pencucian sepatu, tas, dan helm di {STORE_CONTACT.name} (
-        {STORE_CONTACT.address}), baik yang dipesan lewat situs ini maupun yang dibawa langsung ke
-        toko.
+        Syarat ini berlaku untuk pencucian sepatu, tas, dan helm di {storeInfo.name} (
+        {storeInfo.address}), baik yang dipesan lewat situs ini maupun yang dibawa langsung ke toko.
       </p>
       <LegalSection title="Pemesanan dan penjemputan">
         <LegalList>
@@ -64,8 +74,7 @@ export default function Terms() {
       </LegalSection>
       <LegalSection title="Kontak">
         <p>
-          Pertanyaan atau keluhan: WhatsApp {STORE_CONTACT.whatsapp}, setiap hari{' '}
-          {STORE_CONTACT.hours}.
+          Pertanyaan atau keluhan: WhatsApp {waDisplay}, setiap hari {storeInfo.hours}.
         </p>
       </LegalSection>
     </LegalPage>
