@@ -47,6 +47,8 @@ DB_DATABASE=umimaclean_dev
 
 Test runs use `.env.test` automatically, which defaults to `DB_DATABASE=umimaclean_dev_test`.
 
+`TRUSTED_PROXIES` lists the addresses allowed to set `X-Forwarded-For` (comma-separated IPs, CIDR ranges or `loopback`; default `loopback`). Behind a reverse proxy on the same machine nothing needs to change. **In production** the app runs behind Traefik in rootless Podman and sees Traefik's address on the container network, not loopback, so set `TRUSTED_PROXIES` to that Podman network's subnet. Find it with `podman network inspect <network> --format '{{range .Subnets}}{{.Subnet}} {{end}}'` and set, for example, `TRUSTED_PROXIES=10.89.0.0/24`. Without it, every request looks like it comes from Traefik and the per-IP sign-in limit (ACC-3) would block all customers together.
+
 ### Step 3: Create databases and enable extensions
 
 Run `database/create_databases.sql` against the administrative `postgres` database:
