@@ -35,15 +35,11 @@ test.group('Look and feel', (group) => {
           outsideRequests.push(url.href)
           return route.abort()
         }
-        return route.continue()
+        return route.fallback()
       })
 
       const page = await visit(path)
-      if (path === '/daftar' || path === '/lupa-kata-sandi') {
-        await page.waitForLoadState('load')
-      } else {
-        await page.waitForLoadState('networkidle')
-      }
+      await page.waitForLoadState('networkidle')
 
       assert.deepEqual(outsideRequests, [])
       assert.equal(await page.locator('html').getAttribute('lang'), 'id')
@@ -89,11 +85,7 @@ test.group('Look and feel', (group) => {
     ])
     .run(async ({ visit, assert }, path) => {
       const page = await visit(path)
-      if (path === '/daftar' || path === '/lupa-kata-sandi') {
-        await page.waitForLoadState('load')
-      } else {
-        await page.waitForLoadState('networkidle')
-      }
+      await page.waitForLoadState('networkidle')
 
       const results = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -151,11 +143,7 @@ test.group('Look and feel', (group) => {
     .run(async ({ visit, assert }, path) => {
       const page = await visit(path)
       await page.setViewportSize({ width: 360, height: 780 })
-      if (path === '/daftar' || path === '/lupa-kata-sandi') {
-        await page.waitForLoadState('load')
-      } else {
-        await page.waitForLoadState('networkidle')
-      }
+      await page.waitForLoadState('networkidle')
 
       assert.isAtMost(Number(await page.evaluate('document.documentElement.scrollWidth')), 360)
     })
