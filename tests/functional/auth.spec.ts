@@ -3,6 +3,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
 import ActivityLog from '#models/activity_log'
 import { Role } from '#enums/role_enum'
+import { visitRedirect } from '../helpers/inertia.js'
 
 test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (group) => {
   group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
@@ -73,21 +74,37 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       isActive: true,
     })
 
-    const res1 = await client.post('/masuk').redirects(0).withCsrfToken().form({
-      phone: '081200000012',
-      password: 'wrongpassword',
-    })
+    const res1 = await client
+      .post('/masuk')
+      .header('referer', '/masuk')
+      .redirects(0)
+      .withCsrfToken()
+      .form({
+        phone: '081200000012',
+        password: 'wrongpassword',
+      })
     res1.assertStatus(302)
     res1.assertHeader('location', '/masuk')
-    res1.assertValidationError('phone', 'Nomor WhatsApp atau kata sandi salah.')
-
-    const res2 = await client.post('/masuk').redirects(0).withCsrfToken().form({
-      phone: '081299999999',
-      password: 'password123',
+    const page1 = await visitRedirect(client, res1)
+    page1.assertInertiaPropsContains({
+      errors: { phone: 'Nomor atau kata sandi salah.' },
     })
+
+    const res2 = await client
+      .post('/masuk')
+      .header('referer', '/masuk')
+      .redirects(0)
+      .withCsrfToken()
+      .form({
+        phone: '081299999999',
+        password: 'password123',
+      })
     res2.assertStatus(302)
     res2.assertHeader('location', '/masuk')
-    res2.assertValidationError('phone', 'Nomor WhatsApp atau kata sandi salah.')
+    const page2 = await visitRedirect(client, res2)
+    page2.assertInertiaPropsContains({
+      errors: { phone: 'Nomor atau kata sandi salah.' },
+    })
   })
 
   test('POST /masuk refuses inactive customer accounts', async ({ client }) => {
@@ -99,14 +116,22 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       isActive: false,
     })
 
-    const response = await client.post('/masuk').redirects(0).withCsrfToken().form({
-      phone: '081200000099',
-      password: 'password123',
-    })
+    const response = await client
+      .post('/masuk')
+      .header('referer', '/masuk')
+      .redirects(0)
+      .withCsrfToken()
+      .form({
+        phone: '081200000099',
+        password: 'password123',
+      })
 
     response.assertStatus(302)
     response.assertHeader('location', '/masuk')
-    response.assertValidationError('phone', 'Akun Anda dinonaktifkan. Hubungi kami untuk bantuan.')
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { phone: 'Akun Anda dinonaktifkan. Hubungi kami untuk bantuan.' },
+    })
   })
 
   test('POST /masuk points staff and owner accounts to /staf/masuk (GUEST-11)', async ({
@@ -120,17 +145,22 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       isActive: true,
     })
 
-    const response = await client.post('/masuk').redirects(0).withCsrfToken().form({
-      phone: '081200000002',
-      password: 'password123',
-    })
+    const response = await client
+      .post('/masuk')
+      .header('referer', '/masuk')
+      .redirects(0)
+      .withCsrfToken()
+      .form({
+        phone: '081200000002',
+        password: 'password123',
+      })
 
     response.assertStatus(302)
     response.assertHeader('location', '/masuk')
-    response.assertValidationError(
-      'phone',
-      'Akun staf dan pemilik silakan masuk melalui halaman masuk staf.'
-    )
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { phone: 'Akun staf dan pemilik silakan masuk melalui halaman masuk staf.' },
+    })
   })
 
   test('POST /staf/masuk authenticates staff and redirects to /staf (STAFF-1)', async ({
@@ -196,17 +226,22 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       isActive: true,
     })
 
-    const response = await client.post('/staf/masuk').redirects(0).withCsrfToken().form({
-      phone: '081200000013',
-      password: 'password123',
-    })
+    const response = await client
+      .post('/staf/masuk')
+      .header('referer', '/staf/masuk')
+      .redirects(0)
+      .withCsrfToken()
+      .form({
+        phone: '081200000013',
+        password: 'password123',
+      })
 
     response.assertStatus(302)
     response.assertHeader('location', '/staf/masuk')
-    response.assertValidationError(
-      'phone',
-      'Akun pelanggan silakan masuk melalui halaman masuk pelanggan.'
-    )
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { phone: 'Akun pelanggan silakan masuk melalui halaman masuk pelanggan.' },
+    })
   })
 
   test('POST /keluar terminates session and redirects to /masuk', async ({ client }) => {

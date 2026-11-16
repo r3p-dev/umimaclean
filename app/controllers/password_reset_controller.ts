@@ -50,11 +50,9 @@ export default class PasswordResetController {
     }
 
     const payload = await request.validateUsing(resetPasswordValidator)
-    const user = await this.accountService.resetPassword(
-      grant.userId,
-      payload.password,
-      session.sessionId
-    )
+    const user = await this.accountService.resetPassword(grant.userId, payload.password, {
+      sessionId: session.sessionId,
+    })
 
     this.otpService.forgetPasswordReset(session)
 
