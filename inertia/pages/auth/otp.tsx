@@ -50,7 +50,12 @@ export default function OtpPage({
         ? 'Verifikasi'
         : 'Verifikasi & Ganti Nomor'
 
-  const restartRoute = purpose === 'register' ? 'register.create' : 'password_reset.create'
+  const restartRoute =
+    purpose === 'register'
+      ? 'register.create'
+      : purpose === 'reset_password'
+        ? 'password_reset.create'
+        : 'customer.phone.edit'
 
   function handleResend() {
     if (remaining > 0 || isResending) {

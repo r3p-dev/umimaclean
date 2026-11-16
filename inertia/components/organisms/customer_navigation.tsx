@@ -59,12 +59,16 @@ export function CustomerHeader({ active }: { active: CustomerSection }) {
         </nav>
         <div className="ml-auto flex items-center gap-3">
           {user && (
-            <span className="hidden items-center gap-2 text-sm font-medium sm:inline-flex">
+            <Link
+              route="customer.profile.show"
+              aria-current={active === 'profil' ? 'page' : undefined}
+              className="hidden min-h-11 items-center gap-2 rounded-md px-2 text-sm font-medium hover:bg-muted sm:inline-flex"
+            >
               <span className="flex size-9 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
                 {user.initials}
               </span>
               {user.fullName}
-            </span>
+            </Link>
           )}
           <Form route="session.destroy">
             <CsrfField />

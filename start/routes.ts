@@ -20,10 +20,6 @@ router
     router.get('/daftar', [controllers.Registration, 'create']).as('register.create')
     router.post('/daftar', [controllers.Registration, 'store']).as('register.store')
 
-    router.get('/verifikasi', [controllers.Otp, 'show']).as('otp.show')
-    router.post('/verifikasi', [controllers.Otp, 'verify']).as('otp.verify')
-    router.post('/verifikasi/kirim-ulang', [controllers.Otp, 'resend']).as('otp.resend')
-
     router
       .get('/lupa-kata-sandi', [controllers.PasswordReset, 'create'])
       .as('password_reset.create')
@@ -36,26 +32,45 @@ router
   })
   .use(middleware.guest())
 
+// Every OTP purpose: sign-up and password reset as a guest, phone change while signed in (CUST-13).
+router.get('/verifikasi', [controllers.Otp, 'show']).as('otp.show')
+router.post('/verifikasi', [controllers.Otp, 'verify']).as('otp.verify')
+router.post('/verifikasi/kirim-ulang', [controllers.Otp, 'resend']).as('otp.resend')
+
 router
-  .post('/keluar', [controllers.Session, 'destroy'])
-  .as('session.destroy')
+  .group(() => {
+    router.post('/keluar', [controllers.Session, 'destroy']).as('session.destroy')
+    router
+      .put('/akun/kata-sandi', [controllers.AccountSecurity, 'updatePassword'])
+      .as('account_security.update_password')
+    router
+      .post('/akun/keluar-perangkat-lain', [controllers.AccountSecurity, 'signOutOtherDevices'])
+      .as('account_security.sign_out_other_devices')
+  })
   .use(middleware.auth())
 
 router
   .group(() => {
     router.on('/beranda').renderInertia('customer/dashboard', {}).as('customer.home')
+    router.get('/profil', [controllers.Profile, 'show']).as('customer.profile.show')
+    router.get('/profil/ubah', [controllers.Profile, 'edit']).as('customer.profile.edit')
+    router.put('/profil', [controllers.Profile, 'update']).as('customer.profile.update')
+    router.get('/profil/nomor', [controllers.PhoneChange, 'edit']).as('customer.phone.edit')
+    router.post('/profil/nomor', [controllers.PhoneChange, 'store']).as('customer.phone.store')
   })
   .use(middleware.customer())
 
 router
   .group(() => {
     router.on('/staf').renderInertia('staff/dashboard', {}).as('staff.home')
+    router.get('/staf/profil', [controllers.Profile, 'showStaff']).as('staff.profile')
   })
   .use(middleware.staff())
 
 router
   .group(() => {
     router.on('/admin').renderInertia('admin/dashboard', {}).as('admin.home')
+    router.get('/admin/profil', [controllers.Profile, 'showOwner']).as('admin.profile')
   })
   .use(middleware.admin())
 

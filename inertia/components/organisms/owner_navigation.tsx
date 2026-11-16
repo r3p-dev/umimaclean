@@ -20,7 +20,11 @@ import Logo from '~/components/atoms/logo'
 import NavigationItem from '~/components/molecules/navigation_item'
 import { Button } from '~/components/ui/button'
 import { Sheet, SheetClose, SheetTitle } from '~/components/ui/sheet'
-import { OWNER_NAVIGATION, type OwnerSection } from '~/lib/navigation/owner_links'
+import {
+  OWNER_NAVIGATION,
+  OWNER_PROFILE_LINK,
+  type OwnerSection,
+} from '~/lib/navigation/owner_links'
 
 const ICONS: Record<OwnerSection, ComponentType<SVGProps<SVGSVGElement>>> = {
   ringkasan: IconChartLine,
@@ -68,6 +72,14 @@ function OwnerNavigationItems({ active, isCompact }: { active: OwnerSection; isC
         })}
       </nav>
       <div className="mt-auto flex flex-col gap-1 border-t border-sidebar-border pt-3">
+        <NavigationItem
+          item={OWNER_PROFILE_LINK}
+          isActive={active === 'profil'}
+          className={itemClass(active === 'profil', isCompact)}
+        >
+          <IconUserCircle className="size-5 shrink-0" />
+          <span className={labelClass}>{OWNER_PROFILE_LINK.label}</span>
+        </NavigationItem>
         <Form route="session.destroy">
           <CsrfField />
           <button type="submit" className={itemClass(false, isCompact)}>

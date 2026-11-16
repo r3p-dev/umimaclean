@@ -8,12 +8,18 @@ import {
   IconHomeFilled,
   IconLogout,
   IconMenu2,
+  IconUser,
+  IconUserFilled,
   IconWashMachine,
 } from '@tabler/icons-react'
 import { cn } from 'cn'
 import Logo from '~/components/atoms/logo'
 import NavigationItem from '~/components/molecules/navigation_item'
-import { STAFF_NAVIGATION, type StaffSection } from '~/lib/navigation/staff_links'
+import {
+  STAFF_NAVIGATION,
+  STAFF_PROFILE_LINK,
+  type StaffSection,
+} from '~/lib/navigation/staff_links'
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>
 
@@ -23,6 +29,7 @@ const ICONS: Record<StaffSection, [Icon, Icon]> = {
   proses: [IconWashMachine, IconWashMachine],
   antar: [IconArrowDownLeft, IconArrowDownLeft],
   lainnya: [IconMenu2, IconMenu2],
+  profil: [IconUser, IconUserFilled],
 }
 
 export function StaffSidebar({ active }: { active: StaffSection }) {
@@ -61,6 +68,19 @@ export function StaffSidebar({ active }: { active: StaffSection }) {
         })}
       </nav>
       <div className="mt-auto flex flex-col gap-1 border-t border-border pt-3">
+        <NavigationItem
+          item={STAFF_PROFILE_LINK}
+          isActive={active === 'profil'}
+          className={cn(
+            'flex h-11 items-center gap-2.5 rounded-md px-2.5 text-sm leading-none max-lg:justify-center',
+            active === 'profil'
+              ? 'bg-accent font-semibold text-accent-foreground'
+              : 'font-medium text-foreground hover:bg-accent'
+          )}
+        >
+          <IconUser className="size-5 shrink-0" />
+          <span className="sr-only lg:not-sr-only">{STAFF_PROFILE_LINK.label}</span>
+        </NavigationItem>
         <Form route="session.destroy">
           <CsrfField />
           <button
@@ -82,7 +102,7 @@ export function StaffTabBar({ active }: { active: StaffSection }) {
       aria-label="Navigasi staf"
       className="sticky bottom-0 z-30 flex h-16 items-center justify-around border-t border-border bg-card sm:hidden"
     >
-      {STAFF_NAVIGATION.map((item) => {
+      {[...STAFF_NAVIGATION, STAFF_PROFILE_LINK].map((item) => {
         const isActive = item.key === active
         const [Outline, Filled] = ICONS[item.key]
         const ItemIcon = isActive ? Filled : Outline
@@ -92,7 +112,7 @@ export function StaffTabBar({ active }: { active: StaffSection }) {
             item={item}
             isActive={isActive}
             className={cn(
-              'flex flex-col items-center justify-center gap-1 text-xs leading-none',
+              'flex min-h-11 min-w-11 flex-col items-center justify-center gap-1 text-xs leading-none',
               isActive ? 'font-bold text-accent-foreground' : 'font-medium text-foreground/80'
             )}
           >

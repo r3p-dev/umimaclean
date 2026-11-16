@@ -20,6 +20,7 @@ vine.messagesProvider = new SimpleMessagesProvider({
   'database.exists': '{{ field }} tidak ditemukan.',
   'phone.required': 'Nomor WhatsApp wajib diisi.',
   'password.required': 'Kata sandi wajib diisi.',
+  'currentPassword.required': 'Kata sandi saat ini wajib diisi.',
   'fullName.required': 'Nama lengkap wajib diisi.',
   'name.required': 'Nama wajib diisi.',
   'terms.accepted': 'Setujui syarat & ketentuan untuk mendaftar.',

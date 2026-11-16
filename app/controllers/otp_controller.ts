@@ -4,6 +4,7 @@ import OtpService, { OTP_LOCKED_MESSAGE } from '#services/otp_service'
 import { OTP_TTL_MINUTES } from '#models/otp_code'
 import { OtpPurpose } from '#enums/otp_purpose_enum'
 import TurnstileGateway from '#services/turnstile_gateway'
+import AccountService from '#services/account_service'
 import { maskPhone } from '#helpers/phone'
 import { verifyOtpValidator, resendOtpValidator } from '#validators/otp_validator'
 import { errors as vineErrors } from '@vinejs/vine'
@@ -12,11 +13,22 @@ import { errors as vineErrors } from '@vinejs/vine'
 export default class OtpController {
   constructor(
     protected otpService: OtpService,
-    protected turnstile: TurnstileGateway
+    protected turnstile: TurnstileGateway,
+    protected accountService: AccountService
   ) {}
 
-  async show({ inertia, response, session }: HttpContext) {
+  // A phone change belongs to the signed-in account that started it (CUST-13).
+  #currentFlow({ auth, session }: HttpContext) {
     const flow = this.otpService.currentOtpFlow(session)
+    if (flow?.purpose === OtpPurpose.CHANGE_PHONE && flow.userId !== auth.user?.id) {
+      return null
+    }
+    return flow
+  }
+
+  async show(ctx: HttpContext) {
+    const { inertia, response } = ctx
+    const flow = this.#currentFlow(ctx)
     if (!flow) {
       return response.redirect().toRoute('session.create')
     }
@@ -30,8 +42,9 @@ export default class OtpController {
     })
   }
 
-  async verify({ auth, request, response, session }: HttpContext) {
-    const flow = this.otpService.currentOtpFlow(session)
+  async verify(ctx: HttpContext) {
+    const { auth, request, response, session } = ctx
+    const flow = this.#currentFlow(ctx)
     if (!flow) {
       return response.redirect().toRoute('session.create')
     }
@@ -73,11 +86,21 @@ export default class OtpController {
       return response.redirect().toRoute('password_reset.edit')
     }
 
+    if (flow.purpose === OtpPurpose.CHANGE_PHONE) {
+      await this.accountService.signOutOtherDevices(user, {
+        sessionId: session.sessionId,
+        rememberMeToken: request.encryptedCookie(auth.use('web').rememberMeKeyName),
+      })
+      session.flash('success', 'Nomor WhatsApp diganti. Perangkat lain sudah dikeluarkan.')
+      return response.redirect().toRoute('customer.profile.show')
+    }
+
     return response.redirect().toRoute('home')
   }
 
-  async resend({ request, response, session }: HttpContext) {
-    const flow = this.otpService.currentOtpFlow(session)
+  async resend(ctx: HttpContext) {
+    const { request, response, session } = ctx
+    const flow = this.#currentFlow(ctx)
     if (!flow) {
       return response.redirect().toRoute('session.create')
     }

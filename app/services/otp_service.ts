@@ -19,7 +19,7 @@ import OtpCode, {
 import User from '#models/user'
 import WhatsAppService from '#services/whatsapp_service'
 import env from '#start/env'
-import AccountService from '#services/account_service'
+import AccountService, { PHONE_IN_USE_MESSAGE } from '#services/account_service'
 import { maskPhone } from '#helpers/phone'
 
 export interface OtpFlow {
@@ -27,6 +27,7 @@ export interface OtpFlow {
   phone: string
   name?: string
   passwordHash?: string
+  userId?: number
   failures: number
 }
 
@@ -264,6 +265,28 @@ export default class OtpService {
     session.put(FLOW_KEY, flow)
   }
 
+  async startPhoneChange(session: Session, user: User, phone: string, ip: string): Promise<void> {
+    if (phone === user.phone) {
+      validationError('phone', 'Ini nomor Anda saat ini.', 'phone')
+    }
+
+    if (await User.isPhoneTaken(phone)) {
+      validationError('phone', PHONE_IN_USE_MESSAGE, 'phone')
+    }
+
+    const flow: OtpFlow = {
+      purpose: OtpPurpose.CHANGE_PHONE,
+      phone,
+      userId: user.id,
+      failures: 0,
+    }
+
+    const result = await this.#issue(phone, flow.purpose, { ip })
+    this.#assertIssued(result, 'phone', flow.purpose)
+
+    session.put(FLOW_KEY, flow)
+  }
+
   async resendOtp(session: Session, flow: OtpFlow, ip: string): Promise<void> {
     const isRegistered =
       flow.purpose !== OtpPurpose.RESET_PASSWORD || (await User.isPhoneTaken(flow.phone))
@@ -319,6 +342,8 @@ export default class OtpService {
         )
       } else if (flow.purpose === OtpPurpose.RESET_PASSWORD) {
         user = await User.query({ client: transaction }).where('phone', flow.phone).first()
+      } else if (flow.purpose === OtpPurpose.CHANGE_PHONE) {
+        user = await this.accountService.changePhone(flow.userId!, flow.phone, transaction)
       }
 
       return { result: 'valid', user }

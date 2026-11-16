@@ -14,3 +14,9 @@ export type OwnerSection =
 export const OWNER_NAVIGATION: NavigationItem<Exclude<OwnerSection, 'profil'>>[] = [
   { key: 'ringkasan', label: 'Ringkasan', route: 'admin.home' },
 ]
+
+export const OWNER_PROFILE_LINK: NavigationItem<'profil'> = {
+  key: 'profil',
+  label: 'Profil',
+  route: 'admin.profile',
+}

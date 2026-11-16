@@ -151,45 +151,6 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/registration_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'otp.show': {
-    methods: ["GET","HEAD"]
-    pattern: '/verifikasi'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['show']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['show']>>>
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['show']>>>
-    }
-  }
-  'otp.verify': {
-    methods: ["POST"]
-    pattern: '/verifikasi'
-    types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/otp_validator').verifyOtpValidator)>>
-      paramsTuple: []
-      params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/otp_validator').verifyOtpValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>> | { status: 422; response: { errors: SimpleError[] } }
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
-  'otp.resend': {
-    methods: ["POST"]
-    pattern: '/verifikasi/kirim-ulang'
-    types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/otp_validator').resendOtpValidator)>>
-      paramsTuple: []
-      params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/otp_validator').resendOtpValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['resend']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['resend']>>> | { status: 422; response: { errors: SimpleError[] } }
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['resend']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
   'password_reset.create': {
     methods: ["GET","HEAD"]
     pattern: '/lupa-kata-sandi'
@@ -242,6 +203,45 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'otp.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/verifikasi'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['show']>>>
+    }
+  }
+  'otp.verify': {
+    methods: ["POST"]
+    pattern: '/verifikasi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/otp_validator').verifyOtpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/otp_validator').verifyOtpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'otp.resend': {
+    methods: ["POST"]
+    pattern: '/verifikasi/kirim-ulang'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/otp_validator').resendOtpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/otp_validator').resendOtpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['resend']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['resend']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['resend']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'session.destroy': {
     methods: ["POST"]
     pattern: '/keluar'
@@ -253,6 +253,32 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['destroy']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['destroy']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/session_controller').default['destroy']>>>
+    }
+  }
+  'account_security.update_password': {
+    methods: ["PUT"]
+    pattern: '/akun/kata-sandi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['updatePassword']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['updatePassword']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['updatePassword']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'account_security.sign_out_other_devices': {
+    methods: ["POST"]
+    pattern: '/akun/keluar-perangkat-lain'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['signOutOtherDevices']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['signOutOtherDevices']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['signOutOtherDevices']>>>
     }
   }
   'customer.home': {
@@ -268,6 +294,71 @@ export interface Registry {
       rawResponse: ExtractRawResponse<unknown>
     }
   }
+  'customer.profile.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+    }
+  }
+  'customer.profile.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil/ubah'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['edit']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['edit']>>>
+    }
+  }
+  'customer.profile.update': {
+    methods: ["PUT"]
+    pattern: '/profil'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').updateProfileValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').updateProfileValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.phone.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil/nomor'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['edit']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['edit']>>>
+    }
+  }
+  'customer.phone.store': {
+    methods: ["POST"]
+    pattern: '/profil/nomor'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'staff.home': {
     methods: ["GET","HEAD"]
     pattern: '/staf'
@@ -281,6 +372,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<unknown>
     }
   }
+  'staff.profile': {
+    methods: ["GET","HEAD"]
+    pattern: '/staf/profil'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showStaff']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showStaff']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showStaff']>>>
+    }
+  }
   'admin.home': {
     methods: ["GET","HEAD"]
     pattern: '/admin'
@@ -292,6 +396,19 @@ export interface Registry {
       response: unknown
       errorResponse: unknown
       rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'admin.profile': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/profil'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showOwner']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showOwner']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showOwner']>>>
     }
   }
 }

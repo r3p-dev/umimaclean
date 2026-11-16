@@ -74,24 +74,6 @@ const routes = {
     tokens: [[0,"daftar"]],
     types: placeholder as Registry['register.store']['types'],
   },
-  'otp.show': {
-    methods: ["GET","HEAD"],
-    pattern: '/verifikasi',
-    tokens: [[0,"verifikasi"]],
-    types: placeholder as Registry['otp.show']['types'],
-  },
-  'otp.verify': {
-    methods: ["POST"],
-    pattern: '/verifikasi',
-    tokens: [[0,"verifikasi"]],
-    types: placeholder as Registry['otp.verify']['types'],
-  },
-  'otp.resend': {
-    methods: ["POST"],
-    pattern: '/verifikasi/kirim-ulang',
-    tokens: [[0,"verifikasi"],[0,"kirim-ulang"]],
-    types: placeholder as Registry['otp.resend']['types'],
-  },
   'password_reset.create': {
     methods: ["GET","HEAD"],
     pattern: '/lupa-kata-sandi',
@@ -116,11 +98,41 @@ const routes = {
     tokens: [[0,"kata-sandi-baru"]],
     types: placeholder as Registry['password_reset.update']['types'],
   },
+  'otp.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/verifikasi',
+    tokens: [[0,"verifikasi"]],
+    types: placeholder as Registry['otp.show']['types'],
+  },
+  'otp.verify': {
+    methods: ["POST"],
+    pattern: '/verifikasi',
+    tokens: [[0,"verifikasi"]],
+    types: placeholder as Registry['otp.verify']['types'],
+  },
+  'otp.resend': {
+    methods: ["POST"],
+    pattern: '/verifikasi/kirim-ulang',
+    tokens: [[0,"verifikasi"],[0,"kirim-ulang"]],
+    types: placeholder as Registry['otp.resend']['types'],
+  },
   'session.destroy': {
     methods: ["POST"],
     pattern: '/keluar',
     tokens: [[0,"keluar"]],
     types: placeholder as Registry['session.destroy']['types'],
+  },
+  'account_security.update_password': {
+    methods: ["PUT"],
+    pattern: '/akun/kata-sandi',
+    tokens: [[0,"akun"],[0,"kata-sandi"]],
+    types: placeholder as Registry['account_security.update_password']['types'],
+  },
+  'account_security.sign_out_other_devices': {
+    methods: ["POST"],
+    pattern: '/akun/keluar-perangkat-lain',
+    tokens: [[0,"akun"],[0,"keluar-perangkat-lain"]],
+    types: placeholder as Registry['account_security.sign_out_other_devices']['types'],
   },
   'customer.home': {
     methods: ["GET","HEAD"],
@@ -128,17 +140,59 @@ const routes = {
     tokens: [[0,"beranda"]],
     types: placeholder as Registry['customer.home']['types'],
   },
+  'customer.profile.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/profil',
+    tokens: [[0,"profil"]],
+    types: placeholder as Registry['customer.profile.show']['types'],
+  },
+  'customer.profile.edit': {
+    methods: ["GET","HEAD"],
+    pattern: '/profil/ubah',
+    tokens: [[0,"profil"],[0,"ubah"]],
+    types: placeholder as Registry['customer.profile.edit']['types'],
+  },
+  'customer.profile.update': {
+    methods: ["PUT"],
+    pattern: '/profil',
+    tokens: [[0,"profil"]],
+    types: placeholder as Registry['customer.profile.update']['types'],
+  },
+  'customer.phone.edit': {
+    methods: ["GET","HEAD"],
+    pattern: '/profil/nomor',
+    tokens: [[0,"profil"],[0,"nomor"]],
+    types: placeholder as Registry['customer.phone.edit']['types'],
+  },
+  'customer.phone.store': {
+    methods: ["POST"],
+    pattern: '/profil/nomor',
+    tokens: [[0,"profil"],[0,"nomor"]],
+    types: placeholder as Registry['customer.phone.store']['types'],
+  },
   'staff.home': {
     methods: ["GET","HEAD"],
     pattern: '/staf',
     tokens: [[0,"staf"]],
     types: placeholder as Registry['staff.home']['types'],
   },
+  'staff.profile': {
+    methods: ["GET","HEAD"],
+    pattern: '/staf/profil',
+    tokens: [[0,"staf"],[0,"profil"]],
+    types: placeholder as Registry['staff.profile']['types'],
+  },
   'admin.home': {
     methods: ["GET","HEAD"],
     pattern: '/admin',
     tokens: [[0,"admin"]],
     types: placeholder as Registry['admin.home']['types'],
+  },
+  'admin.profile': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/profil',
+    tokens: [[0,"admin"],[0,"profil"]],
+    types: placeholder as Registry['admin.profile']['types'],
   },
 } as const satisfies Record<string, AdonisEndpoint>
 

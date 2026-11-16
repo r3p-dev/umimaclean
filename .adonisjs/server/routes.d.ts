@@ -15,17 +15,26 @@ export type ScannedRoutes = {
     'session.storeStaff': { paramsTuple?: []; params?: {} }
     'register.create': { paramsTuple?: []; params?: {} }
     'register.store': { paramsTuple?: []; params?: {} }
-    'otp.show': { paramsTuple?: []; params?: {} }
-    'otp.verify': { paramsTuple?: []; params?: {} }
-    'otp.resend': { paramsTuple?: []; params?: {} }
     'password_reset.create': { paramsTuple?: []; params?: {} }
     'password_reset.store': { paramsTuple?: []; params?: {} }
     'password_reset.edit': { paramsTuple?: []; params?: {} }
     'password_reset.update': { paramsTuple?: []; params?: {} }
+    'otp.show': { paramsTuple?: []; params?: {} }
+    'otp.verify': { paramsTuple?: []; params?: {} }
+    'otp.resend': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
+    'account_security.update_password': { paramsTuple?: []; params?: {} }
+    'account_security.sign_out_other_devices': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
+    'customer.profile.show': { paramsTuple?: []; params?: {} }
+    'customer.profile.edit': { paramsTuple?: []; params?: {} }
+    'customer.profile.update': { paramsTuple?: []; params?: {} }
+    'customer.phone.edit': { paramsTuple?: []; params?: {} }
+    'customer.phone.store': { paramsTuple?: []; params?: {} }
     'staff.home': { paramsTuple?: []; params?: {} }
+    'staff.profile': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
+    'admin.profile': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -36,12 +45,17 @@ export type ScannedRoutes = {
     'session.create': { paramsTuple?: []; params?: {} }
     'session.createStaff': { paramsTuple?: []; params?: {} }
     'register.create': { paramsTuple?: []; params?: {} }
-    'otp.show': { paramsTuple?: []; params?: {} }
     'password_reset.create': { paramsTuple?: []; params?: {} }
     'password_reset.edit': { paramsTuple?: []; params?: {} }
+    'otp.show': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
+    'customer.profile.show': { paramsTuple?: []; params?: {} }
+    'customer.profile.edit': { paramsTuple?: []; params?: {} }
+    'customer.phone.edit': { paramsTuple?: []; params?: {} }
     'staff.home': { paramsTuple?: []; params?: {} }
+    'staff.profile': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
+    'admin.profile': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -52,22 +66,33 @@ export type ScannedRoutes = {
     'session.create': { paramsTuple?: []; params?: {} }
     'session.createStaff': { paramsTuple?: []; params?: {} }
     'register.create': { paramsTuple?: []; params?: {} }
-    'otp.show': { paramsTuple?: []; params?: {} }
     'password_reset.create': { paramsTuple?: []; params?: {} }
     'password_reset.edit': { paramsTuple?: []; params?: {} }
+    'otp.show': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
+    'customer.profile.show': { paramsTuple?: []; params?: {} }
+    'customer.profile.edit': { paramsTuple?: []; params?: {} }
+    'customer.phone.edit': { paramsTuple?: []; params?: {} }
     'staff.home': { paramsTuple?: []; params?: {} }
+    'staff.profile': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
+    'admin.profile': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'session.store': { paramsTuple?: []; params?: {} }
     'session.storeStaff': { paramsTuple?: []; params?: {} }
     'register.store': { paramsTuple?: []; params?: {} }
-    'otp.verify': { paramsTuple?: []; params?: {} }
-    'otp.resend': { paramsTuple?: []; params?: {} }
     'password_reset.store': { paramsTuple?: []; params?: {} }
     'password_reset.update': { paramsTuple?: []; params?: {} }
+    'otp.verify': { paramsTuple?: []; params?: {} }
+    'otp.resend': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
+    'account_security.sign_out_other_devices': { paramsTuple?: []; params?: {} }
+    'customer.phone.store': { paramsTuple?: []; params?: {} }
+  }
+  PUT: {
+    'account_security.update_password': { paramsTuple?: []; params?: {} }
+    'customer.profile.update': { paramsTuple?: []; params?: {} }
   }
 }
 declare module '@adonisjs/core/types/http' {
