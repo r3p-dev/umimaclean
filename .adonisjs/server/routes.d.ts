@@ -41,6 +41,12 @@ export type ScannedRoutes = {
     'admin.services.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.services.bulk_toggle': { paramsTuple?: []; params?: {} }
     'admin.services.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.settings.index': { paramsTuple?: []; params?: {} }
+    'admin.settings.store': { paramsTuple?: []; params?: {} }
+    'admin.settings.store.update': { paramsTuple?: []; params?: {} }
+    'admin.settings.slots.update': { paramsTuple?: []; params?: {} }
+    'admin.areas.index': { paramsTuple?: []; params?: {} }
+    'admin.areas.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -63,6 +69,9 @@ export type ScannedRoutes = {
     'admin.home': { paramsTuple?: []; params?: {} }
     'admin.profile': { paramsTuple?: []; params?: {} }
     'admin.services.index': { paramsTuple?: []; params?: {} }
+    'admin.settings.index': { paramsTuple?: []; params?: {} }
+    'admin.settings.store': { paramsTuple?: []; params?: {} }
+    'admin.areas.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -85,6 +94,9 @@ export type ScannedRoutes = {
     'admin.home': { paramsTuple?: []; params?: {} }
     'admin.profile': { paramsTuple?: []; params?: {} }
     'admin.services.index': { paramsTuple?: []; params?: {} }
+    'admin.settings.index': { paramsTuple?: []; params?: {} }
+    'admin.settings.store': { paramsTuple?: []; params?: {} }
+    'admin.areas.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'session.store': { paramsTuple?: []; params?: {} }
@@ -104,9 +116,12 @@ export type ScannedRoutes = {
     'account_security.update_password': { paramsTuple?: []; params?: {} }
     'customer.profile.update': { paramsTuple?: []; params?: {} }
     'admin.services.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.settings.store.update': { paramsTuple?: []; params?: {} }
+    'admin.settings.slots.update': { paramsTuple?: []; params?: {} }
   }
   PATCH: {
     'admin.services.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.areas.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'admin.services.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
