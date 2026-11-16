@@ -1,8 +1,10 @@
 import { test } from '@japa/runner'
 import { Bouncer } from '@adonisjs/bouncer'
-import * as abilities from '#abilities/main'
+import { accessCustomer, accessStaff, accessAdmin } from '#abilities/main'
 import User from '#models/user'
 import { Role } from '#enums/role_enum'
+
+const abilities = { accessCustomer, accessStaff, accessAdmin }
 
 test.group('Bouncer abilities', () => {
   test('accessCustomer allows customer and denies staff and admin', async ({ assert }) => {

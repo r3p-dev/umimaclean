@@ -3,7 +3,7 @@ const { Ignitor, prettyPrintError } = await import('@adonisjs/core/ignitor')
 
 const APP_ROOT = new URL('../', import.meta.url)
 
-const IMPORTER = (filePath: string) => {
+function IMPORTER(filePath: string) {
   if (filePath.startsWith('./') || filePath.startsWith('../')) {
     return import(new URL(filePath, APP_ROOT).href)
   }

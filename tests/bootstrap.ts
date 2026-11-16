@@ -32,7 +32,7 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
   teardown: [],
 }
 
-export const configureSuite: Config['configureSuite'] = (suite) => {
+export function configureSuite(suite: Parameters<NonNullable<Config['configureSuite']>>[0]) {
   if (['browser', 'functional', 'e2e'].includes(suite.name)) {
     return suite.setup(() => testUtils.httpServer().start())
   }

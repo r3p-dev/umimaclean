@@ -1,8 +1,6 @@
 import vine from '@vinejs/vine'
 import { normalizePhone, isValidIndonesianPhone } from '#helpers/phone'
 
-export { normalizePhone, isValidIndonesianPhone, maskPhone, formatPhone } from '#helpers/phone'
-
 export const indonesianPhoneValidationRule = vine.createRule((value, _, field) => {
   if (typeof value !== 'string') {
     return
@@ -15,6 +13,10 @@ export const indonesianPhoneValidationRule = vine.createRule((value, _, field) =
   field.mutate(normalized, field)
 })
 
-export const phoneRule = () => vine.string().use(indonesianPhoneValidationRule())
+export function phoneRule() {
+  return vine.string().use(indonesianPhoneValidationRule())
+}
 
-export const passwordRule = () => vine.string().minLength(8).maxLength(32)
+export function passwordRule() {
+  return vine.string().minLength(8).maxLength(32)
+}
