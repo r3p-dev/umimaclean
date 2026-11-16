@@ -50,5 +50,19 @@ export default {
         },
       },
     },
+    service_areas: {
+      columns: {
+        boundary: {
+          tsType: 'string | Record<string, unknown>',
+        },
+      },
+    },
+    settings: {
+      columns: {
+        value: {
+          tsType: 'Record<string, unknown> | unknown[] | string | number | boolean',
+        },
+      },
+    },
   },
 } satisfies SchemaRules
