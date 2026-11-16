@@ -13,7 +13,6 @@ vine.messagesProvider = new SimpleMessagesProvider({
   'required': 'Bagian ini wajib diisi.',
   'string': 'Bagian ini harus berupa teks.',
   'boolean': 'Bagian ini harus bernilai ya atau tidak.',
-  'email': 'Format email tidak valid.',
   'minLength': 'Minimal {{ min }} karakter.',
   'maxLength': 'Maksimal {{ max }} karakter.',
   'confirmed': 'Konfirmasi {{ field }} tidak cocok.',

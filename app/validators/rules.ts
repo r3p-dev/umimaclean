@@ -1,33 +1,7 @@
 import vine from '@vinejs/vine'
+import { normalizePhone, isValidIndonesianPhone } from '#helpers/phone'
 
-export function normalizePhone(value: string): string {
-  const digits = value.replace(/\D/g, '')
-  if (digits.startsWith('0')) {
-    return '62' + digits.slice(1)
-  }
-  if (digits.startsWith('62')) {
-    return digits
-  }
-  if (digits.startsWith('8')) {
-    return '62' + digits
-  }
-  return digits
-}
-
-export function isValidIndonesianPhone(phone: string): boolean {
-  const normalized = normalizePhone(phone)
-  return /^628\d{8,12}$/.test(normalized)
-}
-
-export function maskPhone(phone: string): string {
-  const normalized = normalizePhone(phone)
-  if (normalized.length < 8) {
-    return normalized
-  }
-  const start = normalized.slice(0, 5)
-  const end = normalized.slice(-4)
-  return `${start}****${end}`
-}
+export { normalizePhone, isValidIndonesianPhone, maskPhone, formatPhone } from '#helpers/phone'
 
 export const indonesianPhoneValidationRule = vine.createRule((value, _, field) => {
   if (typeof value !== 'string') {
