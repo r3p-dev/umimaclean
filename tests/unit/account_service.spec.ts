@@ -13,6 +13,7 @@ import { Role } from '#enums/role_enum'
 import { validationMessagesOf } from '../helpers/validation.js'
 
 const IP = '198.51.100.10'
+const DEVICE = { sessionId: 'current-session' }
 
 function createUser(phone: string, role: Role = Role.CUSTOMER, isActive = true) {
   return User.create({
@@ -163,7 +164,7 @@ test.group('AccountService', (group) => {
     const service = await app.container.make(AccountService)
 
     const wrong = await validationMessagesOf(() =>
-      service.changePassword(user, 'wrong', 'newpassword123')
+      service.changePassword(user, 'wrong', 'newpassword123', DEVICE)
     )
     assert.deepEqual(wrong[0], {
       field: 'currentPassword',
@@ -172,10 +173,12 @@ test.group('AccountService', (group) => {
     })
 
     for (let attempt = 1; attempt < 5; attempt++) {
-      await validationMessagesOf(() => service.changePassword(user, 'wrong', 'newpassword123'))
+      await validationMessagesOf(() =>
+        service.changePassword(user, 'wrong', 'newpassword123', DEVICE)
+      )
     }
     const blocked = await validationMessagesOf(() =>
-      service.changePassword(user, 'secretpassword', 'newpassword123')
+      service.changePassword(user, 'secretpassword', 'newpassword123', DEVICE)
     )
     assert.equal(blocked[0].rule, 'throttle')
     assert.match(blocked[0].message, /^Terlalu banyak percobaan\. Coba lagi dalam \d+ menit\.$/)
@@ -185,7 +188,7 @@ test.group('AccountService', (group) => {
     const user = await createUser('6282111223344')
     const service = await app.container.make(AccountService)
 
-    await service.changePassword(user, 'secretpassword', 'newpassword123')
+    await service.changePassword(user, 'secretpassword', 'newpassword123', DEVICE)
 
     const verified = await User.verifyCredentials('6282111223344', 'newpassword123')
     assert.equal(verified.id, user.id)

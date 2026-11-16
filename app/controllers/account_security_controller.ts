@@ -12,10 +12,14 @@ export default class AccountSecurityController {
     await this.accountService.changePassword(
       auth.getUserOrFail(),
       payload.currentPassword,
-      payload.password
+      payload.password,
+      {
+        sessionId: session.sessionId,
+        rememberMeToken: request.encryptedCookie(auth.use('web').rememberMeKeyName),
+      }
     )
 
-    session.flash('success', 'Kata sandi diganti.')
+    session.flash('success', 'Kata sandi diganti. Perangkat lain sudah dikeluarkan.')
     return response.redirect().back()
   }
 

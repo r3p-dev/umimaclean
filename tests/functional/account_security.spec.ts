@@ -45,7 +45,10 @@ test.group('Account security (ACC-4)', (group) => {
         })
 
       response.assertHeader('location', profile)
-      response.assertFlashMessage('success', 'Kata sandi diganti.')
+      response.assertFlashMessage(
+        'success',
+        'Kata sandi diganti. Perangkat lain sudah dikeluarkan.'
+      )
       const verified = await User.verifyCredentials(user.phone, 'newpassword456')
       assert.equal(verified.id, user.id)
     }
@@ -146,6 +149,54 @@ test.group('Account security (ACC-4)', (group) => {
       remaining.map((token) => String(token.identifier)),
       [String(current.identifier)]
     )
+  })
+
+  test('a password change signs out every other device, keeping this one (ACC-5)', async ({
+    client,
+    assert,
+  }) => {
+    const user = await createUser('6281200000208')
+    const current = await User.rememberMeTokens.create(user, '180d')
+    await User.rememberMeTokens.create(user, '180d')
+
+    const response = await client
+      .put('/akun/kata-sandi')
+      .header('referer', '/profil/ubah')
+      .loginAs(user)
+      .withEncryptedCookie('remember_web', current.value!.release())
+      .withCsrfToken()
+      .redirects(0)
+      .form({
+        currentPassword: 'password123',
+        password: 'newpassword456',
+        passwordConfirmation: 'newpassword456',
+      })
+
+    response.assertFlashMessage('success', 'Kata sandi diganti. Perangkat lain sudah dikeluarkan.')
+    const remaining = await User.rememberMeTokens.all(user)
+    assert.deepEqual(
+      remaining.map((token) => String(token.identifier)),
+      [String(current.identifier)]
+    )
+  })
+
+  test('a refused password change signs out nothing (ACC-4)', async ({ client, assert }) => {
+    const user = await createUser('6281200000209')
+    await User.rememberMeTokens.create(user, '180d')
+
+    await client
+      .put('/akun/kata-sandi')
+      .header('referer', '/profil/ubah')
+      .loginAs(user)
+      .withCsrfToken()
+      .redirects(0)
+      .form({
+        currentPassword: 'wrongpassword',
+        password: 'newpassword456',
+        passwordConfirmation: 'newpassword456',
+      })
+
+    assert.lengthOf(await User.rememberMeTokens.all(user), 1)
   })
 
   test('guests are refused on the account security actions', async ({ client }) => {

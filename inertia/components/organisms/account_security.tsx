@@ -34,6 +34,9 @@ export function PasswordForm() {
         <CardTitle>
           <h2>Ubah kata sandi</h2>
         </CardTitle>
+        <CardDescription className="text-base">
+          Setelah diganti, perangkat lain harus masuk lagi.
+        </CardDescription>
       </CardHeader>
       <Form
         route="account_security.update_password"

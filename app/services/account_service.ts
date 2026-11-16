@@ -141,7 +141,12 @@ export default class AccountService {
     await user.save()
   }
 
-  async changePassword(user: User, currentPassword: string, newPassword: string): Promise<void> {
+  async changePassword(
+    user: User,
+    currentPassword: string,
+    newPassword: string,
+    device: CurrentDevice
+  ): Promise<void> {
     const attempts = limiter.use({
       requests: PASSWORD_CHANGE_MAX_FAILURES,
       duration: FAILURE_WINDOW,
@@ -167,6 +172,8 @@ export default class AccountService {
 
     user.password = newPassword
     await user.save()
+
+    await this.signOutOtherDevices(user, device)
   }
 
   async resetPassword(userId: number, newPassword: string, device: CurrentDevice): Promise<User> {
