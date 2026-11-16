@@ -31,14 +31,19 @@ export default function Hero() {
           Setelah bersih, kami antar kembali.
         </p>
         <div className="flex flex-col gap-3 sm:items-start">
-          {/* Ordering needs an account, so until the order page exists (M5) this opens sign-in. */}
           <Link
-            route="session.create"
+            route="register.create"
             className={cn(buttonVariants({ className: 'h-14 gap-2 px-7 text-base sm:w-auto' }))}
           >
             Pesan Penjemputan
             <IconArrowRight className="size-5" />
           </Link>
+          <p className="text-center text-sm text-muted-foreground sm:text-left">
+            Sudah punya akun?{' '}
+            <Link route="session.create" className="font-semibold text-primary hover:underline">
+              Masuk
+            </Link>
+          </p>
         </div>
       </div>
 

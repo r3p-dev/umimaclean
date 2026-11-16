@@ -113,6 +113,11 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
           </FooterColumn>
           <FooterColumn id="footer-pelanggan" title="Pelanggan">
             <li>
+              <Link route="register.create" className={LINK}>
+                Daftar Akun
+              </Link>
+            </li>
+            <li>
               <Link route="session.create" className={LINK}>
                 Masuk
               </Link>

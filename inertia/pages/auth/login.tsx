@@ -40,9 +40,17 @@ export default function Login() {
               error={errors.password}
               required
             />
-            <Checkbox id="rememberMe" name="rememberMe" value="true">
-              Ingat saya
-            </Checkbox>
+            <div className="flex items-center justify-between">
+              <Checkbox id="rememberMe" name="rememberMe" value="true">
+                Ingat saya
+              </Checkbox>
+              <Link
+                route="password_reset.create"
+                className="text-sm font-semibold text-primary hover:underline"
+              >
+                Lupa kata sandi?
+              </Link>
+            </div>
             <Button type="submit" isDisabled={processing} className="mt-2 h-14 text-base">
               {processing ? 'Memproses…' : 'Masuk'}
             </Button>
@@ -52,8 +60,14 @@ export default function Login() {
 
       <div className="mt-6 flex flex-col items-center gap-2 text-center text-sm text-muted-foreground">
         <p>
+          Belum punya akun?{' '}
+          <Link route="register.create" className="font-semibold text-primary hover:underline">
+            Daftar sekarang
+          </Link>
+        </p>
+        <p>
           Staf operasional atau pemilik?{' '}
-          <Link href="/staf/masuk" className="font-semibold text-primary hover:underline">
+          <Link route="session.createStaff" className="font-semibold text-primary hover:underline">
             Masuk di sini
           </Link>
         </p>

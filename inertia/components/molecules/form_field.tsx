@@ -8,6 +8,7 @@ export default function FormField({
   autoComplete,
   description,
   error,
+  required,
 }: {
   id: string
   label: string
@@ -15,6 +16,7 @@ export default function FormField({
   autoComplete?: string
   description?: string
   error?: string
+  required?: boolean
 }) {
   return (
     <Field data-invalid={error ? true : undefined}>
@@ -24,6 +26,7 @@ export default function FormField({
         name={id}
         type={type}
         autoComplete={autoComplete}
+        required={required}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : undefined}
         className="h-12 text-base"
