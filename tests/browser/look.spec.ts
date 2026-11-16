@@ -10,6 +10,8 @@ const PUBLIC_PAGES = [
   '/privasi',
   '/masuk',
   '/staf/masuk',
+  '/daftar',
+  '/lupa-kata-sandi',
   '/_preview/alur',
   '/_preview/cetak',
   '/_preview/404',
@@ -25,7 +27,11 @@ test.group('Look and feel', (group) => {
       const outsideRequests: string[] = []
       await browserContext.route('**/*', (route) => {
         const url = new URL(route.request().url())
-        if (url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
+        if (
+          url.hostname !== 'localhost' &&
+          url.hostname !== '127.0.0.1' &&
+          url.hostname !== 'challenges.cloudflare.com'
+        ) {
           outsideRequests.push(url.href)
           return route.abort()
         }
@@ -66,13 +72,28 @@ test.group('Look and feel', (group) => {
   })
 
   test('{$self} has no WCAG 2.1 AA violations (axe)')
-    .with(['/', '/syarat', '/privasi', '/masuk', '/staf/masuk', '/_preview/404', '/_preview/500'])
+    .with([
+      '/',
+      '/syarat',
+      '/privasi',
+      '/masuk',
+      '/staf/masuk',
+      '/daftar',
+      '/lupa-kata-sandi',
+      '/_preview/404',
+      '/_preview/500',
+    ])
     .run(async ({ visit, assert }, path) => {
       const page = await visit(path)
-      await page.waitForLoadState('networkidle')
+      if (path === '/daftar' || path === '/lupa-kata-sandi') {
+        await page.waitForLoadState('load')
+      } else {
+        await page.waitForLoadState('networkidle')
+      }
 
       const results = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .exclude('iframe[src*="cloudflare"]')
         .analyze()
 
       const violations = results.violations.map(
@@ -81,7 +102,7 @@ test.group('Look and feel', (group) => {
       assert.deepEqual(violations, [])
     })
 
-  test('authenticated page {$self} has no WCAG 2.1 AA violations (axe)')
+  test('authenticated page {path} has no WCAG 2.1 AA violations (axe)')
     .with([
       { role: Role.CUSTOMER, path: '/beranda' },
       { role: Role.STAFF, path: '/staf' },
@@ -120,12 +141,16 @@ test.group('Look and feel', (group) => {
     .run(async ({ visit, assert }, path) => {
       const page = await visit(path)
       await page.setViewportSize({ width: 360, height: 780 })
-      await page.waitForLoadState('networkidle')
+      if (path === '/daftar' || path === '/lupa-kata-sandi') {
+        await page.waitForLoadState('load')
+      } else {
+        await page.waitForLoadState('networkidle')
+      }
 
       assert.isAtMost(Number(await page.evaluate('document.documentElement.scrollWidth')), 360)
     })
 
-  test('authenticated page {$self} does not scroll sideways at 360 px')
+  test('authenticated page {path} does not scroll sideways at 360 px')
     .with([
       { role: Role.CUSTOMER, path: '/beranda' },
       { role: Role.STAFF, path: '/staf' },

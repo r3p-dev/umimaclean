@@ -3,6 +3,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
 import { Role } from '#enums/role_enum'
 import env from '#start/env'
+import WhatsAppService from '#services/whatsapp_service'
 
 test.group('Authentication Browser Flow (M2a)', (group) => {
   group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
@@ -144,5 +145,57 @@ test.group('Authentication Browser Flow (M2a)', (group) => {
     await page.locator('form[action="/keluar"] button[type="submit"]').click()
     await page.waitForURL('**/masuk')
     await page.assertPath('/masuk')
+  })
+
+  test('customer signs up through /daftar, verifies OTP, and lands signed in on /beranda', async ({
+    visit,
+    assert,
+  }) => {
+    const page = await visit('/daftar')
+    await page.waitForLoadState('load')
+    await page.assertPath('/daftar')
+
+    // Wait for Turnstile token to be ready first so state updates don't reset inputs
+    await page
+      .waitForFunction(
+        'Boolean(document.querySelector("input[name=\\"cf-turnstile-response\\"]")?.value || document.querySelector("input[name=\\"turnstile\\"]")?.value)',
+        null,
+        { timeout: 10000 }
+      )
+      .catch(() => {})
+
+    // Fill form
+    await page.locator('input[name="name"]').fill('Daftar Baru')
+    await page.locator('input[name="phone"]').fill('081277778888')
+    await page.locator('input[name="password"]').fill('password123')
+    await page.locator('input[name="passwordConfirmation"]').fill('password123')
+    await page.locator('label[data-slot="checkbox-button"]').click()
+
+    // Submit form
+    await page.locator('button[type="submit"]').click()
+    await page.waitForURL('**/verifikasi')
+    await page.assertPath('/verifikasi')
+
+    // Retrieve OTP from WhatsApp log driver
+    const normalizedPhone = '6281277778888'
+    const otpCode = WhatsAppService.getLatestOtpCode(normalizedPhone)
+    assert.isDefined(otpCode)
+
+    // Fill OTP digits into OTP input
+    for (let i = 0; i < 6; i++) {
+      await page.locator(`input[aria-label="Digit ${i + 1} dari 6"]`).fill(otpCode![i])
+    }
+
+    // Submit OTP verification
+    await page.locator('button[type="submit"]').click()
+    await page.waitForURL('**/beranda')
+    await page.assertPath('/beranda')
+    await page.assertText('h1', 'Selamat datang, Daftar')
+
+    // Verify account is created in database
+    const user = await User.findBy('phone', normalizedPhone)
+    assert.isNotNull(user)
+    assert.equal(user!.fullName, 'Daftar Baru')
+    assert.equal(user!.role, Role.CUSTOMER)
   })
 })

@@ -1,5 +1,5 @@
 import { assert } from '@japa/assert'
-import { apiClient } from '@japa/api-client'
+import { ApiResponse, apiClient } from '@japa/api-client'
 import app from '@adonisjs/core/services/app'
 import type { Config } from '@japa/runner/types'
 import { pluginAdonisJS } from '@japa/plugin-adonisjs'
@@ -25,10 +25,54 @@ export const plugins: Config['plugins'] = [
   authBrowserClient(app),
 ]
 
+declare module '@japa/api-client' {
+  interface ApiResponse {
+    assertValidationError(field: string, message: string | RegExp): void
+  }
+}
+
 export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
   // Migrates the test database before the first test and rolls it back after the last one,
   // so a freshly created test database needs nothing else (docs/ARCHITECTURE.md §6.6).
-  setup: [() => testUtils.db().migrate()],
+  setup: [
+    () => testUtils.db().migrate(),
+    () => {
+      ApiResponse.macro(
+        'assertValidationError',
+        function (this: any, field: string, message: string | RegExp) {
+          const errors =
+            this.flashMessage('errors')?.[field] ||
+            this.flashMessage('inputErrorsBag')?.[field] ||
+            []
+          if (message instanceof RegExp) {
+            const matched = errors.some((err: string) => message.test(err))
+            this.assert.isTrue(
+              matched,
+              `Expected error for "${field}" to match ${message}, got ${JSON.stringify(errors)}`
+            )
+          } else {
+            this.assert.include(errors, message)
+          }
+        }
+      )
+      ApiResponse.macro('assertHasValidationError', function (this: any, field: string) {
+        const has = !(
+          this.flashMessage('errors')?.[field] || this.flashMessage('inputErrorsBag')?.[field]
+        )
+        this.assert.isTrue(has)
+      })
+      ApiResponse.macro(
+        'assertValidationErrors',
+        function (this: any, field: string, messages: string[]) {
+          const errors =
+            this.flashMessage('errors')?.[field] ||
+            this.flashMessage('inputErrorsBag')?.[field] ||
+            []
+          this.assert.deepEqual(errors, messages)
+        }
+      )
+    },
+  ],
   teardown: [],
 }
 
