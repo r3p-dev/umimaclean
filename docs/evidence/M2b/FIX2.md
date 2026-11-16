@@ -7,6 +7,7 @@ Date: 2026-11-16. Checkpoint **M2b-fix2** (clean-up of test bootstrap, library u
 ## 1. Resolved Review Items
 
 ### 1. Don't Patch Libraries (ACC-5 Multi-Device Browser Test)
+
 - **Problem**: `tests/bootstrap.ts` previously patched `SessionClient.prototype.destroy` and added a custom `withAuthCookiesFrom` macro. Modifying library internals across all tests risks hiding session leaks and adds unnecessary maintenance overhead.
 - **Fix**:
   - Removed the `SessionClient.prototype.destroy` monkey-patch.
@@ -20,6 +21,7 @@ Date: 2026-11-16. Checkpoint **M2b-fix2** (clean-up of test bootstrap, library u
   - Simplified the functional test in `tests/functional/password_reset.spec.ts` to focus strictly on what a single client verifies (password hash update in DB, landing on `/beranda`, generic security notice).
 
 ### 2. Adoption of Official Test Helpers
+
 - **Problem**: `tests/bootstrap.ts` had custom macros (`assertValidationError`, `assertHasValidationError`, `assertValidationErrors`) with incorrect inversion logic and untyped signatures.
 - **Fix**:
   - Removed all custom validation assertion macros.
@@ -29,6 +31,7 @@ Date: 2026-11-16. Checkpoint **M2b-fix2** (clean-up of test bootstrap, library u
   - Replaced manual JSON/HTML inspection with `assertInertiaComponent` and `assertInertiaPropsContains` across all functional test suites (`auth.spec.ts`, `registration.spec.ts`, `otp.spec.ts`, `password_reset.spec.ts`).
 
 ### 3. Server & Browser Turnstile Isolation (No Bypass)
+
 - **Problem**: Tests previously relied on disabling Turnstile verification (`if (env.get('NODE_ENV') === 'test') return true`), leaving controller verification pathways untested.
 - **Fix**:
   - Removed the `NODE_ENV === 'test'` early exit from `TurnstileGateway.ts`. Kept `TURNSTILE_ENABLED` solely for optional local offline development without keys.
@@ -39,6 +42,7 @@ Date: 2026-11-16. Checkpoint **M2b-fix2** (clean-up of test bootstrap, library u
   - Recorded Decision D62 in `docs/ARCHITECTURE.md`.
 
 ### 4. Single Customer Creation Entry Point for M9 Walk-in History (GUEST-13)
+
 - **Problem**: M9 requires linking previous unlinked walk-in orders sharing the same phone number upon account registration. A single unambiguous entry point is required.
 - **Fix**:
   - Verified that `AccountService.createCustomer` is the sole entry point for customer account creation across the codebase.
@@ -51,10 +55,10 @@ Date: 2026-11-16. Checkpoint **M2b-fix2** (clean-up of test bootstrap, library u
 
 All checks passed cleanly against PostgreSQL:
 
-| Check | Result | Full Log File |
-| :--- | :--- | :--- |
-| TypeScript Compilation (`npm run typecheck`) | 0 errors | [typecheck-fix2.log](file:///home/r3p/Projects/someshit/umimaclean/docs/evidence/M2b/typecheck-fix2.log) |
-| ESLint Quality Audit (`npm run lint`) | 0 errors, 0 warnings | [lint-fix2.log](file:///home/r3p/Projects/someshit/umimaclean/docs/evidence/M2b/lint-fix2.log) |
-| Complete Test Suite (`npm test`) | 115 passed (115) | [test-fix2.log](file:///home/r3p/Projects/someshit/umimaclean/docs/evidence/M2b/test-fix2.log) |
-| Axe Accessibility Audit (WCAG 2.1 AA) | 0 violations across all 12 audited routes | Verified in browser suite |
-| Viewport 360 px Responsive Layout | No horizontal scroll | Verified in browser suite |
+| Check                                        | Result                                    | Full Log File                            |
+| :------------------------------------------- | :---------------------------------------- | :--------------------------------------- |
+| TypeScript Compilation (`npm run typecheck`) | 0 errors                                  | [typecheck-fix2.log](typecheck-fix2.log) |
+| ESLint Quality Audit (`npm run lint`)        | 0 errors, 0 warnings                      | [lint-fix2.log](lint-fix2.log)           |
+| Complete Test Suite (`npm test`)             | 115 passed (115)                          | [test-fix2.log](test-fix2.log)           |
+| Axe Accessibility Audit (WCAG 2.1 AA)        | 0 violations across all 12 audited routes | Verified in browser suite                |
+| Viewport 360 px Responsive Layout            | No horizontal scroll                      | Verified in browser suite                |

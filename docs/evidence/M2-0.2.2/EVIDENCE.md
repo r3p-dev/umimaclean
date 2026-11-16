@@ -31,18 +31,20 @@ All 159 unit, functional, and browser tests continue to pass without errors or d
 
 31 entries (2 low, 29 moderate). The minimatch path through ESLint is closed. Other advisories remain reviewed as in M2-0.2.1:
 
-| Advisory | Package (installed) | Severity | Brought in by | Reaches production? | Status / Fix |
-| --- | --- | --- | --- | --- | --- |
-| [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249) (ReDoS in minimatch) | `minimatch` (< 11.0.1) | moderate | `typescript-eslint` 8.72.x, `ts-morph` (used by `@adonisjs/assembler` and `shadcn` CLI) | No: dev tooling only. Glob patterns come from repo config, never user input. | Closed for `eslint` via 10.15.0 upgrade. Awaiting upstream patch releases for `typescript-eslint`, `ts-morph`, and `shadcn`. |
-| [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) (prototype poisoning in `mergeObject`) | `deepmerge` 4.3.1 | low | `@adonisjs/lucid` 22.4.2, `shadcn` 4.23.0 (`@shadcn/registry`) | Used only by Lucid's schema generator during migrations, on our own database schema. | No patch published upstream (4.3.1 is latest release). Awaiting future Lucid release. |
+| Advisory                                                                                                        | Package (installed)    | Severity | Brought in by                                                                           | Reaches production?                                                                  | Status / Fix                                                                                                                 |
+| --------------------------------------------------------------------------------------------------------------- | ---------------------- | -------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249) (ReDoS in minimatch)                   | `minimatch` (< 11.0.1) | moderate | `typescript-eslint` 8.72.x, `ts-morph` (used by `@adonisjs/assembler` and `shadcn` CLI) | No: dev tooling only. Glob patterns come from repo config, never user input.         | Closed for `eslint` via 10.15.0 upgrade. Awaiting upstream patch releases for `typescript-eslint`, `ts-morph`, and `shadcn`. |
+| [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) (prototype poisoning in `mergeObject`) | `deepmerge` 4.3.1      | low      | `@adonisjs/lucid` 22.4.2, `shadcn` 4.23.0 (`@shadcn/registry`)                          | Used only by Lucid's schema generator during migrations, on our own database schema. | No patch published upstream (4.3.1 is latest release). Awaiting future Lucid release.                                        |
 
 ## 6. Verification
 
-| Check | Before | After | Logs |
-| --- | --- | --- | --- |
-| `npm run lint` | exit 0 | exit 0 | `baseline-lint.log`, `lint.log` |
-| `npm run typecheck` | exit 0 | exit 0 | `baseline-typecheck.log`, `typecheck.log` |
-| `npm test` | 159 passed (159) *(with `PORT=3334`)* | 159 passed (159) *(plain `npm test`)* | `baseline-test.log`, `test.log` |
+| Check               | Before                                | After                                 | Logs                                             |
+| ------------------- | ------------------------------------- | ------------------------------------- | ------------------------------------------------ |
+| `npm run lint`      | exit 0                                | exit 0                                | `baseline-lint.log`, `lint.log`                  |
+| `npm run typecheck` | exit 0                                | exit 0                                | `baseline-v0.2.1-typecheck.log`, `typecheck.log` |
+| `npm test`          | 159 passed (159) _(with `PORT=3334`)_ | 159 passed (159) _(plain `npm test`)_ | `baseline-test.log`, `test.log`                  |
+
+Note: The original `baseline-typecheck.log` was written by hand; `baseline-v0.2.1-typecheck.log` contains the real command output redirected from a clean v0.2.1 checkout and replaces it.
 
 ## 7. Known limitations
 
