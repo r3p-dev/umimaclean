@@ -1,0 +1,24 @@
+
+> umimaclean@0.1.2 test
+> node ace test
+
+c[ info ] loading hooks...
+[ info ] generating indexes...
+[ info ] codegen: created 7 file(s)
+[ info ] booting application to run tests...
+2:02:07 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+❯ Executed 6 migrations (293 ms)
+✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔{"level":30,"time":1794812529417,"pid":210826,"hostname":"fedora","name":"umimaclean","phone":"62812****0000","kind":"otp","msg":"WhatsApp message logged (outside allowed list)"}
+✔✔✔✔✔2:02:09 PM [vite] (client) [optimizer] bundling dependencies...
+✔✔✔✔✔✔✔✔✔{"level":30,"time":1794812529463,"pid":210826,"hostname":"fedora","name":"umimaclean","phone":"62812****5432","kind":"otp","msg":"WhatsApp message dispatched"}
+✔✔✔{"level":30,"time":1794812529464,"pid":210826,"hostname":"fedora","name":"umimaclean","phone":"62819****8777","kind":"otp","msg":"WhatsApp message logged (outside allowed list)"}
+{"level":30,"time":1794812529465,"pid":210826,"hostname":"fedora","name":"umimaclean","phone":"62812****5432","kind":"otp","msg":"WhatsApp message logged (outside allowed list)"}
+{"level":30,"time":1794812529465,"pid":210826,"hostname":"fedora","name":"umimaclean","phone":"62812****5432","kind":"otp","msg":"WhatsApp message dispatched"}
+✔✔✔✔✔2:02:09 PM [vite] (ssr) connected.
+✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔❯ Reverted 6 migrations (35 ms)
+
+
+ PASSED 
+
+Tests  157 passed (157)
+ Time  2m
