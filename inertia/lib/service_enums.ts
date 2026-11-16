@@ -1,25 +1,26 @@
+import type { Data } from '@generated/data'
+
+export type ItemKind = Data.Service['itemKinds'][number]
+export type ServiceType = Data.Service['type']
+
 export const ItemKind = {
   SHOE: 'shoe',
   BAG: 'bag',
   HELMET: 'helmet',
-} as const
+} as const satisfies Record<string, ItemKind>
 
-export type ItemKind = (typeof ItemKind)[keyof typeof ItemKind]
-
-export const ItemKindLabel: Record<ItemKind, string> = {
+export const ItemKindLabel = {
   [ItemKind.SHOE]: 'Sepatu',
   [ItemKind.BAG]: 'Tas',
   [ItemKind.HELMET]: 'Helm',
-}
+} satisfies Record<ItemKind, string>
 
 export const ServiceType = {
   MAIN: 'main',
   ADDON: 'addon',
-} as const
+} as const satisfies Record<string, ServiceType>
 
-export type ServiceType = (typeof ServiceType)[keyof typeof ServiceType]
-
-export const ServiceTypeLabel: Record<ServiceType, string> = {
+export const ServiceTypeLabel = {
   [ServiceType.MAIN]: 'Layanan Utama',
   [ServiceType.ADDON]: 'Layanan Tambahan',
-}
+} satisfies Record<ServiceType, string>
