@@ -7,6 +7,8 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 import { type OtpPurpose } from '#enums/otp_purpose_enum'
+import { type ItemKind } from '#enums/item_kind_enum'
+import { type ServiceType } from '#enums/service_type_enum'
 import { type Role } from '#enums/role_enum'
 
 export class ActivityLogSchema extends BaseModel {
@@ -95,6 +97,51 @@ export class RememberMeTokenSchema extends BaseModel {
   declare tokenableId: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+}
+
+export class ServiceSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'deletedAt',
+    'description',
+    'displayOrder',
+    'estimatedDays',
+    'id',
+    'isActive',
+    'isStartingFrom',
+    'itemKinds',
+    'name',
+    'price',
+    'type',
+    'updatedAt',
+  ] as const
+  $columns = ServiceSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare description: string
+  @column()
+  declare displayOrder: number
+  @column()
+  declare estimatedDays: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare isStartingFrom: boolean
+  @column()
+  declare itemKinds: ItemKind[]
+  @column()
+  declare name: string
+  @column()
+  declare price: number
+  @column()
+  declare type: ServiceType
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
 }
 
 export class SessionSchema extends BaseModel {

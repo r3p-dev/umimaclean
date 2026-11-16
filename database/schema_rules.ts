@@ -28,5 +28,27 @@ export default {
         },
       },
     },
+    services: {
+      columns: {
+        type: {
+          tsType: 'ServiceType',
+          imports: [
+            {
+              source: '#enums/service_type_enum',
+              namedImports: ['type ServiceType'],
+            },
+          ],
+        },
+        item_kinds: {
+          tsType: 'ItemKind[]',
+          imports: [
+            {
+              source: '#enums/item_kind_enum',
+              namedImports: ['type ItemKind'],
+            },
+          ],
+        },
+      },
+    },
   },
 } satisfies SchemaRules
