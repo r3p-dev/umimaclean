@@ -1,11 +1,22 @@
 import type { ComponentType, ReactNode, SVGProps } from 'react'
 import { Link } from '@adonisjs/inertia/react'
+import { usePage } from '@inertiajs/react'
 import { IconBrandInstagram, IconBrandWhatsapp, IconClock, IconMapPin } from '@tabler/icons-react'
 import Logo from '~/components/atoms/logo'
-import { STORE_CONTACT } from '~/lib/store/contact'
 
 const LINK =
   'inline-flex min-h-11 items-center text-foreground/80 hover:text-foreground hover:underline'
+
+const SOCIAL_LINKS = {
+  mapsUrl: 'https://maps.app.goo.gl/uRvrkrqYF3Eu8UXS6',
+  instagram: '@umima.clean',
+  instagramUrl: 'https://www.instagram.com/umima.clean',
+}
+
+function formatPhoneDisplay(e164: string): string {
+  const local = e164.startsWith('62') ? '0' + e164.slice(2) : e164
+  return local.replace(/(\d{4})(\d{4})(\d+)/, '$1-$2-$3')
+}
 
 function FooterColumn({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -56,6 +67,14 @@ function ContactLine({
 }
 
 export default function SiteFooter({ children }: { children?: ReactNode }) {
+  const { store } = usePage().props
+  const storeInfo = store ?? {
+    name: 'Umima Clean',
+    whatsapp: '6285157900974',
+    address: 'Jl. Margacinta No. 132, Margasari, Buahbatu, Kota Bandung 40286',
+    hours: '09.00–20.00',
+  }
+
   return (
     <footer className="border-t border-border bg-background">
       <div className="mx-auto max-w-6xl px-5">
@@ -71,26 +90,26 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
               <ContactLine
                 icon={IconMapPin}
                 label="Alamat di Google Maps"
-                href={STORE_CONTACT.mapsUrl}
+                href={SOCIAL_LINKS.mapsUrl}
               >
-                {STORE_CONTACT.address}
+                {storeInfo.address}
               </ContactLine>
               <ContactLine icon={IconClock} label="Jam buka">
-                {STORE_CONTACT.hours}
+                {storeInfo.hours}
               </ContactLine>
               <ContactLine
                 icon={IconBrandWhatsapp}
                 label="WhatsApp"
-                href={STORE_CONTACT.whatsappUrl}
+                href={`https://wa.me/${storeInfo.whatsapp}`}
               >
-                {STORE_CONTACT.whatsapp}
+                {formatPhoneDisplay(storeInfo.whatsapp)}
               </ContactLine>
               <ContactLine
                 icon={IconBrandInstagram}
                 label="Instagram"
-                href={STORE_CONTACT.instagramUrl}
+                href={SOCIAL_LINKS.instagramUrl}
               >
-                {STORE_CONTACT.instagram}
+                {SOCIAL_LINKS.instagram}
               </ContactLine>
             </ul>
           </div>
