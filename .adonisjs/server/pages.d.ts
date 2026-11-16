@@ -15,6 +15,8 @@ declare module '@adonisjs/inertia/types' {
     'admin/dashboard': ExtractProps<(typeof import('../../inertia/pages/admin/dashboard.tsx'))['default']>
     'admin/profile': ExtractProps<(typeof import('../../inertia/pages/admin/profile.tsx'))['default']>
     'admin/services': ExtractProps<(typeof import('../../inertia/pages/admin/services.tsx'))['default']>
+    'admin/settings/areas': ExtractProps<(typeof import('../../inertia/pages/admin/settings/areas.tsx'))['default']>
+    'admin/settings/store': ExtractProps<(typeof import('../../inertia/pages/admin/settings/store.tsx'))['default']>
     'admin/template_preview': ExtractProps<(typeof import('../../inertia/pages/admin/template_preview.tsx'))['default']>
     'auth/forgot_password': ExtractProps<(typeof import('../../inertia/pages/auth/forgot_password.tsx'))['default']>
     'auth/login': ExtractProps<(typeof import('../../inertia/pages/auth/login.tsx'))['default']>
