@@ -1,35 +1,67 @@
-import { cn } from 'cn'
+import type * as React from 'react'
 import {
-  Checkbox as CheckboxPrimitive,
-  composeRenderProps,
-  type CheckboxProps,
+  CheckboxField as CheckboxFieldPrimitive,
+  CheckboxButton as CheckboxButtonPrimitive,
+  type CheckboxFieldProps,
 } from 'react-aria-components'
 import { IconCheck } from '@tabler/icons-react'
+import { cn } from 'cn'
 
-function Checkbox({ className, children, ...props }: CheckboxProps) {
+export interface CheckboxProps extends Omit<CheckboxFieldProps, 'children'> {
+  children?: React.ReactNode
+  labelClassName?: string
+  buttonClassName?: string
+}
+
+function Checkbox({
+  className,
+  buttonClassName,
+  labelClassName,
+  children,
+  ...props
+}: CheckboxProps) {
   return (
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    <CheckboxPrimitive
-      data-slot="checkbox"
-      className={cn(
-        'peer relative flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-input shadow-xs transition-shadow outline-none group-has-disabled/field:opacity-50 group-has-[:focus-visible]/field-label:ring-0 group-has-[:focus-visible]/field-label:not-data-checked:border-input after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 aria-invalid:aria-checked:border-primary data-focus-visible:border-ring data-focus-visible:ring-3 data-focus-visible:ring-ring/50 data-invalid:border-destructive data-invalid:ring-3 data-invalid:ring-destructive/20 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground group-has-[:focus-visible]/field-label:data-checked:border-primary data-selected:border-primary data-selected:bg-primary data-selected:text-primary-foreground data-invalid:data-selected:border-primary',
-        className
-      )}
+    <CheckboxFieldPrimitive
+      data-slot="checkbox-field"
+      className={cn('inline-flex items-center', className)}
       {...props}
     >
-      {composeRenderProps(children, (child, { isSelected, isIndeterminate }) => (
-        <>
-          <span
-            data-slot="checkbox-indicator"
-            className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
-          >
-            {(isSelected || isIndeterminate) && <IconCheck />}
-          </span>
-          {child}
-        </>
-      ))}
-    </CheckboxPrimitive>
+      <CheckboxButtonPrimitive
+        data-slot="checkbox-button"
+        className={cn(
+          'group/checkbox-button flex min-h-11 cursor-pointer items-center gap-3 select-none outline-none focus-visible:outline-none',
+          buttonClassName
+        )}
+      >
+        {({ isSelected, isIndeterminate }) => (
+          <>
+            <span
+              data-slot="checkbox"
+              className={cn(
+                'relative flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-input shadow-xs transition-shadow outline-none',
+                'group-data-[focus-visible]/checkbox-button:border-ring group-data-[focus-visible]/checkbox-button:ring-3 group-data-[focus-visible]/checkbox-button:ring-ring/50',
+                'group-data-[invalid]/checkbox-button:border-destructive group-data-[invalid]/checkbox-button:ring-3 group-data-[invalid]/checkbox-button:ring-destructive/20',
+                'group-data-[disabled]/checkbox-button:cursor-not-allowed group-data-[disabled]/checkbox-button:opacity-50',
+                (isSelected || isIndeterminate) &&
+                  'border-primary bg-primary text-primary-foreground'
+              )}
+            >
+              {(isSelected || isIndeterminate) && <IconCheck className="size-3.5 stroke-[2.5]" />}
+            </span>
+            {children && (
+              <span className={cn('text-base font-normal text-foreground', labelClassName)}>
+                {children}
+              </span>
+            )}
+          </>
+        )}
+      </CheckboxButtonPrimitive>
+    </CheckboxFieldPrimitive>
   )
 }
 
-export { Checkbox }
+export {
+  Checkbox,
+  CheckboxFieldPrimitive as CheckboxField,
+  CheckboxButtonPrimitive as CheckboxButton,
+}
