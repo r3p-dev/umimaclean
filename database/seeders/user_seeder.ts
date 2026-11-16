@@ -1,64 +1,73 @@
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import User from '#models/user'
+import { Role } from '#enums/role_enum'
+import env from '#start/env'
+import { normalizePhone } from '#helpers/phone'
 
 export default class extends BaseSeeder {
   override async run() {
+    const adminEnvPhone = env.get('ADMIN_PHONE')
+    if (!adminEnvPhone && env.get('NODE_ENV') === 'production') {
+      throw new Error('Variabel lingkungan ADMIN_PHONE wajib disetel di lingkungan produksi.')
+    }
+    const adminPhone = normalizePhone(adminEnvPhone || '081298765432')
+
     await User.updateOrCreate(
-      { phone: '6281200000001' },
+      { phone: adminPhone },
       {
-        fullName: 'Budi Santoso (Pemilik)',
+        fullName: 'Budi Santoso',
         password: 'password123',
-        role: 'admin',
+        role: Role.ADMIN,
         isActive: true,
       }
     )
 
     await User.updateOrCreate(
-      { phone: '6281200000002' },
+      { phone: normalizePhone('081312345678') },
       {
-        fullName: 'Asep Hidayat (Staf Kurir)',
+        fullName: 'Siti Rahmawati',
         password: 'password123',
-        role: 'staff',
+        role: Role.STAFF,
         isActive: true,
       }
     )
 
     await User.updateOrCreate(
-      { phone: '6281200000003' },
+      { phone: normalizePhone('081387654321') },
       {
-        fullName: 'Dewi Lestari (Staf Workshop)',
+        fullName: 'Ahmad Fauzi',
         password: 'password123',
-        role: 'staff',
+        role: Role.STAFF,
         isActive: true,
       }
     )
 
     await User.updateOrCreate(
-      { phone: '6281200000010' },
+      { phone: normalizePhone('082111223344') },
       {
         fullName: 'Rina Wulandari',
         password: 'password123',
-        role: 'customer',
+        role: Role.CUSTOMER,
         isActive: true,
       }
     )
 
     await User.updateOrCreate(
-      { phone: '6281200000011' },
+      { phone: normalizePhone('085299887766') },
       {
         fullName: 'Dimas Prasetyo',
         password: 'password123',
-        role: 'customer',
+        role: Role.CUSTOMER,
         isActive: true,
       }
     )
 
     await User.updateOrCreate(
-      { phone: '6281200000099' },
+      { phone: normalizePhone('087812345670') },
       {
-        fullName: 'Doni Nonaktif',
+        fullName: 'Eko Wahyudi',
         password: 'password123',
-        role: 'customer',
+        role: Role.CUSTOMER,
         isActive: false,
       }
     )
@@ -67,12 +76,12 @@ export default class extends BaseSeeder {
 ================================================================
 Akun Demo Umima Clean:
 ----------------------------------------------------------------
-Pemilik (Admin) : 081200000001 / password123 -> /staf/masuk
-Staf Kurir      : 081200000002 / password123 -> /staf/masuk
-Staf Workshop   : 081200000003 / password123 -> /staf/masuk
-Pelanggan 1     : 081200000010 / password123 -> /masuk
-Pelanggan 2     : 081200000011 / password123 -> /masuk
-Akun Nonaktif   : 081200000099 / password123 (dinonaktifkan)
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
 ================================================================
 `)
   }
