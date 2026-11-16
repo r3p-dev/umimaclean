@@ -489,6 +489,84 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/services_controller').default['destroy']>>>
     }
   }
+  'admin.settings.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/pengaturan'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'admin.settings.store': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/pengaturan/toko'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['index']>>>
+    }
+  }
+  'admin.settings.store.update': {
+    methods: ["PUT"]
+    pattern: '/admin/pengaturan/toko'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/setting_validator').storeSettingValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/setting_validator').storeSettingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.settings.slots.update': {
+    methods: ["PUT"]
+    pattern: '/admin/pengaturan/slot'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/setting_validator').pickupSlotsSettingValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/setting_validator').pickupSlotsSettingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateSlots']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateSlots']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateSlots']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.areas.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/pengaturan/area'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/service_areas_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/service_areas_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/service_areas_controller').default['index']>>>
+    }
+  }
+  'admin.areas.toggle': {
+    methods: ["PATCH"]
+    pattern: '/admin/pengaturan/area/:id/toggle'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/service_areas_controller').default['toggleActive']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/service_areas_controller').default['toggleActive']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/service_areas_controller').default['toggleActive']>>>
+    }
+  }
 }
 
 export namespace Route {
