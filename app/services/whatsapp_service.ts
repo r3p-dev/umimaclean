@@ -1,6 +1,6 @@
 import env from '#start/env'
 import logger from '@adonisjs/core/services/logger'
-import { normalizePhone } from '#helpers/phone'
+import { maskPhone, normalizePhone } from '#helpers/phone'
 
 export interface SendMessageResult {
   sent: boolean
@@ -13,41 +13,7 @@ export interface SendMessageResult {
     | 'network_error'
 }
 
-interface DispatchedMessage {
-  phone: string
-  text: string
-  dispatchedAt: number
-}
-
 export default class WhatsAppService {
-  static #dispatched: DispatchedMessage[] = []
-
-  static recordDispatched(phone: string, text: string): void {
-    this.#dispatched.push({ phone, text, dispatchedAt: Date.now() })
-  }
-
-  static getDispatchedMessages(phone?: string): DispatchedMessage[] {
-    if (!phone) {
-      return [...this.#dispatched]
-    }
-    const normalized = normalizePhone(phone)
-    return this.#dispatched.filter((item) => item.phone === normalized)
-  }
-
-  static getLatestOtpCode(phone: string): string | undefined {
-    const messages = this.getDispatchedMessages(phone)
-    const latest = messages[messages.length - 1]
-    if (!latest) {
-      return undefined
-    }
-    const match = latest.text.match(/\b(\d{6})\b/)
-    return match ? match[1] : undefined
-  }
-
-  static clearDispatched(): void {
-    this.#dispatched = []
-  }
-
   isPhoneAllowed(phone: string): boolean {
     const isProduction = env.get('NODE_ENV') === 'production'
     if (isProduction) {
@@ -70,10 +36,18 @@ export default class WhatsAppService {
 
   async sendMessage(phone: string, text: string): Promise<SendMessageResult> {
     const normalized = normalizePhone(phone)
+    const masked = maskPhone(normalized)
+    const isDevelopment = env.get('NODE_ENV') === 'development'
 
     if (!this.isPhoneAllowed(normalized)) {
-      logger.info({ phone: normalized, text }, 'WhatsApp message logged (outside allowed list)')
-      WhatsAppService.recordDispatched(normalized, text)
+      if (isDevelopment) {
+        logger.info({ phone: masked, text }, 'WhatsApp message logged (outside allowed list)')
+      } else {
+        logger.info(
+          { phone: masked, kind: 'otp' },
+          'WhatsApp message logged (outside allowed list)'
+        )
+      }
       return {
         sent: false,
         phone: normalized,
@@ -103,20 +77,22 @@ export default class WhatsAppService {
           reason?: string
         }
         if (body.status === true || body.Status === true) {
-          WhatsAppService.recordDispatched(normalized, text)
           return { sent: true, phone: normalized, reason: 'delivered' }
         }
 
-        logger.warn({ reason: body.reason }, 'Fonnte rejected the WhatsApp message')
+        logger.warn({ phone: masked, reason: body.reason }, 'Fonnte rejected the WhatsApp message')
         return { sent: false, phone: normalized, reason: 'fonnte_rejected' }
       } catch (error) {
-        logger.warn({ error }, 'Fonnte WhatsApp send error')
+        logger.warn({ phone: masked, error }, 'Fonnte WhatsApp send error')
         return { sent: false, phone: normalized, reason: 'network_error' }
       }
     }
 
     if (env.get('NODE_ENV') === 'production') {
-      logger.error('FONNTE_TOKEN is not set in production; WhatsApp message dropped')
+      logger.error(
+        { phone: masked },
+        'FONNTE_TOKEN is not set in production; WhatsApp message dropped'
+      )
       return {
         sent: false,
         phone: normalized,
@@ -124,8 +100,11 @@ export default class WhatsAppService {
       }
     }
 
-    logger.info({ phone: normalized, text }, 'WhatsApp message dispatched')
-    WhatsAppService.recordDispatched(normalized, text)
+    if (isDevelopment) {
+      logger.info({ phone: masked, text }, 'WhatsApp message dispatched')
+    } else {
+      logger.info({ phone: masked, kind: 'otp' }, 'WhatsApp message dispatched')
+    }
     return {
       sent: true,
       phone: normalized,

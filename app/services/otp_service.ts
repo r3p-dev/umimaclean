@@ -20,6 +20,7 @@ import User from '#models/user'
 import WhatsAppService from '#services/whatsapp_service'
 import env from '#start/env'
 import AccountService from '#services/account_service'
+import { maskPhone } from '#helpers/phone'
 
 export interface OtpFlow {
   purpose: OtpPurpose
@@ -189,7 +190,7 @@ export default class OtpService {
     const delivery = await this.whatsapp.sendMessage(phone, text)
 
     if (!delivery.sent && delivery.reason !== 'logged_not_in_allowlist') {
-      logger.warn({ phone }, 'WhatsApp message delivery failed for OTP')
+      logger.warn({ phone: maskPhone(phone) }, 'WhatsApp message delivery failed for OTP')
       return { status: 'failed' }
     }
 
