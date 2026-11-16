@@ -31,10 +31,7 @@ export default configApp(
     // Inertia's <Head> uses head-key to replace a tag instead of adding a second one.
     name: 'Inertia head keys',
     files: ['inertia/**/*.tsx'],
-    rules: {
-      'react/no-unknown-property': ['error', { ignore: ['head-key'] }],
-      '@adonisjs/no-backend-import-in-frontend': ['error', { allowed: ['#enums/**', '#enums/*'] }],
-    },
+    rules: { 'react/no-unknown-property': ['error', { ignore: ['head-key'] }] },
   },
   {
     // Project code style conventions (docs/CONVENTIONS.md §3, §4).
