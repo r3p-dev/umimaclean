@@ -39,7 +39,11 @@ test.group('Look and feel', (group) => {
       })
 
       const page = await visit(path)
-      await page.waitForLoadState('networkidle')
+      if (path === '/daftar' || path === '/lupa-kata-sandi') {
+        await page.waitForLoadState('load')
+      } else {
+        await page.waitForLoadState('networkidle')
+      }
 
       assert.deepEqual(outsideRequests, [])
       assert.equal(await page.locator('html').getAttribute('lang'), 'id')
@@ -112,6 +116,7 @@ test.group('Look and feel', (group) => {
       { role: Role.STAFF, path: '/staf/profil' },
       { role: Role.ADMIN, path: '/admin' },
       { role: Role.ADMIN, path: '/admin/profil' },
+      { role: Role.ADMIN, path: '/admin/layanan' },
     ] as const)
     .run(async ({ visit, browserContext, assert }, item) => {
       const user = await User.create({
@@ -165,6 +170,7 @@ test.group('Look and feel', (group) => {
       { role: Role.STAFF, path: '/staf/profil' },
       { role: Role.ADMIN, path: '/admin' },
       { role: Role.ADMIN, path: '/admin/profil' },
+      { role: Role.ADMIN, path: '/admin/layanan' },
     ] as const)
     .run(async ({ visit, browserContext, assert }, item) => {
       const user = await User.create({
