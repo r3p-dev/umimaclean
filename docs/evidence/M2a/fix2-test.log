@@ -1,0 +1,109 @@
+
+> umimaclean@0.1.2 test
+> node ace test
+
+c[ info ] loading hooks...
+[ info ] generating indexes...
+[ info ] codegen: created 7 file(s)
+[ info ] booting application to run tests...
+❯ Executed 3 migrations (72 ms)
+
+unit / Bouncer abilities (tests/unit/abilities.spec.ts)
+  ✔ accessCustomer allows customer and denies staff and admin (2.45ms)
+  ✔ accessStaff allows staff and admin, denies customer and guest (0.47ms)
+  ✔ accessAdmin allows only admin (0.39ms)
+
+unit / AccountService (tests/unit/account_service.spec.ts)
+  ✔ verifies customer credentials successfully for active customer (22.12ms)
+  ✔ refuses inactive customer account during verification (10.37ms)
+  ✔ refuses staff or admin trying to sign in as customer (9.93ms)
+  ✔ verifies staff and admin credentials in verifyStaffCredentials (17.47ms)
+  ✔ refuses customer attempting to sign in through staff portal (9.76ms)
+  ✔ logStaffSignIn updates lastSeenAt and creates activity_logs record (11.64ms)
+  ✔ resolves SessionController with injected AccountService from container (1.85ms)
+
+unit / Phone normalization, formatting & masking (ACC-1) (tests/unit/phone.spec.ts)
+  ✔ normalizePhone formats Indonesian numbers to 62... (0.35ms)
+  ✔ isValidIndonesianPhone validates proper mobile numbers starting with 628 (0.28ms)
+  ✔ maskPhone hides middle digits in logs and public output (0.19ms)
+  ✔ formatPhone formats numbers nicely with +62 prefix for display (0.17ms)
+
+unit / One light theme (tests/unit/theme.spec.ts)
+  ✔ the shadcn components carry no dark: classes (6.55ms)
+  ✔ app.css defines no dark theme (1.93ms)
+
+unit / WhatsAppService (tests/unit/whatsapp_service.spec.ts)
+{"level":30,"time":1794795435784,"pid":34379,"hostname":"fedora","name":"umimaclean","phone":"6281298765432","text":"Kode OTP Anda: 123456","msg":"WhatsApp message dispatched"}
+  ✔ outside production, sends only to numbers in WHATSAPP_ALLOWED_PHONES and logs others (1.07ms)
+  ✔ refuses sending when WHATSAPP_ALLOWED_PHONES is empty outside production (0.22ms)
+{"level":30,"time":1794795435784,"pid":34379,"hostname":"fedora","name":"umimaclean","phone":"6281999888777","text":"Pesan rahasia","msg":"WhatsApp message logged (outside allowed list)"}
+{"level":30,"time":1794795435784,"pid":34379,"hostname":"fedora","name":"umimaclean","phone":"6281298765432","text":"Halo","msg":"WhatsApp message logged (outside allowed list)"}
+
+functional / Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1) (tests/functional/auth.spec.ts)
+9:17:15 AM [vite] (ssr) connected.
+  ✔ POST /masuk authenticates valid customer credentials and redirects to /beranda (1s)
+  ✔ POST /masuk sets remember-me token when rememberMe checkbox is checked (216.79ms)
+  ✔ POST /masuk refuses wrong credentials with single generic message (ACC-3) (23.87ms)
+  ✔ POST /masuk refuses inactive customer accounts (14.07ms)
+  ✔ POST /masuk points staff and owner accounts to /staf/masuk (GUEST-11) (13.8ms)
+  ✔ POST /staf/masuk authenticates staff and redirects to /staf (STAFF-1) (40.57ms)
+  ✔ POST /staf/masuk authenticates owner (admin) and redirects to /admin (STAFF-1, OWN-2) (36.72ms)
+  ✔ POST /staf/masuk points customer accounts to /masuk (14.72ms)
+  ✔ POST /keluar terminates session and redirects to /masuk (29.57ms)
+  ✔ Route authorization: every role is refused where it does not belong (118.01ms)
+
+functional / Search engines (GUEST-3) (tests/functional/seo.spec.ts)
+  ✔ robots.txt keeps signed-in and development pages out and points to the sitemap (9.13ms)
+  ✔ the sitemap lists the public pages only (5.91ms)
+  ✔ a public page arrives server-rendered with its title, description and Open Graph tags (23.39ms)
+
+browser / Authentication Browser Flow (M2a) (tests/browser/auth_flow.spec.ts)
+  ✔ home page renders and displays authentication entry points (498.52ms)
+  ✔ password input allows toggling password visibility without submitting form (1s)
+  ✔ customer signs in through browser form and lands on /beranda (628.82ms)
+  ✔ staff signs in through /staf/masuk and lands on /staf (552.27ms)
+  ✔ owner signs in through /staf/masuk and lands on /admin (508.66ms)
+  ✔ sign-in also works before page scripts run (server-rendered form) (180.13ms)
+  ✔ customer logs out and is redirected to /masuk (592.32ms)
+
+browser / Look and feel (tests/browser/look.spec.ts)
+  ✔ / loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /syarat loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /privasi loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /masuk loads nothing from another host, in Indonesian, with one main heading (977.12ms)
+  ✔ /staf/masuk loads nothing from another host, in Indonesian, with one main heading (998.11ms)
+  ✔ /_preview/alur loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/cetak loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/404 loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/500 loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ stays light when the device prefers a dark theme (408.41ms)
+  ✔ the first Tab press shows a visible focus ring (965ms)
+  ✔ / has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /syarat has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /privasi has no WCAG 2.1 AA violations (axe) (1s)
+  ✔ /masuk has no WCAG 2.1 AA violations (axe) (1s)
+  ✔ /staf/masuk has no WCAG 2.1 AA violations (axe) (1s)
+  ✔ /_preview/404 has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /_preview/500 has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page [object Object] has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page [object Object] has no WCAG 2.1 AA violations (axe) (1s)
+  ✔ authenticated page [object Object] has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ / does not scroll sideways at 360 px (1s)
+  ✔ /syarat does not scroll sideways at 360 px (932.81ms)
+  ✔ /privasi does not scroll sideways at 360 px (930.04ms)
+  ✔ /masuk does not scroll sideways at 360 px (956.7ms)
+  ✔ /staf/masuk does not scroll sideways at 360 px (939.79ms)
+  ✔ /_preview/alur does not scroll sideways at 360 px (921.29ms)
+  ✔ /_preview/cetak does not scroll sideways at 360 px (989.47ms)
+  ✔ /_preview/404 does not scroll sideways at 360 px (1s)
+  ✔ /_preview/500 does not scroll sideways at 360 px (1s)
+  ✔ authenticated page [object Object] does not scroll sideways at 360 px (1s)
+  ✔ authenticated page [object Object] does not scroll sideways at 360 px (930.43ms)
+  ✔ authenticated page [object Object] does not scroll sideways at 360 px (1s)
+  ✔ the before and after slider moves with the keyboard (438.1ms)
+❯ Reverted 3 migrations (26 ms)
+
+ PASSED 
+
+Tests  72 passed (72)
+ Time  45s

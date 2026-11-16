@@ -43,10 +43,10 @@ Date: 2026-11-15. Patch release for version **0.1.2**.
 
 Screenshots of the landing page captured fresh at 360 px, 390 px (deviceScaleFactor: 2), and 1440 px (deviceScaleFactor: 1):
 
-| Viewport | Screenshot Link | Dimensions |
-| :--- | :--- | :--- |
-| Mobile 360 px | [beranda-0.1.2-360.png](beranda-0.1.2-360.png) | 720 × 9142 |
-| Mobile 390 px | [beranda-0.1.2-390.png](beranda-0.1.2-390.png) | 780 × 8986 |
+| Viewport        | Screenshot Link                                  | Dimensions  |
+| :-------------- | :----------------------------------------------- | :---------- |
+| Mobile 360 px   | [beranda-0.1.2-360.png](beranda-0.1.2-360.png)   | 720 × 9142  |
+| Mobile 390 px   | [beranda-0.1.2-390.png](beranda-0.1.2-390.png)   | 780 × 8986  |
 | Desktop 1440 px | [beranda-0.1.2-1440.png](beranda-0.1.2-1440.png) | 1440 × 3010 |
 
 ---
@@ -130,7 +130,8 @@ $ npm run lint
 > umimaclean@0.1.2 lint
 > eslint .
 ```
-*(Exited with code 0, 0 errors, 0 warnings)*
+
+_(Exited with code 0, 0 errors, 0 warnings)_
 
 #### `npm run typecheck`
 
@@ -140,7 +141,8 @@ $ npm run typecheck
 > umimaclean@0.1.2 typecheck
 > tsc --noEmit && tsc --noEmit --project inertia/tsconfig.json
 ```
-*(Exited with code 0, 0 errors)*
+
+_(Exited with code 0, 0 errors)_
 
 #### `npm test`
 
@@ -221,7 +223,7 @@ browser / Look and feel (tests/browser/look.spec.ts)
   ✔ the before and after slider moves with the keyboard (472.19ms)
 ❯ Reverted 1 migrations (15 ms)
 
- PASSED 
+ PASSED
 
 Tests  49 passed (49)
  Time  39s

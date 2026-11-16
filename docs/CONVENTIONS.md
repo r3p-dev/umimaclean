@@ -100,9 +100,9 @@ inertia/
     └── admin/
 ```
 
-**One exception:** files in `inertia/components/ui/` keep the names the shadcn CLI generates (`dropdown-menu.tsx`), so `shadcn add` can still update them and their imports between each other keep working.
+Do not use PascalCase, camelCase or kebab-case anywhere. React components are still **named** in PascalCase inside their snake_case files.
 
-Do not use PascalCase, camelCase or kebab-case anywhere else. React components are still **named** in PascalCase inside their snake_case files.
+Components generated with the shadcn CLI into `inertia/components/ui/` are project code: rename them to snake_case (`input_group.tsx`) upon generation and bring them into compliance with every project rule and lint check in the same change.
 
 ## 4. JavaScript and TypeScript
 
@@ -114,6 +114,21 @@ Do not use PascalCase, camelCase or kebab-case anywhere else. React components a
 - Avoid unnecessary type assertions and duplicated type definitions. Types shared with the frontend come from the backend (transformers, generated registry), not from a hand-written copy.
 - Prefer immutable data when mutation is unnecessary.
 - Use familiar APIs (`filter`, not a custom `where`), `for...of` for loops, braces on every `if`.
+- **No re-exports.** A module only exports what it defines itself; everyone imports from the module that defines it. Enforced by ESLint (`no-restricted-syntax`).
+  ```ts
+  // Avoid: export { normalizePhone } from '#helpers/phone'
+  // Prefer: import { normalizePhone } from '#helpers/phone' where needed
+  ```
+- **Function style.** Every named function is a function declaration (components, handlers, helpers, local functions). Arrow functions are allowed only as short callbacks passed directly as arguments (array methods, event props, promise callbacks). Enforced by ESLint (`func-style: ['error', 'declaration']`).
+  ```ts
+  // Avoid: const formatDate = (d: Date) => ...
+  // Prefer: function formatDate(d: Date) { ... }
+  ```
+- **No namespace imports.** Never import `* as name`. Import what you use by name. Enforced by ESLint (`no-restricted-syntax`).
+  ```ts
+  // Avoid: import * as React from 'react'
+  // Prefer: import { useEffect, useState } from 'react'
+  ```
 
 ## 5. Properties, getters and methods
 

@@ -26,37 +26,37 @@ node ace db:seed
 npm run dev
 ```
 
-| URL           | What                                                                                    |
-| ------------- | --------------------------------------------------------------------------------------- |
-| `/masuk`      | Customer sign-in page with WhatsApp number and password                                 |
-| `/staf/masuk` | Staff & owner sign-in page (refuses customer accounts)                                  |
-| `/keluar`     | POST endpoint to sign out and clear session / remember-me tokens                        |
-| `/beranda`    | Customer dashboard (requires customer authentication)                                   |
-| `/staf`       | Staff operational dashboard (requires staff or owner authentication)                   |
-| `/admin`      | Owner administrative dashboard (requires owner authentication)                          |
+| URL           | What                                                                 |
+| ------------- | -------------------------------------------------------------------- |
+| `/masuk`      | Customer sign-in page with WhatsApp number and password              |
+| `/staf/masuk` | Staff & owner sign-in page (refuses customer accounts)               |
+| `/keluar`     | POST endpoint to sign out and clear session / remember-me tokens     |
+| `/beranda`    | Customer dashboard (requires customer authentication)                |
+| `/staf`       | Staff operational dashboard (requires staff or owner authentication) |
+| `/admin`      | Owner administrative dashboard (requires owner authentication)       |
 
 ### Demo Accounts (`node ace db:seed`)
 
-| Role | Phone | Password | Status |
-| --- | --- | --- | --- |
-| Owner | `081200000001` | `password123` | Aktif |
-| Staff | `081200000002` | `password123` | Aktif |
-| Staff | `081200000003` | `password123` | Aktif |
-| Customer | `081200000010` | `password123` | Aktif |
-| Customer | `081200000011` | `password123` | Aktif |
+| Role     | Phone          | Password      | Status        |
+| -------- | -------------- | ------------- | ------------- |
+| Owner    | `081200000001` | `password123` | Aktif         |
+| Staff    | `081200000002` | `password123` | Aktif         |
+| Staff    | `081200000003` | `password123` | Aktif         |
+| Customer | `081200000010` | `password123` | Aktif         |
+| Customer | `081200000011` | `password123` | Aktif         |
 | Customer | `081200000099` | `password123` | Dinonaktifkan |
 
 ## 3. Screens
 
 Captured with Playwright Chromium at 360 × 780, 390 × 844 (both 2× scale), and 1440 × 900. No horizontal scrolling occurred at 360 px viewport.
 
-| Page | 360 | 390 | 1440 |
-| --- | --- | --- | --- |
-| Customer Sign-in (`/masuk`) | [360](masuk-360.png) | [390](masuk-390.png) | [1440](masuk-1440.png) |
-| Staff Sign-in (`/staf/masuk`) | [360](staf-masuk-360.png) | [390](staf-masuk-390.png) | [1440](staf-masuk-1440.png) |
-| Customer Home (`/beranda`) | [360](pelanggan-beranda-360.png) | [390](pelanggan-beranda-390.png) | [1440](pelanggan-beranda-1440.png) |
-| Staff Home (`/staf`) | [360](staf-beranda-360.png) | [390](staf-beranda-390.png) | [1440](staf-beranda-1440.png) |
-| Owner Home (`/admin`) | [360](pemilik-ringkasan-360.png) | [390](pemilik-ringkasan-390.png) | [1440](pemilik-ringkasan-1440.png) |
+| Page                          | 360                              | 390                              | 1440                               |
+| ----------------------------- | -------------------------------- | -------------------------------- | ---------------------------------- |
+| Customer Sign-in (`/masuk`)   | [360](masuk-360.png)             | [390](masuk-390.png)             | [1440](masuk-1440.png)             |
+| Staff Sign-in (`/staf/masuk`) | [360](staf-masuk-360.png)        | [390](staf-masuk-390.png)        | [1440](staf-masuk-1440.png)        |
+| Customer Home (`/beranda`)    | [360](pelanggan-beranda-360.png) | [390](pelanggan-beranda-390.png) | [1440](pelanggan-beranda-1440.png) |
+| Staff Home (`/staf`)          | [360](staf-beranda-360.png)      | [390](staf-beranda-390.png)      | [1440](staf-beranda-1440.png)      |
+| Owner Home (`/admin`)         | [360](pemilik-ringkasan-360.png) | [390](pemilik-ringkasan-390.png) | [1440](pemilik-ringkasan-1440.png) |
 
 ## 4. How it works
 
@@ -120,6 +120,7 @@ sequenceDiagram
 Verification logs: [lint.log](lint.log), [typecheck.log](typecheck.log), [test.log](test.log).
 
 ### Lint (0 errors, 0 warnings)
+
 ```text
 $ npm run lint
 > eslint .
@@ -127,6 +128,7 @@ exit=0
 ```
 
 ### Typecheck (0 errors)
+
 ```text
 $ npm run typecheck
 > tsc --noEmit && tsc --noEmit --project inertia/tsconfig.json
@@ -134,12 +136,15 @@ exit=0
 ```
 
 ### Tests (68 passed)
+
 ```text
 $ npm test
 Tests  68 passed (68)
 Time   45s
 ```
+
 Summary of test categories:
+
 - Unit tests: 15 passed (including phone normalization, account verification, password checking, activity logging, transitions).
 - Functional tests: 13 passed (including sign-in/out endpoints, role refusals, inactive account refusals, remember-me cookies, SEO).
 - Browser tests: 40 passed (including auth flows, WCAG 2.1 AA axe audits on all touched pages, 360 px viewport horizontal scroll tests).

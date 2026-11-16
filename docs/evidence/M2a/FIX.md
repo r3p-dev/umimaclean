@@ -32,18 +32,18 @@ Screenshots captured with Playwright Chromium at 360 × 780, 390 × 844 (both 2�
 
 ### PhoneInput States at 360 px Viewport
 
-| State | Screenshot | Description |
-| --- | --- | --- |
-| Kosong (Empty) | [telepon-kosong-360.png](telepon-kosong-360.png) | Group with `+62` addon and placeholder `812 3456 7890` |
-| Fokus (Focused) | [telepon-fokus-360.png](telepon-fokus-360.png) | Focus ring surrounds the entire group including `+62` prefix |
-| Terisi (Filled) | [telepon-terisi-360.png](telepon-terisi-360.png) | Spaces formatted automatically while typing (`812 3456 7890`) |
-| Galat (Error) | [telepon-error-360.png](telepon-error-360.png) | Destructive border and ring surround whole group with error message |
+| State           | Screenshot                                       | Description                                                         |
+| --------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+| Kosong (Empty)  | [telepon-kosong-360.png](telepon-kosong-360.png) | Group with `+62` addon and placeholder `812 3456 7890`              |
+| Fokus (Focused) | [telepon-fokus-360.png](telepon-fokus-360.png)   | Focus ring surrounds the entire group including `+62` prefix        |
+| Terisi (Filled) | [telepon-terisi-360.png](telepon-terisi-360.png) | Spaces formatted automatically while typing (`812 3456 7890`)       |
+| Galat (Error)   | [telepon-error-360.png](telepon-error-360.png)   | Destructive border and ring surround whole group with error message |
 
 ### Updated Authentication Pages
 
-| Page | 360 | 390 | 1440 |
-| --- | --- | --- | --- |
-| Customer Sign-in (`/masuk`) | [360](masuk-fix-360.png) | [390](masuk-fix-390.png) | [1440](masuk-fix-1440.png) |
+| Page                          | 360                           | 390                           | 1440                            |
+| ----------------------------- | ----------------------------- | ----------------------------- | ------------------------------- |
+| Customer Sign-in (`/masuk`)   | [360](masuk-fix-360.png)      | [390](masuk-fix-390.png)      | [1440](masuk-fix-1440.png)      |
 | Staff Sign-in (`/staf/masuk`) | [360](staf-masuk-fix-360.png) | [390](staf-masuk-fix-390.png) | [1440](staf-masuk-fix-1440.png) |
 
 ## 3. How it works
@@ -77,6 +77,7 @@ sequenceDiagram
 Verification logs: [fix-lint.log](fix-lint.log), [fix-typecheck.log](fix-typecheck.log), [fix-test.log](fix-test.log).
 
 ### Lint (0 errors, 0 warnings, zero eslint-disable)
+
 ```text
 $ npm run lint
 > eslint .
@@ -84,6 +85,7 @@ exit=0
 ```
 
 ### Typecheck (0 errors)
+
 ```text
 $ npm run typecheck
 > tsc --noEmit && tsc --noEmit --project inertia/tsconfig.json
@@ -91,12 +93,15 @@ exit=0
 ```
 
 ### Tests (71 passed)
+
 ```text
 $ npm test
 Tests  71 passed (71)
 Time   50s
 ```
+
 Summary of test categories:
+
 - Unit tests: 18 passed (Bouncer abilities with Role enum, AccountService credential checks, phone normalization/formatting/masking, one light theme, WhatsAppService allowlist).
 - Functional tests: 13 passed (sign-in with normalized phones, role refusals with Role enum, remember-me token, activity logs, SEO).
 - Browser tests: 40 passed (auth flow, keyboard navigation & Tab focus ring, WCAG 2.1 AA axe audits on all touched pages, 360 px viewport horizontal scroll tests).

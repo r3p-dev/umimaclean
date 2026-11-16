@@ -4,27 +4,27 @@ Milestones in order. **Slow, reviewable progress**: each milestone is small enou
 
 Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance criteria** (by requirement ID) and an **hour estimate** to every milestone below, and may propose a different split; the plan is final once approved.
 
-| #    | Version | Milestone                                      | Status                | Hours |
-| ---- | ------- | ---------------------------------------------- | --------------------- | ----- |
-| M0   | –       | Spikes and plan                                | done                  | 8     |
-| M1a  | –       | Conventions across the existing code           | done                  | 8     |
-| M1b  | –       | Foundation and look                            | done                  | 10    |
-| M1c  | 0.1.0   | Landing, legal pages, SEO                      | done                  | 10    |
-| M2a  | –       | Accounts: phone login, role redirects, seeders | in progress           | 10    |
-| M2b  | –       | Accounts: register, OTP, forgot password       | not started           | 8     |
-| M2c  | 0.2.0   | Accounts: profile, security, rate limits       | not started           | 6     |
-| M3   | 0.3.0   | Services, service areas, store settings        | not started           | 16    |
-| M4   | 0.4.0   | Addresses and maps                             | not started           | 20    |
-| M5a  | 0.5.0   | Online ordering: slots, new order, confirm     | not started           | 14    |
-| M5b  | 0.5.0   | Order pages and tracking                       | not started           | 12    |
-| M6   | 0.6.0   | Courier trips                                  | not started           | 24    |
-| M7   | 0.7.0   | Workshop                                       | not started           | 16    |
-| M8   | 0.8.0   | Payments                                       | not started           | 24    |
-| M9   | 0.9.0   | Walk-in orders                                 | not started           | 16    |
-| M10a | 0.10.0  | Owner area: orders, money, activity            | not started           | 18    |
-| M10b | 0.10.0  | Owner area: customers, reports, staff accounts | not started           | 18    |
-| M11  | 0.11.0  | Live updates and jobs                          | not started           | 10    |
-| M12  | 1.0.0   | Hardening and release                          | not started           | 20    |
+| #    | Version | Milestone                                      | Status      | Hours |
+| ---- | ------- | ---------------------------------------------- | ----------- | ----- |
+| M0   | –       | Spikes and plan                                | done        | 8     |
+| M1a  | –       | Conventions across the existing code           | done        | 8     |
+| M1b  | –       | Foundation and look                            | done        | 10    |
+| M1c  | 0.1.0   | Landing, legal pages, SEO                      | done        | 10    |
+| M2a  | –       | Accounts: phone login, role redirects, seeders | in progress | 10    |
+| M2b  | –       | Accounts: register, OTP, forgot password       | not started | 8     |
+| M2c  | 0.2.0   | Accounts: profile, security, rate limits       | not started | 6     |
+| M3   | 0.3.0   | Services, service areas, store settings        | not started | 16    |
+| M4   | 0.4.0   | Addresses and maps                             | not started | 20    |
+| M5a  | 0.5.0   | Online ordering: slots, new order, confirm     | not started | 14    |
+| M5b  | 0.5.0   | Order pages and tracking                       | not started | 12    |
+| M6   | 0.6.0   | Courier trips                                  | not started | 24    |
+| M7   | 0.7.0   | Workshop                                       | not started | 16    |
+| M8   | 0.8.0   | Payments                                       | not started | 24    |
+| M9   | 0.9.0   | Walk-in orders                                 | not started | 16    |
+| M10a | 0.10.0  | Owner area: orders, money, activity            | not started | 18    |
+| M10b | 0.10.0  | Owner area: customers, reports, staff accounts | not started | 18    |
+| M11  | 0.11.0  | Live updates and jobs                          | not started | 10    |
+| M12  | 1.0.0   | Hardening and release                          | not started | 20    |
 
 Hours are the implementer's estimate for building, testing and writing the evidence of each milestone; review time is not included. Total M1a–M12: 260 hours.
 
