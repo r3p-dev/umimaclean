@@ -224,7 +224,7 @@ Acceptance criteria:
 - STAFF-14, GUEST-8: counter payment by cash (received and change shown) or counter QRIS, only the switched-on methods; no payment link and no reminders.
 - GUEST-9, MSG-1.1: "order received" (with the amount paid and the order link) sent only after the counter payment.
 - STAFF-15: an unsent walk-in form survives a reload on that device.
-- GUEST-13, CUST-13: creating an account or changing to a number links that number's earlier unlinked walk-in orders.
+- GUEST-13, CUST-13: creating an account or changing to a number links that number's earlier unlinked walk-in orders. For account registration, this linking happens in `AccountService.createCustomer`, which is the single entry point for all customer creation paths.
 
 ## M10a (checkpoint of 0.10.0): Owner area: orders, money, activity
 

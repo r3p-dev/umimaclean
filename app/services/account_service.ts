@@ -21,6 +21,10 @@ export class RoleMismatchException extends Error {
 }
 
 export default class AccountService {
+  /**
+   * Single entry point for all customer account creation paths (GUEST-10, GUEST-13).
+   * In M9, this method will link earlier walk-in orders with the same phone to the newly created account.
+   */
   async createCustomer(
     data: { name: string; phone: string; passwordHash: string },
     transaction?: TransactionClientContract
