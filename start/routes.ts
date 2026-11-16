@@ -83,6 +83,28 @@ router
     router
       .delete('/admin/layanan/:id', [controllers.Services, 'destroy'])
       .as('admin.services.destroy')
+
+    router
+      .get('/admin/pengaturan', ({ response }) =>
+        response.redirect().toRoute('admin.settings.store')
+      )
+      .as('admin.settings.index')
+    router
+      .get('/admin/pengaturan/toko', [controllers.StoreSettings, 'index'])
+      .as('admin.settings.store')
+    router
+      .put('/admin/pengaturan/toko', [controllers.StoreSettings, 'update'])
+      .as('admin.settings.store.update')
+    router
+      .put('/admin/pengaturan/slot', [controllers.StoreSettings, 'updateSlots'])
+      .as('admin.settings.slots.update')
+
+    router
+      .get('/admin/pengaturan/area', [controllers.ServiceAreas, 'index'])
+      .as('admin.areas.index')
+    router
+      .patch('/admin/pengaturan/area/:id/toggle', [controllers.ServiceAreas, 'toggleActive'])
+      .as('admin.areas.toggle')
   })
   .use(middleware.admin())
 
