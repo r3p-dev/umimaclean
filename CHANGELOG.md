@@ -6,6 +6,42 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-16
+
+### Added
+
+- Accounts with a WhatsApp number and password for every role: customers sign in at `/masuk`,
+  staff and the owner at `/staf/masuk`, each with "Ingat saya" (180 days) and sign-out, and each
+  role lands on its own home (`/beranda`, `/staf`, `/admin`) (GUEST-11, STAFF-1, ACC-1, ACC-3).
+- Access per role on every signed-in page; staff and owner sign-ins update the last-seen time and
+  are written to the activity log (STAFF-1).
+- Sign-up at `/daftar` with a WhatsApp code on `/verifikasi`; the account is created only after
+  the code is confirmed, and the pending data stays on the server (GUEST-10, ACC-2).
+- Forgot password (`/lupa-kata-sandi` → `/verifikasi` → `/kata-sandi-baru`) without revealing
+  whether a number is registered; a reset signs out every other device (GUEST-12, ACC-5).
+- WhatsApp codes: 6 digits, valid 5 minutes, locked after 5 wrong tries, resend after 60 seconds,
+  at most 5 sends per number and 20 per IP per hour, stored only as a keyed hash (ACC-2).
+- Bot check on sign-up, forgot password and code resend (Cloudflare Turnstile).
+- WhatsApp messages written to the log without a Fonnte token, and only sent to allowed numbers
+  outside production; phone numbers are masked in logs (MSG-4, ACC-1).
+- Profiles: customers at `/profil` (change the name, change the number with a code sent to the new
+  number), staff at `/staf/profil`, the owner at `/admin/profil` (CUST-12, CUST-13, OWN-13,
+  STAFF-16).
+- Account security on every profile: change the password with the current one, see the number of
+  active devices, and "Keluar dari perangkat lain", which also ends their remembered sign-ins
+  (ACC-4). A phone change signs out every other device too (ACC-5).
+- Limits on failed attempts: sign-in 5 per number and 50 per IP per 15 minutes, password change
+  5 per account per 15 minutes, each with a message saying how long to wait (ACC-3, ACC-4).
+- `TRUSTED_PROXIES`: the client IP is read from `X-Forwarded-For` only when the request comes from
+  a listed proxy (default: loopback).
+- Demo accounts from the seeder: one owner, two staff and customers.
+
+### Changed
+
+- The email sign-up and sign-in of the starter are replaced by the accounts above.
+- Navigation shows only pages that exist; "Profil" is now reachable for every role.
+- A wrong number or password shows "Nomor atau kata sandi salah."
+
 ## [0.1.2] - 2026-11-15
 
 ### Fixed
