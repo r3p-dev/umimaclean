@@ -3,6 +3,7 @@ import AccountService, {
   InactiveAccountException,
   RoleMismatchException,
 } from '#services/account_service'
+import { Role } from '#enums/role_enum'
 import { createSessionValidator } from '#validators/auth'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -49,7 +50,7 @@ export default class SessionController {
       await auth.use('web').login(user, !!payload.rememberMe)
       await this.accountService.logStaffSignIn(user)
 
-      if (user.role === 'admin') {
+      if (user.role === Role.ADMIN) {
         return response.redirect().toRoute('admin.home')
       }
 

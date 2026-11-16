@@ -6,9 +6,19 @@
 
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
+import { type Role } from '#enums/role_enum'
 
 export class ActivityLogSchema extends BaseModel {
-  static $columns = ['action', 'category', 'createdAt', 'description', 'id', 'isSensitive', 'orderId', 'userId'] as const
+  static $columns = [
+    'action',
+    'category',
+    'createdAt',
+    'description',
+    'id',
+    'isSensitive',
+    'orderId',
+    'userId',
+  ] as const
   $columns = ActivityLogSchema.$columns
   @column()
   declare action: string
@@ -46,7 +56,17 @@ export class RememberMeTokenSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'fullName', 'id', 'isActive', 'lastSeenAt', 'password', 'phone', 'role', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'fullName',
+    'id',
+    'isActive',
+    'lastSeenAt',
+    'password',
+    'phone',
+    'role',
+    'updatedAt',
+  ] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -63,7 +83,7 @@ export class UserSchema extends BaseModel {
   @column()
   declare phone: string
   @column()
-  declare role: string
+  declare role: Role
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

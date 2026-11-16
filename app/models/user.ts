@@ -3,8 +3,7 @@ import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbRememberMeTokensProvider } from '@adonisjs/auth/session'
-
-export type UserRole = 'customer' | 'staff' | 'admin'
+import { Role, STAFF_ROLES } from '#enums/role_enum'
 
 export default class User extends compose(
   UserSchema,
@@ -12,26 +11,24 @@ export default class User extends compose(
 ) {
   static rememberMeTokens = DbRememberMeTokensProvider.forModel(User)
 
-  declare role: UserRole
-
   isCustomer() {
-    return this.role === 'customer'
+    return this.role === Role.CUSTOMER
   }
 
   isStaff() {
-    return this.role === 'staff'
+    return this.role === Role.STAFF
   }
 
   isAdmin() {
-    return this.role === 'admin'
+    return this.role === Role.ADMIN
   }
 
   canAccessStaff() {
-    return this.role === 'staff' || this.role === 'admin'
+    return (STAFF_ROLES as readonly Role[]).includes(this.role)
   }
 
   canAccessAdmin() {
-    return this.role === 'admin'
+    return this.role === Role.ADMIN
   }
 
   initials() {

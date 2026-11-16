@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
 import ActivityLog from '#models/activity_log'
+import { Role } from '#enums/role_enum'
 
 test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (group) => {
   group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
@@ -13,7 +14,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Pelanggan Test',
       phone: '6281200000010',
       password: 'password123',
-      role: 'customer',
+      role: Role.CUSTOMER,
       isActive: true,
     })
 
@@ -33,7 +34,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Pelanggan Remember',
       phone: '6281200000011',
       password: 'password123',
-      role: 'customer',
+      role: Role.CUSTOMER,
       isActive: true,
     })
 
@@ -56,7 +57,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Pelanggan Test',
       phone: '6281200000012',
       password: 'password123',
-      role: 'customer',
+      role: Role.CUSTOMER,
       isActive: true,
     })
 
@@ -82,7 +83,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Pelanggan Nonaktif',
       phone: '6281200000099',
       password: 'password123',
-      role: 'customer',
+      role: Role.CUSTOMER,
       isActive: false,
     })
 
@@ -103,7 +104,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Staf Test',
       phone: '6281200000002',
       password: 'password123',
-      role: 'staff',
+      role: Role.STAFF,
       isActive: true,
     })
 
@@ -128,7 +129,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Asep Kurir',
       phone: '6281200000003',
       password: 'password123',
-      role: 'staff',
+      role: Role.STAFF,
       isActive: true,
     })
 
@@ -155,7 +156,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Budi Pemilik',
       phone: '6281200000001',
       password: 'password123',
-      role: 'admin',
+      role: Role.ADMIN,
       isActive: true,
     })
 
@@ -179,7 +180,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Pelanggan Test',
       phone: '6281200000013',
       password: 'password123',
-      role: 'customer',
+      role: Role.CUSTOMER,
       isActive: true,
     })
 
@@ -201,7 +202,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Pelanggan Logout',
       phone: '6281200000014',
       password: 'password123',
-      role: 'customer',
+      role: Role.CUSTOMER,
       isActive: true,
     })
 
@@ -216,7 +217,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Rina Pelanggan',
       phone: '6281200000015',
       password: 'password123',
-      role: 'customer',
+      role: Role.CUSTOMER,
       isActive: true,
     })
 
@@ -224,7 +225,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Asep Staf',
       phone: '6281200000004',
       password: 'password123',
-      role: 'staff',
+      role: Role.STAFF,
       isActive: true,
     })
 
@@ -232,7 +233,7 @@ test.group('Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1)', (
       fullName: 'Budi Pemilik',
       phone: '6281200000005',
       password: 'password123',
-      role: 'admin',
+      role: Role.ADMIN,
       isActive: true,
     })
 

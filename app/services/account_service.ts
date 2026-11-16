@@ -1,6 +1,7 @@
 import User from '#models/user'
 import ActivityLog from '#models/activity_log'
 import { DateTime } from 'luxon'
+import { Role } from '#enums/role_enum'
 import type { CreateSessionInput } from '#validators/auth'
 
 export class InactiveAccountException extends Error {
@@ -25,7 +26,7 @@ export default class AccountService {
       throw new InactiveAccountException()
     }
 
-    if (user.role !== 'customer') {
+    if (user.role !== Role.CUSTOMER) {
       throw new RoleMismatchException(
         'Akun staf dan pemilik silakan masuk melalui halaman masuk staf.'
       )
@@ -41,7 +42,7 @@ export default class AccountService {
       throw new InactiveAccountException()
     }
 
-    if (user.role === 'customer') {
+    if (user.role === Role.CUSTOMER) {
       throw new RoleMismatchException(
         'Akun pelanggan silakan masuk melalui halaman masuk pelanggan.'
       )

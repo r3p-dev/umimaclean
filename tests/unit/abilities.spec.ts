@@ -2,17 +2,18 @@ import { test } from '@japa/runner'
 import { Bouncer } from '@adonisjs/bouncer'
 import * as abilities from '#abilities/main'
 import User from '#models/user'
+import { Role } from '#enums/role_enum'
 
 test.group('Bouncer abilities', () => {
   test('accessCustomer allows customer and denies staff and admin', async ({ assert }) => {
     const customer = new User()
-    customer.role = 'customer'
+    customer.role = Role.CUSTOMER
 
     const staff = new User()
-    staff.role = 'staff'
+    staff.role = Role.STAFF
 
     const admin = new User()
-    admin.role = 'admin'
+    admin.role = Role.ADMIN
 
     const bouncerCustomer = new Bouncer(() => customer, abilities, {})
     const bouncerStaff = new Bouncer(() => staff, abilities, {})
@@ -27,13 +28,13 @@ test.group('Bouncer abilities', () => {
 
   test('accessStaff allows staff and admin, denies customer and guest', async ({ assert }) => {
     const customer = new User()
-    customer.role = 'customer'
+    customer.role = Role.CUSTOMER
 
     const staff = new User()
-    staff.role = 'staff'
+    staff.role = Role.STAFF
 
     const admin = new User()
-    admin.role = 'admin'
+    admin.role = Role.ADMIN
 
     const bouncerCustomer = new Bouncer(() => customer, abilities, {})
     const bouncerStaff = new Bouncer(() => staff, abilities, {})
@@ -48,13 +49,13 @@ test.group('Bouncer abilities', () => {
 
   test('accessAdmin allows only admin', async ({ assert }) => {
     const customer = new User()
-    customer.role = 'customer'
+    customer.role = Role.CUSTOMER
 
     const staff = new User()
-    staff.role = 'staff'
+    staff.role = Role.STAFF
 
     const admin = new User()
-    admin.role = 'admin'
+    admin.role = Role.ADMIN
 
     const bouncerCustomer = new Bouncer(() => customer, abilities, {})
     const bouncerStaff = new Bouncer(() => staff, abilities, {})

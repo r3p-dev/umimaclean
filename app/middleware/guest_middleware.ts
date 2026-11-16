@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import type { Authenticators } from '@adonisjs/auth/types'
+import { Role } from '#enums/role_enum'
 
 export default class GuestMiddleware {
   async handle(
@@ -12,10 +13,10 @@ export default class GuestMiddleware {
       if (await ctx.auth.use(guard).check()) {
         ctx.session.reflash()
         const user = ctx.auth.use(guard).user
-        if (user?.role === 'admin') {
+        if (user?.role === Role.ADMIN) {
           return ctx.response.redirect('/admin', true)
         }
-        if (user?.role === 'staff') {
+        if (user?.role === Role.STAFF) {
           return ctx.response.redirect('/staf', true)
         }
         return ctx.response.redirect('/beranda', true)
