@@ -12,6 +12,8 @@ export const controllers = {
   Profile: () => import('#controllers/profile_controller'),
   Registration: () => import('#controllers/registration_controller'),
   Seo: () => import('#controllers/seo_controller'),
+  ServiceAreas: () => import('#controllers/service_areas_controller'),
   Services: () => import('#controllers/services_controller'),
   Session: () => import('#controllers/session_controller'),
+  StoreSettings: () => import('#controllers/store_settings_controller'),
 }
