@@ -54,13 +54,11 @@ export default class AccountService {
     const tokens = await User.rememberMeTokens.all(user)
     await Promise.all(tokens.map((token) => User.rememberMeTokens.delete(user, token.identifier)))
 
-    try {
-      const query = db.from('sessions').where('user_id', String(user.id))
-      if (exceptSessionId) {
-        query.whereNot('id', exceptSessionId)
-      }
-      await query.delete()
-    } catch {}
+    const query = db.from('sessions').where('user_id', String(user.id))
+    if (exceptSessionId) {
+      query.whereNot('id', exceptSessionId)
+    }
+    await query.delete()
   }
 
   async verifyCustomerCredentials(input: CreateSessionInput): Promise<User> {

@@ -59,9 +59,6 @@ export default class PasswordResetController {
     this.otpService.forgetPasswordReset(session)
 
     await auth.use('web').login(user)
-    if (session.supportsTagging()) {
-      await session.tag(String(user.id))
-    }
 
     session.flash('success', 'Kata sandi berhasil diatur ulang. Selamat datang kembali!')
     return response.redirect().toRoute('customer.home')

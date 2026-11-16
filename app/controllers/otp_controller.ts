@@ -64,9 +64,6 @@ export default class OtpController {
 
     if (flow.purpose === OtpPurpose.REGISTER) {
       await auth.use('web').login(user)
-      if (session.supportsTagging()) {
-        await session.tag(String(user.id))
-      }
       session.flash('success', 'Akun berhasil dibuat. Selamat datang!')
       return response.redirect().toRoute('customer.home')
     }
