@@ -64,5 +64,18 @@ export interface ApiDefinition {
       bulkToggle: typeof routes['admin.services.bulk_toggle']
       destroy: typeof routes['admin.services.destroy']
     }
+    settings: {
+      index: typeof routes['admin.settings.index']
+      store: typeof routes['admin.settings.store'] & {
+        update: typeof routes['admin.settings.store.update']
+      }
+      slots: {
+        update: typeof routes['admin.settings.slots.update']
+      }
+    }
+    areas: {
+      index: typeof routes['admin.areas.index']
+      toggle: typeof routes['admin.areas.toggle']
+    }
   }
 }
