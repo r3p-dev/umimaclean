@@ -133,9 +133,113 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
-      rawResponse: ExtractRawResponse<unknown>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/registration_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/registration_controller').default['create']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/registration_controller').default['create']>>>
+    }
+  }
+  'register.store': {
+    methods: ["POST"]
+    pattern: '/daftar'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/registration_validator').createRegistrationValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/registration_validator').createRegistrationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/registration_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/registration_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/registration_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'otp.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/verifikasi'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['show']>>>
+    }
+  }
+  'otp.verify': {
+    methods: ["POST"]
+    pattern: '/verifikasi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/otp_validator').verifyOtpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/otp_validator').verifyOtpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['verify']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'otp.resend': {
+    methods: ["POST"]
+    pattern: '/verifikasi/kirim-ulang'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/otp_validator').resendOtpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/otp_validator').resendOtpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['resend']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['resend']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/otp_controller').default['resend']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'password_reset.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/lupa-kata-sandi'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['create']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['create']>>>
+    }
+  }
+  'password_reset.store': {
+    methods: ["POST"]
+    pattern: '/lupa-kata-sandi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/password_reset_validator').forgotPasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/password_reset_validator').forgotPasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'password_reset.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/kata-sandi-baru'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['edit']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['edit']>>>
+    }
+  }
+  'password_reset.update': {
+    methods: ["POST"]
+    pattern: '/kata-sandi-baru'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/password_reset_validator').resetPasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/password_reset_validator').resetPasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/password_reset_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'session.destroy': {

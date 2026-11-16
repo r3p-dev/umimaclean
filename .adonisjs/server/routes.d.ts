@@ -14,6 +14,14 @@ export type ScannedRoutes = {
     'session.createStaff': { paramsTuple?: []; params?: {} }
     'session.storeStaff': { paramsTuple?: []; params?: {} }
     'register.create': { paramsTuple?: []; params?: {} }
+    'register.store': { paramsTuple?: []; params?: {} }
+    'otp.show': { paramsTuple?: []; params?: {} }
+    'otp.verify': { paramsTuple?: []; params?: {} }
+    'otp.resend': { paramsTuple?: []; params?: {} }
+    'password_reset.create': { paramsTuple?: []; params?: {} }
+    'password_reset.store': { paramsTuple?: []; params?: {} }
+    'password_reset.edit': { paramsTuple?: []; params?: {} }
+    'password_reset.update': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
     'staff.home': { paramsTuple?: []; params?: {} }
@@ -28,6 +36,9 @@ export type ScannedRoutes = {
     'session.create': { paramsTuple?: []; params?: {} }
     'session.createStaff': { paramsTuple?: []; params?: {} }
     'register.create': { paramsTuple?: []; params?: {} }
+    'otp.show': { paramsTuple?: []; params?: {} }
+    'password_reset.create': { paramsTuple?: []; params?: {} }
+    'password_reset.edit': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
@@ -41,6 +52,9 @@ export type ScannedRoutes = {
     'session.create': { paramsTuple?: []; params?: {} }
     'session.createStaff': { paramsTuple?: []; params?: {} }
     'register.create': { paramsTuple?: []; params?: {} }
+    'otp.show': { paramsTuple?: []; params?: {} }
+    'password_reset.create': { paramsTuple?: []; params?: {} }
+    'password_reset.edit': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
@@ -48,6 +62,11 @@ export type ScannedRoutes = {
   POST: {
     'session.store': { paramsTuple?: []; params?: {} }
     'session.storeStaff': { paramsTuple?: []; params?: {} }
+    'register.store': { paramsTuple?: []; params?: {} }
+    'otp.verify': { paramsTuple?: []; params?: {} }
+    'otp.resend': { paramsTuple?: []; params?: {} }
+    'password_reset.store': { paramsTuple?: []; params?: {} }
+    'password_reset.update': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
   }
 }

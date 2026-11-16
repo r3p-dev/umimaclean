@@ -4,6 +4,7 @@ import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbRememberMeTokensProvider } from '@adonisjs/auth/session'
 import { Role, STAFF_ROLES } from '#enums/role_enum'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 
 export default class User extends compose(
   UserSchema,
@@ -29,6 +30,18 @@ export default class User extends compose(
 
   canAccessAdmin() {
     return this.role === Role.ADMIN
+  }
+
+  static async isPhoneTaken(
+    phone: string,
+    options?: { exceptUserId?: number; client?: TransactionClientContract }
+  ): Promise<boolean> {
+    const query = this.query({ client: options?.client }).where('phone', phone)
+    if (options?.exceptUserId) {
+      query.whereNot('id', options.exceptUserId)
+    }
+    const existing = await query.first()
+    return existing !== null
   }
 
   initials() {

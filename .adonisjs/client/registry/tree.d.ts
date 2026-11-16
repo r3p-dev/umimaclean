@@ -20,6 +20,18 @@ export interface ApiDefinition {
   }
   register: {
     create: typeof routes['register.create']
+    store: typeof routes['register.store']
+  }
+  otp: {
+    show: typeof routes['otp.show']
+    verify: typeof routes['otp.verify']
+    resend: typeof routes['otp.resend']
+  }
+  passwordReset: {
+    create: typeof routes['password_reset.create']
+    store: typeof routes['password_reset.store']
+    edit: typeof routes['password_reset.edit']
+    update: typeof routes['password_reset.update']
   }
   customer: {
     home: typeof routes['customer.home']

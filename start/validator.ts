@@ -21,4 +21,9 @@ vine.messagesProvider = new SimpleMessagesProvider({
   'phone.required': 'Nomor WhatsApp wajib diisi.',
   'password.required': 'Kata sandi wajib diisi.',
   'fullName.required': 'Nama lengkap wajib diisi.',
+  'name.required': 'Nama wajib diisi.',
+  'terms.accepted': 'Setujui syarat & ketentuan untuk mendaftar.',
+  'passwordConfirmation.sameAs': 'Kata sandi tidak sama.',
+  'code.required': 'Kode verifikasi wajib diisi.',
+  'code.regex': 'Kode verifikasi harus 6 digit angka.',
 })

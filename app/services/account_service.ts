@@ -3,6 +3,8 @@ import ActivityLog from '#models/activity_log'
 import { DateTime } from 'luxon'
 import { Role } from '#enums/role_enum'
 import type { CreateSessionInput } from '#validators/auth'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
+import db from '@adonisjs/lucid/services/db'
 
 export class InactiveAccountException extends Error {
   constructor(message = 'Akun Anda dinonaktifkan. Hubungi kami untuk bantuan.') {
@@ -19,6 +21,48 @@ export class RoleMismatchException extends Error {
 }
 
 export default class AccountService {
+  async createCustomer(
+    data: { name: string; phone: string; passwordHash: string },
+    transaction?: TransactionClientContract
+  ): Promise<User> {
+    return User.createQuietly(
+      {
+        fullName: data.name,
+        phone: data.phone,
+        password: data.passwordHash,
+        role: Role.CUSTOMER,
+        isActive: true,
+      },
+      { client: transaction }
+    )
+  }
+
+  async resetPassword(
+    userId: number,
+    newPassword: string,
+    exceptSessionId?: string
+  ): Promise<User> {
+    const user = await User.findOrFail(userId)
+    user.password = newPassword
+    await user.save()
+
+    await this.signOutOtherDevices(user, exceptSessionId)
+    return user
+  }
+
+  async signOutOtherDevices(user: User, exceptSessionId?: string): Promise<void> {
+    const tokens = await User.rememberMeTokens.all(user)
+    await Promise.all(tokens.map((token) => User.rememberMeTokens.delete(user, token.identifier)))
+
+    try {
+      const query = db.from('sessions').where('user_id', String(user.id))
+      if (exceptSessionId) {
+        query.whereNot('id', exceptSessionId)
+      }
+      await query.delete()
+    } catch {}
+  }
+
   async verifyCustomerCredentials(input: CreateSessionInput): Promise<User> {
     const user = await User.verifyCredentials(input.phone, input.password)
 

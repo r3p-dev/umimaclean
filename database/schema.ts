@@ -6,6 +6,7 @@
 
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
+import { type OtpPurpose } from '#enums/otp_purpose_enum'
 import { type Role } from '#enums/role_enum'
 
 export class ActivityLogSchema extends BaseModel {
@@ -38,6 +39,47 @@ export class ActivityLogSchema extends BaseModel {
   declare userId: number | null
 }
 
+export class OtpCodeSchema extends BaseModel {
+  static $columns = [
+    'attempts',
+    'codeHash',
+    'consumedAt',
+    'createdAt',
+    'expiresAt',
+    'id',
+    'phone',
+    'purpose',
+  ] as const
+  $columns = OtpCodeSchema.$columns
+  @column()
+  declare attempts: number
+  @column()
+  declare codeHash: string
+  @column.dateTime()
+  declare consumedAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare phone: string
+  @column()
+  declare purpose: OtpPurpose
+}
+
+export class RateLimitSchema extends BaseModel {
+  static $columns = ['expire', 'key', 'points'] as const
+  $columns = RateLimitSchema.$columns
+  @column()
+  declare expire: bigint | number | null
+  @column({ isPrimary: true })
+  declare key: string
+  @column()
+  declare points: number
+}
+
 export class RememberMeTokenSchema extends BaseModel {
   static $columns = ['createdAt', 'expiresAt', 'hash', 'id', 'tokenableId', 'updatedAt'] as const
   $columns = RememberMeTokenSchema.$columns
@@ -53,6 +95,19 @@ export class RememberMeTokenSchema extends BaseModel {
   declare tokenableId: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+}
+
+export class SessionSchema extends BaseModel {
+  static $columns = ['data', 'expiresAt', 'id', 'userId'] as const
+  $columns = SessionSchema.$columns
+  @column()
+  declare data: string
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare userId: string | null
 }
 
 export class UserSchema extends BaseModel {

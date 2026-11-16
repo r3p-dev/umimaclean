@@ -15,5 +15,18 @@ export default {
         },
       },
     },
+    otp_codes: {
+      columns: {
+        purpose: {
+          tsType: 'OtpPurpose',
+          imports: [
+            {
+              source: '#enums/otp_purpose_enum',
+              namedImports: ['type OtpPurpose'],
+            },
+          ],
+        },
+      },
+    },
   },
 } satisfies SchemaRules

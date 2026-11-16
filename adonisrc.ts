@@ -33,6 +33,7 @@ export default defineConfig({
     () => import('@adonisjs/inertia/inertia_provider'),
     () => import('@adonisjs/auth/auth_provider'),
     () => import('@adonisjs/bouncer/bouncer_provider'),
+    () => import('@adonisjs/limiter/limiter_provider'),
   ],
 
   preloads: [

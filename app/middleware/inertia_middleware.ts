@@ -2,17 +2,21 @@ import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import UserTransformer from '#transformers/user_transformer'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
+import env from '#start/env'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
   share(ctx: HttpContext) {
     // A page can render before the auth and Shield middleware ran (a 404, for example), so these may be missing.
     const { auth, request } = ctx as Partial<HttpContext>
 
+    const isTurnstileEnabled = env.get('TURNSTILE_ENABLED', true) !== false
+
     return {
       errors: ctx.inertia.always(this.getValidationErrors(ctx)),
       // Lets a form submitted before the page's scripts have loaded pass the CSRF check (CsrfField).
       csrfToken: ctx.inertia.always(request?.csrfToken),
       user: ctx.inertia.always(auth?.user ? UserTransformer.transform(auth.user) : undefined),
+      turnstileSiteKey: isTurnstileEnabled ? env.get('TURNSTILE_SITE_KEY') : undefined,
     }
   }
 

@@ -6,7 +6,17 @@ const inertiaConfig = defineConfig({
     entrypoint: 'inertia/ssr.tsx',
     // Public pages are server-rendered, so they load fast and link previews read their tags (NFR-3,
     // GUEST-3); signed-in pages render in the browser only.
-    pages: ['home', 'legal/terms', 'legal/privacy', 'auth/login', 'auth/staff_login'],
+    pages: [
+      'home',
+      'legal/terms',
+      'legal/privacy',
+      'auth/login',
+      'auth/staff_login',
+      'auth/register',
+      'auth/otp',
+      'auth/forgot_password',
+      'auth/reset_password',
+    ],
   },
 })
 

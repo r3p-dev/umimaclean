@@ -14,7 +14,11 @@ declare module '@adonisjs/inertia/types' {
   export interface InertiaPages {
     'admin/dashboard': ExtractProps<(typeof import('../../inertia/pages/admin/dashboard.tsx'))['default']>
     'admin/template_preview': ExtractProps<(typeof import('../../inertia/pages/admin/template_preview.tsx'))['default']>
+    'auth/forgot_password': ExtractProps<(typeof import('../../inertia/pages/auth/forgot_password.tsx'))['default']>
     'auth/login': ExtractProps<(typeof import('../../inertia/pages/auth/login.tsx'))['default']>
+    'auth/otp': ExtractProps<(typeof import('../../inertia/pages/auth/otp.tsx'))['default']>
+    'auth/register': ExtractProps<(typeof import('../../inertia/pages/auth/register.tsx'))['default']>
+    'auth/reset_password': ExtractProps<(typeof import('../../inertia/pages/auth/reset_password.tsx'))['default']>
     'auth/staff_login': ExtractProps<(typeof import('../../inertia/pages/auth/staff_login.tsx'))['default']>
     'customer/dashboard': ExtractProps<(typeof import('../../inertia/pages/customer/dashboard.tsx'))['default']>
     'customer/flow_template_preview': ExtractProps<(typeof import('../../inertia/pages/customer/flow_template_preview.tsx'))['default']>

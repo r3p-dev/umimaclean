@@ -17,7 +17,22 @@ router
     router.get('/staf/masuk', [controllers.Session, 'createStaff']).as('session.createStaff')
     router.post('/staf/masuk', [controllers.Session, 'storeStaff']).as('session.storeStaff')
 
-    router.on('/daftar').redirect('session.create').as('register.create')
+    router.get('/daftar', [controllers.Registration, 'create']).as('register.create')
+    router.post('/daftar', [controllers.Registration, 'store']).as('register.store')
+
+    router.get('/verifikasi', [controllers.Otp, 'show']).as('otp.show')
+    router.post('/verifikasi', [controllers.Otp, 'verify']).as('otp.verify')
+    router.post('/verifikasi/kirim-ulang', [controllers.Otp, 'resend']).as('otp.resend')
+
+    router
+      .get('/lupa-kata-sandi', [controllers.PasswordReset, 'create'])
+      .as('password_reset.create')
+    router.post('/lupa-kata-sandi', [controllers.PasswordReset, 'store']).as('password_reset.store')
+
+    router.get('/kata-sandi-baru', [controllers.PasswordReset, 'edit']).as('password_reset.edit')
+    router
+      .post('/kata-sandi-baru', [controllers.PasswordReset, 'update'])
+      .as('password_reset.update')
   })
   .use(middleware.guest())
 

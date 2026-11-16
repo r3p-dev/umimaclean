@@ -19,4 +19,11 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   ADMIN_PHONE: Env.schema.string.optional(),
   WHATSAPP_ALLOWED_PHONES: Env.schema.string.optional(),
+  FONNTE_TOKEN: Env.schema.string.optional(),
+
+  LIMITER_STORE: Env.schema.enum.optional(['database', 'memory'] as const),
+
+  TURNSTILE_SITE_KEY: Env.schema.string.optional(),
+  TURNSTILE_SECRET_KEY: Env.schema.string.optional(),
+  TURNSTILE_ENABLED: Env.schema.boolean.optional(),
 })

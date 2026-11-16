@@ -4,6 +4,9 @@
  */
 
 export const controllers = {
+  Otp: () => import('#controllers/otp_controller'),
+  PasswordReset: () => import('#controllers/password_reset_controller'),
+  Registration: () => import('#controllers/registration_controller'),
   Seo: () => import('#controllers/seo_controller'),
   Session: () => import('#controllers/session_controller'),
 }
