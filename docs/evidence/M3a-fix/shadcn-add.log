@@ -1,0 +1,7 @@
+- Checking registry.
+✔ Checking registry.
+- Updating files.
+ℹ Updated 3 files:
+  - inertia/components/ui/switch.tsx
+  - inertia/components/ui/button.tsx
+  - inertia/components/ui/dialog.tsx

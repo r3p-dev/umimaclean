@@ -1,0 +1,491 @@
+
+> umimaclean@0.2.2 test
+> node ace test
+
+c[ info ] loading hooks...
+[ info ] generating indexes...
+[ info ] codegen: created 7 file(s)
+[ info ] booting application to run tests...
+8:29:32 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+❯ Executed 7 migrations (299 ms)
+
+unit / Bouncer abilities (tests/unit/abilities.spec.ts)
+  ✔ accessCustomer allows customer and denies staff and admin (4.19ms)
+  ✔ accessStaff allows staff and admin, denies customer and guest (0.86ms)
+  ✔ accessAdmin allows only admin (1.13ms)
+
+unit / AccountService (tests/unit/account_service.spec.ts)
+  ✔ verifies customer credentials for an active customer (ACC-3) (38.81ms)
+  ✔ refuses a wrong password with the generic message (ACC-3) (13.71ms)
+  ✔ refuses an inactive account (ACC-3) (10.52ms)
+  ✔ points staff to the staff sign-in and customers to the customer sign-in (20.26ms)
+  ✔ verifies staff and owner credentials (STAFF-1) (18.85ms)
+  ✔ blocks a number after 5 wrong passwords, even with the right one (ACC-3) (28.87ms)
+  ✔ a successful sign-in clears the number counter but not the IP counter (ACC-3) (32.03ms)
+  ✔ changePassword refuses a wrong current password and blocks after 5 failures (ACC-4) (25.33ms)
+  ✔ changePassword stores the new password (ACC-4) (22.1ms)
+  ✔ signOutOtherDevices keeps only the current device remember-me token (ACC-4) (12.43ms)
+  ✔ logStaffSignIn updates lastSeenAt and writes the activity log (STAFF-1) (11.29ms)
+
+unit / OTP rules (ACC-2) (tests/unit/otp_service.spec.ts)
+  ✔ OTP is generated as 6 digits, stored only as keyed hash, and dispatched via WhatsApp (13.2ms)
+  ✔ wrong code increments attempts and locks after 5 wrong attempts (35.76ms)
+  ✔ expired OTP cannot be verified (validity 5 minutes) (9.2ms)
+  ✔ resend cooldown prevents requesting code within 60 seconds (12.9ms)
+  ✔ purpose isolation: code issued for register cannot be verified for reset_password (20.96ms)
+  ✔ send limits: max 5 sends per number per hour (35.51ms)
+{"level":30,"time":1794835773878,"pid":447689,"hostname":"fedora","name":"umimaclean","phone":"62812****0000","kind":"otp","msg":"WhatsApp message logged (outside allowed list)"}
+  ✔ OTP flow outside development never logs OTP code or unmasked phone number (9.25ms)
+
+unit / Phone normalization, formatting & masking (ACC-1) (tests/unit/phone.spec.ts)
+  ✔ normalizePhone formats Indonesian numbers to 62... (0.32ms)
+  ✔ isValidIndonesianPhone validates proper mobile numbers starting with 628 (0.38ms)
+  ✔ maskPhone hides middle digits in logs and public output (0.13ms)
+  ✔ formatPhone formats numbers nicely with +62 prefix for display (0.15ms)
+
+unit / PriceListService (SVC-1..3, OWN-7) (tests/unit/price_list_service.spec.ts)
+  ✔ getActiveServices returns only active, non-deleted services ordered correctly (20.76ms)
+  ✔ getOwnerServices includes both active and inactive services, but excludes soft-deleted (22.38ms)
+8:29:33 PM [vite] (client) [optimizer] bundling dependencies...
+  ✔ createService logs activity and increments display order (11.07ms)
+  ✔ updateService records diffs in activity log (OWN-7) (13.01ms)
+  ✔ toggleServiceActive and bulkToggleServices update states and log actions (25.5ms)
+  ✔ softDeleteService sets deletedAt and marks log sensitive; deleted service cannot be toggled (SVC-2) (15ms)
+
+unit / Service Seed (SVC-1..5, shared.md §1) (tests/unit/service_seed.spec.ts)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ seeded catalog contains exactly 22 services matching PRD table (SVC-5) (161.84ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ bag rows are seeded as two separate services each for kanvas and kulit (145.97ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ helmet services are restricted to helmet item kind only (SVC-4) (113.44ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ main and addon service types are strictly separated (109.86ms)
+
+unit / One light theme (tests/unit/theme.spec.ts)
+  ✔ the shadcn components carry no dark: classes (5.13ms)
+  ✔ app.css defines no dark theme (0.7ms)
+
+unit / Trusted proxies (ARCHITECTURE §1.2 rule 1) (tests/unit/trusted_proxy.spec.ts)
+  ✔ X-Forwarded-For is honoured from a trusted proxy (loopback by default) (3.19ms)
+  ✔ X-Forwarded-For is ignored from any other address (0.74ms)
+
+unit / TurnstileGateway (tests/unit/turnstile_gateway.spec.ts)
+  ✔ verifyToken returns true when disabled (0.34ms)
+  ✔ verifyToken returns false when token is missing or empty (0.27ms)
+  ✔ verifyToken returns false for invalid_token string (0.23ms)
+  ✔ assertToken throws validation error when token is invalid (0.27ms)
+  ✔ FakeTurnstileGateway accepts TEST_TURNSTILE_TOKEN and refuses anything else (0.36ms)
+
+unit / WhatsAppService (tests/unit/whatsapp_service.spec.ts)
+{"level":30,"time":1794835774535,"pid":447689,"hostname":"fedora","name":"umimaclean","phone":"62812****5432","kind":"otp","msg":"WhatsApp message dispatched"}
+  ✔ outside production, sends only to numbers in WHATSAPP_ALLOWED_PHONES and logs others (0.34ms)
+  ✔ refuses sending when WHATSAPP_ALLOWED_PHONES is empty outside production (0.25ms)
+  ✔ outside development, logging masks phone and never logs message text (0.47ms)
+{"level":30,"time":1794835774535,"pid":447689,"hostname":"fedora","name":"umimaclean","phone":"62819****8777","kind":"otp","msg":"WhatsApp message logged (outside allowed list)"}
+{"level":30,"time":1794835774536,"pid":447689,"hostname":"fedora","name":"umimaclean","phone":"62812****5432","kind":"otp","msg":"WhatsApp message logged (outside allowed list)"}
+{"level":30,"time":1794835774536,"pid":447689,"hostname":"fedora","name":"umimaclean","phone":"62812****5432","kind":"otp","msg":"WhatsApp message dispatched"}
+
+functional / Account security (ACC-4) (tests/functional/account_security.spec.ts)
+  ✔ every role changes its password with the current one (ACC-4) (157.58ms)
+  ✔ a wrong current password is refused (ACC-4) (48.28ms)
+  ✔ a mismatched confirmation and a short password are refused (ACC-4) (28.67ms)
+  ✔ after 5 wrong current passwords the change is blocked with the wait time (ACC-4) (103.19ms)
+  ✔ "Keluar dari perangkat lain" revokes the other devices remember-me tokens (ACC-4) (23.72ms)
+  ✔ a password change signs out every other device, keeping this one (ACC-5) (28.41ms)
+  ✔ a refused password change signs out nothing (ACC-4) (20.72ms)
+8:29:34 PM [vite] (ssr) connected.
+  ✔ guests are refused on the account security actions (2s)
+
+functional / Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1) (tests/functional/auth.spec.ts)
+  ✔ GET /masuk renders customer sign-in form (8.84ms)
+  ✔ GET /staf/masuk renders staff sign-in form (8.64ms)
+  ✔ POST /masuk authenticates valid customer credentials and redirects to /beranda (39.72ms)
+  ✔ POST /masuk sets remember-me token when rememberMe checkbox is checked (39.64ms)
+  ✔ POST /masuk refuses wrong credentials with single generic message (ACC-3) (44.66ms)
+  ✔ POST /masuk refuses inactive customer accounts (31.86ms)
+  ✔ POST /masuk points staff and owner accounts to /staf/masuk (GUEST-11) (30.08ms)
+  ✔ POST /staf/masuk authenticates staff and redirects to /staf (STAFF-1) (56.56ms)
+  ✔ POST /staf/masuk authenticates owner (admin) and redirects to /admin (STAFF-1, OWN-2) (46.09ms)
+  ✔ POST /staf/masuk points customer accounts to /masuk (36.15ms)
+  ✔ POST /keluar terminates session and redirects to /masuk (29.76ms)
+  ✔ Route authorization: every role is refused where it does not belong (206.32ms)
+
+functional / OTP (ACC-2) Functional Tests (tests/functional/otp.spec.ts)
+  ✔ GET /verifikasi redirects to /masuk if no active session flow (13.45ms)
+  ✔ GET /verifikasi renders verification page when active flow exists in session (9.26ms)
+  ✔ POST /verifikasi validates code format (6 digits required) (19.84ms)
+  ✔ POST /verifikasi rejects wrong OTP code and increments failure count (27.56ms)
+  ✔ POST /verifikasi locks OTP after 5 wrong attempts (ACC-2) (27.38ms)
+  ✔ POST /verifikasi rejects expired OTP (ACC-2) (23.53ms)
+  ✔ POST /verifikasi/kirim-ulang enforces 60-second cooldown (ACC-2) (22.9ms)
+  ✔ Hourly rate limit prevents more than 5 OTP sends per number (ACC-2) (31.83ms)
+
+functional / Password Reset (GUEST-12, ACC-5) (tests/functional/password_reset.spec.ts)
+  ✔ GET /lupa-kata-sandi renders forgot password form (13.1ms)
+  ✔ POST /lupa-kata-sandi refuses invalid phone number (17.2ms)
+  ✔ POST /lupa-kata-sandi refuses invalid Turnstile token (15.41ms)
+  ✔ POST /lupa-kata-sandi with unregistered phone displays exact sentence and sends no WhatsApp (GUEST-12) (9.28ms)
+  ✔ GET /kata-sandi-baru redirects to /lupa-kata-sandi when accessed without grant (7.96ms)
+  ✔ Single client completes forgot password journey and updates password in database (GUEST-12) (52.29ms)
+
+functional / Phone change (CUST-13, ACC-2, ACC-5) (tests/functional/phone_change.spec.ts)
+  ✔ GET /profil/nomor renders the phone change form (CUST-13) (17.65ms)
+  ✔ a number used by another account is refused (CUST-13) (28.01ms)
+  ✔ the current number and a malformed number are refused (CUST-13) (41.18ms)
+  ✔ the OTP goes to the new number and a right code changes the phone (CUST-13, ACC-5) (43.12ms)
+  ✔ a wrong code and an expired code leave the phone unchanged (CUST-13, ACC-2) (55.45ms)
+  ✔ a number taken while the code was pending is refused at verification (CUST-13) (47.09ms)
+  ✔ a phone change started by one account cannot be finished by another (CUST-13) (28.85ms)
+
+functional / Profile pages (CUST-12, OWN-13, STAFF-16, ACC-4) (tests/functional/profile.spec.ts)
+  ✔ customer sees the profile with the number of active devices (CUST-12, ACC-4) (15.21ms)
+  ✔ customer opens the edit page (CUST-12) (15.01ms)
+  ✔ customer changes their name (CUST-12) (16.23ms)
+  ✔ a name shorter than 2 characters is refused (CUST-12) (23.64ms)
+  ✔ staff sees their profile with account security (STAFF-16, ACC-4) (15.06ms)
+  ✔ owner sees their profile, and can use the staff profile too (OWN-13) (26.26ms)
+  ✔ every role is refused on the profile pages it does not belong to (257.43ms)
+
+functional / Registration (GUEST-10) (tests/functional/registration.spec.ts)
+  ✔ GET /daftar renders registration form (15.21ms)
+  ✔ POST /daftar refuses registration if phone number is already registered (22.34ms)
+  ✔ POST /daftar refuses registration if Turnstile token is invalid (17.32ms)
+  ✔ POST /daftar refuses registration if terms and conditions are not accepted (16.92ms)
+  ✔ POST /daftar refuses registration if password confirmation does not match (20.14ms)
+  ✔ Full registration flow: /daftar -> /verifikasi -> account created & signed in on /beranda (25.97ms)
+
+functional / Search engines (GUEST-3) (tests/functional/seo.spec.ts)
+  ✔ robots.txt keeps signed-in and development pages out and points to the sitemap (13.55ms)
+  ✔ the sitemap lists the public pages only (9.98ms)
+  ✔ a public page arrives server-rendered with its title, description and Open Graph tags (20.17ms)
+
+functional / Services & Prices (SVC-1..5, OWN-7, GUEST-1) (tests/functional/services.spec.ts)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ guest is redirected to staff login when opening /admin/layanan (111.98ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ customer is denied access to /admin/layanan with 403 Forbidden (119.67ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ staff is denied access to /admin/layanan with 403 Forbidden (122.51ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ owner opens /admin/layanan and sees seeded services list (128.62ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ owner creates a new service (SVC-1, OWN-7) (130.64ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ create service fails on invalid input and returns validation errors (D63) (126.52ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ owner updates an existing service (SVC-1, OWN-7) (127.87ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ owner toggles service active/inactive status (SVC-2, OWN-7) (129.24ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ owner bulk toggles multiple services (OWN-7) (143.41ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+{"level":40,"time":1794835779874,"pid":447689,"hostname":"fedora","name":"umimaclean","request_id":"bcb27087-7b1f-4090-8752-6019f5e6cd5e","x-request-id":"bcb27087-7b1f-4090-8752-6019f5e6cd5e","msg":"Layanan tidak ditemukan."}
+  ✔ owner soft-deletes a service; deleted service cannot be toggled (SVC-2, OWN-7) (171.93ms)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ landing page GET / renders active services and excludes inactive ones (GUEST-1) (149.89ms)
+
+functional / Sign-in rate limits (ACC-3) (tests/functional/sign_in_limits.spec.ts)
+  ✔ after 5 wrong passwords a number is blocked, even with the right one (115.47ms)
+  ✔ a successful sign-in clears the counter of that number (151.84ms)
+  ✔ the staff sign-in has the same limit per number (STAFF-1) (72.7ms)
+  ✔ after 50 wrong passwords from one client IP, that IP is blocked; others are not (603.48ms)
+
+browser / Account security in the browser (ACC-4, ACC-5, CUST-13) (tests/browser/account_security_flow.spec.ts)
+  ✔ staff signs out other devices, and a password change signs them out too (ACC-4, ACC-5) (9s)
+  ✔ customer changes the phone with an OTP and the other device is signed out (CUST-13, ACC-5) (5s)
+
+browser / Authentication Browser Flow (M2a) (tests/browser/auth_flow.spec.ts)
+  ✔ home page renders and displays authentication entry points (515.81ms)
+  ✔ password input allows toggling password visibility without submitting form (1s)
+  ✔ customer signs in through browser form and lands on /beranda (1s)
+  ✔ staff signs in through /staf/masuk and lands on /staf (606.99ms)
+  ✔ owner signs in through /staf/masuk and lands on /admin (644.64ms)
+  ✔ sign-in also works before page scripts run (server-rendered form) (198.04ms)
+  ✔ customer logs out and is redirected to /masuk (734.85ms)
+  ✔ customer signs up through /daftar, verifies OTP, and lands signed in on /beranda (993.79ms)
+  ✔ password reset revokes sessions and remember-me tokens on other devices (ACC-5) (5s)
+
+browser / Look and feel (tests/browser/look.spec.ts)
+  ✔ / loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /syarat loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /privasi loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /masuk loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /staf/masuk loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /daftar loads nothing from another host, in Indonesian, with one main heading (305.46ms)
+  ✔ /lupa-kata-sandi loads nothing from another host, in Indonesian, with one main heading (277.5ms)
+  ✔ /_preview/alur loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/cetak loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/404 loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/500 loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ stays light when the device prefers a dark theme (468.76ms)
+  ✔ the first Tab press shows a visible focus ring (1s)
+  ✔ / has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /syarat has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /privasi has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /masuk has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /staf/masuk has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /daftar has no WCAG 2.1 AA violations (axe) (993.17ms)
+  ✔ /lupa-kata-sandi has no WCAG 2.1 AA violations (axe) (980.21ms)
+  ✔ /_preview/404 has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /_preview/500 has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page /beranda has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page /profil has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page /profil/ubah has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page /profil/nomor has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page /staf has no WCAG 2.1 AA violations (axe) (1s)
+  ✔ authenticated page /staf/profil has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page /admin has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page /admin/profil has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page /admin/layanan has no WCAG 2.1 AA violations (axe) (3s)
+  ✔ / does not scroll sideways at 360 px (1s)
+  ✔ /syarat does not scroll sideways at 360 px (984.76ms)
+  ✔ /privasi does not scroll sideways at 360 px (1s)
+  ✔ /masuk does not scroll sideways at 360 px (996.31ms)
+  ✔ /staf/masuk does not scroll sideways at 360 px (1s)
+  ✔ /daftar does not scroll sideways at 360 px (279.3ms)
+  ✔ /lupa-kata-sandi does not scroll sideways at 360 px (293.12ms)
+  ✔ /_preview/alur does not scroll sideways at 360 px (986.4ms)
+  ✔ /_preview/cetak does not scroll sideways at 360 px (1s)
+  ✔ /_preview/404 does not scroll sideways at 360 px (1s)
+  ✔ /_preview/500 does not scroll sideways at 360 px (1s)
+  ✔ authenticated page /beranda does not scroll sideways at 360 px (1s)
+  ✔ authenticated page /profil does not scroll sideways at 360 px (1s)
+  ✔ authenticated page /profil/ubah does not scroll sideways at 360 px (1s)
+  ✔ authenticated page /profil/nomor does not scroll sideways at 360 px (1s)
+  ✔ authenticated page /staf does not scroll sideways at 360 px (996.82ms)
+  ✔ authenticated page /staf/profil does not scroll sideways at 360 px (1s)
+  ✔ authenticated page /admin does not scroll sideways at 360 px (1s)
+  ✔ authenticated page /admin/profil does not scroll sideways at 360 px (1s)
+  ✔ authenticated page /admin/layanan does not scroll sideways at 360 px (1s)
+  ✔ the before and after slider moves with the keyboard (413.74ms)
+
+browser / Services & Pricing Browser Flow (M3a) (tests/browser/services_flow.spec.ts)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ landing page displays pricing section with interactive filter pills (GUEST-1) (1s)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ owner manages services catalog on /admin/layanan (SVC-1..5, OWN-7) (3s)
+
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 2 seeders
+  ✔ captures responsive screenshots and verifies axe accessibility for M3a (21s)
+❯ Reverted 7 migrations (115 ms)
+
+ PASSED 
+
+Tests  185 passed (185)
+ Time  2m

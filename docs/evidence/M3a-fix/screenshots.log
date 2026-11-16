@@ -1,0 +1,21 @@
+landing-harga-helm-360: path=/#harga (filter=helm) scrollWidth=360 axe=none
+admin-menu-layanan-360: path=/admin/layanan (nav menu) scrollWidth=360 axe=none
+admin-layanan-empty-360: path=/admin/layanan (empty search) scrollWidth=360 axe=none
+admin-layanan-inactive-360: path=/admin/layanan (inactive visible) scrollWidth=360 axe=none
+admin-layanan-bulk-360: path=/admin/layanan (bulk active) scrollWidth=360 axe=none
+admin-layanan-delete-360: path=/admin/layanan (delete dialog) scrollWidth=360 axe=none
+admin-layanan-error-360: path=/admin/layanan (add form validation errors) scrollWidth=360 axe=none
+landing-harga-helm-390: path=/#harga (filter=helm) scrollWidth=390 axe=none
+admin-menu-layanan-390: path=/admin/layanan (nav menu) scrollWidth=390 axe=none
+admin-layanan-empty-390: path=/admin/layanan (empty search) scrollWidth=390 axe=none
+admin-layanan-inactive-390: path=/admin/layanan (inactive visible) scrollWidth=390 axe=none
+admin-layanan-bulk-390: path=/admin/layanan (bulk active) scrollWidth=390 axe=none
+admin-layanan-delete-390: path=/admin/layanan (delete dialog) scrollWidth=390 axe=none
+admin-layanan-error-390: path=/admin/layanan (add form validation errors) scrollWidth=390 axe=none
+landing-harga-helm-1440: path=/#harga (filter=helm) scrollWidth=1440 axe=none
+admin-menu-layanan-1440: path=/admin/layanan (sidebar) scrollWidth=1440 axe=none
+admin-layanan-empty-1440: path=/admin/layanan (empty search) scrollWidth=1440 axe=none
+admin-layanan-inactive-1440: path=/admin/layanan (inactive visible) scrollWidth=1440 axe=none
+admin-layanan-bulk-1440: path=/admin/layanan (bulk active) scrollWidth=1440 axe=none
+admin-layanan-delete-1440: path=/admin/layanan (delete dialog) scrollWidth=1440 axe=none
+admin-layanan-error-1440: path=/admin/layanan (add form validation errors) scrollWidth=1440 axe=none
