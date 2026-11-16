@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import { AxeBuilder } from '@axe-core/playwright'
 import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
+import { Role } from '#enums/role_enum'
 
 const PUBLIC_PAGES = [
   '/',
@@ -82,17 +83,17 @@ test.group('Look and feel', (group) => {
 
   test('authenticated page {$self} has no WCAG 2.1 AA violations (axe)')
     .with([
-      { role: 'customer', path: '/beranda' },
-      { role: 'staff', path: '/staf' },
-      { role: 'admin', path: '/admin' },
+      { role: Role.CUSTOMER, path: '/beranda' },
+      { role: Role.STAFF, path: '/staf' },
+      { role: Role.ADMIN, path: '/admin' },
     ] as const)
     .run(async ({ visit, browserContext, assert }, item) => {
       const user = await User.create({
         fullName: `User ${item.role}`,
         phone:
-          item.role === 'customer'
+          item.role === Role.CUSTOMER
             ? '6281200000010'
-            : item.role === 'staff'
+            : item.role === Role.STAFF
               ? '6281200000003'
               : '6281200000001',
         password: 'password123',
@@ -126,17 +127,17 @@ test.group('Look and feel', (group) => {
 
   test('authenticated page {$self} does not scroll sideways at 360 px')
     .with([
-      { role: 'customer', path: '/beranda' },
-      { role: 'staff', path: '/staf' },
-      { role: 'admin', path: '/admin' },
+      { role: Role.CUSTOMER, path: '/beranda' },
+      { role: Role.STAFF, path: '/staf' },
+      { role: Role.ADMIN, path: '/admin' },
     ] as const)
     .run(async ({ visit, browserContext, assert }, item) => {
       const user = await User.create({
         fullName: `User ${item.role}`,
         phone:
-          item.role === 'customer'
+          item.role === Role.CUSTOMER
             ? '6281200000010'
-            : item.role === 'staff'
+            : item.role === Role.STAFF
               ? '6281200000003'
               : '6281200000001',
         password: 'password123',

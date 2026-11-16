@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
+import { Role } from '#enums/role_enum'
 import env from '#start/env'
 
 test.group('Authentication Browser Flow (M2a)', (group) => {
@@ -18,7 +19,7 @@ test.group('Authentication Browser Flow (M2a)', (group) => {
       fullName: 'Pelanggan Browser',
       phone: '6281200000010',
       password: 'password123',
-      role: 'customer',
+      role: Role.CUSTOMER,
       isActive: true,
     })
 
@@ -38,7 +39,7 @@ test.group('Authentication Browser Flow (M2a)', (group) => {
       fullName: 'Staf Browser',
       phone: '6281200000003',
       password: 'password123',
-      role: 'staff',
+      role: Role.STAFF,
       isActive: true,
     })
 
@@ -57,7 +58,7 @@ test.group('Authentication Browser Flow (M2a)', (group) => {
       fullName: 'Pemilik Browser',
       phone: '6281200000001',
       password: 'password123',
-      role: 'admin',
+      role: Role.ADMIN,
       isActive: true,
     })
 
@@ -79,7 +80,7 @@ test.group('Authentication Browser Flow (M2a)', (group) => {
       fullName: 'No Script User',
       phone: '6281200000020',
       password: 'password123',
-      role: 'customer',
+      role: Role.CUSTOMER,
       isActive: true,
     })
     const context = await browser.newContext({
@@ -103,7 +104,7 @@ test.group('Authentication Browser Flow (M2a)', (group) => {
       fullName: 'User Logout',
       phone: '6281200000030',
       password: 'password123',
-      role: 'customer',
+      role: Role.CUSTOMER,
       isActive: true,
     })
 

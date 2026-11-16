@@ -2,6 +2,7 @@ import { Form, Link } from '@adonisjs/inertia/react'
 import CsrfField from '~/components/atoms/csrf_field'
 import { IconArrowLeft } from '@tabler/icons-react'
 import FormField from '~/components/molecules/form_field'
+import PhoneInput from '~/components/molecules/phone_input'
 import SeoHead from '~/components/molecules/seo_head'
 import AuthLayout from '~/components/templates/auth_layout'
 import { Button } from '~/components/ui/button'
@@ -23,13 +24,13 @@ export default function Login() {
         {({ errors, processing }) => (
           <>
             <CsrfField />
-            <FormField
+            <PhoneInput
               id="phone"
+              name="phone"
               label="Nomor WhatsApp"
-              type="tel"
               autoComplete="tel"
-              description="Contoh: 081234567890"
               error={errors.phone}
+              required
             />
             <FormField
               id="password"
@@ -38,13 +39,9 @@ export default function Login() {
               autoComplete="current-password"
               error={errors.password}
             />
-            <div className="flex items-center gap-2">
-              <Checkbox id="rememberMe" name="rememberMe" value="true">
-                <span className="text-sm font-normal text-muted-foreground cursor-pointer select-none">
-                  Ingat saya selama 180 hari
-                </span>
-              </Checkbox>
-            </div>
+            <Checkbox id="rememberMe" name="rememberMe" value="true">
+              Ingat saya selama 180 hari
+            </Checkbox>
             <Button type="submit" isDisabled={processing} className="mt-2 h-14 text-base">
               {processing ? 'Memproses…' : 'Masuk'}
             </Button>

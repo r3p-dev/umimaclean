@@ -41,6 +41,7 @@ export default configApp(
     rules: {
       'eqeqeq': 'off',
       '@typescript-eslint/no-shadow': 'off',
+      '@unicorn/filename-case': 'off',
       'tailwind-canonical-classes/tailwind-canonical-classes': 'off',
       'react-hooks/set-state-in-effect': 'off',
     },
