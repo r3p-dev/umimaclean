@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-16
+
+### Changed
+
+- A successful password change now signs out every other device and ends their remembered
+  sign-ins, like a password reset or a phone change; the form says so (ACC-5).
+- The brand blue is slightly darker, so white text on a hovered primary button meets WCAG AA
+  (4.7:1 instead of 4.1:1).
+
 ## [0.2.0] - 2026-11-16
 
 ### Added
