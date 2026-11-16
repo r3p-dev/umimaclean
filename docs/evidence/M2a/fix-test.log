@@ -1,0 +1,147 @@
+c[ info ] loading hooks...
+[ info ] generating indexes...
+[ info ] codegen: created 7 file(s)
+[ info ] booting application to run tests...
+❯ Executed 3 migrations (68 ms)
+
+unit / Bouncer abilities (tests/unit/abilities.spec.ts)
+  ✔ accessCustomer allows customer and denies staff and admin (2.67ms)
+  ✔ accessStaff allows staff and admin, denies customer and guest (0.59ms)
+  ✔ accessAdmin allows only admin (0.71ms)
+
+unit / AccountService (tests/unit/account_service.spec.ts)
+  ✔ verifies customer credentials successfully for active customer (22.65ms)
+  ✔ refuses inactive customer account during verification (8.78ms)
+  ✔ refuses staff or admin trying to sign in as customer (9.95ms)
+  ✔ verifies staff and admin credentials in verifyStaffCredentials (16.26ms)
+  ✔ refuses customer attempting to sign in through staff portal (9.38ms)
+  ✔ logStaffSignIn updates lastSeenAt and creates activity_logs record (10.42ms)
+  ✔ resolves SessionController with injected AccountService from container (2.13ms)
+
+unit / Phone normalization, formatting & masking (ACC-1) (tests/unit/phone.spec.ts)
+  ✔ normalizePhone formats Indonesian numbers to 62... (0.36ms)
+  ✔ isValidIndonesianPhone validates proper mobile numbers starting with 628 (0.34ms)
+  ✔ maskPhone hides middle digits in logs and public output (0.25ms)
+  ✔ formatPhone formats numbers nicely with +62 prefix for display (0.19ms)
+
+unit / One light theme (tests/unit/theme.spec.ts)
+  ✔ the shadcn components carry no dark: classes (4.6ms)
+  ✔ app.css defines no dark theme (1.34ms)
+
+unit / WhatsAppService (tests/unit/whatsapp_service.spec.ts)
+{"level":30,"time":1794711399791,"pid":412695,"hostname":"fedora","name":"umimaclean","phone":"6281298765432","text":"Kode OTP Anda: 123456","msg":"WhatsApp message dispatched"}
+  ✔ outside production, sends only to numbers in WHATSAPP_ALLOWED_PHONES and logs others (1.23ms)
+  ✔ refuses sending when WHATSAPP_ALLOWED_PHONES is empty outside production (0.35ms)
+{"level":30,"time":1794711399792,"pid":412695,"hostname":"fedora","name":"umimaclean","phone":"6281999888777","text":"Pesan rahasia","msg":"WhatsApp message logged (outside allowed list)"}
+{"level":30,"time":1794711399792,"pid":412695,"hostname":"fedora","name":"umimaclean","phone":"6281298765432","text":"Halo","msg":"WhatsApp message logged (outside allowed list)"}
+
+functional / Authentication & Authorization (ACC-1, ACC-3, GUEST-11, STAFF-1) (tests/functional/auth.spec.ts)
+9:56:39 AM [vite] (ssr) connected.
+  ✔ POST /masuk authenticates valid customer credentials and redirects to /beranda (1s)
+  ✔ POST /masuk sets remember-me token when rememberMe checkbox is checked (225.13ms)
+  ✔ POST /masuk refuses wrong credentials with single generic message (ACC-3) (24.99ms)
+  ✔ POST /masuk refuses inactive customer accounts (13.55ms)
+  ✔ POST /masuk points staff and owner accounts to /staf/masuk (GUEST-11) (14.21ms)
+  ✔ POST /staf/masuk authenticates staff and redirects to /staf (STAFF-1) (37.15ms)
+  ✔ POST /staf/masuk authenticates owner (admin) and redirects to /admin (STAFF-1, OWN-2) (34.01ms)
+  ✔ POST /staf/masuk points customer accounts to /masuk (13.04ms)
+  ✔ POST /keluar terminates session and redirects to /masuk (27.47ms)
+  ✔ Route authorization: every role is refused where it does not belong (111.98ms)
+
+functional / Search engines (GUEST-3) (tests/functional/seo.spec.ts)
+  ✔ robots.txt keeps signed-in and development pages out and points to the sitemap (7.99ms)
+  ✔ the sitemap lists the public pages only (5.52ms)
+  ✔ a public page arrives server-rendered with its title, description and Open Graph tags (15.73ms)
+
+browser / Authentication Browser Flow (M2a) (tests/browser/auth_flow.spec.ts)
+  ✔ home page renders and displays authentication entry points (444.57ms)
+  ✔ customer signs in through browser form and lands on /beranda (814.51ms)
+  ✔ staff signs in through /staf/masuk and lands on /staf (543.43ms)
+  ✔ owner signs in through /staf/masuk and lands on /admin (486.09ms)
+  ✔ sign-in also works before page scripts run (server-rendered form) (187.24ms)
+  ✔ customer logs out and is redirected to /masuk (603.66ms)
+
+browser / Look and feel (tests/browser/look.spec.ts)
+  ✔ / loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /syarat loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /privasi loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /masuk loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /staf/masuk loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/alur loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/cetak loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/404 loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ /_preview/500 loads nothing from another host, in Indonesian, with one main heading (1s)
+  ✔ stays light when the device prefers a dark theme (331.49ms)
+  ✔ the first Tab press shows a visible focus ring (987.54ms)
+  ✔ / has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /syarat has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ /privasi has no WCAG 2.1 AA violations (axe) (2s)
+9:57:02 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+  ✔ /masuk has no WCAG 2.1 AA violations (axe) (2s)
+9:57:02 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:02 AM [vite] (client) page reload .adonisjs/client/registry/index.ts
+9:57:02 AM [vite] (ssr) page reload .adonisjs/client/registry/index.ts
+9:57:02 AM [vite] (ssr) program reload
+9:57:02 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:02 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:03 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:03 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:03 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:04 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:04 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:04 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:05 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:05 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct, /inertia/components/ui/checkbox.tsx
+9:57:05 AM [vite] (ssr) page reload inertia/components/ui/checkbox.tsx
+9:57:05 AM [vite] (ssr) program reload
+9:57:06 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct, /inertia/components/ui/input-group.tsx
+9:57:06 AM [vite] (ssr) page reload inertia/components/ui/input-group.tsx
+9:57:06 AM [vite] (ssr) program reload
+  ✔ /staf/masuk has no WCAG 2.1 AA violations (axe) (4s)
+9:57:06 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct, /inertia/components/ui/textarea.tsx
+9:57:06 AM [vite] (ssr) page reload inertia/components/ui/textarea.tsx
+9:57:06 AM [vite] (ssr) program reload
+9:57:07 AM [vite] (client) hmr update /inertia/pages/auth/login.tsx, /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:07 AM [vite] (ssr) page reload inertia/pages/auth/login.tsx
+9:57:07 AM [vite] (ssr) program reload
+9:57:07 AM [vite] (client) hmr update /inertia/pages/auth/staff_login.tsx, /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:07 AM [vite] (ssr) page reload inertia/pages/auth/staff_login.tsx
+9:57:07 AM [vite] (ssr) program reload
+9:57:08 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:08 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:08 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+  ✔ /_preview/404 has no WCAG 2.1 AA violations (axe) (2s)
+9:57:09 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:09 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:09 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:09 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:09 AM [vite] (client) page reload .adonisjs/client/registry/index.ts
+9:57:09 AM [vite] (ssr) page reload .adonisjs/client/registry/index.ts
+9:57:09 AM [vite] (ssr) program reload
+9:57:09 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:09 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+9:57:09 AM [vite] (client) hmr update /inertia/css/app.css?direct
+9:57:10 AM [vite] (client) hmr update /inertia/css/app.css, /inertia/css/app.css?direct
+  ✔ /_preview/500 has no WCAG 2.1 AA violations (axe) (3s)
+  ✔ authenticated page [object Object] has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ authenticated page [object Object] has no WCAG 2.1 AA violations (axe) (1s)
+  ✔ authenticated page [object Object] has no WCAG 2.1 AA violations (axe) (2s)
+  ✔ / does not scroll sideways at 360 px (1s)
+  ✔ /syarat does not scroll sideways at 360 px (1s)
+  ✔ /privasi does not scroll sideways at 360 px (941.18ms)
+  ✔ /masuk does not scroll sideways at 360 px (1s)
+  ✔ /staf/masuk does not scroll sideways at 360 px (989.79ms)
+  ✔ /_preview/alur does not scroll sideways at 360 px (948.12ms)
+  ✔ /_preview/cetak does not scroll sideways at 360 px (1s)
+  ✔ /_preview/404 does not scroll sideways at 360 px (1s)
+  ✔ /_preview/500 does not scroll sideways at 360 px (1s)
+  ✔ authenticated page [object Object] does not scroll sideways at 360 px (1s)
+  ✔ authenticated page [object Object] does not scroll sideways at 360 px (946.66ms)
+  ✔ authenticated page [object Object] does not scroll sideways at 360 px (1s)
+  ✔ the before and after slider moves with the keyboard (491.34ms)
+❯ Reverted 3 migrations (26 ms)
+
+ PASSED 
+
+Tests  71 passed (71)
+ Time  50s
