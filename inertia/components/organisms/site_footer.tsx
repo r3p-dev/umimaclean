@@ -118,11 +118,6 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
               </Link>
             </li>
             <li>
-              <Link route="register.create" className={LINK}>
-                Daftar Akun
-              </Link>
-            </li>
-            <li>
               <Link route="legal.terms" className={LINK}>
                 Syarat Layanan
               </Link>
@@ -135,12 +130,9 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
           </FooterColumn>
           <FooterColumn id="footer-tim" title="Tim Umima">
             <li>
-              <span
-                aria-disabled="true"
-                className="inline-flex min-h-11 items-center text-foreground/80"
-              >
+              <Link route="session.createStaff" className={LINK}>
                 Masuk Staf & Owner
-              </span>
+              </Link>
             </li>
           </FooterColumn>
         </div>

@@ -2,9 +2,9 @@ import type { urlFor } from '~/client'
 
 export type NavigationRoute = Parameters<typeof urlFor>[0]
 
-// A page that doesn't exist yet has no route; its item is shown but not clickable.
+// Each milestone adds navigation items when it builds the corresponding page.
 export type NavigationItem<Key extends string> = {
   key: Key
   label: string
-  route?: NavigationRoute
+  route: NavigationRoute
 }

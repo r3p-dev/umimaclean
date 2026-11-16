@@ -68,14 +68,6 @@ function OwnerNavigationItems({ active, isCompact }: { active: OwnerSection; isC
         })}
       </nav>
       <div className="mt-auto flex flex-col gap-1 border-t border-sidebar-border pt-3">
-        <NavigationItem
-          item={{ key: 'profil', label: 'Profil' }}
-          isActive={active === 'profil'}
-          className={itemClass(active === 'profil', isCompact)}
-        >
-          <IconUserCircle className="size-5 shrink-0" />
-          <span className={labelClass}>Profil</span>
-        </NavigationItem>
         <Form route="session.destroy">
           <CsrfField />
           <button type="submit" className={itemClass(false, isCompact)}>

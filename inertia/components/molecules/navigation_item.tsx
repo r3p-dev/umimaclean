@@ -15,11 +15,7 @@ export default function NavigationItem({
   children: ReactNode
 }) {
   if (!item.route) {
-    return (
-      <span aria-disabled="true" className={className}>
-        {children}
-      </span>
-    )
+    return null
   }
 
   return (

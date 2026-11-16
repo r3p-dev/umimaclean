@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react'
 import { Head, usePage } from '@inertiajs/react'
-import { IconArchive, IconWashMachine } from '@tabler/icons-react'
+import { IconArchive } from '@tabler/icons-react'
 import CustomerLayout from '~/components/templates/customer_layout'
-import { Button } from '~/components/ui/button'
 
 export default function CustomerDashboard() {
   const user = usePage().props.user
@@ -34,12 +33,6 @@ export default function CustomerDashboard() {
           Pesanan aktif, jadwal penjemputan, dan riwayat cucian Anda akan muncul di sini setelah
           Anda membuat pesanan.
         </p>
-        <div className="mt-2">
-          <Button isDisabled className="h-12 gap-2 px-6 text-base">
-            <IconWashMachine className="size-5" />
-            Pesan Penjemputan (Segera di M5)
-          </Button>
-        </div>
       </section>
     </div>
   )

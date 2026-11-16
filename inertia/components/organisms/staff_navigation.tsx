@@ -80,7 +80,7 @@ export function StaffTabBar({ active }: { active: StaffSection }) {
   return (
     <nav
       aria-label="Navigasi staf"
-      className="sticky bottom-0 z-30 grid h-16 grid-cols-5 border-t border-border bg-card sm:hidden"
+      className="sticky bottom-0 z-30 flex h-16 items-center justify-around border-t border-border bg-card sm:hidden"
     >
       {STAFF_NAVIGATION.map((item) => {
         const isActive = item.key === active

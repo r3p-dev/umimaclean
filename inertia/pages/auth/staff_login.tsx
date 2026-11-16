@@ -1,7 +1,7 @@
 import { Form, Link } from '@adonisjs/inertia/react'
 import CsrfField from '~/components/atoms/csrf_field'
 import { IconArrowLeft } from '@tabler/icons-react'
-import FormField from '~/components/molecules/form_field'
+import PasswordInput from '~/components/molecules/password_input'
 import PhoneInput from '~/components/molecules/phone_input'
 import SeoHead from '~/components/molecules/seo_head'
 import AuthLayout from '~/components/templates/auth_layout'
@@ -32,15 +32,16 @@ export default function StaffLogin() {
               error={errors.phone}
               required
             />
-            <FormField
+            <PasswordInput
               id="password"
+              name="password"
               label="Kata sandi"
-              type="password"
               autoComplete="current-password"
               error={errors.password}
+              required
             />
             <Checkbox id="rememberMe" name="rememberMe" value="true">
-              Ingat saya selama 180 hari
+              Ingat saya
             </Checkbox>
             <Button type="submit" isDisabled={processing} className="mt-2 h-14 text-base">
               {processing ? 'Memproses…' : 'Masuk'}

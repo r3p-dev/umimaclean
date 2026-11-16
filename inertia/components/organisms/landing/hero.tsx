@@ -39,13 +39,6 @@ export default function Hero() {
             Pesan Penjemputan
             <IconArrowRight className="size-5" />
           </Link>
-          <p className="text-center text-sm text-muted-foreground sm:text-left">
-            Belum punya akun?{' '}
-            <Link route="register.create" className="font-semibold text-primary hover:underline">
-              Daftar sekali
-            </Link>
-            , lalu pesan kapan saja.
-          </p>
         </div>
       </div>
 

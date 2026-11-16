@@ -8,7 +8,6 @@ import {
   IconHome,
   IconHomeFilled,
   IconLogout,
-  IconPlus,
   IconReceipt,
   IconReceiptFilled,
   IconUser,
@@ -59,17 +58,6 @@ export function CustomerHeader({ active }: { active: CustomerSection }) {
           })}
         </nav>
         <div className="ml-auto flex items-center gap-3">
-          <span
-            aria-disabled="true"
-            className={cn(
-              buttonVariants({
-                className: 'hidden h-11 gap-2 px-4 text-sm lg:inline-flex',
-              })
-            )}
-          >
-            <IconPlus className="size-4.5" />
-            Pesan Penjemputan
-          </span>
           {user && (
             <span className="hidden items-center gap-2 text-sm font-medium sm:inline-flex">
               <span className="flex size-9 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
@@ -103,7 +91,7 @@ export function CustomerTabBar({ active }: { active: CustomerSection }) {
   return (
     <nav
       aria-label="Navigasi akun"
-      className="fixed inset-x-0 bottom-0 z-30 grid h-16 grid-cols-4 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-around border-t border-border bg-card pb-[env(safe-area-inset-bottom)] sm:hidden"
     >
       {CUSTOMER_NAVIGATION.map((item) => {
         const isActive = item.key === active
