@@ -7,6 +7,7 @@ import {
   IconChartLine,
   IconHistoryToggle,
   IconLogout,
+  IconMapPin,
   IconMenu2,
   IconReceipt,
   IconSettings,
@@ -35,6 +36,7 @@ const ICONS: Record<OwnerSection, ComponentType<SVGProps<SVGSVGElement>>> = {
   laporan: IconChartBar,
   aktivitas: IconHistoryToggle,
   pengaturan: IconSettings,
+  area: IconMapPin,
   profil: IconUserCircle,
 }
 
