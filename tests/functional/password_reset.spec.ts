@@ -7,6 +7,7 @@ import { fakeWhatsApp } from '../helpers/fake_whatsapp_service.js'
 import { TEST_TURNSTILE_TOKEN } from '../helpers/fake_turnstile_gateway.js'
 import OtpCode from '#models/otp_code'
 import { OtpPurpose } from '#enums/otp_purpose_enum'
+import { visitRedirect } from '../helpers/inertia.js'
 
 test.group('Password Reset (GUEST-12, ACC-5)', (group) => {
   group.each.setup(() => {
@@ -33,10 +34,10 @@ test.group('Password Reset (GUEST-12, ACC-5)', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/lupa-kata-sandi')
-    response.assertValidationError(
-      'phone',
-      'Format nomor WhatsApp tidak valid (contoh: 081234567890).'
-    )
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { phone: 'Format nomor WhatsApp tidak valid (contoh: 081234567890).' },
+    })
   })
 
   test('POST /lupa-kata-sandi refuses invalid Turnstile token', async ({ client }) => {
@@ -52,7 +53,10 @@ test.group('Password Reset (GUEST-12, ACC-5)', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/lupa-kata-sandi')
-    response.assertValidationError('turnstile', 'Selesaikan verifikasi keamanan, lalu coba lagi.')
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { turnstile: 'Selesaikan verifikasi keamanan, lalu coba lagi.' },
+    })
   })
 
   test('POST /lupa-kata-sandi with unregistered phone displays exact sentence and sends no WhatsApp (GUEST-12)', async ({

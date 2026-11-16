@@ -5,6 +5,7 @@ import { Role } from '#enums/role_enum'
 import { fakeWhatsApp } from '../helpers/fake_whatsapp_service.js'
 import { TEST_TURNSTILE_TOKEN } from '../helpers/fake_turnstile_gateway.js'
 import OtpCode from '#models/otp_code'
+import { visitRedirect } from '../helpers/inertia.js'
 
 test.group('Registration (GUEST-10)', (group) => {
   group.each.setup(() => {
@@ -45,10 +46,12 @@ test.group('Registration (GUEST-10)', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/daftar')
-    response.assertValidationError(
-      'phone',
-      'Nomor WhatsApp ini sudah terdaftar. Silakan masuk atau gunakan lupa kata sandi.'
-    )
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: {
+        phone: 'Nomor WhatsApp ini sudah terdaftar. Silakan masuk atau gunakan lupa kata sandi.',
+      },
+    })
   })
 
   test('POST /daftar refuses registration if Turnstile token is invalid', async ({ client }) => {
@@ -68,7 +71,10 @@ test.group('Registration (GUEST-10)', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/daftar')
-    response.assertValidationError('turnstile', 'Selesaikan verifikasi keamanan, lalu coba lagi.')
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { turnstile: 'Selesaikan verifikasi keamanan, lalu coba lagi.' },
+    })
   })
 
   test('POST /daftar refuses registration if terms and conditions are not accepted', async ({
@@ -90,7 +96,10 @@ test.group('Registration (GUEST-10)', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/daftar')
-    response.assertValidationError('terms', 'Setujui syarat & ketentuan untuk mendaftar.')
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { terms: 'Setujui syarat & ketentuan untuk mendaftar.' },
+    })
   })
 
   test('POST /daftar refuses registration if password confirmation does not match', async ({
@@ -112,7 +121,10 @@ test.group('Registration (GUEST-10)', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/daftar')
-    response.assertValidationError('passwordConfirmation', 'Kata sandi tidak sama.')
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { passwordConfirmation: 'Kata sandi tidak sama.' },
+    })
   })
 
   test('Full registration flow: /daftar -> /verifikasi -> account created & signed in on /beranda', async ({

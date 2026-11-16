@@ -9,6 +9,7 @@ import OtpService, { OTP_INVALID_MESSAGE, OTP_LOCKED_MESSAGE } from '#services/o
 import { fakeWhatsApp } from '../helpers/fake_whatsapp_service.js'
 import { TEST_TURNSTILE_TOKEN } from '../helpers/fake_turnstile_gateway.js'
 import limiter from '@adonisjs/limiter/services/main'
+import { visitRedirect } from '../helpers/inertia.js'
 
 function makeMockSession(): Session {
   const data = new Map<string, any>()
@@ -73,7 +74,10 @@ test.group('OTP (ACC-2) Functional Tests', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/verifikasi')
-    response.assertValidationError('code', 'Kode verifikasi harus 6 digit angka.')
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { code: 'Kode verifikasi harus 6 digit angka.' },
+    })
   })
 
   test('POST /verifikasi rejects wrong OTP code and increments failure count', async ({
@@ -103,7 +107,10 @@ test.group('OTP (ACC-2) Functional Tests', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/verifikasi')
-    response.assertValidationError('code', OTP_INVALID_MESSAGE)
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { code: OTP_INVALID_MESSAGE },
+    })
     response.assertSession('otp_flow')
   })
 
@@ -138,7 +145,10 @@ test.group('OTP (ACC-2) Functional Tests', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/verifikasi')
-    response.assertValidationError('code', OTP_LOCKED_MESSAGE)
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { code: OTP_LOCKED_MESSAGE },
+    })
   })
 
   test('POST /verifikasi rejects expired OTP (ACC-2)', async ({ client, assert }) => {
@@ -173,7 +183,10 @@ test.group('OTP (ACC-2) Functional Tests', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/verifikasi')
-    response.assertValidationError('code', OTP_INVALID_MESSAGE)
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { code: OTP_INVALID_MESSAGE },
+    })
   })
 
   test('POST /verifikasi/kirim-ulang enforces 60-second cooldown (ACC-2)', async ({ client }) => {
@@ -201,7 +214,10 @@ test.group('OTP (ACC-2) Functional Tests', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/verifikasi')
-    response.assertValidationError('code', 'Tunggu 60 detik sebelum meminta kode baru.')
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({
+      errors: { code: 'Tunggu 60 detik sebelum meminta kode baru.' },
+    })
   })
 
   test('Hourly rate limit prevents more than 5 OTP sends per number (ACC-2)', async ({
