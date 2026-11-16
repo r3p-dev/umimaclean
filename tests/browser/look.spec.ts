@@ -105,8 +105,13 @@ test.group('Look and feel', (group) => {
   test('authenticated page {path} has no WCAG 2.1 AA violations (axe)')
     .with([
       { role: Role.CUSTOMER, path: '/beranda' },
+      { role: Role.CUSTOMER, path: '/profil' },
+      { role: Role.CUSTOMER, path: '/profil/ubah' },
+      { role: Role.CUSTOMER, path: '/profil/nomor' },
       { role: Role.STAFF, path: '/staf' },
+      { role: Role.STAFF, path: '/staf/profil' },
       { role: Role.ADMIN, path: '/admin' },
+      { role: Role.ADMIN, path: '/admin/profil' },
     ] as const)
     .run(async ({ visit, browserContext, assert }, item) => {
       const user = await User.create({
@@ -153,8 +158,13 @@ test.group('Look and feel', (group) => {
   test('authenticated page {path} does not scroll sideways at 360 px')
     .with([
       { role: Role.CUSTOMER, path: '/beranda' },
+      { role: Role.CUSTOMER, path: '/profil' },
+      { role: Role.CUSTOMER, path: '/profil/ubah' },
+      { role: Role.CUSTOMER, path: '/profil/nomor' },
       { role: Role.STAFF, path: '/staf' },
+      { role: Role.STAFF, path: '/staf/profil' },
       { role: Role.ADMIN, path: '/admin' },
+      { role: Role.ADMIN, path: '/admin/profil' },
     ] as const)
     .run(async ({ visit, browserContext, assert }, item) => {
       const user = await User.create({
