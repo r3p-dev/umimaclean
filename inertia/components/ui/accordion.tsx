@@ -1,4 +1,4 @@
-import * as React from 'react'
+import type { ReactNode } from 'react'
 import { cn } from 'cn'
 import {
   DisclosurePanel as AccordionContentPrimitive,
@@ -37,7 +37,7 @@ function AccordionTrigger({
   className,
   children,
   ...props
-}: Omit<ButtonProps, 'children'> & { children: React.ReactNode }) {
+}: Omit<ButtonProps, 'children'> & { children: ReactNode }) {
   return (
     <AccordionHeaderPrimitive className="flex">
       <AccordionTriggerPrimitive

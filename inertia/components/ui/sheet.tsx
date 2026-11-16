@@ -1,6 +1,6 @@
 'use client'
 
-import * as React from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { cn } from 'cn'
 import {
   Heading,
@@ -25,7 +25,7 @@ function SheetClose({
   variant = 'outline',
   size = 'default',
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: ComponentProps<typeof Button>) {
   return (
     <Button
       slot="close"
@@ -44,7 +44,7 @@ function SheetOverlay({
   ...props
 }: Omit<ModalOverlayPrimitiveProps, 'className' | 'children'> & {
   className?: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <ModalOverlayPrimitive
@@ -68,9 +68,9 @@ function Sheet({
   showCloseButton = true,
   ...props
 }: Omit<ModalOverlayPrimitiveProps, 'className' | 'children'> &
-  Pick<React.ComponentProps<typeof ModalPrimitive>, 'isDismissable'> & {
+  Pick<ComponentProps<typeof ModalPrimitive>, 'isDismissable'> & {
     className?: string
-    children: React.ReactNode
+    children: ReactNode
     side?: 'top' | 'right' | 'bottom' | 'left'
     showCloseButton?: boolean
   }) {
@@ -80,13 +80,13 @@ function Sheet({
         data-slot="sheet-content"
         data-side={side}
         className={cn(
-          'fixed z-50 flex flex-col gap-4 bg-popover bg-clip-padding text-sm text-popover-foreground shadow-lg transition duration-200 ease-in-out data-entering:opacity-0 data-exiting:opacity-0 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-entering:translate-y-[2.5rem] data-[side=bottom]:data-exiting:translate-y-[2.5rem] data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=left]:data-entering:translate-x-[-2.5rem] data-[side=left]:data-exiting:translate-x-[-2.5rem] data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:data-entering:translate-x-[2.5rem] data-[side=right]:data-exiting:translate-x-[2.5rem] data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-entering:translate-y-[-2.5rem] data-[side=top]:data-exiting:translate-y-[-2.5rem] data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm',
+          'fixed z-50 flex flex-col gap-4 bg-popover bg-clip-padding text-sm text-popover-foreground shadow-lg transition duration-200 ease-in-out data-entering:opacity-0 data-exiting:opacity-0 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-entering:translate-y-10 data-[side=bottom]:data-exiting:translate-y-10 data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=left]:data-entering:-translate-x-10 data-[side=left]:data-exiting:-translate-x-10 data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:data-entering:translate-x-10 data-[side=right]:data-exiting:translate-x-10 data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-entering:-translate-y-10 data-[side=top]:data-exiting:-translate-y-10 data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm',
           className
         )}
       >
         <SheetPrimitive
           data-slot="sheet"
-          className="[display:inherit] h-full max-h-[inherit] [flex-direction:inherit] [gap:inherit] outline-none"
+          className="[display:inherit] h-full max-h-[inherit] [flex-direction:inherit] gap-[inherit] outline-none"
         >
           {children}
           {showCloseButton && (
@@ -107,7 +107,7 @@ function SheetContent({
   side = 'right',
   showCloseButton = true,
   ...props
-}: React.ComponentProps<typeof Sheet> & {
+}: ComponentProps<typeof Sheet> & {
   side?: 'top' | 'right' | 'bottom' | 'left'
   showCloseButton?: boolean
 }) {
@@ -118,7 +118,7 @@ function SheetContent({
   )
 }
 
-function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
+function SheetHeader({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="sheet-header"
@@ -128,7 +128,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
+function SheetFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="sheet-footer"
@@ -138,7 +138,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-function SheetTitle({ className, ...props }: Omit<React.ComponentProps<typeof Heading>, 'slot'>) {
+function SheetTitle({ className, ...props }: Omit<ComponentProps<typeof Heading>, 'slot'>) {
   return (
     <Heading
       slot="title"
@@ -149,7 +149,7 @@ function SheetTitle({ className, ...props }: Omit<React.ComponentProps<typeof He
   )
 }
 
-function SheetDescription({ className, ...props }: Omit<React.ComponentProps<'div'>, 'slot'>) {
+function SheetDescription({ className, ...props }: Omit<ComponentProps<'div'>, 'slot'>) {
   return (
     <div
       data-slot="sheet-description"

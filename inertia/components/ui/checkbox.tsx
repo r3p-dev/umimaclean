@@ -1,4 +1,4 @@
-import type * as React from 'react'
+import type { ReactNode } from 'react'
 import {
   CheckboxField as CheckboxFieldPrimitive,
   CheckboxButton as CheckboxButtonPrimitive,
@@ -8,7 +8,7 @@ import { IconCheck } from '@tabler/icons-react'
 import { cn } from 'cn'
 
 export interface CheckboxProps extends Omit<CheckboxFieldProps, 'children'> {
-  children?: React.ReactNode
+  children?: ReactNode
   labelClassName?: string
   buttonClassName?: string
 }
@@ -38,10 +38,10 @@ function Checkbox({
             <span
               data-slot="checkbox"
               className={cn(
-                'relative flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-input shadow-xs transition-shadow outline-none',
-                'group-data-[focus-visible]/checkbox-button:border-ring group-data-[focus-visible]/checkbox-button:ring-3 group-data-[focus-visible]/checkbox-button:ring-ring/50',
-                'group-data-[invalid]/checkbox-button:border-destructive group-data-[invalid]/checkbox-button:ring-3 group-data-[invalid]/checkbox-button:ring-destructive/20',
-                'group-data-[disabled]/checkbox-button:cursor-not-allowed group-data-[disabled]/checkbox-button:opacity-50',
+                'relative flex size-4 shrink-0 items-center justify-center rounded-lg border border-input shadow-xs transition-shadow outline-none',
+                'group-data-focus-visible/checkbox-button:border-ring group-data-focus-visible/checkbox-button:ring-3 group-data-focus-visible/checkbox-button:ring-ring/50',
+                'group-data-invalid/checkbox-button:border-destructive group-data-invalid/checkbox-button:ring-3 group-data-invalid/checkbox-button:ring-destructive/20',
+                'group-data-disabled/checkbox-button:cursor-not-allowed group-data-disabled/checkbox-button:opacity-50',
                 (isSelected || isIndeterminate) &&
                   'border-primary bg-primary text-primary-foreground'
               )}

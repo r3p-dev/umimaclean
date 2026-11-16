@@ -14,8 +14,9 @@ export default function Photo({
   isLazy?: boolean
   className?: string
 }) {
-  const srcSet = (extension: string) =>
-    widths.map((width) => `${src}-${width}.${extension} ${width}w`).join(', ')
+  function srcSet(extension: string) {
+    return widths.map((width) => `${src}-${width}.${extension} ${width}w`).join(', ')
+  }
   const largest = widths[widths.length - 1]
 
   return (

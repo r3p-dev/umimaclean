@@ -1,5 +1,6 @@
 'use client'
 
+import type { ComponentProps } from 'react'
 import { cn } from 'cn'
 import { Separator as SeparatorPrimitive } from 'react-aria-components'
 
@@ -7,7 +8,7 @@ function Separator({
   className,
   orientation = 'horizontal',
   ...props
-}: React.ComponentProps<typeof SeparatorPrimitive>) {
+}: ComponentProps<typeof SeparatorPrimitive>) {
   return (
     <SeparatorPrimitive
       data-slot="separator"

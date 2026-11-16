@@ -1,4 +1,4 @@
-import type * as React from 'react'
+import type { ComponentProps, HTMLAttributes, ReactNode } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from 'cn'
 
@@ -28,9 +28,9 @@ function Badge({
   variant = 'default',
   render,
   ...props
-}: React.ComponentProps<'span'> &
+}: ComponentProps<'span'> &
   VariantProps<typeof badgeVariants> & {
-    render?: (props: React.HTMLAttributes<HTMLElement>) => React.ReactNode
+    render?: (props: HTMLAttributes<HTMLElement>) => ReactNode
   }) {
   if (render) {
     const renderProps = {

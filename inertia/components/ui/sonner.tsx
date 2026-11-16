@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
 import {
   IconCircleCheck,
@@ -7,7 +8,7 @@ import {
   IconLoader,
 } from '@tabler/icons-react'
 
-const Toaster = ({ ...props }: ToasterProps) => {
+function Toaster({ ...props }: ToasterProps) {
   return (
     <Sonner
       // The app has one light theme, so toasts never follow the system dark mode.
@@ -26,7 +27,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           '--normal-text': 'var(--popover-foreground)',
           '--normal-border': 'var(--border)',
           '--border-radius': 'var(--radius)',
-        } as React.CSSProperties
+        } as CSSProperties
       }
       toastOptions={{
         classNames: {

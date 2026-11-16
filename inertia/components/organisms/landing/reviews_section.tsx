@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { useEffect, useState } from 'react'
 import { IconExternalLink } from '@tabler/icons-react'
 import { cn } from 'cn'
 import Stars from '~/components/atoms/stars'
@@ -54,27 +54,28 @@ function ReviewCard({ review }: { review: (typeof GOOGLE_REVIEWS)[number] }) {
 
 export default function ReviewsSection() {
   const rating = GOOGLE_RATING.toLocaleString('id-ID', { minimumFractionDigits: 1 })
-  const [api, setApi] = React.useState<CarouselApi>()
-  const [current, setCurrent] = React.useState(0)
-  const [count, setCount] = React.useState(0)
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
+  const [count, setCount] = useState(0)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!api) {
       return
     }
 
-    const onSelect = () => {
-      setCurrent(api.selectedScrollSnap())
-      setCount(api.scrollSnapList().length)
+    const emblaApi = api
+    function onSelect() {
+      setCurrent(emblaApi.selectedScrollSnap())
+      setCount(emblaApi.scrollSnapList().length)
     }
 
     onSelect()
-    api.on('select', onSelect)
-    api.on('reInit', onSelect)
+    emblaApi.on('select', onSelect)
+    emblaApi.on('reInit', onSelect)
 
     return () => {
-      api.off('select', onSelect)
-      api.off('reInit', onSelect)
+      emblaApi.off('select', onSelect)
+      emblaApi.off('reInit', onSelect)
     }
   }, [api])
 

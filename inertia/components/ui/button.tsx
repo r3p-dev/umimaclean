@@ -1,4 +1,4 @@
-import type * as React from 'react'
+import type { RefAttributes } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from 'cn'
 import {
@@ -51,7 +51,7 @@ function Button({
   size = 'default',
   ...props
 }: Omit<ButtonPrimitiveProps, 'className'> &
-  React.RefAttributes<HTMLButtonElement> &
+  RefAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonVariants> & {
     className?: string
   }) {
