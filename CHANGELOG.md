@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-16
+
+### Changed
+
+- Upgraded `eslint` from 10.14.0 to 10.15.0 to close the `minimatch` advisory path through ESLint.
+- The test suite now runs on dedicated `PORT=3334` and `APP_URL=http://${HOST}:${PORT}` via `.env.test`
+  (D71), so `npm test` works out of the box while the development server is running on port 3333.
+
 ## [0.2.1] - 2026-11-16
 
 ### Changed
