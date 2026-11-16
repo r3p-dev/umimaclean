@@ -6,6 +6,40 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-17
+
+### Added
+
+- Services & pricing catalog with main and addon types, item kinds (shoes, bags, helmets), IDR prices,
+  estimated turnaround days, "mulai dari" flags, descriptions, and display ordering (SVC-1, SVC-2, SVC-3).
+- Soft deletion and active status toggling for services; soft-deleted services preserve historical order
+  references and cannot be toggled back on (SVC-2).
+- Helmet services shop-only restriction: helmet cleaning is available exclusively via walk-in drop-off at
+  the workshop (SVC-4).
+- 22 seeded services matching the PRD specification table exactly, verified by unit tests (SVC-5).
+- Owner services management dashboard at `/admin/layanan` with desktop table and mobile cards, real-time
+  search, category/type filter pills, switch toggles, bulk activation/deactivation bar, and modal dialogs
+  for adding, editing, and soft-deleting services (OWN-7).
+- Public landing page pricing schedule (`/#harga`) with category filter pills, transparent pricing guide
+  callout, helmet walk-in alert, and responsive service cards (GUEST-1).
+- 64 subdistrict coverage boundaries (Kota Bandung: 30, Kota Cimahi: 3, Kabupaten Bandung: 31) processed
+  from official OCHA COD-AB data (CC BY-IGO 3.0), seeded with initial active set of 43 active and 21
+  inactive districts (AREA-1, AREA-2).
+- Owner service area dashboard at `/admin/pengaturan/area` with districts grouped by city/regency,
+  search filter, summary active badges, and per-district switch toggles; client-side maps deferred to
+  M4 without placeholders (D33, D73, AREA-3, OWN-9).
+- Server-side point-in-polygon coverage check service (`AreaService.checkCoverage`) utilizing PostGIS
+  spatial indexing with unit tests covering active, inactive, outside, and boundary coordinates (AREA-4).
+- Key-value `settings` table with per-key VineJS schema validation on write and read (D75).
+- Owner store settings dashboard at `/admin/pengaturan/toko` with store identity (name, WhatsApp via
+  `PhoneInput`, address, operating hours) and daily pickup slot capacity editor (1–20) (OWN-8, SLOT-2).
+- Dynamic store information in public site footer and legal pages rendered from database settings via
+  shared Inertia props.
+- Owner navigation links for "Pengaturan Toko" and "Area Layanan" added to sidebar and mobile sheet menu.
+- Activity logs recorded for all owner actions: service CRUD, area toggle, store settings update, and
+  pickup slots update.
+
+
 ## [0.2.2] - 2026-11-16
 
 ### Changed
