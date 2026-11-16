@@ -96,6 +96,11 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
           </div>
           <FooterColumn id="footer-layanan" title="Layanan">
             <li>
+              <a href="/#harga" className={LINK}>
+                Layanan & Harga
+              </a>
+            </li>
+            <li>
               <a href="/#cara-kerja" className={LINK}>
                 Cara Kerja
               </a>
