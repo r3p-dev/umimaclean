@@ -28,8 +28,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui
 import { Input } from '~/components/ui/input'
 import { Switch } from '~/components/ui/switch'
 import { Textarea } from '~/components/ui/textarea'
-import { ItemKind, ItemKindLabel } from '#enums/item_kind_enum'
-import { ServiceType, ServiceTypeLabel } from '#enums/service_type_enum'
+import { ItemKind, ItemKindLabel, ServiceType, ServiceTypeLabel } from '~/lib/service_enums'
 import type { Data } from '@generated/data'
 import { formatRupiah } from '~/lib/format'
 
@@ -344,14 +343,13 @@ export default function AdminServices({ services }: { services: ServiceItem[] })
             </button>
           </div>
 
-          <div className="flex items-center justify-start sm:justify-end">
+          <div className="flex items-center justify-start gap-2 sm:justify-end">
             <Switch
               isSelected={showInactive}
               onChange={setShowInactive}
               aria-label="Tampilkan layanan nonaktif"
-            >
-              <span className="text-xs font-medium text-muted-foreground">Tampilkan nonaktif</span>
-            </Switch>
+            />
+            <span className="text-xs font-medium text-muted-foreground">Tampilkan nonaktif</span>
           </div>
         </div>
 
@@ -453,7 +451,7 @@ export default function AdminServices({ services }: { services: ServiceItem[] })
                         className={cn(
                           'transition-colors hover:bg-muted/30',
                           isSelected && 'bg-primary/5',
-                          !service.isActive && 'opacity-65'
+                          !service.isActive && 'bg-muted/20'
                         )}
                       >
                         <td className="px-4 py-3">
@@ -547,7 +545,7 @@ export default function AdminServices({ services }: { services: ServiceItem[] })
                     className={cn(
                       'flex flex-col gap-3 p-4 transition-colors',
                       isSelected && 'bg-primary/5',
-                      !service.isActive && 'opacity-65'
+                      !service.isActive && 'bg-muted/30 border-l-4 border-l-muted-foreground/40'
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -595,11 +593,10 @@ export default function AdminServices({ services }: { services: ServiceItem[] })
                           isSelected={service.isActive}
                           onChange={() => handleToggleActive(service)}
                           aria-label={`Status aktif ${service.name}`}
-                        >
-                          <span className="text-xs font-medium text-muted-foreground">
-                            {service.isActive ? 'Aktif' : 'Nonaktif'}
-                          </span>
-                        </Switch>
+                        />
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {service.isActive ? 'Aktif' : 'Nonaktif'}
+                        </span>
                       </div>
 
                       <div className="flex items-center gap-1">
@@ -631,7 +628,11 @@ export default function AdminServices({ services }: { services: ServiceItem[] })
       </section>
 
       {/* Add / Edit Service Dialog */}
-      <Dialog isOpen={formOpen} onOpenChange={setFormOpen}>
+      <Dialog
+        isOpen={formOpen}
+        onOpenChange={setFormOpen}
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto"
+      >
         <DialogHeader>
           <DialogTitle>{editingService ? 'Ubah Layanan' : 'Tambah Layanan Baru'}</DialogTitle>
           <DialogDescription>
@@ -741,17 +742,18 @@ export default function AdminServices({ services }: { services: ServiceItem[] })
             </Field>
 
             <div className="flex flex-col justify-center gap-2 pt-2 sm:pt-4">
-              <Switch
-                isSelected={formState.isStartingFrom}
-                onChange={(isStarting) =>
-                  setFormState((prev) => ({ ...prev, isStartingFrom: isStarting }))
-                }
-                aria-label="Harga Mulai Dari"
-              >
+              <div className="flex items-center gap-2">
+                <Switch
+                  isSelected={formState.isStartingFrom}
+                  onChange={(isStarting) =>
+                    setFormState((prev) => ({ ...prev, isStartingFrom: isStarting }))
+                  }
+                  aria-label="Harga Mulai Dari"
+                />
                 <span className="text-sm font-medium text-foreground">
                   Harga &quot;Mulai dari&quot;
                 </span>
-              </Switch>
+              </div>
               <p className="text-xs text-muted-foreground">
                 Staf dapat menaikkan harga saat pemeriksaan fisik barang jika tingkat noda berat.
               </p>
@@ -769,15 +771,16 @@ export default function AdminServices({ services }: { services: ServiceItem[] })
             />
           </Field>
 
-          <Switch
-            isSelected={formState.isActive}
-            onChange={(active) => setFormState((prev) => ({ ...prev, isActive: active }))}
-            aria-label="Status aktif layanan"
-          >
+          <div className="flex items-center gap-2">
+            <Switch
+              isSelected={formState.isActive}
+              onChange={(active) => setFormState((prev) => ({ ...prev, isActive: active }))}
+              aria-label="Status aktif layanan"
+            />
             <span className="text-sm font-medium text-foreground">
               Aktif (tampil di pilihan staf dan katalog publik)
             </span>
-          </Switch>
+          </div>
 
           <DialogFooter className="mt-2">
             <DialogClose variant="outline">Batal</DialogClose>
