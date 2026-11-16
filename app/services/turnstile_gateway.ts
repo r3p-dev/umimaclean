@@ -22,11 +22,6 @@ export default class TurnstileGateway {
       return false
     }
 
-    // Never call real outside services in tests unless explicitly swapped.
-    if (env.get('NODE_ENV') === 'test') {
-      return true
-    }
-
     const secretKey = env.get('TURNSTILE_SECRET_KEY')
     if (!secretKey) {
       logger.warn('TURNSTILE_SECRET_KEY is not set')
