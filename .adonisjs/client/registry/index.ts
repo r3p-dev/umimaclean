@@ -230,6 +230,42 @@ const routes = {
     tokens: [[0,"admin"],[0,"layanan"],[1,"id"]],
     types: placeholder as Registry['admin.services.destroy']['types'],
   },
+  'admin.settings.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/pengaturan',
+    tokens: [[0,"admin"],[0,"pengaturan"]],
+    types: placeholder as Registry['admin.settings.index']['types'],
+  },
+  'admin.settings.store': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/pengaturan/toko',
+    tokens: [[0,"admin"],[0,"pengaturan"],[0,"toko"]],
+    types: placeholder as Registry['admin.settings.store']['types'],
+  },
+  'admin.settings.store.update': {
+    methods: ["PUT"],
+    pattern: '/admin/pengaturan/toko',
+    tokens: [[0,"admin"],[0,"pengaturan"],[0,"toko"]],
+    types: placeholder as Registry['admin.settings.store.update']['types'],
+  },
+  'admin.settings.slots.update': {
+    methods: ["PUT"],
+    pattern: '/admin/pengaturan/slot',
+    tokens: [[0,"admin"],[0,"pengaturan"],[0,"slot"]],
+    types: placeholder as Registry['admin.settings.slots.update']['types'],
+  },
+  'admin.areas.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/pengaturan/area',
+    tokens: [[0,"admin"],[0,"pengaturan"],[0,"area"]],
+    types: placeholder as Registry['admin.areas.index']['types'],
+  },
+  'admin.areas.toggle': {
+    methods: ["PATCH"],
+    pattern: '/admin/pengaturan/area/:id/toggle',
+    tokens: [[0,"admin"],[0,"pengaturan"],[0,"area"],[1,"id"],[0,"toggle"]],
+    types: placeholder as Registry['admin.areas.toggle']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }
