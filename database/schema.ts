@@ -99,6 +99,36 @@ export class RememberMeTokenSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class ServiceAreaSchema extends BaseModel {
+  static $columns = [
+    'boundary',
+    'city',
+    'code',
+    'createdAt',
+    'id',
+    'isActive',
+    'name',
+    'updatedAt',
+  ] as const
+  $columns = ServiceAreaSchema.$columns
+  @column()
+  declare boundary: string | Record<string, unknown>
+  @column()
+  declare city: string
+  @column()
+  declare code: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare name: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class ServiceSchema extends BaseModel {
   static $columns = [
     'createdAt',
@@ -155,6 +185,17 @@ export class SessionSchema extends BaseModel {
   declare id: string
   @column()
   declare userId: string | null
+}
+
+export class SettingSchema extends BaseModel {
+  static $columns = ['key', 'updatedAt', 'value'] as const
+  $columns = SettingSchema.$columns
+  @column({ isPrimary: true })
+  declare key: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare value: Record<string, unknown> | unknown[] | string | number | boolean
 }
 
 export class UserSchema extends BaseModel {
