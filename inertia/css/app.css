@@ -46,7 +46,8 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* The Umima brand on shadcn's variables: cobalt blue (hue 262) on near-white, ink text. One light theme. */
+/* The Umima brand on shadcn's variables: cobalt blue (hue 262) on near-white, ink text. One light theme.
+   Primary lightness 0.46 keeps white text at AA (4.7:1) even on the 80% primary of a hovered button. */
 :root {
   color-scheme: light;
   --background: oklch(0.975 0.005 262);
@@ -55,7 +56,7 @@
   --card-foreground: oklch(0.22 0.025 262);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.22 0.025 262);
-  --primary: oklch(0.5 0.18 262);
+  --primary: oklch(0.46 0.18 262);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.93 0.006 262);
   --secondary-foreground: oklch(0.22 0.025 262);
@@ -66,8 +67,8 @@
   --destructive: oklch(0.55 0.19 25);
   --border: oklch(0.92 0.006 262);
   --input: oklch(0.62 0.012 262);
-  --ring: oklch(0.5 0.18 262);
-  --chart-1: oklch(0.5 0.18 262);
+  --ring: oklch(0.46 0.18 262);
+  --chart-1: oklch(0.46 0.18 262);
   --chart-2: oklch(0.64 0.12 262);
   --chart-3: oklch(0.22 0.025 262);
   --chart-4: oklch(0.66 0.15 70);
@@ -75,7 +76,7 @@
   --radius: 0.625rem;
   --sidebar: oklch(0.22 0.025 262);
   --sidebar-foreground: oklch(0.85 0.012 262);
-  --sidebar-primary: oklch(0.5 0.18 262);
+  --sidebar-primary: oklch(0.46 0.18 262);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.32 0.04 262);
   --sidebar-accent-foreground: oklch(1 0 0);
