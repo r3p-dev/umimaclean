@@ -26,7 +26,7 @@ const ACTIVE_KAB_BANDUNG_DISTRICTS = [
 
 export default class ServiceAreaSeeder extends BaseSeeder {
   override async run() {
-    const file = await readFile(app.makePath('database/data/service_areas.geojson'), 'utf8')
+    const file = await readFile(app.makePath('database/data/service_areas_full.geojson'), 'utf8')
     const { features } = JSON.parse(file) as BoundaryFile
     const now = new Date()
 

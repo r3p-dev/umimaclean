@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import db from '@adonisjs/lucid/services/db'
 import testUtils from '@adonisjs/core/services/test_utils'
 import ServiceArea from '#models/service_area'
 import AreaService from '#services/area_service'
@@ -17,6 +18,28 @@ const EXPECTED_KAB_BANDUNG_ACTIVE = [
   'Banjaran',
   'Cangkuang',
 ]
+
+// A vertex the two districts share and no third district touches, so it lies exactly on
+// their common border (a literal coordinate is only as exact as its decimals).
+async function sharedBorderVertex(firstName: string, secondName: string) {
+  const { rows } = await db.rawQuery(
+    `SELECT ST_Y(vertex.geom) AS lat, ST_X(vertex.geom) AS lng
+     FROM service_areas first_area
+     JOIN service_areas second_area ON second_area.name = ?
+     CROSS JOIN LATERAL ST_DumpPoints(first_area.boundary) AS vertex
+     WHERE first_area.name = ?
+       AND ST_Intersects(vertex.geom, second_area.boundary)
+       AND NOT EXISTS (
+         SELECT 1 FROM service_areas other_area
+         WHERE other_area.id NOT IN (first_area.id, second_area.id)
+           AND ST_Intersects(vertex.geom, other_area.boundary)
+       )
+     ORDER BY vertex.path
+     LIMIT 1`,
+    [secondName, firstName]
+  )
+  return rows[0] as { lat: number; lng: number }
+}
 
 test.group('Service Areas & Point-in-Polygon Check (AREA-1..4)', (group) => {
   group.each.setup(async () => {
@@ -95,7 +118,8 @@ test.group('Service Areas & Point-in-Polygon Check (AREA-1..4)', (group) => {
     assert.isNull(outside.district)
 
     // 4. Point on polygon boundary (shared edge between Buahbatu and Rancasari districts)
-    const onBoundary = await service.checkCoverage(-6.938641, 107.669824)
+    const border = await sharedBorderVertex('Buahbatu', 'Rancasari')
+    const onBoundary = await service.checkCoverage(border.lat, border.lng)
     assert.isTrue(onBoundary.isCovered)
     assert.isNotNull(onBoundary.district)
     assert.include(['Buahbatu', 'Rancasari'], onBoundary.district!.name)
@@ -124,5 +148,26 @@ test.group('Service Areas & Point-in-Polygon Check (AREA-1..4)', (group) => {
     await service.toggleArea(buahbatu.id, owner, true)
     const checkReactivated = await service.checkCoverage(-6.955631, 107.6539748)
     assert.isTrue(checkReactivated.isCovered)
+  })
+
+  test('a point exactly on the border of an active and an inactive district counts as covered (AREA-4)', async ({
+    assert,
+  }) => {
+    const { lat, lng } = await sharedBorderVertex('Cibiru', 'Cileunyi')
+
+    const matches = await ServiceArea.query()
+      .whereRaw('ST_Intersects(boundary, ST_SetSRID(ST_MakePoint(?, ?), 4326))', [lng, lat])
+      .orderBy('name', 'asc')
+    assert.deepEqual(
+      matches.map((area) => [area.name, area.isActive]),
+      [
+        ['Cibiru', true],
+        ['Cileunyi', false],
+      ]
+    )
+
+    const result = await new AreaService().checkCoverage(lat, lng)
+    assert.isTrue(result.isCovered)
+    assert.equal(result.district?.name, 'Cibiru')
   })
 })

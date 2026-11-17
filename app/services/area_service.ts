@@ -57,6 +57,9 @@ export default class AreaService {
   async checkCoverage(lat: number, lng: number): Promise<CoverageCheckResult> {
     const area = await ServiceArea.query()
       .whereRaw('ST_Intersects(boundary, ST_SetSRID(ST_MakePoint(?, ?), 4326))', [lng, lat])
+      // A point on a shared border matches both districts; an active one wins, so it counts as covered.
+      .orderBy('is_active', 'desc')
+      .orderBy('code', 'asc')
       .first()
 
     if (!area) {
