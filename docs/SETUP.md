@@ -80,23 +80,24 @@ For features involving spatial lookups, routing, and interactive maps:
    podman compose --profile tools build map-tools
    ```
 
-2. **Download Java extract and clip to Bandung Raya**:
+2. **Download a dated monthly Java snapshot** (`docs/ARCHITECTURE.md` D87; pick the first of a recent month from <https://download.geofabrik.de/asia/indonesia/>):
 
    ```sh
    mkdir -p storage/osm
-   curl -fL -o storage/osm/java-latest.osm.pbf https://download.geofabrik.de/asia/indonesia/java-latest.osm.pbf
-   curl -fL -o storage/osm/java-latest.osm.pbf.md5 https://download.geofabrik.de/asia/indonesia/java-latest.osm.pbf.md5
-   cd storage/osm && md5sum -c java-latest.osm.pbf.md5 && cd ../..
-   podman compose --profile tools run --rm -T map-tools osmium extract --bbox=107.20,-7.37,107.99,-6.76 --strategy=smart --option=types=multipolygon,boundary --overwrite --output=/data/bandung-raya.osm.pbf /data/java-latest.osm.pbf
+   curl -fL -o storage/osm/java-261101.osm.pbf https://download.geofabrik.de/asia/indonesia/java-261101.osm.pbf
+   curl -fL -o storage/osm/java-261101.osm.pbf.md5 https://download.geofabrik.de/asia/indonesia/java-261101.osm.pbf.md5
    ```
 
-3. **Import OSM schema and data**:
+3. **Import it into the `osm` schema** (D88–D91; development only, clipping needs about 4 GB of free memory):
 
    ```sh
-   podman compose --profile tools run --rm -T psql -q -f /maps/osm_schema.sql
-   podman compose --profile tools run --rm -T psql -q -c 'CREATE SCHEMA IF NOT EXISTS osm_import'
-   podman compose --profile tools run --rm -T map-tools sh -c 'PGPASSWORD="$DB_PASSWORD" osm2pgsql --create --output=flex --style=/maps/osm_import.lua --schema=osm_import --host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER" --database="$DB_DATABASE" /data/bandung-raya.osm.pbf'
-   podman compose --profile tools run --rm -T psql -q --single-transaction -f /maps/osm_build.sql
+   node ace osm:import 261101
+   ```
+
+   The command checks the snapshot's MD5 and that `maps/clip_polygon.geojson` covers every service area, clips the snapshot to `storage/osm/bandung-raya.osm.pbf`, loads the staging schema `osm_import` with osm2pgsql, writes the production artifact `storage/osm/osm-import-261101.dump` with its `.sha256`, and refills `osm` in one transaction. It prints the snapshot's SHA-256 for `docs/DEPENDENCIES.md` §4. After a change to `database/data/service_areas_full.geojson`, regenerate the clip polygon first:
+
+   ```sh
+   podman compose --profile tools run --rm -T psql -At -f /maps/clip_polygon.sql > maps/clip_polygon.geojson
    ```
 
 4. **Build and start OSRM motorbike router**:
@@ -121,6 +122,26 @@ For features involving spatial lookups, routing, and interactive maps:
    ```
 
    _(Optional verification: `podman compose --profile tools run --rm -T pmtiles show /out/bandung-raya-20261112.pmtiles`)_
+
+### OSM data in production
+
+Production never runs the map tools (D89). Copy the artifact and its `.sha256` from `storage/osm/` to the server, then run two commands in the database container (named `umimaclean-postgres` by the deploy tooling, `<app>-<service>`; confirmed with the deployment in M12):
+
+```sh
+sha256sum -c osm-import-261101.dump.sha256
+podman exec -i umimaclean-postgres sh -c 'pg_restore --clean --if-exists --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < osm-import-261101.dump
+cat osm_schema.sql osm_build.sql | podman exec -i umimaclean-postgres sh -c 'psql -v ON_ERROR_STOP=1 --single-transaction -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+```
+
+The first restores the staging schema `osm_import`; the second (`maps/osm_schema.sql` and `maps/osm_build.sql`, copied with the artifact) refills `osm` in one transaction, so searches wait a moment and never see empty tables, and a failure changes nothing. **Rollback** (D90): run the same commands with the previous artifact. **Refresh** (D92): by hand, with a newer monthly snapshot, when there is a reason.
+
+The same two steps in development, for example to load exactly what production has:
+
+```sh
+cd storage/osm && sha256sum -c osm-import-261101.dump.sha256 && cd ../..
+podman compose --profile tools run --rm -T pg-client sh -c 'pg_restore --clean --if-exists --no-owner -d "$PGDATABASE" /data/osm-import-261101.dump'
+podman compose --profile tools run --rm -T psql -q --single-transaction -f /maps/osm_schema.sql -f /maps/osm_build.sql
+```
 
 ### Step 6: Start development server
 

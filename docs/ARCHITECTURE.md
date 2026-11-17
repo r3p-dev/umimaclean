@@ -143,7 +143,7 @@ This section is the map of the code. It lists the planned modules by domain; eac
 - `app/validators/`: one VineJS validator per action (`createOrderValidator`, …); the shared phone rule normalizes to `62…` (ACC-1). Messages in `start/validator.ts`.
 - `start/limiter.ts`: HTTP-level limits (area check per IP, place search per user). Business limits (sign-in, OTP, unlock digits, QRIS charges) live in their service, because their keys (phone, order) come from the request body.
 - `start/transmit.ts`: channel authorization (§4.4).
-- `commands/`: `payments_remind` (`node ace payments:remind`, PAY-6) and `photos_prune` (`node ace photos:prune`, PHOTO-3); in M4 `osm_import` (`node ace osm:import`) runs the pipeline of §6.2.
+- `commands/`: `payments_remind` (`node ace payments:remind`, PAY-6) and `photos_prune` (`node ace photos:prune`, PHOTO-3); `osm_import` (`node ace osm:import <YYMMDD>`, development only, D91) runs the pipeline of §6.2.
 - `database/migrations/`: one create migration per table (`docs/PRD/shared.md` §12), edited in place until v1.0.0. `database/seeders/`: one per domain, run in a fixed order from `database/seeders/main/index_seeder.ts`, which prints the demo accounts in development only (D79).
 
 ### 3.2 Frontend (`inertia/`)
@@ -360,17 +360,17 @@ podman compose --profile tools run --rm -T psql -d postgres -f /database/create_
 
 ### 6.2 Map data: OSM extract → `osm` schema (MAP-1)
 
-Loads geocoding and place reference data into the `osm` schema of the development database. The pipeline performs five stages:
+Loads geocoding and place reference data into the `osm` schema. `node ace osm:import <YYMMDD>` (`commands/osm_import.ts`, development only, D91) runs every step after the download, each tool through its compose service:
 
-1. Build `map-tools` container image (`maps/Containerfile`: `osmium-tool` and `osm2pgsql`).
-2. Download the official Geofabrik Java extract (`java-latest.osm.pbf`) and verify its MD5 checksum.
-3. Clip the extract to the Bandung Raya bounding box (107.20–107.99 E, 7.37–6.76 S) with `osmium extract` to produce `storage/osm/bandung-raya.osm.pbf`.
-4. Create the `osm` schema and staging tables (`maps/osm_schema.sql`), then import roads, places, and boundaries into staging schema `osm_import` using `osm2pgsql` with flex script `maps/osm_import.lua`.
-5. Run `maps/osm_build.sql` in a single transaction to merge streets per kelurahan, construct normalized full-text search indexes (`osm.normalize`), and atomically swap the tables into `osm`.
+1. Build the `map-tools` container image once (`maps/Containerfile`: `osmium-tool` and `osm2pgsql`).
+2. Download a dated monthly Geofabrik snapshot of Java (`java-YYMM01.osm.pbf`) and its `.md5` (D87).
+3. Check the snapshot's MD5, and that `maps/clip_polygon.geojson` covers every service area (`ServiceArea.findNamesOutside`, D88).
+4. Clip the snapshot with that polygon (`osmium extract --polygon`) to `storage/osm/bandung-raya.osm.pbf`.
+5. Load roads, places and boundaries into the staging schema `osm_import` with `osm2pgsql` and `maps/osm_import.lua`.
+6. Write the production artifact: `pg_dump --format=custom` of `osm_import` to `storage/osm/osm-import-YYMMDD.dump`, with a `.sha256` (compose service `pg-client`, D89).
+7. Refill `osm` in one transaction with `maps/osm_schema.sql` and `maps/osm_build.sql` (merge streets per kelurahan, normalized search columns, drop the staging schema), the same refill production runs after `pg_restore` (D89, D90).
 
-In M4 an ace command (`node ace osm:import`) automates steps 3–5.
-
-Result on 2026-11-13 (data up to 2026-11-12T21:23Z): 13,213 roads, 14,457 places, 500 boundaries (10 kota/kabupaten, 64 kecamatan, 426 kelurahan/desa), 30 MB with indexes; clip 15 s, osm2pgsql 11 s, swap 3 s. The schema is outside `public`, so migrations and test resets leave it alone. Files: `maps/osm_schema.sql` (tables, indexes, the `osm.normalize` search function), `maps/osm_import.lua` (what is kept from OSM), `maps/osm_build.sql` (merge streets per kelurahan, swap).
+Result on 2026-11-17 from `java-261101.osm.pbf`: 12,235 roads, 12,518 places, 302 boundaries, 25 MB with indexes; extract 57 MB, artifact 5.0 MB; the whole command 28 s (`docs/evidence/M4a/EVIDENCE.md`). Clipping peaks at about 4 GB of memory, osm2pgsql at about 230 MB (`docs/evidence/M3-0.3.2/EVIDENCE.md` §5). The schema is outside `public`, so migrations and test resets leave it alone. Files: `maps/clip_polygon.sql` and `maps/clip_polygon.geojson` (the clip, D88), `maps/osm_schema.sql` (tables, indexes, the `osm.normalize` search function), `maps/osm_import.lua` (what is kept from OSM), `maps/osm_build.sql` (merge streets per kelurahan, refill in one transaction).
 
 To prevent drift, exact shell commands are maintained in [docs/SETUP.md §2 Step 5](SETUP.md#step-5-optional-map-data-and-routing-setup).
 
@@ -435,7 +435,7 @@ Every decision not covered by §1, and **every workaround**, gets an entry: numb
 - **D5** (2026-11-13): `osmium` and `osm2pgsql` run from a small Debian image built from `maps/Containerfile` (compose service `map-tools`); `psql` runs from the production PostGIS image (compose service `psql`)
   - **Why:** No official images exist; DEPENDENCIES §4 prefers containers over host installs; Debian packages are maintained (osm2pgsql 2.3.1 from trixie-backports)
   - **Alternatives:** host packages (`dnf`/`apt`), the community image `iboates/osm2pgsql`
-- **D6** (2026-11-13): Map data covers the box 107.20–107.99 E, 7.37–6.76 S
+- **D6** (2026-11-13): For the OSM import superseded by D88 (OSRM, M6, still to decide). Map data covers the box 107.20–107.99 E, 7.37–6.76 S
   - **Why:** The extent of the 64 kecamatan of AREA-1 (107.25–107.93 E, 7.32–6.81 S) plus about 5 km, so streets and routes just outside a border still work
   - **Alternatives:** a larger box including Kabupaten Bandung Barat (not in AREA-1)
 - **D7** (2026-11-13): The `osm` schema is created from `maps/osm_schema.sql`, not migrations; imports go to a staging schema and are swapped in one transaction
@@ -737,3 +737,24 @@ Every decision not covered by §1, and **every workaround**, gets an entry: numb
 - **D86** (2026-11-17): Process tooling lives in `scripts/` as TypeScript files that Node runs directly (type stripping, Node 24): `scripts/evidence_run.ts` (one verification run into a log), `scripts/check.ts` (`npm run check`: lint, typecheck and tests with short output, the tests through Japa's built-in `dot` reporter) and `scripts/check_commits.ts` (static check of the suggested commits)
   - **Why:** `bin/` holds the AdonisJS entrypoints (server, console, test runner); these are development tools, not app entrypoints. TypeScript keeps them linted and type-checked with the rest of the code and needs no new dependency or build step. Long tool output fills an agent's context; the full output stays available in a log file or with `VERBOSE=1`
   - **Alternatives:** shell scripts (no type checking, harder to parse a commit plan); ace commands (boot the application for tasks that do not need it); a task runner package (a dependency for three small scripts)
+- **D87** (2026-11-17): The OSM data comes from a dated monthly Geofabrik snapshot of Java (`java-YYMM01.osm.pbf`, the first of the month), not `java-latest.osm.pbf`. Its MD5 comes from Geofabrik's `.md5` file and `node ace osm:import` prints its SHA-256; both are recorded with the date in `docs/DEPENDENCIES.md` §4, as for the boundaries (D77)
+  - **Why:** the owner's choice. `java-latest` is rebuilt every day, so the same command gives different data from one day to the next; Geofabrik keeps the first-of-month files for months and the first-of-January files for years, each with an MD5, so a recorded import can be repeated
+  - **Alternatives:** `java-latest` (not reproducible); the whole of Indonesia (more data and memory for nothing)
+- **D88** (2026-11-17): The extract is clipped with `maps/clip_polygon.geojson`: the union of the 64 kecamatan of `database/data/service_areas_full.geojson` buffered 5 km on the spheroid, produced by `maps/clip_polygon.sql` from that file (so it depends only on the committed boundaries). `node ace osm:import` first checks that the polygon covers every row of `service_areas` (`ServiceArea.findNamesOutside`). Replaces the box of D6 for the OSM import; OSRM (M6) decides its own clip
+  - **Why:** the owner's choice. The polygon is 3,290 km² instead of the box's 5,888 km², and the extract 57 MB instead of 76 MB (`docs/evidence/M3-0.3.2/EVIDENCE.md` §5), with the same 5 km margin D6 gave for streets just outside a border
+  - **Alternatives:** the box of D6 (more data outside every service area); the polygon without a buffer (cuts streets on the border)
+- **D89** (2026-11-17): The `osm` data is built on the development machine and shipped to production as one artifact: `storage/osm/osm-import-YYMMDD.dump`, a `pg_dump --format=custom` of the staging schema `osm_import` that osm2pgsql fills, with a `.sha256` file. Production only restores it and runs the refill of `maps/osm_build.sql`. The compose service `pg-client` (`pg_dump`, `pg_restore` of the PostgreSQL image) writes and reads it in development
+  - **Why:** the owner's choice. Clipping the Java extract needs about 4 GB of memory (killed at 3 GB, `docs/evidence/M3-0.3.2/EVIDENCE.md` §5) on a VPS with 8 GB whose containers get 512 MB by default; restoring the dump and refilling takes seconds and no memory to speak of, needs no map tools image on the server, and development and production load the very same file
+  - **Alternatives:** the whole pipeline on the VPS (a 4 GB job, the map tools image on GHCR, a 900 MB download each refresh); clipping in development and running osm2pgsql on the VPS (still needs the map tools image)
+- **D90** (2026-11-17): A bad import is rolled back by loading the previous artifact with the same two production commands; artifacts are kept with their `.sha256` until a newer one has been checked
+  - **Why:** the owner's choice. The refill runs in one transaction (D7), so a failed load changes nothing; a load that succeeds with bad data is undone in seconds by loading the earlier file
+  - **Alternatives:** keeping the previous tables in an `osm_previous` schema renamed on swap (instant, but changes `maps/osm_schema.sql` and keeps two copies in the database)
+- **D91** (2026-11-17): `node ace osm:import <YYMMDD>` is a development command: it checks the snapshot's MD5 and the clip polygon, clips with osmium, loads the staging schema with osm2pgsql, writes the artifact (D89) and runs the same refill production runs, each tool through its compose service. Production uses two documented commands, `pg_restore` and `psql` (`docs/SETUP.md`, "OSM data in production"); the command refuses to run outside development
+  - **Why:** the owner's choice. The tools and their 4 GB need exist only on the development machine; production's steps are plain PostgreSQL client commands in the database container
+  - **Alternatives:** one ace command for both environments (`pg_restore` or the map tools would have to be in the app image)
+- **D92** (2026-11-17): The OSM data is refreshed by hand, by the developer, with a newer monthly snapshot when there is a reason (new streets in the service areas, an import fix); there is no timer
+  - **Why:** the owner's choice. Street names and places in a few kecamatan change slowly, each refresh is a reviewed artifact, and a timer would need the map tools on the server (D89)
+  - **Alternatives:** a monthly systemd timer
+- **D93** (2026-11-17): Production will run the PostGIS image mirrored to `ghcr.io/r3p-dev/` (same tag and digest as `docs/DEPENDENCIES.md` §3), because the deploy tooling accepts only `ghcr.io/r3p-dev/` and `docker.io/library/` images from CI. Recorded only; the mirror is set up with the production deployment (M12)
+  - **Why:** the owner's choice. `docker.io/postgis/postgis` is neither an official library image nor under the owner's registry
+  - **Alternatives:** deploying by hand with the Docker Hub image (allowed, but outside CI); adding `docker.io/postgis/` to the allowed images
