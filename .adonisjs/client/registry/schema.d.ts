@@ -28,7 +28,7 @@ export interface Registry {
       body: {}
       paramsTuple: []
       params: {}
-      query: ExtractQueryForGet<InferInput<(typeof import('#validators/area_validator').checkCoverageValidator)>>
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/area_validator').checkAreaNameValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/area_check_controller').default['show']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/area_check_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/area_check_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
@@ -552,6 +552,19 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateSlots']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateSlots']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateSlots']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.settings.hours.update': {
+    methods: ["PUT"]
+    pattern: '/admin/pengaturan/jam'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/setting_validator').openingHoursValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/setting_validator').openingHoursValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateHours']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateHours']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateHours']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.areas.index': {

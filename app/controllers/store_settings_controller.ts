@@ -1,8 +1,13 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import SettingService from '#services/setting_service'
+import OpeningHoursTransformer from '#transformers/opening_hours_transformer'
 import PickupSlotTransformer from '#transformers/pickup_slot_transformer'
-import { storeSettingValidator, pickupSlotsSettingValidator } from '#validators/setting_validator'
+import {
+  openingHoursValidator,
+  pickupSlotsSettingValidator,
+  storeSettingValidator,
+} from '#validators/setting_validator'
 
 @inject()
 export default class StoreSettingsController {
@@ -13,6 +18,7 @@ export default class StoreSettingsController {
 
     return inertia.render('admin/settings/store', {
       slots: PickupSlotTransformer.transform(slots),
+      hours: OpeningHoursTransformer.transform(await this.settingService.getOpeningHours()),
     })
   }
 
@@ -23,6 +29,15 @@ export default class StoreSettingsController {
     await this.settingService.updateStoreSettings(actor, payload)
 
     session.flash('success', 'Pengaturan toko berhasil disimpan.')
+    return response.redirect().back()
+  }
+
+  async updateHours({ request, response, auth, session }: HttpContext) {
+    const payload = await request.validateUsing(openingHoursValidator)
+
+    await this.settingService.updateOpeningHours(auth.user!, payload)
+
+    session.flash('success', 'Jam buka berhasil disimpan.')
     return response.redirect().back()
   }
 

@@ -3,7 +3,6 @@ import {
   AttributionControl,
   LngLatBounds,
   Map,
-  Marker,
   NavigationControl,
   addProtocol,
   setWorkerUrl,
@@ -24,17 +23,12 @@ const ATTRIBUTION = [
 
 const LOCALE = {
   'Map.Title': 'Peta area layanan',
-  'Marker.Title': 'Pin lokasi',
   'AttributionControl.ToggleAttribution': 'Tampilkan atribusi',
   'NavigationControl.ZoomIn': 'Perbesar',
   'NavigationControl.ZoomOut': 'Perkecil',
-  'CooperativeGesturesHandler.WindowsHelpText':
-    'Tekan Ctrl sambil menggulir untuk memperbesar peta',
-  'CooperativeGesturesHandler.MacHelpText': 'Tekan ⌘ sambil menggulir untuk memperbesar peta',
-  'CooperativeGesturesHandler.MobileHelpText': 'Gunakan dua jari untuk menggeser peta',
 }
 
-// Alun-alun Bandung: where the map and the pin start before the areas are drawn.
+// Alun-alun Bandung: where the map starts before the areas are drawn.
 const BANDUNG_CENTER: [number, number] = [107.6098, -6.9218]
 
 const flavor = namedFlavor('light')
@@ -71,11 +65,12 @@ function areaFeatures(shapes: AreaShape[]) {
   }
 }
 
-// Without a tiles file the map is a plain background; areas and pins still work (MAP-2).
+// Without a tiles file the map is a plain background and the areas still show (MAP-2).
+// A base map that fails to load is logged, and reported to `onBaseMapError` once.
 export function createAreaMap(
   container: HTMLElement,
   tilesUrl: string | null,
-  options: { hasCooperativeGestures: boolean }
+  onBaseMapError: (message: string) => void
 ) {
   const origin = window.location.origin
   const map = new Map({
@@ -83,7 +78,6 @@ export function createAreaMap(
     center: BANDUNG_CENTER,
     zoom: 10,
     locale: LOCALE,
-    cooperativeGestures: options.hasCooperativeGestures,
     attributionControl: false,
     style: tilesUrl
       ? {
@@ -104,6 +98,15 @@ export function createAreaMap(
             },
           ],
         },
+  })
+  // With a listener MapLibre no longer logs errors itself, so this does.
+  let hasReportedBaseMap = false
+  map.on('error', (event) => {
+    console.error(event.error)
+    if (tilesUrl && !hasReportedBaseMap) {
+      hasReportedBaseMap = true
+      onBaseMapError(`Peta dasar ${tilesUrl} gagal dimuat: ${event.error.message}`)
+    }
   })
   map.addControl(new AttributionControl({ compact: false, customAttribution: ATTRIBUTION }))
   map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
@@ -160,15 +163,4 @@ export function showAreas(map: Map, shapes: AreaShape[]) {
   if (!bounds.isEmpty()) {
     map.fitBounds(bounds, { padding: 16, animate: false })
   }
-}
-
-export function addDraggablePin(map: Map, onStop: (lat: number, lng: number) => void) {
-  const pin = new Marker({ draggable: true, color: themeColor('--primary') })
-    .setLngLat(BANDUNG_CENTER)
-    .addTo(map)
-  pin.on('dragend', () => {
-    const { lat, lng } = pin.getLngLat()
-    onStop(lat, lng)
-  })
-  return pin
 }

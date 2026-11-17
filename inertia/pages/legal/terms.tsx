@@ -3,12 +3,11 @@ import PublicLayout from '~/components/templates/public_layout'
 import { usePage } from '@inertiajs/react'
 
 export default function Terms() {
-  const { store } = usePage().props
+  const { store, openingHours } = usePage().props
   const storeInfo = store ?? {
     name: 'Umima Clean',
     whatsapp: '6285157900974',
     address: 'Jl. Margacinta No. 132, Margasari, Buahbatu, Kota Bandung 40286',
-    hours: '09.00–20.00',
   }
   const waDisplay = storeInfo.whatsapp.startsWith('62')
     ? '0' + storeInfo.whatsapp.slice(2)
@@ -74,7 +73,7 @@ export default function Terms() {
       </LegalSection>
       <LegalSection title="Kontak">
         <p>
-          Pertanyaan atau keluhan: WhatsApp {waDisplay}, setiap hari {storeInfo.hours}.
+          Pertanyaan atau keluhan: WhatsApp {waDisplay}, {openingHours?.weekly.join(', ')}.
         </p>
       </LegalSection>
     </LegalPage>

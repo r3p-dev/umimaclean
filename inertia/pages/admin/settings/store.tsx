@@ -3,6 +3,7 @@ import { Head, router, usePage } from '@inertiajs/react'
 import { IconClock, IconDeviceFloppy, IconInfoCircle } from '@tabler/icons-react'
 import PhoneInput from '~/components/molecules/phone_input'
 import OwnerPageHeader from '~/components/organisms/owner_page_header'
+import OpeningHoursForm from '~/components/organisms/settings/opening_hours_form'
 import SettingsTabs from '~/components/organisms/settings/settings_tabs'
 import OwnerLayout from '~/components/templates/owner_layout'
 import { Badge } from '~/components/ui/badge'
@@ -17,14 +18,19 @@ import type { Data } from '@generated/data'
 export type StoreInfo = NonNullable<Data.SharedProps['store']>
 export type PickupSlotItem = Data.PickupSlot
 
-export default function AdminStoreSettings({ slots }: { slots: PickupSlotItem[] }) {
+export default function AdminStoreSettings({
+  slots,
+  hours,
+}: {
+  slots: PickupSlotItem[]
+  hours: Data.OpeningHours
+}) {
   const sharedStore = usePage<Data.SharedProps>().props.store
   const pageErrors = usePage().props.errors ?? {}
   const [storeForm, setStoreForm] = useState<StoreInfo>({
     name: sharedStore?.name ?? 'Umima Clean',
     whatsapp: sharedStore?.whatsapp ?? '6285157900974',
     address: sharedStore?.address ?? '',
-    hours: sharedStore?.hours ?? '',
   })
   const [storeErrors, setStoreErrors] = useState<Record<string, string>>({})
   const [isSubmittingStore, setIsSubmittingStore] = useState(false)
@@ -157,19 +163,6 @@ export default function AdminStoreSettings({ slots }: { slots: PickupSlotItem[] 
                 {activeStoreErrors.address && <FieldError>{activeStoreErrors.address}</FieldError>}
               </Field>
 
-              <Field>
-                <FieldLabel htmlFor="store-hours">Jam Operasional</FieldLabel>
-                <Input
-                  id="store-hours"
-                  value={storeForm.hours}
-                  onChange={(e) => setStoreForm((prev) => ({ ...prev, hours: e.target.value }))}
-                  placeholder="Contoh: Senin–Sabtu · 09.00–20.00"
-                  required
-                />
-                <FieldDescription>Waktu layanan buka untuk pelanggan.</FieldDescription>
-                {activeStoreErrors.hours && <FieldError>{activeStoreErrors.hours}</FieldError>}
-              </Field>
-
               <div className="pt-2">
                 <Button type="submit" isDisabled={isSubmittingStore} className="w-full sm:w-auto">
                   <IconDeviceFloppy className="mr-1.5 size-4" />
@@ -179,6 +172,8 @@ export default function AdminStoreSettings({ slots }: { slots: PickupSlotItem[] 
             </form>
           </CardContent>
         </Card>
+
+        <OpeningHoursForm hours={hours} />
 
         {/* Slot Penjemputan */}
         <Card>

@@ -11,7 +11,6 @@ const VIEWPORTS = [
   { name: '1440', width: 1440, height: 900 },
 ] as const
 
-const BUAHBATU = { latitude: -6.955631, longitude: 107.6539748 }
 const LOCAL_HOSTS = ['localhost', '127.0.0.1']
 
 async function axeViolations(page: ConstructorParameters<typeof AxeBuilder>[0]['page']) {
@@ -75,17 +74,25 @@ test.group('Maps (MAP-2, AREA-1, OWN-9, GUEST-1, AREA-4)', (group) => {
     await saveScreenshotLog('admin-area-peta-screenshots.log', logLines)
   })
 
-  test('a guest checks a location with "use my location" and by dragging the pin, one request per stop (GUEST-1, AREA-4)', async ({
+  test('a guest checks a kecamatan in the hero and the landing loads no map (GUEST-1, NFR-3)', async ({
     visit,
     browserContext,
     assert,
   }) => {
-    await browserContext.grantPermissions(['geolocation'])
-    await browserContext.setGeolocation(BUAHBATU)
-    const outsideRequests: string[] = []
+    // Only this test's pages count: a page of an earlier test may still be loading its map.
+    const landingPages = new Set<unknown>()
+    browserContext.on('page', (page) => landingPages.add(page))
+    const mapRequests: string[] = []
     browserContext.on('request', (request) => {
-      if (!LOCAL_HOSTS.includes(new URL(request.url()).hostname)) {
-        outsideRequests.push(request.url())
+      // In development Vite also links the CSS of modules the server render can reach (the owner
+      // map's lazy chunk); the production manifest links only the entry's CSS (EVIDENCE M4a-fix1).
+      const url = request.url()
+      if (
+        landingPages.has(request.frame().page()) &&
+        !url.endsWith('.css') &&
+        /maplibre|area_map|pmtiles/.test(url)
+      ) {
+        mapRequests.push(request.url())
       }
     })
     const logLines: string[] = []
@@ -93,23 +100,14 @@ test.group('Maps (MAP-2, AREA-1, OWN-9, GUEST-1, AREA-4)', (group) => {
     for (const viewport of VIEWPORTS) {
       const page = await visit('/')
       await page.setViewportSize({ width: viewport.width, height: viewport.height })
-      const checks: string[] = []
-      page.on('request', (request) => {
-        if (new URL(request.url()).pathname === '/area/cek') {
-          checks.push(request.url())
-        }
-      })
+      await page.waitForLoadState('networkidle')
+      assert.isNull(await page.$('#area-layanan'))
 
-      const section = page.locator('#area-layanan')
-      await section.scrollIntoViewIfNeeded()
-      await section.locator('.maplibregl-canvas').waitFor()
-      await section.getByText('Kota Bandung', { exact: true }).waitFor()
-      const status = section.getByRole('status')
-      assert.include(await status.innerText(), 'Geser pin ke lokasi Anda')
-
-      await section.getByRole('button', { name: 'Gunakan lokasi saya' }).click()
-      await status.getByText('Terjangkau: Kecamatan Buahbatu, Kota Bandung.').waitFor()
-      assert.lengthOf(checks, 1)
+      const form = page.locator('#cek-area')
+      const status = form.getByRole('status')
+      await form.getByLabel('Cek area layanan').fill('kec. coblong')
+      await form.getByRole('button', { name: 'Cek' }).click()
+      await status.getByText('Coblong terjangkau.').waitFor()
 
       const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
       assert.isAtMost(scrollWidth, viewport.width, `Horizontal scroll at ${viewport.name}px`)
@@ -118,51 +116,23 @@ test.group('Maps (MAP-2, AREA-1, OWN-9, GUEST-1, AREA-4)', (group) => {
         [],
         `Landing axe violations at ${viewport.name}px`
       )
-      await saveElementScreenshot(section, `landing-area-terjangkau-${viewport.name}.png`)
+      await saveElementScreenshot(
+        page.locator('section').first(),
+        `hero-cek-terjangkau-${viewport.name}.png`
+      )
 
-      // Drag the pin once the map has finished flying to the location (the pin moves with it).
-      const pin = section.locator('.maplibregl-marker')
-      let pinBox = await pin.boundingBox()
-      for (let attempt = 0; attempt < 20; attempt++) {
-        await page.waitForTimeout(250)
-        const nextBox = await pin.boundingBox()
-        if (nextBox && pinBox && nextBox.x === pinBox.x && nextBox.y === pinBox.y) {
-          break
-        }
-        pinBox = nextBox
-      }
-      assert.isNotNull(pinBox)
-      const startX = pinBox!.x + pinBox!.width / 2
-      const startY = pinBox!.y + pinBox!.height / 3
-      const nextCheck = page.waitForResponse(
-        (response) => new URL(response.url()).pathname === '/area/cek'
+      await form.getByLabel('Cek area layanan').fill('Cileunyi')
+      await form.getByRole('button', { name: 'Cek' }).click()
+      await status.getByText('Cileunyi belum terjangkau.').waitFor()
+      await saveElementScreenshot(
+        page.locator('section').first(),
+        `hero-cek-belum-${viewport.name}.png`
       )
-      // End the drag inside the canvas, away from the controls: MapLibre ignores a mouseup over them.
-      const canvasBox = await section.locator('.maplibregl-canvas').boundingBox()
-      await page.mouse.move(startX, startY)
-      await page.mouse.down()
-      await page.mouse.move(
-        canvasBox!.x + canvasBox!.width * 0.2,
-        canvasBox!.y + canvasBox!.height * 0.3,
-        {
-          steps: 15,
-        }
-      )
-      await page.mouse.up()
-      await nextCheck
-      await page.waitForTimeout(600)
-      assert.lengthOf(checks, 2, 'one request after the pin stopped, none while it moved')
-      const movedBox = await section.locator('.maplibregl-marker').boundingBox()
-      assert.notEqual(movedBox!.x, pinBox!.x)
-      assert.notInclude(await status.innerText(), 'Memeriksa')
-      await saveElementScreenshot(section, `landing-area-geser-${viewport.name}.png`)
 
-      logLines.push(
-        `landing-area-${viewport.name}: scrollWidth=${scrollWidth} axe=none checks=${checks.length} after drag: ${await status.innerText()}`
-      )
+      logLines.push(`hero-cek-${viewport.name}: scrollWidth=${scrollWidth} axe=none`)
     }
 
-    assert.deepEqual(outsideRequests, [])
-    await saveScreenshotLog('landing-area-screenshots.log', logLines)
+    assert.deepEqual(mapRequests, [])
+    await saveScreenshotLog('hero-cek-screenshots.log', logLines)
   })
 })

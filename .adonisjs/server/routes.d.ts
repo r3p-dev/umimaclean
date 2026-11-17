@@ -46,6 +46,7 @@ export type ScannedRoutes = {
     'admin.settings.store': { paramsTuple?: []; params?: {} }
     'admin.settings.store.update': { paramsTuple?: []; params?: {} }
     'admin.settings.slots.update': { paramsTuple?: []; params?: {} }
+    'admin.settings.hours.update': { paramsTuple?: []; params?: {} }
     'admin.areas.index': { paramsTuple?: []; params?: {} }
     'admin.areas.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -121,6 +122,7 @@ export type ScannedRoutes = {
     'admin.services.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.store.update': { paramsTuple?: []; params?: {} }
     'admin.settings.slots.update': { paramsTuple?: []; params?: {} }
+    'admin.settings.hours.update': { paramsTuple?: []; params?: {} }
   }
   PATCH: {
     'admin.services.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

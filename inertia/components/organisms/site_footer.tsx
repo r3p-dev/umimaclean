@@ -67,12 +67,11 @@ function ContactLine({
 }
 
 export default function SiteFooter({ children }: { children?: ReactNode }) {
-  const { store } = usePage().props
+  const { store, openingHours } = usePage().props
   const storeInfo = store ?? {
     name: 'Umima Clean',
     whatsapp: '6285157900974',
     address: 'Jl. Margacinta No. 132, Margasari, Buahbatu, Kota Bandung 40286',
-    hours: '09.00–20.00',
   }
 
   return (
@@ -95,7 +94,11 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
                 {storeInfo.address}
               </ContactLine>
               <ContactLine icon={IconClock} label="Jam buka">
-                {storeInfo.hours}
+                <span className="flex flex-col">
+                  {openingHours?.weekly.map((line) => (
+                    <span key={line}>{line}</span>
+                  ))}
+                </span>
               </ContactLine>
               <ContactLine
                 icon={IconBrandWhatsapp}
@@ -120,7 +123,7 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
               </a>
             </li>
             <li>
-              <a href="/#area-layanan" className={LINK}>
+              <a href="/#cek-area" className={LINK}>
                 Area Layanan
               </a>
             </li>

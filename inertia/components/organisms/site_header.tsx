@@ -6,7 +6,7 @@ import { buttonVariants } from '~/components/ui/button'
 
 const SECTION_LINKS = [
   { href: '/#harga', label: 'Layanan & Harga' },
-  { href: '/#area-layanan', label: 'Area Layanan' },
+  { href: '/#cek-area', label: 'Area Layanan' },
   { href: '/#cara-kerja', label: 'Cara Kerja' },
   { href: '/#ulasan', label: 'Ulasan' },
   { href: '/#faq', label: 'Pertanyaan Umum' },

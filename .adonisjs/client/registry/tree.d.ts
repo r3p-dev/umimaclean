@@ -75,6 +75,9 @@ export interface ApiDefinition {
       slots: {
         update: typeof routes['admin.settings.slots.update']
       }
+      hours: {
+        update: typeof routes['admin.settings.hours.update']
+      }
     }
     areas: {
       index: typeof routes['admin.areas.index']

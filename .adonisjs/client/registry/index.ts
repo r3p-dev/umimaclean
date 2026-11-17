@@ -260,6 +260,12 @@ const routes = {
     tokens: [[0,"admin"],[0,"pengaturan"],[0,"slot"]],
     types: placeholder as Registry['admin.settings.slots.update']['types'],
   },
+  'admin.settings.hours.update': {
+    methods: ["PUT"],
+    pattern: '/admin/pengaturan/jam',
+    tokens: [[0,"admin"],[0,"pengaturan"],[0,"jam"]],
+    types: placeholder as Registry['admin.settings.hours.update']['types'],
+  },
   'admin.areas.index': {
     methods: ["GET","HEAD"],
     pattern: '/admin/pengaturan/area',

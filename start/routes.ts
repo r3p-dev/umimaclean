@@ -100,6 +100,9 @@ router
     router
       .put('/admin/pengaturan/slot', [controllers.StoreSettings, 'updateSlots'])
       .as('admin.settings.slots.update')
+    router
+      .put('/admin/pengaturan/jam', [controllers.StoreSettings, 'updateHours'])
+      .as('admin.settings.hours.update')
 
     router
       .get('/admin/pengaturan/area', [controllers.ServiceAreas, 'index'])

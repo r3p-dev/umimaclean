@@ -1,10 +1,13 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import UserTransformer from '#transformers/user_transformer'
+import { DateTime } from 'luxon'
 import SettingService, {
+  DEFAULT_OPENING_HOURS,
   DEFAULT_STORE_SETTING,
   type StoreInfoSetting,
 } from '#services/setting_service'
+import { openingStatus, weeklyHours } from '#helpers/opening_hours'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import env from '#start/env'
 
@@ -17,8 +20,10 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 
     const settingService = await ctx.containerResolver.make(SettingService)
     let store: StoreInfoSetting = DEFAULT_STORE_SETTING
+    let hours = DEFAULT_OPENING_HOURS
     try {
       store = await settingService.getStoreSettings()
+      hours = await settingService.getOpeningHours()
     } catch {
       // fallback to defaults if database is not migrated yet
     }
@@ -30,6 +35,10 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       user: ctx.inertia.always(auth?.user ? UserTransformer.transform(auth.user) : undefined),
       turnstileSiteKey: isTurnstileEnabled ? env.get('TURNSTILE_SITE_KEY') : undefined,
       store: ctx.inertia.always(store),
+      openingHours: ctx.inertia.always({
+        status: openingStatus(hours, DateTime.now()),
+        weekly: weeklyHours(hours),
+      }),
     }
   }
 

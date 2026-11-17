@@ -2,14 +2,22 @@ import { inject } from '@adonisjs/core'
 import ActivityLog from '#models/activity_log'
 import Setting from '#models/setting'
 import type User from '#models/user'
-import { storeSettingValidator, pickupSlotsArrayValidator } from '#validators/setting_validator'
+import {
+  openingHoursValidator,
+  pickupSlotsArrayValidator,
+  storeSettingValidator,
+} from '#validators/setting_validator'
 
 export interface StoreInfoSetting {
   [key: string]: string
   name: string
   whatsapp: string
   address: string
-  hours: string
+}
+
+export type OpeningHoursSetting = {
+  days: { day: number; isOpen: boolean; opens: string; closes: string }[]
+  closure: { isClosed: boolean; until: string | null; note: string | null }
 }
 
 export interface PickupSlotSetting {
@@ -22,6 +30,7 @@ export interface PickupSlotSetting {
 export interface SettingValues {
   store: StoreInfoSetting
   pickup_slots: PickupSlotSetting[]
+  opening_hours: OpeningHoursSetting
 }
 
 export type SettingKey = keyof SettingValues
@@ -30,7 +39,17 @@ export const DEFAULT_STORE_SETTING: StoreInfoSetting = {
   name: 'Umima Clean',
   whatsapp: '6285157900974',
   address: 'Jl. Margacinta No. 132, Margasari, Buahbatu, Kota Bandung 40286',
-  hours: 'Senin–Sabtu · 09.00–20.00',
+}
+
+// Monday to Saturday 09.00–20.00, closed on Sunday.
+export const DEFAULT_OPENING_HOURS: OpeningHoursSetting = {
+  days: [1, 2, 3, 4, 5, 6, 7].map((day) => ({
+    day,
+    isOpen: day !== 7,
+    opens: '09:00',
+    closes: '20:00',
+  })),
+  closure: { isClosed: false, until: null, note: null },
 }
 
 export const DEFAULT_PICKUP_SLOTS: PickupSlotSetting[] = [
@@ -42,6 +61,7 @@ export const DEFAULT_PICKUP_SLOTS: PickupSlotSetting[] = [
 export const DEFAULT_SETTINGS: SettingValues = {
   store: DEFAULT_STORE_SETTING,
   pickup_slots: DEFAULT_PICKUP_SLOTS,
+  opening_hours: DEFAULT_OPENING_HOURS,
 }
 
 @inject()
@@ -74,9 +94,6 @@ export default class SettingService {
     if (current.address !== validated.address) {
       diffs.push(`Alamat: "${current.address}" → "${validated.address}"`)
     }
-    if (current.hours !== validated.hours) {
-      diffs.push(`Jam buka: "${current.hours}" → "${validated.hours}"`)
-    }
 
     const description =
       diffs.length > 0
@@ -88,6 +105,31 @@ export default class SettingService {
       category: 'settings',
       action: 'settings.store.update',
       description,
+      isSensitive: false,
+    })
+
+    return validated
+  }
+
+  async getOpeningHours(): Promise<OpeningHoursSetting> {
+    const row = await Setting.findBy('key', 'opening_hours')
+    return openingHoursValidator.validate(row?.value ?? DEFAULT_OPENING_HOURS)
+  }
+
+  async updateOpeningHours(actor: User, payload: unknown): Promise<OpeningHoursSetting> {
+    const validated = await openingHoursValidator.validate(payload)
+    validated.days.sort((first, second) => first.day - second.day)
+
+    await Setting.updateOrCreate({ key: 'opening_hours' }, { value: validated })
+
+    const closure = validated.closure.isClosed
+      ? `tutup sementara${validated.closure.until ? ` sampai ${validated.closure.until}` : ''}`
+      : 'buka seperti jadwal'
+    await ActivityLog.create({
+      userId: actor.id,
+      category: 'settings',
+      action: 'settings.hours.update',
+      description: `Memperbarui jam buka (${closure})`,
       isSensitive: false,
     })
 

@@ -18,7 +18,11 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
     assert.equal(store.name, 'Umima Clean')
     assert.equal(store.whatsapp, '6285157900974')
     assert.isTrue(store.address.includes('Margacinta'))
-    assert.isTrue(store.hours.includes('09.00–20.00'))
+
+    const hours = await service.getOpeningHours()
+    assert.deepEqual(hours.days[0], { day: 1, isOpen: true, opens: '09:00', closes: '20:00' })
+    assert.isFalse(hours.days[6].isOpen)
+    assert.isFalse(hours.closure.isClosed)
 
     const slots = await service.getPickupSlots()
     assert.equal(slots.length, 3)
@@ -39,13 +43,11 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
       name: 'Umima Clean Workshop',
       whatsapp: '081234567890',
       address: 'Jl. Buahbatu No. 45, Bandung',
-      hours: '08.00–21.00',
     })
 
     assert.equal(updated.name, 'Umima Clean Workshop')
     assert.equal(updated.whatsapp, '6281234567890') // normalized to E.164
     assert.equal(updated.address, 'Jl. Buahbatu No. 45, Bandung')
-    assert.equal(updated.hours, '08.00–21.00')
 
     const log = await ActivityLog.query()
       .where('action', 'settings.store.update')

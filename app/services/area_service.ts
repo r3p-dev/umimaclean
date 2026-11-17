@@ -4,6 +4,7 @@ import db from '@adonisjs/lucid/services/db'
 import ActivityLog from '#models/activity_log'
 import ServiceArea from '#models/service_area'
 import type User from '#models/user'
+import { editDistance, normalizeDistrictName } from '#helpers/district_name'
 
 export interface CoverageCheckResult {
   isCovered: boolean
@@ -31,6 +32,22 @@ export default class AreaService {
         )
       )
       .withScopes((scopes) => scopes.ordered())
+  }
+
+  // The district a guest typed in the landing check: forgiving of case, a "Kec." prefix, spaces and
+  // one or two wrong letters, but never a guess between names further apart (GUEST-1, D100).
+  async findAreaByName(query: string): Promise<ServiceArea | null> {
+    const typed = normalizeDistrictName(query)
+    const allowedTypos = typed.length <= 5 ? 1 : 2
+    let best: { area: ServiceArea; distance: number } | null = null
+
+    for (const area of await this.getAllAreas()) {
+      const distance = editDistance(typed, normalizeDistrictName(area.name))
+      if (distance <= allowedTypos && (!best || distance < best.distance)) {
+        best = { area, distance }
+      }
+    }
+    return best?.area ?? null
   }
 
   async getGroupedAreas(): Promise<Record<string, ServiceArea[]>> {

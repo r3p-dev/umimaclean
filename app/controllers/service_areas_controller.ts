@@ -3,7 +3,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import AreaService from '#services/area_service'
 import ServiceAreaTransformer from '#transformers/service_area_transformer'
 import ServiceAreaShapeTransformer from '#transformers/service_area_shape_transformer'
-import { mapTilesUrl } from '#helpers/map'
+import { mapTiles } from '#helpers/map'
 
 @inject()
 export default class ServiceAreasController {
@@ -16,7 +16,7 @@ export default class ServiceAreasController {
     return inertia.render('admin/settings/areas', {
       areas: transformed,
       shapes: ServiceAreaShapeTransformer.transform(await this.areaService.getAreaShapes()),
-      tilesUrl: mapTilesUrl(),
+      ...mapTiles(),
     })
   }
 

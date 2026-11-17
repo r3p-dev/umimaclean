@@ -21,10 +21,12 @@ export default function AdminAreas({
   areas,
   shapes,
   tilesUrl,
+  devWarning,
 }: {
   areas: ServiceAreaItem[]
   shapes: Data.ServiceAreaShape[]
   tilesUrl: string | null
+  devWarning: string | null
 }) {
   const [search, setSearch] = useState('')
 
@@ -92,7 +94,12 @@ export default function AdminAreas({
             <CardTitle className="text-base font-semibold">Peta area</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            <ServiceAreaMap shapes={shapes} tilesUrl={tilesUrl} className="h-80 lg:h-96" />
+            <ServiceAreaMap
+              shapes={shapes}
+              tilesUrl={tilesUrl}
+              devWarning={devWarning}
+              className="h-80 lg:h-96"
+            />
             <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
                 <span className="size-4 rounded-sm border-2 border-primary bg-primary/20" />

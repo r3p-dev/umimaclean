@@ -1,68 +1,57 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
-import type { Map, Marker } from 'maplibre-gl'
+import { useEffect, useRef, useState } from 'react'
+import type { Map } from 'maplibre-gl'
 import { cn } from 'cn'
 import type { Data } from '@generated/data'
-
-export type MapPoint = { lat: number; lng: number }
+import Note from '~/components/atoms/note'
 
 export default function ServiceAreaMap({
   shapes,
   tilesUrl,
-  pinPosition,
-  onPinStop,
-  hasCooperativeGestures = false,
+  devWarning,
   className,
 }: {
-  shapes: Data.ServiceAreaShape[] | undefined
+  shapes: Data.ServiceAreaShape[]
   tilesUrl: string | null
-  pinPosition?: MapPoint | null
-  onPinStop?: (point: MapPoint) => void
-  hasCooperativeGestures?: boolean
+  devWarning: string | null
   className?: string
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [map, setMap] = useState<Map | null>(null)
-  const [pin, setPin] = useState<Marker | null>(null)
-  const hasPin = onPinStop !== undefined
-  const handlePinStop = useEffectEvent((point: MapPoint) => onPinStop?.(point))
+  const [baseMapError, setBaseMapError] = useState<string | null>(null)
 
   // MapLibre is loaded only here, so pages without a map never download it (NFR-3).
   useEffect(() => {
     let isRemoved = false
     let createdMap: Map | undefined
-    import('~/lib/map/area_map').then(({ createAreaMap, addDraggablePin }) => {
+    import('~/lib/map/area_map').then(({ createAreaMap }) => {
       if (isRemoved || !containerRef.current) {
         return
       }
-      createdMap = createAreaMap(containerRef.current, tilesUrl, { hasCooperativeGestures })
+      createdMap = createAreaMap(containerRef.current, tilesUrl, setBaseMapError)
       setMap(createdMap)
-      if (hasPin) {
-        setPin(addDraggablePin(createdMap, (lat, lng) => handlePinStop({ lat, lng })))
-      }
     })
     return () => {
       isRemoved = true
       createdMap?.remove()
     }
-  }, [tilesUrl, hasCooperativeGestures, hasPin])
+  }, [tilesUrl])
 
   useEffect(() => {
-    if (map && shapes) {
+    if (map) {
       import('~/lib/map/area_map').then(({ showAreas }) => showAreas(map, shapes))
     }
   }, [map, shapes])
 
-  useEffect(() => {
-    if (map && pin && pinPosition) {
-      pin.setLngLat([pinPosition.lng, pinPosition.lat])
-      map.flyTo({ center: [pinPosition.lng, pinPosition.lat], zoom: Math.max(map.getZoom(), 13) })
-    }
-  }, [map, pin, pinPosition])
+  // Development only: say why the base map is missing (the server's check, or a failed load).
+  const warning = devWarning ?? (import.meta.env.DEV ? baseMapError : null)
 
   return (
-    <div
-      ref={containerRef}
-      className={cn('overflow-hidden rounded-lg border border-border bg-muted', className)}
-    />
+    <div className="flex flex-col gap-2">
+      {warning && <Note tone="attention">{warning}</Note>}
+      <div
+        ref={containerRef}
+        className={cn('overflow-hidden rounded-lg border border-border bg-muted', className)}
+      />
+    </div>
   )
 }

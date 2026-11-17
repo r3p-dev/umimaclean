@@ -73,7 +73,6 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
       name: 'Umima Clean Workshop Buahbatu',
       whatsapp: '081234567890',
       address: 'Jl. Margacinta No. 132B, Buahbatu, Kota Bandung',
-      hours: 'Setiap Hari · 08.00–21.00',
     }
 
     const response = await client
@@ -111,7 +110,6 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
         name: '',
         whatsapp: 'invalid-phone',
         address: 'short',
-        hours: '',
       })
       .redirects(0)
 
