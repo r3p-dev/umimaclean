@@ -58,7 +58,7 @@ A milestone is not done until `docs/evidence/<milestone>/EVIDENCE.md` exists, fo
 
 ## Report
 
-To the owner, in chat, **in Indonesian**, short:
+To the owner, in chat, **in Indonesian**, short (at most about 25 lines; measurements, options and logs go only in EVIDENCE.md):
 
 1. **Ringkasan**: what was built, with the requirement IDs covered.
 2. A link to the EVIDENCE.md.
