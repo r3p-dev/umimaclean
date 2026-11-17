@@ -460,7 +460,7 @@ Every decision not covered by §1, and **every workaround**, gets an entry: numb
   - **Why:** No dependency, survives web restarts, catches missed runs (`Persistent=true`), fits rootless Podman + Quadlet
   - **Alternatives:** a sleep loop in a container (no missed-run handling, drifts), an in-process scheduler package (not official AdonisJS, runs twice with two web processes)
 - **D14** (2026-11-13): Map data and future uploads live in git-ignored `storage/` and `public/tiles/`
-  - **Why:** AGENTS.md §7: map/OSM/OSRM data and uploads are never committed
+  - **Why:** AGENTS.md › Never: map/OSM/OSRM data and uploads are never committed
   - **Alternatives:** a folder outside the repository (harder to find)
 - **D15** (2026-11-13): The SQL and Lua files in `maps/` start with a short header comment
   - **Why:** Like migrations (CONVENTIONS §8), they define a schema or a profile whose purpose and limits aren't visible from the statements alone
@@ -523,7 +523,7 @@ Every decision not covered by §1, and **every workaround**, gets an entry: numb
   - **Why:** PostGIS creates `spatial_ref_sys` in `public`; it is the extension's table, not the app's, so it gets no generated model class
   - **Alternatives:** accepting an unused model class in `database/schema.ts`
 - **D35** (2026-11-13): M1b split into checkpoints M1b (foundation: look, templates, error pages) and M1c (landing, legal pages, SEO, version 0.1.0)
-  - **Why:** AGENTS.md §3: each stop must be reviewable in one sitting
+  - **Why:** AGENTS.md › Milestone loop: each stop must be reviewable in one sitting
   - **Alternatives:** one large milestone
 - **D36** (2026-11-14): Inertia SSR for the public pages only (`ssr.pages` in `config/inertia.ts`, `serverEntryPoints` in `vite.config.ts`); the browser hydrates them (`hydrateRoot` in `inertia/app.tsx`)
   - **Why:** Link previews (WhatsApp, Facebook) don't run JavaScript, so titles, descriptions and Open Graph tags must be in the first HTML (GUEST-3), and a server-rendered page shows sooner on a mid-range phone (NFR-3). Signed-in pages gain nothing from it
@@ -663,6 +663,53 @@ Every decision not covered by §1, and **every workaround**, gets an entry: numb
 
     exit 0
     ```
+
+  - **Reproduction** (exact text of the removed hausdorff.sql, run as in the first line of the result above):
+
+    ```sql
+    \echo '== Server versions'
+    SELECT version();
+    SELECT postgis_full_version();
+
+    \echo '== Features and vertices per file'
+    SELECT 'simplified' AS file, count(*) AS districts, sum(ST_NPoints(geom)) AS vertices FROM simplified
+    UNION ALL
+    SELECT 'full', count(*), sum(ST_NPoints(geom)) FROM full_res;
+
+    \echo '== Hausdorff distance per district, EPSG:32748 (WGS 84 / UTM zone 48S), metres'
+    SELECT s.code, s.name, s.city,
+           round(ST_HausdorffDistance(ST_Transform(s.geom, 32748), ST_Transform(f.geom, 32748))::numeric, 1) AS hausdorff_utm48s_m
+    FROM simplified s JOIN full_res f USING (code)
+    ORDER BY hausdorff_utm48s_m DESC;
+
+    \echo '== Cross-check on geography (spheroid): farthest vertex of each boundary from the other boundary, metres'
+    WITH simplified_to_full AS (
+      SELECT s.code, max(ST_Distance(vertex.geom::geography, ST_Boundary(f.geom)::geography)) AS metres
+      FROM simplified s JOIN full_res f USING (code)
+      CROSS JOIN LATERAL ST_DumpPoints(s.geom) AS vertex
+      GROUP BY s.code
+    ), full_to_simplified AS (
+      SELECT f.code, max(ST_Distance(vertex.geom::geography, ST_Boundary(s.geom)::geography)) AS metres
+      FROM full_res f JOIN simplified s USING (code)
+      CROSS JOIN LATERAL ST_DumpPoints(f.geom) AS vertex
+      GROUP BY f.code
+    )
+    SELECT s.code, f.name,
+           round(simplified_to_full.metres::numeric, 1) AS simplified_to_full_m,
+           round(full_to_simplified.metres::numeric, 1) AS full_to_simplified_m,
+           round(greatest(simplified_to_full.metres, full_to_simplified.metres)::numeric, 1) AS hausdorff_geography_m,
+           round(ST_HausdorffDistance(ST_Transform(s.geom, 32748), ST_Transform(f.geom, 32748))::numeric, 1) AS hausdorff_utm48s_m
+    FROM simplified s
+    JOIN full_res f USING (code)
+    JOIN simplified_to_full USING (code)
+    JOIN full_to_simplified USING (code)
+    ORDER BY hausdorff_geography_m DESC;
+
+    \echo '== Summary over all 64 districts'
+    SELECT round(max(ST_HausdorffDistance(ST_Transform(s.geom, 32748), ST_Transform(f.geom, 32748)))::numeric, 1) AS max_hausdorff_utm48s_m,
+           round(avg(ST_HausdorffDistance(ST_Transform(s.geom, 32748), ST_Transform(f.geom, 32748)))::numeric, 1) AS mean_hausdorff_utm48s_m
+    FROM simplified s JOIN full_res f USING (code);
+    ```
 - **D78** (2026-11-17): A point exactly on the border between an active and an inactive district counts as covered: `AreaService.checkCoverage` orders the matching districts by `is_active` descending, then `code`, before taking the first
   - **Why:** The owner's decision. On a shared border `ST_Intersects` matches both districts, and without an order PostgreSQL returned whichever row it read first, so the same pin could be covered or not. The test takes a vertex Cibiru (active) shares with Cileunyi (inactive) only
   - **Alternatives:** treating the border as outside (stricter, but refuses pins that are on a street the shop serves)
@@ -673,7 +720,7 @@ Every decision not covered by §1, and **every workaround**, gets an entry: numb
   - **Why:** The owner's numbers. 60 per IP because Indonesian mobile carriers put many customers behind one address (CGNAT, as in D64); the coverage check sends one request each time a pin stops, so a customer moving a pin a few times stays well below it
   - **Alternatives:** —
 - **D81** (2026-11-17): M4 is split into M4a (maps, the area map, the landing coverage check, no version bump) and M4b (place search and addresses, version 0.4.0)
-  - **Why:** AGENTS.md §3: each stop must be reviewable in one sitting; the map foundation and the address flows are separate concerns, and M4b builds on the map pieces of M4a
+  - **Why:** AGENTS.md › Milestone loop: each stop must be reviewable in one sitting; the map foundation and the address flows are separate concerns, and M4b builds on the map pieces of M4a
   - **Alternatives:** one 20-hour milestone
 - **D82** (2026-11-17): A saved address whose district is turned off later is kept and shows "Di luar area layanan" in the address list; refusing it when ordering belongs to M5a (CUST-6 re-checks both addresses). The PRD does not cover this case
   - **Why:** The owner's decision. AREA-3 says placed orders are not re-checked but says nothing about saved addresses; deleting them would lose customer data, and hiding the problem would only surface at checkout
@@ -681,7 +728,7 @@ Every decision not covered by §1, and **every workaround**, gets an entry: numb
 - **D83** (2026-11-17): The landing price list has one tab per item kind (shadcn Tabs, `inertia/components/ui/tabs.tsx`), only for kinds with an active main service. Each tab lists its main services as rows (name, price with "mulai dari" where flagged, description, estimated working days) in two columns on desktop, and its add-ons in one card; the helmet tab carries the store-only note (SVC-4). The badge, the intro paragraph, the reference-price callout, the "all services" filter, the counts and the per-card kind badges are gone. Unselected tabs use `text-muted-foreground` through `className`, because the generated `text-foreground/60` fails WCAG AA on the page background (axe `color-contrast`)
   - **Why:** The owner's choice of layout. A row list reads faster than a grid of cards and keeps prices aligned; tabs are the shadcn primitive for switching between groups (CONVENTIONS §9) and replace hand-made filter buttons. D33: only text a customer needs stays
   - **Alternatives:** keeping the card grid with filter buttons; changing the color in `ui/tabs.tsx` (a composition does it, CONVENTIONS §9)
-- **D84** (2026-11-17): Supersedes D76. Raw logs and screenshots are never committed. Browser tests still save screenshots and axe logs into the git-ignored `tmp/screenshots/`; only when `EVIDENCE_MILESTONE` names a milestone are they also copied, with `COPYFILE_EXCL`, to `tmp/evidence/<milestone>/screenshots/` (git-ignored). The helper builds that path itself and accepts only a plain folder name, so it cannot write anywhere else. Verification logs go to `tmp/evidence/<milestone>/logs/` through `scripts/evidence_run.ts`. The committed record is `docs/evidence/<milestone>/EVIDENCE.md`: exact excerpts from those logs and a one-line description of every screenshot. The logs and screenshots committed until v0.3.2 were removed from `docs/evidence/` on 2026-11-17 (`docs/evidence/README.md`)
+- **D84** (2026-11-17): Supersedes D76. Raw logs and screenshots are never committed. Browser tests still save screenshots and axe logs into the git-ignored `tmp/screenshots/`; only when `EVIDENCE_MILESTONE` names a milestone are they also copied, with `COPYFILE_EXCL`, to `tmp/evidence/<milestone>/screenshots/` (git-ignored). The helper builds that path itself and accepts only a plain folder name, so it cannot write anywhere else. Verification logs go to `tmp/evidence/<milestone>/logs/` through `scripts/evidence_run.ts`. The committed record is `docs/evidence/<milestone>/EVIDENCE.md`: exact excerpts from those logs and a one-line description of every screenshot. Each `docs/evidence/<milestone>/` keeps only `EVIDENCE.md` (`.gitignore` and `scripts/check_commits.ts` enforce it). The logs, screenshots and other files committed until v0.3.2 were removed from `docs/evidence/` on 2026-11-17, and extra markdown was folded into each `EVIDENCE.md` (`docs/evidence/README.md`)
   - **Why:** The owner has reviewed every screenshot committed so far. The artifacts made up about 40 MB of the repository (271 PNG files, 112 logs) and are only needed while a milestone is being reviewed; a reviewer opens them locally from `tmp/evidence/`. The excerpts and one-line descriptions in EVIDENCE.md keep the proof in the repository, and the old files stay in git history
   - **Alternatives:** keep committing artifacts (the repository keeps growing with every milestone); Git LFS (another tool and server for files nobody reads after review); attach artifacts to the release (outside the repository, extra manual step)
 - **D85** (2026-11-17): Markdown under `docs/` is formatted with Prettier's `proseWrap: "never"` (`prettier.config.js`, which extends `@adonisjs/prettier-config`), and this decisions log is a list instead of a table. `docs/evidence/` is in `.prettierignore`
