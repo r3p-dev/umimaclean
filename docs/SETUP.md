@@ -114,7 +114,7 @@ For features involving spatial lookups, routing, and interactive maps:
 
 5. **Download base map PMTiles**:
 
-   Protomaps publishes daily builds at `https://build.protomaps.com/<YYYYMMDD>.pmtiles` (historical builds remain archived and accessible; metadata is listed at `https://build-metadata.protomaps.dev/builds.json`). To pick a build, ensure its tileset major version matches `@protomaps/basemaps` (v4.x). For example, using build `20261112.pmtiles`:
+   Protomaps publishes daily builds at `https://build.protomaps.com/<YYYYMMDD>.pmtiles` (historical builds remain archived and accessible; metadata is listed at `https://build-metadata.protomaps.dev/builds.json`). To pick a build, check that its tileset is version 4 (`pmtiles show`): the installed style, `@protomaps/basemaps` 5, is released for Tiles 4 (D96). For example, using build `20261112.pmtiles`:
 
    ```sh
    mkdir -p public/tiles
@@ -122,6 +122,27 @@ For features involving spatial lookups, routing, and interactive maps:
    ```
 
    _(Optional verification: `podman compose --profile tools run --rm -T pmtiles show /out/bandung-raya-20261112.pmtiles`)_
+
+   Then name the file in `.env` so the maps use it (`.env.test` leaves it empty, so tests always run without it):
+
+   ```ini
+   MAP_TILES_FILE=bandung-raya-20261112.pmtiles
+   ```
+
+6. **Fonts and sprites of the base map style** (D96; the style would otherwise load them from another host). Copy them from `protomaps/basemaps-assets` at a pinned commit into the git-ignored `public/tiles/`:
+
+   ```sh
+   mkdir -p storage/basemaps-assets && cd storage/basemaps-assets
+   git init -q && git remote add origin https://github.com/protomaps/basemaps-assets
+   git sparse-checkout set "fonts/Noto Sans Regular" "fonts/Noto Sans Medium" "fonts/Noto Sans Italic" sprites/v4
+   git fetch -q --depth 1 --filter=blob:none origin 028c18f713baecad011301ff7a69acc39bcc2ae7 && git checkout -q FETCH_HEAD
+   cd ../..
+   mkdir -p public/tiles/fonts public/tiles/sprites
+   cp -r storage/basemaps-assets/fonts/. public/tiles/fonts/
+   cp storage/basemaps-assets/sprites/v4/light* public/tiles/sprites/
+   ```
+
+   Without them a base map still draws, but without street names and icons.
 
 ### OSM data in production
 
@@ -209,7 +230,7 @@ _(Note: On a shared database server, do not drop other projects' databases)._
 Remove untracked map data, tiles, compiled assets, and dependency caches:
 
 ```sh
-rm -rf storage/osm storage/osrm public/tiles
+rm -rf storage/osm storage/osrm storage/basemaps-assets public/tiles
 rm -rf build tmp public/assets node_modules
 ```
 

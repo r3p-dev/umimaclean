@@ -39,6 +39,8 @@ Rules (`docs/CONVENTIONS.md` §14):
 | `@fontsource-variable/instrument-sans` | The design's typeface, self-hosted (no font CDN), since M1b |
 | `embla-carousel-react` | Carousel engine powering the official shadcn Carousel component (`inertia/components/ui/carousel.tsx`) |
 | `proxy-addr` | Compiles the trusted proxy list for `http.trustProxy` in `config/app.ts` (`docs/ARCHITECTURE.md` §1.2 rule 1, D65); AdonisJS's string option takes one address only. Already used by `@adonisjs/http-server`, since M2c |
+| `maplibre-gl` | Map UI (WebGL vector maps, BSD-3-Clause), loaded only by the map component on pages with a map (MAP-2, NFR-3), since M4a |
+| `pmtiles`, `@protomaps/basemaps` | Read the self-hosted PMTiles file in MapLibre (`pmtiles` protocol) and give its base map layers (`layers()`, flavor `light`; Styles 5 go with the Tiles 4 file, D96), since M4a |
 
 ### Development
 
@@ -65,8 +67,6 @@ Add each in the milestone shown, after checking its current version and docs.
 | Package | Purpose | Milestone |
 | --- | --- | --- |
 | `playwright` (dev; `@japa/browser-client` already brings it, so it is added directly only if a script needs a pinned version) | Browser engine for `@japa/browser-client` and screenshots | M1b |
-| `maplibre-gl` | Map UI (WebGL vector maps), loaded only on pages with a map | M4 |
-| `pmtiles`, `@protomaps/basemaps` | Reads the self-hosted PMTiles file in MapLibre, and its base map style | M4 |
 | `@adonisjs/transmit`, `@adonisjs/transmit-client` | Live updates over SSE | M11 |
 
 **To propose when needed** (with a comparison, before adding): a maintained library for the Excel export (OWN-12, M10).
@@ -95,6 +95,7 @@ Tools run from the images above, so nothing is installed on the host except Podm
 | Clip it to the service areas | `osmium extract --polygon` (osmium-tool 1.18.0), polygon from `maps/clip_polygon.sql` + `psql` 18 | same; `maps/clip_polygon.geojson` (21,155 bytes, SHA-256 `c2d409c8a9e880cafc2069eb84b38e770bf69f8ca73cd9c7b5b278c3c59bb193`): the 64 kecamatan of `database/data/service_areas_full.geojson` plus 5 km (D88) |
 | Load roads, places, kelurahan and postcodes into the `osm` schema | `osm2pgsql` 2.3.1 (flex output, `maps/osm_import.lua`) + `psql` 18 (`maps/osm_schema.sql`, `maps/osm_build.sql`) | same |
 | Ship the `osm` data to production | `pg_dump` / `pg_restore` 18 (compose service `pg-client`) | the staging schema `osm_import` as `storage/osm/osm-import-YYMMDD.dump` with a `.sha256` (D89); in use: `osm-import-261101.dump`, 5,041,066 bytes, SHA-256 `5ec51758c18fa1adfed9cd936e10324f85d15c86d58b9003e699dc8d764d4669`; never committed |
+| Fonts and sprites of the base map style (D96) | `git` sparse checkout (`docs/SETUP.md` Step 5) | <https://github.com/protomaps/basemaps-assets> at commit `028c18f713baecad011301ff7a69acc39bcc2ae7` (2025-10-31): `fonts/Noto Sans {Regular,Medium,Italic}` (PBF glyphs, [SIL Open Font License 1.1](https://openfontlicense.org/), `fonts/OFL.txt`), `sprites/v4/light*` (derived from tangrams/icons, MIT); copied to the git-ignored `public/tiles/fonts/` and `public/tiles/sprites/` (14 MB), never committed |
 | Build the OSRM motorbike graph | `osrm-extract` + `osrm-contract` (OSRM v26.11.0), `maps/motorbike.lua` | same |
 | Produce the PMTiles extract | `pmtiles extract` (go-pmtiles v1.31.2) | Protomaps Basemap daily build (tileset v4.15.2), <https://build.protomaps.com/>, data © OpenStreetMap contributors (ODbL); the attribution "© OpenStreetMap contributors" is shown on every map (MAP-2) |
 | Kecamatan boundaries (committed `database/data/service_areas_full.geojson`) | `curl`, `unzip`, `mapshaper` through `npx` (not a project dependency) | "Indonesia – Subnational Administrative Boundaries" (OCHA COD-AB, data from Badan Pusat Statistik), <https://data.humdata.org/dataset/cod-ab-idn>, [CC BY-IGO 3.0](https://creativecommons.org/licenses/by/3.0/igo/); resource `idn_admin_boundaries.geojson.zip`, <https://data.humdata.org/dataset/84a1d98a-790b-4d66-9d14-bbfa48500802/resource/e1421da4-8f48-47d2-ac49-79ff5bfa4d24/download/idn_admin_boundaries.geojson.zip> (last modified on HDX 2026-06-23; 456,203,094 bytes, SHA-256 `d285a40f9fc4b726b1bda98ee833d52d23d94fe78b6a47c0a769d2e912ff0970`, downloaded 2026-11-16 and again 2026-11-17 with the same checksum). Extracted `idn_admin3.geojson` (SHA-256 `803ade4feaab704116ff9aaf6fc003a45e8d72293283ed13a50eccd8513ddf75`) processed without simplification: `npx --yes mapshaper@0.7.97 idn_admin3.geojson -filter '"ID3204,ID3273,ID3277".includes(adm2_pcode)' -each 'city = adm2_name === "Kota Bandung" ? "Kota Bandung" : (adm2_name === "Kota Cimahi" ? "Kota Cimahi" : "Kabupaten Bandung"), name = adm3_name, code = adm3_pcode' -filter-fields city,name,code -o format=geojson database/data/service_areas_full.geojson` (the output is the same on every run). Committed file: 2,253,838 bytes, SHA-256 `23fadc8c0068ebbfa884a8aaa2f5fae9d4255094e466cf56ce465e6d18a186a4` (64 kecamatan, 61,408 vertices). The data was modified (64 of 7,069 kecamatan kept, fields renamed); the credit on the maps (M4a) must say so, CC BY-IGO 3.0 §3(b). Replaces the simplified `service_areas.geojson` (D77) |
