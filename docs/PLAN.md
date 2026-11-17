@@ -15,7 +15,7 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M2c | 0.2.0 | Accounts: profile, security, rate limits | done | v0.2.0 | 6 |
 | M3a | – | Services and landing price list | done | v0.3.0 | 8 |
 | M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 | 8 |
-| M4a | – | Maps, area map and landing coverage check | not started | – | 10 |
+| M4a | – | Maps, area map and landing coverage check | in progress | – | 10 |
 | M4b | 0.4.0 | Place search and addresses | not started | – | 10 |
 | M5a | 0.5.0 | Online ordering: slots, new order, confirm | not started | – | 14 |
 | M5b | 0.5.0 | Order pages and tracking | not started | – | 12 |
@@ -50,7 +50,7 @@ Hours are the implementer's estimate for building, testing and writing the evide
 
 ## Active milestone
 
-**M4a (checkpoint of 0.4.0): Maps, area map and landing coverage check.** Full criteria in the M4a section below; not started.
+**M4a (checkpoint of 0.4.0): Maps, area map and landing coverage check.** Full criteria in the M4a section below; in progress (first stop done: `osm:import`).
 
 **Requirement IDs:** MAP-2, AREA-1 (credit on maps), AREA-4 (public check), OWN-9 (map), GUEST-1 (coverage check). Decisions: D73 (what moved here from M3b), D77 (display geometry derived from the full boundaries), D78 (border points count as covered), D80 (rate limits), D81 (the split).
 
@@ -68,16 +68,16 @@ Hours are the implementer's estimate for building, testing and writing the evide
 - Display geometry derived from the full boundaries, used only for drawing; coverage is decided on the server.
 - OWN-9: `/admin/pengaturan/area` shows the districts on a map, active and inactive distinguished by more than color.
 - GUEST-1, AREA-4: landing coverage check with "use my location" and a draggable pin; one debounced request after the pin stops; 60 requests per minute per IP with an Indonesian wait message; no text place search for guests.
-- `node ace osm:import` runs the §6.2 pipeline (checks first that the clip box contains every service area), once the owner approves how it runs in development and production.
+- `node ace osm:import <YYMMDD>` runs the §6.2 pipeline in development (checks the snapshot's MD5 and that the clip polygon covers every service area first); production loads its artifact with two documented commands (D87–D93).
 
 **Out of scope** (approved by the owner, 2026-11-17): place search and the street label under a pin (MAP-1, M4b); saving addresses and checking saved pins (CUST-2, CUST-3, CUST-14, AREA-4 saving, M4b); refusing out-of-area addresses when ordering (M5a, D82); OSRM routing (M6); the version bump (0.4.0 comes with M4b).
 
-**Handoff** (from the M3b evidence and patches 0.3.1, 0.3.2):
+**Handoff** (after the first M4a stop, 2026-11-17):
 
-- Done: `AreaService.checkCoverage` with unit tests (M3b, D78); full-resolution boundaries seeded (D77); the server's GEOS 3.14.1 supports `ST_CoverageSimplify` for the display geometry (0.3.1); licence attribution planned (0.3.1 §6.4); OSM import measured in a throwaway database, the D6 box contains every service area (0.3.2 §5); map rate limits in the PRD (D80).
-- Remaining: everything in the criteria above.
-- Open decision: how `osm:import` runs in development and production (owner approval). The 0.3.2 measurement tools are in git history, last commit `59d99c0`: `docs/evidence/M3-0.3.2/measure_osm_import.sh`, `docs/evidence/M3-0.3.2/geojson_to_sql.py`, `docs/evidence/M3-0.3.2/clip_polygon.geojson` (`git show 59d99c0:<path>`).
-- New decisions since M3b: D77–D83, and the process changes D84–D86.
+- Done: `node ace osm:import <YYMMDD>` with its checks, the clip polygon (`maps/clip_polygon.sql`, `maps/clip_polygon.geojson`), the `pg-client` compose service and the production load and rollback commands in `docs/SETUP.md`; decisions D87–D93; evidence in `docs/evidence/M4a/EVIDENCE.md` (§ osm:import). Earlier: `AreaService.checkCoverage` (M3b, D78), full-resolution boundaries (D77), GEOS 3.14.1 supports `ST_CoverageSimplify` for the display geometry, map rate limits in the PRD (D80).
+- Remaining: every other M4a criterion (maps, attribution, display geometry, area map, landing coverage check).
+- Note: the development database still holds the simplified boundaries from before D77 (14,605 vertices instead of 61,408); `node ace db:seed` reloads them (it also resets the areas' on/off switches to the seeded state).
+- New decisions since M3b: D77–D83, the process changes D84–D86, the OSM import D87–D93.
 
 ## M0: Spikes and plan
 
@@ -208,7 +208,7 @@ Acceptance criteria:
 - Map display geometry is derived from the full boundaries and used only for drawing; coverage is never decided in the browser.
 - OWN-9: `/admin/pengaturan/area` shows the districts on a map, active and inactive distinguished by more than color.
 - GUEST-1, AREA-4: the landing coverage check: "use my location" and a draggable pin; one request after the pin stops moving (debounced) to the server check with the full boundaries; 60 requests per minute per IP, with an Indonesian message saying how long to wait. Text place search is not offered to guests (MAP-1).
-- `node ace osm:import` runs the pipeline of `docs/ARCHITECTURE.md` §6.2 (checks that the clip box contains every service area first), once the owner approves how it runs in development and production.
+- `node ace osm:import <YYMMDD>` runs the pipeline of `docs/ARCHITECTURE.md` §6.2 in development: a dated monthly Geofabrik snapshot (D87) checked against its MD5, clipped with the polygon of the 64 kecamatan plus 5 km after checking that it covers every service area (D88), loaded into `osm` and written as a staging dump with a `.sha256` (D89); production loads that dump with two documented commands (`pg_restore`, `psql`), rolls back by loading the previous one (D90), and is refreshed by hand (D91, D92).
 
 ## M4b (0.4.0): Place search and addresses
 
