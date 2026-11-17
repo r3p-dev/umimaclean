@@ -14,7 +14,8 @@
     "test": "node ace test",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit && tsc --noEmit --project inertia/tsconfig.json"
+    "typecheck": "tsc --noEmit && tsc --noEmit --project inertia/tsconfig.json",
+    "check": "node scripts/check.ts"
   },
   "imports": {
     "#controllers/*": "./app/controllers/*.js",
@@ -118,6 +119,5 @@
     "@swc/core": true,
     "esbuild": true,
     "fsevents": true
-  },
-  "prettier": "@adonisjs/prettier-config"
+  }
 }

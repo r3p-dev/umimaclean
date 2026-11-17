@@ -3,3 +3,5 @@ node_modules
 build
 # Generated data, kept byte-identical to the documented command output (docs/DEPENDENCIES.md §4)
 database/data
+# Evidence is a record of one run; its excerpts must stay exactly as copied (docs/ARCHITECTURE.md D85)
+docs/evidence
