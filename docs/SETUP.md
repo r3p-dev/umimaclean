@@ -123,7 +123,7 @@ For features involving spatial lookups, routing, and interactive maps:
 
    _(Optional verification: `podman compose --profile tools run --rm -T pmtiles show /out/bandung-raya-20261112.pmtiles`)_
 
-   Then name the file in `.env` so the maps use it (`.env.test` leaves it empty, so tests always run without it):
+   Then name the file in `.env` so the maps use it (`.env.test` leaves it empty, so tests always run without it). `.env` is read when the server starts: restart `npm run dev` after changing it. In development an empty setting or a missing file is logged and shown above the owner's map (D102):
 
    ```ini
    MAP_TILES_FILE=bandung-raya-20261112.pmtiles
