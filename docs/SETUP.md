@@ -68,7 +68,7 @@ node ace migration:run
 node ace db:seed
 ```
 
-This creates the application tables (`users`, `remember_me_tokens`, `activity_logs`) and seeds demo accounts (one owner, two staff, sample customers). The seeder prints the demo credentials to the console upon completion.
+This creates the application tables and seeds the demo data: one owner, two staff, sample customers, the price list, the store settings and the service areas. `database/seeders/main/index_seeder.ts` runs the seeders in order and, in development only, prints the demo accounts when it finishes (tests and production print nothing).
 
 ### Step 5: (Optional) Map data and routing setup
 
@@ -141,6 +141,16 @@ npm run lint         # ESLint (must exit 0 with no warnings)
 npm run typecheck    # TypeScript checks for backend and Inertia frontend
 npm test             # Japa test runner (unit, functional, and browser tests)
 ```
+
+A test run never changes a committed file. Browser tests save their screenshots and axe logs in the git-ignored `tmp/screenshots/`.
+
+**Evidence screenshots** for a checkpoint are written only on request: set `EVIDENCE_DIR` to a new folder and run the browser tests of that checkpoint. Each file is copied there as well, and a test fails rather than overwrite a file that already exists, so committed evidence is never replaced.
+
+```sh
+EVIDENCE_DIR=docs/evidence/M4a node ace test browser --files=tests/browser/<spec>.spec.ts
+```
+
+`EVIDENCE_DIR=… cmd` works in bash and in fish 3.1 or newer.
 
 ---
 
