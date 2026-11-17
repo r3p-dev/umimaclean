@@ -4,9 +4,9 @@ import { IconLogin } from '@tabler/icons-react'
 import Logo from '~/components/atoms/logo'
 import { buttonVariants } from '~/components/ui/button'
 
-// The price list and service area sections join the landing in M3, with their links.
 const SECTION_LINKS = [
   { href: '/#harga', label: 'Layanan & Harga' },
+  { href: '/#area-layanan', label: 'Area Layanan' },
   { href: '/#cara-kerja', label: 'Cara Kerja' },
   { href: '/#ulasan', label: 'Ulasan' },
   { href: '/#faq', label: 'Pertanyaan Umum' },

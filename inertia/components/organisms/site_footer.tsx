@@ -120,6 +120,11 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
               </a>
             </li>
             <li>
+              <a href="/#area-layanan" className={LINK}>
+                Area Layanan
+              </a>
+            </li>
+            <li>
               <a href="/#cara-kerja" className={LINK}>
                 Cara Kerja
               </a>
