@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `node ace osm:import <YYMMDD>` (development): loads the street and place data for address search from a dated monthly OpenStreetMap snapshot of Java, clipped to the service areas plus 5 km, and writes the file production loads with two documented commands; a bad import is undone by loading the previous file.
+
 ## [0.3.2] - 2026-11-17
 
 ### Changed
