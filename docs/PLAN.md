@@ -50,7 +50,7 @@ Hours are the implementer's estimate for building, testing and writing the evide
 
 ## Active milestone
 
-**M4a (checkpoint of 0.4.0): Maps, area map and landing coverage check.** Full criteria in the M4a section below; done (both stops), waiting for the owner's confirmation before M4b.
+**M4a (checkpoint of 0.4.0): Maps, area map and landing coverage check.** Full criteria in the M4a section below; done (both stops and the fix stop M4a-fix1), waiting for the owner's confirmation before M4b.
 
 **Requirement IDs:** MAP-2, AREA-1 (credit on maps), AREA-4 (public check), OWN-9 (map), GUEST-1 (coverage check). Decisions: D73 (what moved here from M3b), D77 (display geometry derived from the full boundaries), D78 (border points count as covered), D80 (rate limits), D81 (the split).
 
@@ -67,17 +67,17 @@ Hours are the implementer's estimate for building, testing and writing the evide
 - MAP-2, AREA-1: attribution control (`compact: false`) with "© OpenStreetMap contributors" and the district boundary credit, CC BY-IGO 3.0 link and a "modified" note.
 - Display geometry derived from the full boundaries, used only for drawing; coverage is decided on the server.
 - OWN-9: `/admin/pengaturan/area` shows the districts on a map, active and inactive distinguished by more than color.
-- GUEST-1, AREA-4: landing coverage check with "use my location" and a draggable pin; one debounced request after the pin stops; 60 requests per minute per IP with an Indonesian wait message; no text place search for guests.
+- GUEST-1, AREA-4: the hero checks a typed kecamatan name against `service_areas` and answers in one line; 60 requests per minute per IP with an Indonesian wait message; no map on the landing (M4a-fix1, D100).
 - `node ace osm:import <YYMMDD>` runs the §6.2 pipeline in development (checks the snapshot's MD5 and that the clip polygon covers every service area first); production loads its artifact with two documented commands (D87–D93).
 
 **Out of scope** (approved by the owner, 2026-11-17): place search and the street label under a pin (MAP-1, M4b); saving addresses and checking saved pins (CUST-2, CUST-3, CUST-14, AREA-4 saving, M4b); refusing out-of-area addresses when ordering (M5a, D82); OSRM routing (M6); the version bump (0.4.0 comes with M4b).
 
-**Handoff** (after the second M4a stop, 2026-11-17):
+**Handoff** (after M4a-fix1, 2026-11-17):
 
-- Done: every M4a criterion. First stop: `node ace osm:import <YYMMDD>`, the clip polygon, the production load and rollback commands (D87–D93). Second stop: MapLibre with the self-hosted PMTiles file, fonts and sprites (`MAP_TILES_FILE`, D96, D97), uncollapsed credits (D99), display geometry (D95), the map on `/admin/pengaturan/area`, the landing coverage check with `GET /area/cek` and its 60/min/IP limit (D80, D94). Evidence: `docs/evidence/M4a/EVIDENCE.md`. The development database was reseeded with the full boundaries.
-- Remaining for M4b: place search and the street label under a pin (MAP-1, 30/min/user, D80), addresses (CUST-2, CUST-3, CUST-14) with a map pin that reuses `organisms/service_area_map.tsx` and `GET /area/cek`, the "Di luar area layanan" label (D82), version 0.4.0.
-- Known limits carried over: the pin has no keyboard control (the location button is the keyboard path); at 360 px the uncollapsed credit line covers the bottom of the map.
-- New decisions since M3b: D77–D83, the process changes D84–D86, the OSM import D87–D93, the maps D94–D99.
+- Done: every M4a criterion. First stop: `node ace osm:import <YYMMDD>` (D87–D93). Second stop: MapLibre with the self-hosted base map, fonts and sprites, uncollapsed credits, display geometry, the owner's area map (D94–D99). Fix stop: the landing coverage check is a kecamatan name input in the hero (`GET /area/cek?q=`, D100; the landing map and the point form of the endpoint are gone); opening hours per day and a temporary closure in the store settings, the open or closed status in the hero and the week in the footer (OWN-8, D101); development warnings when the base map is not configured, missing or fails to load (D102). Evidence: `docs/evidence/M4a/EVIDENCE.md`, `docs/evidence/M4a-fix1/EVIDENCE.md`.
+- Remaining for M4b: place search and the street label under a pin (MAP-1, 30/min/user, D80), addresses (CUST-2, CUST-3, CUST-14) with a map pin that reuses `organisms/service_area_map.tsx` (it has no pin yet; the point check `AreaService.checkCoverage` exists, its route was removed in D100), the "Di luar area layanan" label (D82), version 0.4.0.
+- Known limits carried over: at 360 px the uncollapsed credit line covers the bottom of the owner's map (D99, kept for the licences); `inertia_middleware.ts` still swallows a database error when reading the store settings (pre-existing `catch {}`).
+- New decisions since M3b: D77–D83, the process changes D84–D86, the OSM import D87–D93, the maps D94–D99, M4a-fix1 D100–D102.
 
 ## M0: Spikes and plan
 
@@ -207,7 +207,7 @@ Acceptance criteria:
 - MAP-2, AREA-1: every map has an attribution control (`compact: false`) with "© OpenStreetMap contributors" and the district boundary credit, with a link to the CC BY-IGO 3.0 licence and a note that the data was modified.
 - Map display geometry is derived from the full boundaries and used only for drawing; coverage is never decided in the browser.
 - OWN-9: `/admin/pengaturan/area` shows the districts on a map, active and inactive distinguished by more than color.
-- GUEST-1, AREA-4: the landing coverage check: "use my location" and a draggable pin; one request after the pin stops moving (debounced) to the server check with the full boundaries; 60 requests per minute per IP, with an Indonesian message saying how long to wait. Text place search is not offered to guests (MAP-1).
+- GUEST-1, AREA-4: the landing coverage check is a text input in the hero: a kecamatan name, forgiving of case, a "Kec." prefix and small typos, answered in one line by the server ("Coblong terjangkau."); 60 requests per minute per IP, with an Indonesian message saying how long to wait. No map on the landing (M4a-fix1, D100). Text place search is not offered to guests (MAP-1).
 - `node ace osm:import <YYMMDD>` runs the pipeline of `docs/ARCHITECTURE.md` §6.2 in development: a dated monthly Geofabrik snapshot (D87) checked against its MD5, clipped with the polygon of the 64 kecamatan plus 5 km after checking that it covers every service area (D88), loaded into `osm` and written as a staging dump with a `.sha256` (D89); production loads that dump with two documented commands (`pg_restore`, `psql`), rolls back by loading the previous one (D90), and is refreshed by hand (D91, D92).
 
 ## M4b (0.4.0): Place search and addresses

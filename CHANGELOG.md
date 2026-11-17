@@ -11,7 +11,9 @@ All notable changes to this project are documented here. The format follows
 - `node ace osm:import <YYMMDD>` (development): loads the street and place data for address search from a dated monthly OpenStreetMap snapshot of Java, clipped to the service areas plus 5 km, and writes the file production loads with two documented commands; a bad import is undone by loading the previous file.
 - Maps from the self-hosted base map, with the OpenStreetMap and district boundary credits always visible (MAP-2, AREA-1).
 - The owner's service area page shows the districts on a map, active ones filled and outlined, inactive ones dashed (OWN-9).
-- The landing has an "Area Layanan" section: guests check whether a location is covered with "Gunakan lokasi saya" or by dragging a pin, limited to 60 checks per minute per IP (GUEST-1, AREA-4).
+- The landing hero says whether a kecamatan is served: type its name and read one line back, limited to 60 checks per minute per IP (GUEST-1, AREA-4).
+- Opening hours per day and a temporary closure in the store settings; the landing says whether the shop is open now, and the footer lists the week (OWN-8, GUEST-1).
+- In development, a map without its base map says why (setting empty or file missing, or a failed load).
 
 ## [0.3.2] - 2026-11-17
 
