@@ -14,6 +14,12 @@ All notable changes to this project are documented here. The format follows
 - The landing hero says whether a kecamatan is served: type its name and read one line back, limited to 60 checks per minute per IP (GUEST-1, AREA-4).
 - Opening hours per day and a temporary closure in the store settings; the landing says whether the shop is open now, and the footer lists the week (OWN-8, GUEST-1).
 - In development, a map without its base map says why (setting empty or file missing, or a failed load).
+- The owner chooses the pickup days (Monday to Saturday by default) next to the pickup slots (SLOT-1, OWN-8).
+
+### Changed
+
+- Opening hours use a 24-hour clock in every browser language, and a temporary closure has a start and an end: the landing shows it only in between, then the normal hours resume (OWN-8, GUEST-1).
+- An error while reading the store settings for a page is logged, and fails the page in development and tests instead of silently using the defaults.
 
 ## [0.3.2] - 2026-11-17
 
