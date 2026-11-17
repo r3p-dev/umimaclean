@@ -74,18 +74,18 @@ Bag rows are two services each (kanvas and kulit). Sizes: Small < 25 cm, Medium 
 
 - **ORD-3** Allowed transitions (nothing else is possible):
 
-| From                                          | To                                                                                  |
-| --------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `awaiting_pickup`                             | `courier_en_route`, `cancelled`                                                     |
-| `courier_en_route`                            | `picked_up`, `awaiting_pickup` (skipped)                                            |
-| `picked_up`                                   | `in_inspection`                                                                     |
-| `in_inspection`                               | `awaiting_payment`                                                                  |
-| `awaiting_payment`                            | `in_cleaning` (paid)                                                                |
-| `in_cleaning`                                 | `ready_for_delivery` (return by delivery), `ready_for_collection` (return at store) |
-| `ready_for_delivery`                          | `in_delivery`                                                                       |
-| `in_delivery`                                 | `completed`, `ready_for_delivery` (skipped)                                         |
-| `ready_for_collection`                        | `completed`                                                                         |
-| any status except `completed` and `cancelled` | `cancelled` (**owner only**, `owner.md` OWN-3)                                      |
+| From | To |
+| --- | --- |
+| `awaiting_pickup` | `courier_en_route`, `cancelled` |
+| `courier_en_route` | `picked_up`, `awaiting_pickup` (skipped) |
+| `picked_up` | `in_inspection` |
+| `in_inspection` | `awaiting_payment` |
+| `awaiting_payment` | `in_cleaning` (paid) |
+| `in_cleaning` | `ready_for_delivery` (return by delivery), `ready_for_collection` (return at store) |
+| `ready_for_delivery` | `in_delivery` |
+| `in_delivery` | `completed`, `ready_for_delivery` (skipped) |
+| `ready_for_collection` | `completed` |
+| any status except `completed` and `cancelled` | `cancelled` (**owner only**, `owner.md` OWN-3) |
 
 `awaiting_pickup → cancelled` is the only cancellation a customer can make (`customer.md` CUST-8). Customers can't reject a bill. Online orders start at `awaiting_pickup`; walk-in orders start at `in_inspection`.
 
@@ -99,24 +99,24 @@ Bag rows are two services each (kanvas and kulit). Sizes: Small < 25 cm, Medium 
 - **PAY-4** A QRIS always carries the current bill amount: when a bill is replaced (re-inspection before payment) or an order is paid another way (cash, owner correction) or cancelled, any live QRIS of that order is cancelled at Midtrans; if that fails the payment becomes `cancel_failed`. A QRIS settled after the order was already paid becomes `refund_due`. A settled amount different from the bill becomes `amount_mismatch`; with dynamic QRIS this should never happen, so it is a safety check that sends the payment to reconciliation.
 - **PAY-7** Payment status transitions (nothing else is possible; `expired`, `failed`, `cancelled` and `refunded` are final except for an owner correction):
 
-| From                                                         | To                | When                                                                                                                                                 |
-| ------------------------------------------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| (new)                                                        | `pending`         | A QRIS charge is created (PAY-1)                                                                                                                     |
-| (new)                                                        | `paid`            | Cash is received at the counter (`staff.md` STAFF-14)                                                                                                |
-| `pending`                                                    | `paid`            | Midtrans reports settlement, the amount equals the bill, and the order has no paid payment and isn't cancelled                                       |
-| `pending`                                                    | `amount_mismatch` | Midtrans reports settlement with an amount different from the bill                                                                                   |
-| `pending`                                                    | `refund_due`      | Midtrans reports settlement but the order is already paid or cancelled                                                                               |
-| `pending`                                                    | `expired`         | Midtrans reports expiry (or a status check after the 15 minutes confirms it)                                                                         |
-| `pending`                                                    | `failed`          | Midtrans reports deny or failure                                                                                                                     |
-| `pending`                                                    | `cancelled`       | The charge is cancelled at Midtrans because the order was paid another way or cancelled (PAY-4)                                                      |
-| `pending`                                                    | `cancel_failed`   | That cancellation request failed                                                                                                                     |
-| `cancel_failed`                                              | `cancelled`       | A retry succeeds, or the owner marks it handled (`owner.md` OWN-5)                                                                                   |
-| `cancel_failed`                                              | `refund_due`      | Midtrans reports it was settled after all                                                                                                            |
-| `amount_mismatch`                                            | `paid`            | The owner accepts the amount while the order still has no paid payment (OWN-5)                                                                       |
-| `amount_mismatch`                                            | `refunded`        | The owner records a refund made outside the app (OWN-5)                                                                                              |
-| `refund_due`                                                 | `refunded`        | The owner records a refund made outside the app (OWN-5)                                                                                              |
-| `paid`                                                       | `refund_due`      | The owner cancels an order that was already paid (OWN-3)                                                                                             |
-| `pending`, `expired`, `failed`, `cancelled`, `cancel_failed` | `paid`            | The owner corrects the payment because the money was in fact received, e.g. a QRIS recorded as cash (OWN-4), and the order has no other paid payment |
+| From | To | When |
+| --- | --- | --- |
+| (new) | `pending` | A QRIS charge is created (PAY-1) |
+| (new) | `paid` | Cash is received at the counter (`staff.md` STAFF-14) |
+| `pending` | `paid` | Midtrans reports settlement, the amount equals the bill, and the order has no paid payment and isn't cancelled |
+| `pending` | `amount_mismatch` | Midtrans reports settlement with an amount different from the bill |
+| `pending` | `refund_due` | Midtrans reports settlement but the order is already paid or cancelled |
+| `pending` | `expired` | Midtrans reports expiry (or a status check after the 15 minutes confirms it) |
+| `pending` | `failed` | Midtrans reports deny or failure |
+| `pending` | `cancelled` | The charge is cancelled at Midtrans because the order was paid another way or cancelled (PAY-4) |
+| `pending` | `cancel_failed` | That cancellation request failed |
+| `cancel_failed` | `cancelled` | A retry succeeds, or the owner marks it handled (`owner.md` OWN-5) |
+| `cancel_failed` | `refund_due` | Midtrans reports it was settled after all |
+| `amount_mismatch` | `paid` | The owner accepts the amount while the order still has no paid payment (OWN-5) |
+| `amount_mismatch` | `refunded` | The owner records a refund made outside the app (OWN-5) |
+| `refund_due` | `refunded` | The owner records a refund made outside the app (OWN-5) |
+| `paid` | `refund_due` | The owner cancels an order that was already paid (OWN-3) |
+| `pending`, `expired`, `failed`, `cancelled`, `cancel_failed` | `paid` | The owner corrects the payment because the money was in fact received, e.g. a QRIS recorded as cash (OWN-4), and the order has no other paid payment |
 
 - **PAY-5** Each payment method (QRIS, cash) can be switched off by the owner (`owner.md` OWN-8). Without Midtrans keys, QRIS shows as unavailable with a hint to pay at the shop.
 - **PAY-6** **Payment reminders** (online orders only): while an order is `awaiting_payment` without a paid payment, a WhatsApp reminder goes **24 hours after the bill, then every 2 days after the last sent reminder**, only **between 10:00 and 15:00 Asia/Jakarta**, until paid. A reminder that falls due outside that window goes at the start of the next window (a bill at 17:00 gets its first reminder at 10:00 two days later). No reminder goes while the order has a payment in `amount_mismatch` (it waits for the owner's reconciliation). Only a successfully sent message counts; a failed send is retried on the next run. Reminders never call Midtrans.
@@ -152,20 +152,20 @@ Rules for every account, whatever the role.
 
 ## 10. Scheduled jobs
 
-| Job                | When             | What                                                                         |
-| ------------------ | ---------------- | ---------------------------------------------------------------------------- |
-| Payment reminders  | every 15 minutes | PAY-6 (the job checks the 10:00–15:00 window itself; safe to run repeatedly) |
-| Prune proof photos | daily            | PHOTO-3                                                                      |
+| Job | When | What |
+| --- | --- | --- |
+| Payment reminders | every 15 minutes | PAY-6 (the job checks the 10:00–15:00 window itself; safe to run repeatedly) |
+| Prune proof photos | daily | PHOTO-3 |
 
 ## 11. Outside services
 
-| Service              | Used for                                   | Data sent                                              |
-| -------------------- | ------------------------------------------ | ------------------------------------------------------ |
-| Fonnte               | WhatsApp messages and OTP                  | Phone number, message text                             |
-| Midtrans Core API    | QRIS charge, status, cancel, notifications | Order reference, amount, customer name and phone       |
-| Cloudflare Turnstile | Bot check on public forms                  | The Turnstile token and client IP                      |
-| OSRM (self-hosted)   | Route lines, distance, queue order         | Nothing leaves our servers                             |
-| Google Maps / Waze   | Navigation, opened by staff on their phone | Destination coordinates only (no name, phone or order) |
+| Service | Used for | Data sent |
+| --- | --- | --- |
+| Fonnte | WhatsApp messages and OTP | Phone number, message text |
+| Midtrans Core API | QRIS charge, status, cancel, notifications | Order reference, amount, customer name and phone |
+| Cloudflare Turnstile | Bot check on public forms | The Turnstile token and client IP |
+| OSRM (self-hosted) | Route lines, distance, queue order | Nothing leaves our servers |
+| Google Maps / Waze | Navigation, opened by staff on their phone | Destination coordinates only (no name, phone or order) |
 
 The privacy page lists these. No other outside service receives personal data; the navigation apps receive only a destination point.
 
