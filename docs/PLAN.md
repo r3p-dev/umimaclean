@@ -15,7 +15,7 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M2c | 0.2.0 | Accounts: profile, security, rate limits | done | v0.2.0 | 6 |
 | M3a | – | Services and landing price list | done | v0.3.0 | 8 |
 | M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 | 8 |
-| M4a | – | Maps, area map and landing coverage check | in progress | – | 10 |
+| M4a | – | Maps, area map and landing coverage check | done | – | 10 |
 | M4b | 0.4.0 | Place search and addresses | not started | – | 10 |
 | M5a | 0.5.0 | Online ordering: slots, new order, confirm | not started | – | 14 |
 | M5b | 0.5.0 | Order pages and tracking | not started | – | 12 |
@@ -50,7 +50,7 @@ Hours are the implementer's estimate for building, testing and writing the evide
 
 ## Active milestone
 
-**M4a (checkpoint of 0.4.0): Maps, area map and landing coverage check.** Full criteria in the M4a section below; in progress (first stop done: `osm:import`).
+**M4a (checkpoint of 0.4.0): Maps, area map and landing coverage check.** Full criteria in the M4a section below; done (both stops), waiting for the owner's confirmation before M4b.
 
 **Requirement IDs:** MAP-2, AREA-1 (credit on maps), AREA-4 (public check), OWN-9 (map), GUEST-1 (coverage check). Decisions: D73 (what moved here from M3b), D77 (display geometry derived from the full boundaries), D78 (border points count as covered), D80 (rate limits), D81 (the split).
 
@@ -72,12 +72,12 @@ Hours are the implementer's estimate for building, testing and writing the evide
 
 **Out of scope** (approved by the owner, 2026-11-17): place search and the street label under a pin (MAP-1, M4b); saving addresses and checking saved pins (CUST-2, CUST-3, CUST-14, AREA-4 saving, M4b); refusing out-of-area addresses when ordering (M5a, D82); OSRM routing (M6); the version bump (0.4.0 comes with M4b).
 
-**Handoff** (after the first M4a stop, 2026-11-17):
+**Handoff** (after the second M4a stop, 2026-11-17):
 
-- Done: `node ace osm:import <YYMMDD>` with its checks, the clip polygon (`maps/clip_polygon.sql`, `maps/clip_polygon.geojson`), the `pg-client` compose service and the production load and rollback commands in `docs/SETUP.md`; decisions D87–D93; evidence in `docs/evidence/M4a/EVIDENCE.md` (§ osm:import). Earlier: `AreaService.checkCoverage` (M3b, D78), full-resolution boundaries (D77), GEOS 3.14.1 supports `ST_CoverageSimplify` for the display geometry, map rate limits in the PRD (D80).
-- Remaining: every other M4a criterion (maps, attribution, display geometry, area map, landing coverage check).
-- Note: the development database still holds the simplified boundaries from before D77 (14,605 vertices instead of 61,408); `node ace db:seed` reloads them (it also resets the areas' on/off switches to the seeded state).
-- New decisions since M3b: D77–D83, the process changes D84–D86, the OSM import D87–D93.
+- Done: every M4a criterion. First stop: `node ace osm:import <YYMMDD>`, the clip polygon, the production load and rollback commands (D87–D93). Second stop: MapLibre with the self-hosted PMTiles file, fonts and sprites (`MAP_TILES_FILE`, D96, D97), uncollapsed credits (D99), display geometry (D95), the map on `/admin/pengaturan/area`, the landing coverage check with `GET /area/cek` and its 60/min/IP limit (D80, D94). Evidence: `docs/evidence/M4a/EVIDENCE.md`. The development database was reseeded with the full boundaries.
+- Remaining for M4b: place search and the street label under a pin (MAP-1, 30/min/user, D80), addresses (CUST-2, CUST-3, CUST-14) with a map pin that reuses `organisms/service_area_map.tsx` and `GET /area/cek`, the "Di luar area layanan" label (D82), version 0.4.0.
+- Known limits carried over: the pin has no keyboard control (the location button is the keyboard path); at 360 px the uncollapsed credit line covers the bottom of the map.
+- New decisions since M3b: D77–D83, the process changes D84–D86, the OSM import D87–D93, the maps D94–D99.
 
 ## M0: Spikes and plan
 
