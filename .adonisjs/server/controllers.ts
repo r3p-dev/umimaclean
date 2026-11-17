@@ -5,6 +5,7 @@
 
 export const controllers = {
   AccountSecurity: () => import('#controllers/account_security_controller'),
+  AreaCheck: () => import('#controllers/area_check_controller'),
   Home: () => import('#controllers/home_controller'),
   Otp: () => import('#controllers/otp_controller'),
   PasswordReset: () => import('#controllers/password_reset_controller'),

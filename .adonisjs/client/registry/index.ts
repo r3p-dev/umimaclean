@@ -14,6 +14,12 @@ const routes = {
     tokens: [[0,"/"]],
     types: placeholder as Registry['home']['types'],
   },
+  'area.check': {
+    methods: ["GET","HEAD"],
+    pattern: '/area/cek',
+    tokens: [[0,"area"],[0,"cek"]],
+    types: placeholder as Registry['area.check']['types'],
+  },
   'legal.terms': {
     methods: ["GET","HEAD"],
     pattern: '/syarat',

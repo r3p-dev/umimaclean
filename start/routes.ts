@@ -2,8 +2,10 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import app from '@adonisjs/core/services/app'
 import router from '@adonisjs/core/services/router'
+import { areaCheckThrottle } from '#start/limiter'
 
 router.get('/', [controllers.Home, 'index']).as('home')
+router.get('/area/cek', [controllers.AreaCheck, 'show']).as('area.check').use(areaCheckThrottle)
 router.on('/syarat').renderInertia('legal/terms', {}).as('legal.terms')
 router.on('/privasi').renderInertia('legal/privacy', {}).as('legal.privacy')
 router.get('/robots.txt', [controllers.Seo, 'robots'])

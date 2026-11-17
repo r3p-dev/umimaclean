@@ -39,4 +39,6 @@ vine.messagesProvider = new SimpleMessagesProvider({
   'price.min': 'Harga tidak boleh kurang dari {{ min }}.',
   'price.max': 'Harga tidak boleh lebih dari {{ max }}.',
   'description.required': 'Deskripsi wajib diisi.',
+  'lat.required': 'Titik lokasi wajib diisi.',
+  'lng.required': 'Titik lokasi wajib diisi.',
 })

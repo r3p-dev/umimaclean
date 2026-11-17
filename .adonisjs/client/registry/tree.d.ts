@@ -3,6 +3,9 @@ import type { routes } from './index.ts'
 
 export interface ApiDefinition {
   home: typeof routes['home']
+  area: {
+    check: typeof routes['area.check']
+  }
   legal: {
     terms: typeof routes['legal.terms']
     privacy: typeof routes['legal.privacy']

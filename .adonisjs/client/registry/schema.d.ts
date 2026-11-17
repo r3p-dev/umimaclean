@@ -21,6 +21,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
     }
   }
+  'area.check': {
+    methods: ["GET","HEAD"]
+    pattern: '/area/cek'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/area_validator').checkCoverageValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/area_check_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/area_check_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/area_check_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'legal.terms': {
     methods: ["GET","HEAD"]
     pattern: '/syarat'
