@@ -53,6 +53,7 @@ A milestone is not done until `docs/evidence/<milestone>/EVIDENCE.md` exists, fo
 - Open every screenshot and describe it in one line in EVIDENCE.md: page, width, what it shows, and its local `tmp/evidence/…` path. Every new or changed page at desktop and mobile width.
 - Status per criterion: `PASS`, `FAIL`, `NOT RUN` (with the exact commands for the owner to run), or `decision recorded`.
 - List known limitations and deferred items.
+- Each `docs/evidence/<milestone>/` holds only `EVIDENCE.md`; besides those, `docs/evidence/` holds only `README.md` and `TEMPLATE.md` (enforced by `.gitignore` and `scripts/check_commits.ts`).
 - Fixes and patches after review get their own folder: `docs/evidence/<milestone>-<version>/` for a patch release (`M2-0.2.1`, `M3-0.3.2`), or `<checkpoint>-fix<k>` (`M4a-fix1`) for a checkpoint that ships no version.
 
 ## Report

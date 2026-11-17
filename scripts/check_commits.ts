@@ -27,14 +27,21 @@ const CONVENTIONAL =
   /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: \S/
 const ATTRIBUTION = /co-authored-by|generated with|claude|anthropic|\bassistant\b/i
 const FORBIDDEN = [
-  { pattern: /(^|\/)\.env(\.|$)/, reason: 'environment file', allowed: /(^|\/)\.env\.example$/ },
+  {
+    pattern: /(^|\/)\.env(\.|$)/,
+    reason: 'environment file',
+    // .env.test holds only local test values (Cloudflare's documented dummy Turnstile keys).
+    allowed: /(^|\/)\.env\.(example|test)$/,
+  },
   { pattern: /\.(pbf|osrm[.a-z_]*|pmtiles|mbtiles)$/, reason: 'map data' },
   { pattern: /^(storage|public\/tiles)\//, reason: 'map data or uploads' },
   { pattern: /\.(dump|backup|sql\.gz|pgdump)$/, reason: 'database dump' },
   { pattern: /\.log$/, reason: 'log file' },
   {
-    pattern: /^docs\/evidence\/.*\.(png|jpe?g|gif|webp|avif|svg)$/i,
-    reason: 'image under docs/evidence',
+    pattern: /^docs\/evidence\//,
+    reason:
+      'file under docs/evidence other than README.md, TEMPLATE.md and <milestone>/EVIDENCE.md',
+    allowed: /^docs\/evidence\/(README\.md|TEMPLATE\.md|[^/]+\/EVIDENCE\.md)$/,
   },
 ]
 

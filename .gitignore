@@ -28,6 +28,7 @@ yarn-error.log
 # Platform specific
 .DS_Store
 
-# Evidence artifacts live only in tmp/evidence/ (docs/ARCHITECTURE.md D84); safety net for old habits
-docs/evidence/**/*.log
-docs/evidence/**/*.png
+# A milestone's evidence folder holds only EVIDENCE.md; logs and screenshots live in tmp/evidence/
+# (docs/evidence/README.md, docs/ARCHITECTURE.md D84)
+docs/evidence/*/*
+!docs/evidence/*/EVIDENCE.md
