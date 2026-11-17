@@ -5,17 +5,18 @@ import type { Data } from '@generated/data'
 import { urlFor } from '~/client'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
-import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui/field'
+import { DateTimeInput, TimeInput } from '~/components/molecules/time_fields'
+import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Switch } from '~/components/ui/switch'
-
-// Day 1 is Monday, as the server numbers them (OWN-8).
-const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+import { DAY_NAMES } from '~/lib/store/days'
 
 export default function OpeningHoursForm({ hours }: { hours: Data.OpeningHours }) {
   const errors: Record<string, string> = usePage().props.errors ?? {}
   const [form, setForm] = useState(hours)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const closureError = errors.closure ?? errors['closure.startsAt'] ?? errors['closure.endsAt']
 
   function updateDay(day: number, change: Partial<Data.OpeningHours['days'][number]>) {
     setForm((previous) => ({
@@ -50,7 +51,10 @@ export default function OpeningHoursForm({ hours }: { hours: Data.OpeningHours }
           <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
             {form.days.map((entry, index) => {
               const name = DAY_NAMES[entry.day - 1]
-              const error = errors[`days.${index}.closes`] ?? errors[`days.${index}`]
+              const error =
+                errors[`days.${index}.opens`] ??
+                errors[`days.${index}.closes`] ??
+                errors[`days.${index}`]
               return (
                 <li key={entry.day} className="flex flex-col gap-2 p-3">
                   <div className="flex flex-wrap items-center gap-3">
@@ -62,22 +66,20 @@ export default function OpeningHoursForm({ hours }: { hours: Data.OpeningHours }
                     <span className="w-16 font-medium text-foreground">{name}</span>
                     {entry.isOpen ? (
                       <div className="flex min-w-0 flex-1 basis-60 items-center gap-2">
-                        <Input
-                          type="time"
+                        <TimeInput
                           value={entry.opens}
-                          onChange={(event) => updateDay(entry.day, { opens: event.target.value })}
-                          aria-label={`Jam buka hari ${name}`}
-                          className="h-11 min-w-0 flex-1"
-                          required
+                          onChange={(opens) => updateDay(entry.day, { opens })}
+                          label={`Jam buka hari ${name}`}
+                          isInvalid={Boolean(error)}
+                          className="flex-1"
                         />
                         <span aria-hidden="true">–</span>
-                        <Input
-                          type="time"
+                        <TimeInput
                           value={entry.closes}
-                          onChange={(event) => updateDay(entry.day, { closes: event.target.value })}
-                          aria-label={`Jam tutup hari ${name}`}
-                          className="h-11 min-w-0 flex-1"
-                          required
+                          onChange={(closes) => updateDay(entry.day, { closes })}
+                          label={`Jam tutup hari ${name}`}
+                          isInvalid={Boolean(error)}
+                          className="flex-1"
                         />
                       </div>
                     ) : (
@@ -101,18 +103,21 @@ export default function OpeningHoursForm({ hours }: { hours: Data.OpeningHours }
             </div>
             {form.closure.isClosed && (
               <>
-                <Field>
-                  <FieldLabel htmlFor="closure-until">Tutup sampai tanggal</FieldLabel>
-                  <Input
-                    id="closure-until"
-                    type="date"
-                    value={form.closure.until ?? ''}
-                    onChange={(event) => updateClosure({ until: event.target.value || null })}
-                    className="h-11"
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <DateTimeInput
+                    value={form.closure.startsAt}
+                    onChange={(startsAt) => updateClosure({ startsAt })}
+                    isInvalid={Boolean(closureError)}
+                    label={<FieldLabel>Tutup mulai</FieldLabel>}
                   />
-                  <FieldDescription>Kosongkan bila belum tahu kapan buka lagi.</FieldDescription>
-                  {errors['closure.until'] && <FieldError>{errors['closure.until']}</FieldError>}
-                </Field>
+                  <DateTimeInput
+                    value={form.closure.endsAt}
+                    onChange={(endsAt) => updateClosure({ endsAt })}
+                    isInvalid={Boolean(closureError)}
+                    label={<FieldLabel>Buka lagi</FieldLabel>}
+                  />
+                </div>
+                {closureError && <FieldError>{closureError}</FieldError>}
                 <Field>
                   <FieldLabel htmlFor="closure-note">Catatan untuk pelanggan</FieldLabel>
                   <Input

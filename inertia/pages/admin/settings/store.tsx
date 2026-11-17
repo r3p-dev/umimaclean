@@ -13,6 +13,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui
 import { Input } from '~/components/ui/input'
 import { Switch } from '~/components/ui/switch'
 import { Textarea } from '~/components/ui/textarea'
+import { DAY_NAMES } from '~/lib/store/days'
 import type { Data } from '@generated/data'
 
 export type StoreInfo = NonNullable<Data.SharedProps['store']>
@@ -20,9 +21,11 @@ export type PickupSlotItem = Data.PickupSlot
 
 export default function AdminStoreSettings({
   slots,
+  pickupDays,
   hours,
 }: {
   slots: PickupSlotItem[]
+  pickupDays: number[]
   hours: Data.OpeningHours
 }) {
   const sharedStore = usePage<Data.SharedProps>().props.store
@@ -36,6 +39,7 @@ export default function AdminStoreSettings({
   const [isSubmittingStore, setIsSubmittingStore] = useState(false)
 
   const [slotsState, setSlotsState] = useState<PickupSlotItem[]>(slots)
+  const [pickupDaysState, setPickupDaysState] = useState(pickupDays)
   const [slotsErrors, setSlotsErrors] = useState<Record<string, string>>({})
   const [isSubmittingSlots, setIsSubmittingSlots] = useState(false)
 
@@ -75,6 +79,12 @@ export default function AdminStoreSettings({
     setSlotsState((prev) => prev.map((s) => (s.id === id ? { ...s, isActive } : s)))
   }
 
+  function handlePickupDayToggle(day: number, isOn: boolean) {
+    setPickupDaysState((prev) =>
+      isOn ? [...prev, day].sort((a, b) => a - b) : prev.filter((d) => d !== day)
+    )
+  }
+
   function handleSlotsSubmit(e: SyntheticEvent) {
     e.preventDefault()
     setSlotsErrors({})
@@ -82,7 +92,7 @@ export default function AdminStoreSettings({
 
     router.put(
       '/admin/pengaturan/slot',
-      { slots: slotsState },
+      { slots: slotsState, pickupDays: pickupDaysState },
       {
         preserveScroll: true,
         onSuccess: () => {
@@ -188,11 +198,31 @@ export default function AdminStoreSettings({
               </Badge>
             </div>
             <CardDescription>
-              Tentukan jam penjemputan harian dan batas kuota pesanan per kurir (1–20 pasang/item).
+              Tentukan hari penjemputan, jam penjemputan, dan batas kuota pesanan per kurir (1–20
+              pasang/item).
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSlotsSubmit} className="flex flex-col gap-4">
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-2 text-sm font-medium text-foreground">
+                  Hari penjemputan
+                </legend>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {DAY_NAMES.map((name, index) => (
+                    <div key={name} className="flex items-center gap-2">
+                      <Switch
+                        isSelected={pickupDaysState.includes(index + 1)}
+                        onChange={(isOn) => handlePickupDayToggle(index + 1, isOn)}
+                        aria-label={`Jemput hari ${name}`}
+                      />
+                      <span className="text-sm text-foreground">{name}</span>
+                    </div>
+                  ))}
+                </div>
+                {slotsErrors.pickupDays && <FieldError>{slotsErrors.pickupDays}</FieldError>}
+              </fieldset>
+
               <div className="flex flex-col divide-y divide-border rounded-lg border border-border">
                 {slotsState.map((slot) => (
                   <div

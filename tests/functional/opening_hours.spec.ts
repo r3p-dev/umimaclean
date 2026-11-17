@@ -7,12 +7,16 @@ import { Role } from '#enums/role_enum'
 import { DEFAULT_OPENING_HOURS } from '#services/setting_service'
 import { visitRedirect } from '../helpers/inertia.js'
 
+function stamp(moment: DateTime) {
+  return moment.toFormat("yyyy-MM-dd'T'HH:mm")
+}
+
 function shortSaturday() {
   return {
     days: DEFAULT_OPENING_HOURS.days.map((day) =>
       day.day === 6 ? { ...day, closes: '15:00' } : day
     ),
-    closure: { isClosed: false, until: null, note: null },
+    closure: { isClosed: false, startsAt: null, endsAt: null, note: null },
   }
 }
 
@@ -46,27 +50,81 @@ test.group('Opening hours PUT /admin/pengaturan/jam (OWN-8, GUEST-1)', (group) =
     ])
   })
 
-  test('a temporary closure shows on the landing with its date and note (GUEST-1)', async ({
+  test('a temporary closure shows on the landing only while it lasts, with its end and note (GUEST-1, D103)', async ({
     client,
     assert,
   }) => {
     const owner = await User.query().where('role', Role.ADMIN).firstOrFail()
-    const until = DateTime.now().setZone('Asia/Jakarta').plus({ days: 3 })
+    const now = DateTime.now().setZone('Asia/Jakarta')
+    const endsAt = now.plus({ days: 3 }).set({ hour: 20, minute: 0 })
+
     await client
       .put('/admin/pengaturan/jam')
       .loginAs(owner)
       .withCsrfToken()
       .json({
         ...shortSaturday(),
-        closure: { isClosed: true, until: until.toISODate(), note: 'Renovasi' },
+        closure: {
+          isClosed: true,
+          startsAt: stamp(now.minus({ hours: 1 })),
+          endsAt: stamp(endsAt),
+          note: 'Renovasi',
+        },
       })
-
-    const landing = await client.get('/').withInertia()
-    assert.deepEqual(landing.inertiaProps.openingHours.status, {
+    const during = await client.get('/').withInertia()
+    assert.deepEqual(during.inertiaProps.openingHours.status, {
       isOpen: false,
-      label: `Tutup sementara sampai ${until.setLocale('id').toFormat('cccc, d LLLL')}`,
+      label: `Tutup sementara sampai ${endsAt.setLocale('id').toFormat('cccc')} 20.00`,
       note: 'Renovasi',
     })
+
+    await client
+      .put('/admin/pengaturan/jam')
+      .loginAs(owner)
+      .withCsrfToken()
+      .json({
+        ...shortSaturday(),
+        closure: {
+          isClosed: true,
+          startsAt: stamp(now.minus({ days: 3 })),
+          endsAt: stamp(now.minus({ minutes: 1 })),
+          note: 'Renovasi',
+        },
+      })
+    const after = await client.get('/').withInertia()
+    assert.notInclude(after.inertiaProps.openingHours.status.label, 'Tutup sementara')
+    assert.isNull(after.inertiaProps.openingHours.status.note)
+  })
+
+  test('a closure needs a start and an end, the end after the start (OWN-8, D103)', async ({
+    client,
+  }) => {
+    const owner = await User.query().where('role', Role.ADMIN).firstOrFail()
+    const cases = [
+      {
+        closure: { isClosed: true, startsAt: '2026-11-19T08:00', endsAt: null, note: null },
+        message: 'Isi waktu mulai dan selesai tutup sementara.',
+      },
+      {
+        closure: {
+          isClosed: true,
+          startsAt: '2026-11-19T08:00',
+          endsAt: '2026-11-19T08:00',
+          note: null,
+        },
+        message: 'Waktu selesai harus setelah waktu mulai.',
+      },
+    ]
+    for (const { closure, message } of cases) {
+      const response = await client
+        .put('/admin/pengaturan/jam')
+        .loginAs(owner)
+        .withCsrfToken()
+        .json({ ...shortSaturday(), closure })
+        .redirects(0)
+      const next = await visitRedirect(client, response)
+      next.assertInertiaPropsContains({ errors: { closure: message } })
+    }
   })
 
   test('a day that closes before it opens is refused under that day (OWN-8)', async ({

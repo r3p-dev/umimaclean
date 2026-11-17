@@ -2,9 +2,13 @@ import { DateTime } from 'luxon'
 import type { OpeningHoursSetting } from '#services/setting_service'
 
 // ISO weekday 1 (Monday) to 7 (Sunday), as Luxon numbers them.
-const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+export const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
 
 export type OpeningStatus = { isOpen: boolean; label: string; note: string | null }
+
+const ZONE = 'Asia/Jakarta'
+// Local Jakarta time as stored in the setting: "2026-11-19T20:00". Such stamps sort as strings.
+const STAMP = "yyyy-MM-dd'T'HH:mm"
 
 function displayTime(time: string) {
   return time.replace(':', '.')
@@ -14,47 +18,68 @@ function dayHours(hours: OpeningHoursSetting, weekday: number) {
   return hours.days.find((day) => day.day === weekday)
 }
 
+// The closure only counts between its start and its end (OWN-8, D103).
+function isInClosure(closure: OpeningHoursSetting['closure'], stamp: string) {
+  return (
+    closure.isClosed &&
+    closure.startsAt !== null &&
+    closure.endsAt !== null &&
+    closure.startsAt <= stamp &&
+    stamp < closure.endsAt
+  )
+}
+
+// "pukul 20.00" today, "besok …" or "Kamis …" within a week, with the date further ahead.
+function when(moment: DateTime, today: DateTime, timeWord: 'pukul ' | '') {
+  const daysAhead = moment.startOf('day').diff(today.startOf('day'), 'days').days
+  const time = moment.toFormat('HH.mm')
+  if (daysAhead === 0) return `pukul ${time}`
+  if (daysAhead === 1) return `besok ${timeWord}${time}`
+  const day = moment.setLocale('id').toFormat(daysAhead <= 6 ? 'cccc' : 'cccc, d LLLL')
+  return `${day} ${timeWord}${time}`
+}
+
 // Whether the shop is open at `now`, said the way the landing shows it (OWN-8, GUEST-1).
 export function openingStatus(hours: OpeningHoursSetting, now: DateTime): OpeningStatus {
-  const local = now.setZone('Asia/Jakarta')
-  const today = local.toISODate()!
+  const local = now.setZone(ZONE)
+  const nowStamp = local.toFormat(STAMP)
   const { closure } = hours
 
-  if (closure.isClosed && (!closure.until || today <= closure.until)) {
-    const until = closure.until
-      ? ` sampai ${DateTime.fromISO(closure.until).setLocale('id').toFormat('cccc, d LLLL')}`
-      : ''
-    return { isOpen: false, label: `Tutup sementara${until}`, note: closure.note }
+  if (isInClosure(closure, nowStamp)) {
+    const endsAt = DateTime.fromISO(closure.endsAt!, { zone: ZONE })
+    const label = `Tutup sementara sampai ${when(endsAt, local, '')}`
+    return { isOpen: false, label, note: closure.note }
   }
 
-  const time = local.toFormat('HH:mm')
-  const todayHours = dayHours(hours, local.weekday)
-  if (todayHours?.isOpen && todayHours.opens <= time && time < todayHours.closes) {
-    return {
-      isOpen: true,
-      label: `Buka · tutup pukul ${displayTime(todayHours.closes)}`,
-      note: null,
-    }
-  }
-  if (todayHours?.isOpen && time < todayHours.opens) {
-    return {
-      isOpen: false,
-      label: `Tutup · buka pukul ${displayTime(todayHours.opens)}`,
-      note: null,
-    }
-  }
+  // Search past the end of a closure that has not started yet, so it is skipped as a whole.
+  const closureDays =
+    closure.isClosed && closure.endsAt
+      ? Math.ceil(DateTime.fromISO(closure.endsAt, { zone: ZONE }).diff(local, 'days').days)
+      : 0
+  for (let daysAhead = 0; daysAhead <= Math.max(closureDays, 0) + 7; daysAhead++) {
+    const date = local.plus({ days: daysAhead })
+    const day = dayHours(hours, date.weekday)
+    if (!day?.isOpen) continue
+    const iso = date.toISODate()
+    const closesAt = `${iso}T${day.closes}`
+    let opensAt = `${iso}T${day.opens}`
+    if (daysAhead === 0 && opensAt <= nowStamp) opensAt = nowStamp
+    if (isInClosure(closure, opensAt)) opensAt = closure.endsAt!
+    if (opensAt >= closesAt) continue
 
-  for (let daysAhead = 1; daysAhead <= 7; daysAhead++) {
-    const day = local.plus({ days: daysAhead })
-    const next = dayHours(hours, day.weekday)
-    if (next?.isOpen) {
-      const when = daysAhead === 1 ? 'besok' : DAY_NAMES[day.weekday - 1]
+    if (opensAt === nowStamp) {
+      const closingStamp =
+        closure.isClosed && closure.startsAt && nowStamp < closure.startsAt
+          ? [closesAt, closure.startsAt].sort()[0]
+          : closesAt
       return {
-        isOpen: false,
-        label: `Tutup · buka ${when} pukul ${displayTime(next.opens)}`,
+        isOpen: true,
+        label: `Buka · tutup pukul ${displayTime(closingStamp.slice(11))}`,
         note: null,
       }
     }
+    const opening = DateTime.fromISO(opensAt, { zone: ZONE })
+    return { isOpen: false, label: `Tutup · buka ${when(opening, local, 'pukul ')}`, note: null }
   }
   return { isOpen: false, label: 'Tutup', note: null }
 }

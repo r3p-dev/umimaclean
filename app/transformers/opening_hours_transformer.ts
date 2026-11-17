@@ -12,7 +12,8 @@ export default class OpeningHoursTransformer extends BaseTransformer<OpeningHour
       })),
       closure: {
         isClosed: this.resource.closure.isClosed,
-        until: this.resource.closure.until,
+        startsAt: this.resource.closure.startsAt,
+        endsAt: this.resource.closure.endsAt,
         note: this.resource.closure.note,
       },
     }

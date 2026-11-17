@@ -41,4 +41,5 @@ vine.messagesProvider = new SimpleMessagesProvider({
   'description.required': 'Deskripsi wajib diisi.',
   'q.required': 'Ketik nama kecamatan.',
   'q.minLength': 'Ketik minimal {{ min }} huruf nama kecamatan.',
+  'pickupDays.array.minLength': 'Pilih minimal satu hari penjemputan.',
 })

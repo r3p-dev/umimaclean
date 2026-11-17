@@ -2,8 +2,10 @@ import { inject } from '@adonisjs/core'
 import ActivityLog from '#models/activity_log'
 import Setting from '#models/setting'
 import type User from '#models/user'
+import { DAY_NAMES } from '#helpers/opening_hours'
 import {
   openingHoursValidator,
+  pickupDaysArrayValidator,
   pickupSlotsArrayValidator,
   storeSettingValidator,
 } from '#validators/setting_validator'
@@ -17,7 +19,13 @@ export interface StoreInfoSetting {
 
 export type OpeningHoursSetting = {
   days: { day: number; isOpen: boolean; opens: string; closes: string }[]
-  closure: { isClosed: boolean; until: string | null; note: string | null }
+  // Local Asia/Jakarta date and time, "2026-11-19T20:00" (D103).
+  closure: {
+    isClosed: boolean
+    startsAt: string | null
+    endsAt: string | null
+    note: string | null
+  }
 }
 
 export interface PickupSlotSetting {
@@ -30,6 +38,7 @@ export interface PickupSlotSetting {
 export interface SettingValues {
   store: StoreInfoSetting
   pickup_slots: PickupSlotSetting[]
+  pickup_days: number[]
   opening_hours: OpeningHoursSetting
 }
 
@@ -49,7 +58,7 @@ export const DEFAULT_OPENING_HOURS: OpeningHoursSetting = {
     opens: '09:00',
     closes: '20:00',
   })),
-  closure: { isClosed: false, until: null, note: null },
+  closure: { isClosed: false, startsAt: null, endsAt: null, note: null },
 }
 
 export const DEFAULT_PICKUP_SLOTS: PickupSlotSetting[] = [
@@ -58,9 +67,13 @@ export const DEFAULT_PICKUP_SLOTS: PickupSlotSetting[] = [
   { id: 'slot-3', label: '15.00–18.00', capacity: 4, isActive: true },
 ]
 
+// Monday to Saturday, as SLOT-1 had before the owner could choose (D103).
+export const DEFAULT_PICKUP_DAYS = [1, 2, 3, 4, 5, 6]
+
 export const DEFAULT_SETTINGS: SettingValues = {
   store: DEFAULT_STORE_SETTING,
   pickup_slots: DEFAULT_PICKUP_SLOTS,
+  pickup_days: DEFAULT_PICKUP_DAYS,
   opening_hours: DEFAULT_OPENING_HOURS,
 }
 
@@ -76,6 +89,11 @@ export default class SettingService {
     const row = await Setting.findBy('key', 'pickup_slots')
     const raw = row?.value ?? DEFAULT_PICKUP_SLOTS
     return pickupSlotsArrayValidator.validate(raw)
+  }
+
+  async getPickupDays(): Promise<number[]> {
+    const row = await Setting.findBy('key', 'pickup_days')
+    return pickupDaysArrayValidator.validate(row?.value ?? DEFAULT_PICKUP_DAYS)
   }
 
   async updateStoreSettings(actor: User, payload: unknown): Promise<StoreInfoSetting> {
@@ -122,8 +140,9 @@ export default class SettingService {
 
     await Setting.updateOrCreate({ key: 'opening_hours' }, { value: validated })
 
-    const closure = validated.closure.isClosed
-      ? `tutup sementara${validated.closure.until ? ` sampai ${validated.closure.until}` : ''}`
+    const { closure: window } = validated
+    const closure = window.isClosed
+      ? `tutup sementara ${window.startsAt?.replace('T', ' ')} sampai ${window.endsAt?.replace('T', ' ')}`
       : 'buka seperti jadwal'
     await ActivityLog.create({
       userId: actor.id,
@@ -146,6 +165,23 @@ export default class SettingService {
       category: 'settings',
       action: 'settings.slots.update',
       description: `Memperbarui jadwal slot penjemputan (${validated.length} slot)`,
+      isSensitive: false,
+    })
+
+    return validated
+  }
+
+  async updatePickupDays(actor: User, payload: unknown): Promise<number[]> {
+    const validated = await pickupDaysArrayValidator.validate(payload)
+    validated.sort((first, second) => first - second)
+
+    await Setting.updateOrCreate({ key: 'pickup_days' }, { value: validated })
+
+    await ActivityLog.create({
+      userId: actor.id,
+      category: 'settings',
+      action: 'settings.pickup_days.update',
+      description: `Memperbarui hari penjemputan (${validated.map((day) => DAY_NAMES[day - 1]).join(', ')})`,
       isSensitive: false,
     })
 
