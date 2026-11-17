@@ -10,6 +10,8 @@ import SettingService, {
 import { openingStatus, weeklyHours } from '#helpers/opening_hours'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import env from '#start/env'
+import app from '@adonisjs/core/services/app'
+import logger from '@adonisjs/core/services/logger'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
   async share(ctx: HttpContext) {
@@ -24,8 +26,12 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
     try {
       store = await settingService.getStoreSettings()
       hours = await settingService.getOpeningHours()
-    } catch {
-      // fallback to defaults if database is not migrated yet
+    } catch (error) {
+      // Production still renders the page with the defaults; dev and test fail loudly.
+      logger.error({ err: error }, 'Store settings could not be read for the shared page props')
+      if (!app.inProduction) {
+        throw error
+      }
     }
 
     return {
