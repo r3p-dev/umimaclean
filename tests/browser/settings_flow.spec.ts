@@ -3,8 +3,7 @@ import { AxeBuilder } from '@axe-core/playwright'
 import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
 import { Role } from '#enums/role_enum'
-import path from 'node:path'
-import fs from 'node:fs/promises'
+import { saveScreenshot, saveScreenshotLog } from '../helpers/screenshots.js'
 
 const VIEWPORTS = [
   { name: '360', width: 360, height: 780 },
@@ -12,11 +11,8 @@ const VIEWPORTS = [
   { name: '1440', width: 1440, height: 900 },
 ] as const
 
-const EVIDENCE_DIR = path.resolve('docs/evidence/M3b')
-
 test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
   group.each.setup(async () => {
-    await fs.mkdir(EVIDENCE_DIR, { recursive: true })
     await testUtils.db().seed()
     return testUtils.db().wrapInGlobalTransaction()
   })
@@ -62,10 +58,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         )
         assert.deepEqual(violations, [], `Area page axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-area-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-area-${vp.name}.png`)
         axeLogs.push(
           `admin-area-${vp.name}: path=/admin/pengaturan/area scrollWidth=${scrollWidth} axe=none`
         )
@@ -103,10 +96,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         )
         assert.deepEqual(violations, [], `Area toggle axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-area-toggle-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-area-toggle-${vp.name}.png`)
         axeLogs.push(
           `admin-area-toggle-${vp.name}: path=/admin/pengaturan/area (district toggled) scrollWidth=${scrollWidth} axe=none`
         )
@@ -144,10 +134,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         )
         assert.deepEqual(violations, [], `Store settings axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-pengaturan-toko-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-pengaturan-toko-${vp.name}.png`)
         axeLogs.push(
           `admin-pengaturan-toko-${vp.name}: path=/admin/pengaturan/toko scrollWidth=${scrollWidth} axe=none`
         )
@@ -189,10 +176,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         )
         assert.deepEqual(violations, [], `Store error axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-pengaturan-toko-error-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-pengaturan-toko-error-${vp.name}.png`)
         axeLogs.push(
           `admin-pengaturan-toko-error-${vp.name}: path=/admin/pengaturan/toko (validation error) scrollWidth=${scrollWidth} axe=none`
         )
@@ -231,10 +215,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         )
         assert.deepEqual(violations, [], `Slots section axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-pengaturan-slot-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-pengaturan-slot-${vp.name}.png`)
         axeLogs.push(
           `admin-pengaturan-slot-${vp.name}: path=/admin/pengaturan/toko (slot section) scrollWidth=${scrollWidth} axe=none`
         )
@@ -266,10 +247,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         )
         assert.deepEqual(violations, [], `Nav mobile axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-nav-mobile-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-nav-mobile-${vp.name}.png`)
         axeLogs.push(
           `admin-nav-mobile-${vp.name}: path=/admin/pengaturan/toko (navigation menu) scrollWidth=${scrollWidth} axe=none`
         )
@@ -313,10 +291,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         )
         assert.deepEqual(violations, [], `Landing footer axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `landing-footer-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `landing-footer-${vp.name}.png`)
         axeLogs.push(
           `landing-footer-${vp.name}: path=/ (footer section) scrollWidth=${scrollWidth} axe=none`
         )
@@ -324,10 +299,6 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
     }
 
     // Write axe logs
-    await fs.writeFile(
-      path.join(EVIDENCE_DIR, 'screenshots-axe.log'),
-      axeLogs.join('\n') + '\n',
-      'utf8'
-    )
+    await saveScreenshotLog('screenshots-axe.log', axeLogs)
   })
 })
