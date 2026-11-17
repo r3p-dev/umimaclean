@@ -1,5 +1,6 @@
 import { inject } from '@adonisjs/core'
 import { Exception } from '@adonisjs/core/exceptions'
+import db from '@adonisjs/lucid/services/db'
 import ActivityLog from '#models/activity_log'
 import ServiceArea from '#models/service_area'
 import type User from '#models/user'
@@ -9,10 +10,27 @@ export interface CoverageCheckResult {
   district: ServiceArea | null
 }
 
+// Display geometry may be up to about 120 m off the real borders; it is only drawn, never checked (D95).
+const DISPLAY_TOLERANCE_DEGREES = 0.0005
+
 @inject()
 export default class AreaService {
   async getAllAreas(): Promise<ServiceArea[]> {
     return ServiceArea.query().withScopes((scopes) => scopes.ordered())
+  }
+
+  // ST_CoverageSimplify keeps shared borders shared, so neighbours never gap or overlap on the map.
+  // It returns geometries without an SRID (PostGIS 3.6.4), hence ST_SetSRID.
+  async getAreaShapes(): Promise<ServiceArea[]> {
+    return ServiceArea.query()
+      .select('id', 'city', 'name', 'code', 'is_active')
+      .select(
+        db.raw(
+          'ST_AsGeoJSON(ST_SetSRID(ST_CoverageSimplify(boundary, ?) OVER (), 4326), 5) AS shape',
+          [DISPLAY_TOLERANCE_DEGREES]
+        )
+      )
+      .withScopes((scopes) => scopes.ordered())
   }
 
   async getGroupedAreas(): Promise<Record<string, ServiceArea[]>> {

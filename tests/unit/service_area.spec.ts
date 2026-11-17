@@ -197,4 +197,29 @@ test.group('Service Areas & Point-in-Polygon Check (AREA-1..4)', (group) => {
     assert.isNotEmpty(outside)
     assert.include(outside, 'Ciwidey')
   })
+
+  test('display shapes keep the 64 districts gap-free and within 150 m of the real borders (D95)', async ({
+    assert,
+  }) => {
+    const shapes = await new AreaService().getAreaShapes()
+    assert.lengthOf(shapes, 64)
+
+    const { rows } = await db.rawQuery(
+      `WITH display AS (
+         SELECT (feature ->> 'id')::int AS id, ST_SetSRID(ST_GeomFromGeoJSON(feature ->> 'shape'), 4326) AS shape
+         FROM jsonb_array_elements(?::jsonb) AS feature
+       )
+       SELECT
+         count(*) FILTER (WHERE NOT ST_IsValid(display.shape))::int AS invalid_shapes,
+         max(ST_HausdorffDistance(ST_Transform(area.boundary, 32748), ST_Transform(display.shape, 32748))) AS max_metres,
+         (SELECT count(*)::int FROM (SELECT ST_CoverageInvalidEdges(shape) OVER () AS edges FROM display) checked
+          WHERE edges IS NOT NULL) AS invalid_edges
+       FROM display
+       JOIN service_areas area ON area.id = display.id`,
+      [JSON.stringify(shapes.map((area) => ({ id: area.id, shape: area.$extras.shape })))]
+    )
+    assert.equal(rows[0].invalid_shapes, 0)
+    assert.equal(rows[0].invalid_edges, 0)
+    assert.isAtMost(rows[0].max_metres, 150)
+  })
 })
