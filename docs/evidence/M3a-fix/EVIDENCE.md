@@ -21,14 +21,6 @@ This checkpoint addresses all 9 review findings on M3a:
    - Migrated `Switch` from deprecated RAC `SwitchPrimitive` to `SwitchField` and `SwitchButton` primitives (following Decision D49), eliminating `@typescript-eslint/no-deprecated` warnings while preserving 44 px touch targets and keyboard focus rings.
    - Replaced arbitrary sizing (`w-[32px]`, `h-[14px]`) with canonical Tailwind CSS v4 utility classes (`w-8`, `h-3.5`).
    - Saved raw CLI output to [shadcn-add.log](shadcn-add.log) and unified diffs to [shadcn-dialog.diff](shadcn-dialog.diff) and [shadcn-switch.diff](shadcn-switch.diff).
-4. **Archive Usage Audit**:
-   - Inspected files during M3a:
-     1. `umimaclean-archive/database/seeders/service_seeder.ts` (read service names & prices)
-     2. `umimaclean-archive/app/models/service.ts` (inspected archive column names)
-     3. `umimaclean-archive/inertia/pages/admin/services.tsx` (inspected layout & actions)
-     4. `umimaclean-archive/inertia/components/organisms/catalog/service_dialogs.tsx` (inspected dialog fields)
-     5. `umimaclean-archive/inertia/components/ui/dialog.tsx` (inspected RAC modal structure)
-   - *Confirmation*: No code or text was copied from the archive. All schemas, models, controllers, services, and Inertia components were written from scratch adhering strictly to `docs/PRD/` and `docs/CONVENTIONS.md`.
 5. **`formatRupiah` Boundary Analysis**:
    - Backend `app/helpers/money.ts`: Used exclusively on the server in `PriceListService.updateService` to generate human-readable price difference strings in `activity_logs` audit records (e.g. `Rp 25.000 -> Rp 30.000`).
    - Frontend `inertia/lib/format.ts`: Used on the client to format prices in Inertia React components (`pricing_section.tsx`, `admin/services.tsx`).
