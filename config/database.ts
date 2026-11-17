@@ -23,6 +23,10 @@ const dbConfig = defineConfig({
         paths: ['database/migrations'],
       },
 
+      seeders: {
+        paths: ['./database/seeders/main'],
+      },
+
       schemaGeneration: {
         enabled: true,
         // spatial_ref_sys belongs to the PostGIS extension, not to the app, so it gets no model class.

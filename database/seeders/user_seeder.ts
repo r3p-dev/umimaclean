@@ -71,18 +71,5 @@ export default class extends BaseSeeder {
         isActive: false,
       }
     )
-
-    console.log(`
-================================================================
-Akun Demo Umima Clean:
-----------------------------------------------------------------
-Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
-Staf 1          : 081312345678 / password123 -> /staf/masuk
-Staf 2          : 081387654321 / password123 -> /staf/masuk
-Pelanggan 1     : 082111223344 / password123 -> /masuk
-Pelanggan 2     : 085299887766 / password123 -> /masuk
-Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
-================================================================
-`)
   }
 }
