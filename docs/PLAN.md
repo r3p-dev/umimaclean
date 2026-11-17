@@ -6,15 +6,15 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 
 | # | Version | Milestone | Status | Confirmed | Hours |
 | --- | --- | --- | --- | --- | --- |
-| M0 | – | Spikes and plan | done | v0.1.0 tag | 8 |
-| M1a | – | Conventions across the existing code | done | v0.1.0 tag | 8 |
-| M1b | – | Foundation and look | done | v0.1.0 tag | 10 |
-| M1c | 0.1.0 | Landing, legal pages, SEO | done | v0.1.0 tag | 10 |
-| M2a | – | Accounts: phone login, role redirects, seeders | done | v0.2.0 tag | 10 |
-| M2b | – | Accounts: register, OTP, forgot password | done | v0.2.0 tag | 8 |
-| M2c | 0.2.0 | Accounts: profile, security, rate limits | done | v0.2.0 tag | 6 |
-| M3a | – | Services and landing price list | done | v0.3.0 tag | 8 |
-| M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 tag | 8 |
+| M0 | – | Spikes and plan | done | v0.1.0 | 8 |
+| M1a | – | Conventions across the existing code | done | v0.1.0 | 8 |
+| M1b | – | Foundation and look | done | v0.1.0 | 10 |
+| M1c | 0.1.0 | Landing, legal pages, SEO | done | v0.1.0 | 10 |
+| M2a | – | Accounts: phone login, role redirects, seeders | done | v0.2.0 | 10 |
+| M2b | – | Accounts: register, OTP, forgot password | done | v0.2.0 | 8 |
+| M2c | 0.2.0 | Accounts: profile, security, rate limits | done | v0.2.0 | 6 |
+| M3a | – | Services and landing price list | done | v0.3.0 | 8 |
+| M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 | 8 |
 | M4a | – | Maps, area map and landing coverage check | not started | – | 10 |
 | M4b | 0.4.0 | Place search and addresses | not started | – | 10 |
 | M5a | 0.5.0 | Online ordering: slots, new order, confirm | not started | – | 14 |
@@ -34,19 +34,19 @@ Hours are the implementer's estimate for building, testing and writing the evide
 
 **Every milestone** also meets the general acceptance criteria of `AGENTS.md` ("Milestone loop", "Evidence"): tests for its criteria (unit for services, state machines and helpers; functional for every route, including authorization and the PRD rule, named by requirement ID; browser tests for the main journeys), `npm run lint`, `npm run typecheck` and `npm test` pass without deprecation warnings, seed data updated, `docs/ARCHITECTURE.md` and `docs/DEPENDENCIES.md` current, `docs/evidence/M{N}/EVIDENCE.md` following `docs/evidence/TEMPLATE.md`, with exact log excerpts and a one-line description of every desktop and mobile screenshot; the logs and screenshots themselves stay in the git-ignored `tmp/evidence/M{N}/` (D84).
 
-**Confirmed** shows the owner's release tag that includes the milestone (the owner creates tags, `AGENTS.md` "Versioning"); no other written confirmation exists. `?` means no evidence of confirmation, `–` not done yet.
+**Confirmed** names the release tag that confirms the milestone: the owner creates tags (`AGENTS.md` › Versioning), and a tag confirms its milestone and every earlier checkpoint without a tag of its own (`v0.1.0` confirms M0, M1a, M1b and M1c). `?` means done but not covered by a tag, `–` not done yet.
 
-**Evidence of finished milestones** (not read routinely; each folder holds `EVIDENCE.md`, fixes and patches next to it):
+**Evidence of finished milestones** (not read routinely; each folder holds only `EVIDENCE.md`):
 
 - M0: `docs/evidence/M0/`
 - M1a: `docs/evidence/M1a/`
 - M1b: `docs/evidence/M1b/`
-- M1c: `docs/evidence/M1c/` (patch 0.1.2: `docs/evidence/M1c/PATCH-0.1.2.md`)
-- M2a: `docs/evidence/M2a/` (review fixes: `FIX.md`, `FIX2.md`)
-- M2b: `docs/evidence/M2b/` (review fixes: `FIX.md`, `FIX2.md`)
+- M1c: `docs/evidence/M1c/` (patch 0.1.2: [section PATCH-0.1.2](evidence/M1c/EVIDENCE.md#patch-012))
+- M2a: `docs/evidence/M2a/` (review fixes: sections [FIX](evidence/M2a/EVIDENCE.md#fix) and [FIX2](evidence/M2a/EVIDENCE.md#fix2))
+- M2b: `docs/evidence/M2b/` (review fixes: sections [FIX](evidence/M2b/EVIDENCE.md#fix) and [FIX2](evidence/M2b/EVIDENCE.md#fix2))
 - M2c: `docs/evidence/M2c/`; patches 0.2.1 and 0.2.2: `docs/evidence/M2-0.2.1/`, `docs/evidence/M2-0.2.2/`
 - M3a: `docs/evidence/M3a/`; review fixes: `docs/evidence/M3a-fix/`
-- M3b: `docs/evidence/M3b/`; patches 0.3.1 and 0.3.2: `docs/evidence/M3-0.3.1/`, `docs/evidence/M3-0.3.2/`
+- M3b: `docs/evidence/M3b/` (the process checkpoint after it: [section Process checkpoint](evidence/M3b/EVIDENCE.md#process-checkpoint-2026-11-17)); patches 0.3.1 and 0.3.2: `docs/evidence/M3-0.3.1/`, `docs/evidence/M3-0.3.2/`
 
 ## Active milestone
 
@@ -70,12 +70,13 @@ Hours are the implementer's estimate for building, testing and writing the evide
 - GUEST-1, AREA-4: landing coverage check with "use my location" and a draggable pin; one debounced request after the pin stops; 60 requests per minute per IP with an Indonesian wait message; no text place search for guests.
 - `node ace osm:import` runs the §6.2 pipeline (checks first that the clip box contains every service area), once the owner approves how it runs in development and production.
 
-**Out of scope** (to confirm with the owner): place search and the street label under a pin (MAP-1, M4b); saving addresses and checking saved pins (CUST-2, CUST-3, CUST-14, AREA-4 saving, M4b); refusing out-of-area addresses when ordering (M5a, D82); OSRM routing (M6); the version bump (0.4.0 comes with M4b).
+**Out of scope** (approved by the owner, 2026-11-17): place search and the street label under a pin (MAP-1, M4b); saving addresses and checking saved pins (CUST-2, CUST-3, CUST-14, AREA-4 saving, M4b); refusing out-of-area addresses when ordering (M5a, D82); OSRM routing (M6); the version bump (0.4.0 comes with M4b).
 
 **Handoff** (from the M3b evidence and patches 0.3.1, 0.3.2):
 
 - Done: `AreaService.checkCoverage` with unit tests (M3b, D78); full-resolution boundaries seeded (D77); the server's GEOS 3.14.1 supports `ST_CoverageSimplify` for the display geometry (0.3.1); licence attribution planned (0.3.1 §6.4); OSM import measured in a throwaway database, the D6 box contains every service area (0.3.2 §5); map rate limits in the PRD (D80).
-- Remaining: everything in the criteria above. Open: how `osm:import` runs in development and production (owner approval).
+- Remaining: everything in the criteria above.
+- Open decision: how `osm:import` runs in development and production (owner approval). The 0.3.2 measurement tools are in git history, last commit `59d99c0`: `docs/evidence/M3-0.3.2/measure_osm_import.sh`, `docs/evidence/M3-0.3.2/geojson_to_sql.py`, `docs/evidence/M3-0.3.2/clip_polygon.geojson` (`git show 59d99c0:<path>`).
 - New decisions since M3b: D77–D83, and the process changes D84–D86.
 
 ## M0: Spikes and plan
