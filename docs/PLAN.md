@@ -4,32 +4,33 @@ Milestones in order. **Slow, reviewable progress**: each milestone is small enou
 
 Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance criteria** (by requirement ID) and an **hour estimate** to every milestone below, and may propose a different split; the plan is final once approved.
 
-| #    | Version | Milestone                                      | Status      | Hours |
-| ---- | ------- | ---------------------------------------------- | ----------- | ----- |
-| M0   | –       | Spikes and plan                                | done        | 8     |
-| M1a  | –       | Conventions across the existing code           | done        | 8     |
-| M1b  | –       | Foundation and look                            | done        | 10    |
-| M1c  | 0.1.0   | Landing, legal pages, SEO                      | done        | 10    |
-| M2a  | –       | Accounts: phone login, role redirects, seeders | done        | 10    |
-| M2b  | –       | Accounts: register, OTP, forgot password       | done        | 8     |
-| M2c  | 0.2.0   | Accounts: profile, security, rate limits       | done        | 6     |
-| M3a  | –       | Services and landing price list                | done        | 8     |
-| M3b  | 0.3.0   | Service areas, store settings, coverage service| done        | 8     |
-| M4   | 0.4.0   | Addresses and maps                             | not started | 20    |
-| M5a  | 0.5.0   | Online ordering: slots, new order, confirm     | not started | 14    |
-| M5b  | 0.5.0   | Order pages and tracking                       | not started | 12    |
-| M6   | 0.6.0   | Courier trips                                  | not started | 24    |
-| M7   | 0.7.0   | Workshop                                       | not started | 16    |
-| M8   | 0.8.0   | Payments                                       | not started | 24    |
-| M9   | 0.9.0   | Walk-in orders                                 | not started | 16    |
-| M10a | 0.10.0  | Owner area: orders, money, activity            | not started | 18    |
-| M10b | 0.10.0  | Owner area: customers, reports, staff accounts | not started | 18    |
-| M11  | 0.11.0  | Live updates and jobs                          | not started | 10    |
-| M12  | 1.0.0   | Hardening and release                          | not started | 20    |
+| #    | Version | Milestone                                       | Status      | Hours |
+| ---- | ------- | ----------------------------------------------- | ----------- | ----- |
+| M0   | –       | Spikes and plan                                 | done        | 8     |
+| M1a  | –       | Conventions across the existing code            | done        | 8     |
+| M1b  | –       | Foundation and look                             | done        | 10    |
+| M1c  | 0.1.0   | Landing, legal pages, SEO                       | done        | 10    |
+| M2a  | –       | Accounts: phone login, role redirects, seeders  | done        | 10    |
+| M2b  | –       | Accounts: register, OTP, forgot password        | done        | 8     |
+| M2c  | 0.2.0   | Accounts: profile, security, rate limits        | done        | 6     |
+| M3a  | –       | Services and landing price list                 | done        | 8     |
+| M3b  | 0.3.0   | Service areas, store settings, coverage service | done        | 8     |
+| M4a  | –       | Maps, area map and landing coverage check       | not started | 10    |
+| M4b  | 0.4.0   | Place search and addresses                      | not started | 10    |
+| M5a  | 0.5.0   | Online ordering: slots, new order, confirm      | not started | 14    |
+| M5b  | 0.5.0   | Order pages and tracking                        | not started | 12    |
+| M6   | 0.6.0   | Courier trips                                   | not started | 24    |
+| M7   | 0.7.0   | Workshop                                        | not started | 16    |
+| M8   | 0.8.0   | Payments                                        | not started | 24    |
+| M9   | 0.9.0   | Walk-in orders                                  | not started | 16    |
+| M10a | 0.10.0  | Owner area: orders, money, activity             | not started | 18    |
+| M10b | 0.10.0  | Owner area: customers, reports, staff accounts  | not started | 18    |
+| M11  | 0.11.0  | Live updates and jobs                           | not started | 10    |
+| M12  | 1.0.0   | Hardening and release                           | not started | 20    |
 
 Hours are the implementer's estimate for building, testing and writing the evidence of each milestone; review time is not included. Total M1a–M12: 260 hours.
 
-**Checkpoints:** M5 and M10 each became two checkpoints (`a`, `b`) in M0 so that each stop stays reviewable in one sitting; M1 became M1a (conventions applied to the existing code, added by the owner after M0), M1b (foundation and look) and M1c (landing, legal pages, SEO). A checkpoint `a` ends with a report and suggested commits but no version bump; the minor version is bumped at the end of checkpoint `b`.
+**Checkpoints:** M5 and M10 each became two checkpoints (`a`, `b`) in M0 so that each stop stays reviewable in one sitting; M3 (D72) and M4 (D81) were split the same way later; M1 became M1a (conventions applied to the existing code, added by the owner after M0), M1b (foundation and look) and M1c (landing, legal pages, SEO). A checkpoint `a` ends with a report and suggested commits but no version bump; the minor version is bumped at the end of checkpoint `b`.
 
 **Every milestone** also meets the general acceptance criteria of `AGENTS.md` §2: tests for its criteria (unit for services, state machines and helpers; functional for every route, including authorization and the PRD rule, named by requirement ID; browser tests for the main journeys), `npm run lint`, `npm run typecheck` and `npm test` pass without deprecation warnings, seed data updated, `docs/ARCHITECTURE.md` and `docs/DEPENDENCIES.md` current, `docs/evidence/M{N}/EVIDENCE.md` with desktop and mobile screenshots and logs in the same folder.
 
@@ -40,7 +41,7 @@ No application code. Infrastructure files are allowed: the Podman setup for loca
 1. Read `docs/PRD/` and list anything unclear, contradictory or missing.
 2. Local services with Podman: PostgreSQL + PostGIS and OSRM (pinned images). Show that both start from a clean machine with the documented commands.
 3. Map data: the OSM extract → `osm` schema import, the OSRM motorbike build, the PMTiles extract for Bandung Raya. Document tools, versions, sources, licenses, sizes and commands. Data files are not committed.
-4. Check the current docs for Midtrans Core API QRIS, Fonnte, Turnstile, Transmit, shadcn's React Aria base, Leaflet and protomaps-leaflet. Note anything that affects the design, and confirm that each tool is maintained.
+4. Check the current docs for Midtrans Core API QRIS, Fonnte, Turnstile, Transmit, shadcn's React Aria base and the map library. Note anything that affects the design, and confirm that each tool is maintained. (Leaflet with protomaps-leaflet was checked first; protomaps-leaflet is in maintenance mode, so the maps use MapLibre GL JS, `docs/ARCHITECTURE.md` §1.1.)
 5. Decide whether the generated `.adonisjs/` directory stays committed (it is today), following the official AdonisJS recommendation, and how scheduled jobs run locally and in production.
 6. Write `docs/ARCHITECTURE.md` §2–§7 (including both state machines as tables, from ORD-3 and PAY-7) and complete this plan (acceptance criteria and hours per milestone). List any decision in `docs/ARCHITECTURE.md` §1 you believe must change, and why.
 
@@ -151,17 +152,29 @@ Acceptance criteria:
 - Version bump to 0.3.0 (`package.json`, `package-lock.json`, `CHANGELOG.md`).
 - Evidence in `docs/evidence/M3b/EVIDENCE.md`.
 
-## M4 (0.4.0): Addresses, maps, and coverage check UI
+## M4a (checkpoint of 0.4.0): Maps, area map and landing coverage check
 
-AREA-4, MAP-1, MAP-2, CUST-2, CUST-3, CUST-14, GUEST-1 (coverage check UI).
+MAP-2, AREA-1 (credit on maps), AREA-4 (public check), OWN-9 (map), GUEST-1 (coverage check). What D73 moved here: the map on `/admin/pengaturan/area` and the landing coverage check with its map, using `AreaService.checkCoverage`.
 
 Acceptance criteria:
 
-- `node ace osm:import` runs the pipeline of `docs/ARCHITECTURE.md` §6.2 (checks that the clip box contains every service area first).
-- MAP-1: place search for signed-in users only (per-user rate limit), typo and spacing tolerant ("dipati ukur" finds "Jalan Dipatiukur"), generic words ignored; nearby places and the street label under a pin; without the `osm` schema the pin can still be placed by hand.
-- MAP-2: maps are drawn by MapLibre GL JS from the self-hosted PMTiles file (`pmtiles` protocol, `@protomaps/basemaps` style), loaded only on pages that show a map (including `/admin/pengaturan/area` per D73); the browser contacts no map provider (browser test blocks outside hosts); "© OpenStreetMap contributors" on every map; without the file a plain background and pins still work.
-- GUEST-1 (coverage check UI) & AREA-4: landing coverage check with a per-IP rate limit and map pin interaction; every saved pin is checked against active areas on the server; instant inside/outside feedback while moving the pin.
+- MAP-2: maps are drawn by MapLibre GL JS from the self-hosted PMTiles file (`pmtiles` protocol, `@protomaps/basemaps` style), loaded only on pages that show a map; the tiles file is an optional setting, empty in `.env.test`, and without it maps show a plain background while pins still work. Fonts and sprites the style needs are self-hosted when the style would load them from another host. A browser test proves that a page with a map makes no request to another host.
+- MAP-2, AREA-1: every map has an attribution control (`compact: false`) with "© OpenStreetMap contributors" and the district boundary credit, with a link to the CC BY-IGO 3.0 licence and a note that the data was modified.
+- Map display geometry is derived from the full boundaries and used only for drawing; coverage is never decided in the browser.
+- OWN-9: `/admin/pengaturan/area` shows the districts on a map, active and inactive distinguished by more than color.
+- GUEST-1, AREA-4: the landing coverage check: "use my location" and a draggable pin; one request after the pin stops moving (debounced) to the server check with the full boundaries; 60 requests per minute per IP, with an Indonesian message saying how long to wait. Text place search is not offered to guests (MAP-1).
+- `node ace osm:import` runs the pipeline of `docs/ARCHITECTURE.md` §6.2 (checks that the clip box contains every service area first), once the owner approves how it runs in development and production.
+
+## M4b (0.4.0): Place search and addresses
+
+MAP-1, CUST-2, CUST-3, CUST-14, AREA-4 (saving an address). Ends with version 0.4.0.
+
+Acceptance criteria:
+
+- MAP-1: place search for signed-in users only, 30 requests per minute per user with an Indonesian message saying how long to wait; typo and spacing tolerant ("dipati ukur" finds "Jalan Dipatiukur"), generic words ignored; nearby places and the street label under a pin; without the `osm` schema the pin can still be placed by hand.
+- AREA-4: every saved pin is checked against active areas on the server; inside/outside feedback after the pin stops moving, as in M4a.
 - CUST-2, CUST-3, CUST-14: at most 3 addresses, exactly one primary (database-enforced), deleting the primary promotes the newest; label, recipient name and phone, address text, landmark, pin; list, add, edit, make primary, delete.
+- A saved address whose district was turned off later stays saved and shows "Di luar area layanan" in the address list (D82); blocking it when ordering is M5a.
 
 ## M5a (checkpoint of 0.5.0): Online ordering: slots, new order, confirm
 
