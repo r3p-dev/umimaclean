@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-11-17
+
+### Changed
+
+- A price list tab with a "mulai dari" price says under its list that such prices are confirmed after
+  the items are inspected (GUEST-1, STAFF-9).
+
+### Fixed
+
+- The demo accounts printed after seeding in development show the owner number the seeder created,
+  including one set with `ADMIN_PHONE`.
+
 ## [0.3.1] - 2026-11-17
 
 ### Changed
