@@ -1,0 +1,50 @@
+== commit c333f4e test(browser): keep screenshots out of committed evidence
+== git rev-parse HEAD: c333f4e1cc11feb0808e27f495e9021656189e4e
+== git status --short (before checks):
+
+$ npm ci
+
+added 857 packages in 10s
+exit 0
+
+$ npm run lint
+
+> umimaclean@0.3.0 lint
+> eslint .
+
+exit 0
+
+$ npm run typecheck
+
+> umimaclean@0.3.0 typecheck
+> tsc --noEmit && tsc --noEmit --project inertia/tsconfig.json
+
+exit 0
+
+$ npm test
+ ⁃ at parseErrorMessage (node_modules/pg-protocol/src/parser.ts:395:9)
+   390 ┃    const messageValue = fields.M
+   391 ┃  
+   392 ┃    const message =
+   393 ┃      name === 'notice'
+   394 ┃        ? new NoticeMessage(LATEINIT_LENGTH, messageValue)
+ ❯ 395 ┃        : new DatabaseError(messageValue, LATEINIT_LENGTH, name)
+   396 ┃  
+   397 ┃    message.severity = fields.S
+   398 ┃    message.code = fields.C
+   399 ┃    message.detail = fields.D
+   400 ┃    message.hint = fields.H
+ ⁃ at Parser.handlePacket (node_modules/pg-protocol/src/parser.ts:212:19)
+ ⁃ at Parser.parse (node_modules/pg-protocol/src/parser.ts:105:30)
+ ⁃ at Socket.<anonymous> (node_modules/pg-protocol/src/index.ts:7:48)
+ ⁃ at Socket.emit (node:events:514:28)
+ ⁃ at Socket.emit (node:domain:489:12)
+ ⁃ at addChunk (node:internal/streams/readable:568:12)
+ ⁃ at readableAddChunkPushByteMode (node:internal/streams/readable:519:3)
+ ⁃ at Readable.push (node:internal/streams/readable:399:5)
+ ⁃ at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+[17/17]─
+ FAILED 
+Tests  193 passed, 17 failed (210)
+ Time  3m
+exit 1

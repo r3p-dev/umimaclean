@@ -1,0 +1,14 @@
+$ stat -c "%y %n" <the 11 changed M3a-fix screenshots in the clone> <run logs>
+2026-11-17 10:38:16.867908275 +0700 tmp/verify-commits/docs/evidence/M3a-fix/admin-layanan-bulk-1440.png
+2026-11-17 10:38:18.072865663 +0700 tmp/verify-commits/docs/evidence/M3a-fix/admin-layanan-delete-1440.png
+2026-11-17 10:38:13.482028011 +0700 tmp/verify-commits/docs/evidence/M3a-fix/admin-layanan-empty-1440.png
+2026-11-17 10:38:20.072794939 +0700 tmp/verify-commits/docs/evidence/M3a-fix/admin-layanan-error-1440.png
+2026-11-17 10:38:15.158968709 +0700 tmp/verify-commits/docs/evidence/M3a-fix/admin-layanan-inactive-1440.png
+2026-11-17 10:38:12.984045621 +0700 tmp/verify-commits/docs/evidence/M3a-fix/admin-menu-layanan-1440.png
+2026-11-17 10:37:48.398915034 +0700 tmp/verify-commits/docs/evidence/M3a-fix/admin-menu-layanan-360.png
+2026-11-17 10:38:00.235496453 +0700 tmp/verify-commits/docs/evidence/M3a-fix/admin-menu-layanan-390.png
+2026-11-17 10:38:10.058149091 +0700 tmp/verify-commits/docs/evidence/M3a-fix/landing-harga-helm-1440.png
+2026-11-17 10:37:46.060997711 +0700 tmp/verify-commits/docs/evidence/M3a-fix/landing-harga-helm-360.png
+2026-11-17 10:37:57.878579801 +0700 tmp/verify-commits/docs/evidence/M3a-fix/landing-harga-helm-390.png
+2026-11-17 10:39:23.844539756 +0700 docs/evidence/M3-0.3.2/commits-v0.3.1/01-c333f4e-rerun.log
+2026-11-17 10:48:07.223865448 +0700 docs/evidence/M3-0.3.2/commits-suggested/1-feat-landing-starting-from-line.log

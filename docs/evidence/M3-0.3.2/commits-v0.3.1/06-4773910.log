@@ -1,0 +1,57 @@
+== commit 4773910 docs: add map rate limits and split M4 into M4a and M4b
+== git rev-parse HEAD: 4773910bc52bf780efe2504481b489b6f06a07b2
+== git status --short (before checks):
+ M docs/evidence/M3a-fix/admin-layanan-bulk-1440.png
+ M docs/evidence/M3a-fix/admin-layanan-delete-1440.png
+ M docs/evidence/M3a-fix/admin-layanan-empty-1440.png
+ M docs/evidence/M3a-fix/admin-layanan-error-1440.png
+ M docs/evidence/M3a-fix/admin-layanan-error-390.png
+ M docs/evidence/M3a-fix/admin-layanan-inactive-1440.png
+ M docs/evidence/M3a-fix/admin-menu-layanan-1440.png
+ M docs/evidence/M3a-fix/admin-menu-layanan-360.png
+ M docs/evidence/M3a-fix/admin-menu-layanan-390.png
+ M docs/evidence/M3a-fix/landing-harga-helm-1440.png
+ M docs/evidence/M3a-fix/landing-harga-helm-360.png
+ M docs/evidence/M3a-fix/landing-harga-helm-390.png
+
+$ npm run lint
+
+> umimaclean@0.3.0 lint
+> eslint .
+
+exit 0
+
+$ npm run typecheck
+
+> umimaclean@0.3.0 typecheck
+> tsc --noEmit && tsc --noEmit --project inertia/tsconfig.json
+
+exit 0
+
+$ npm test
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+{"level":40,"time":1794885632484,"pid":124427,"hostname":"fedora","name":"umimaclean","request_id":"5b97a036-213d-4da9-9331-72d017bd39a7","x-request-id":"5b97a036-213d-4da9-9331-72d017bd39a7","msg":"Layanan tidak ditemukan."}
+✔❯ Executed 1 seeders
+✔✔✔✔✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔✔✔✔✔✔✔✔✔✔✔✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Executed 1 seeders
+✔❯ Reverted 9 migrations (46 ms)
+ PASSED 
+Tests  213 passed (213)
+ Time  3m
+exit 0
