@@ -23,7 +23,7 @@ The business owner (role `admin`). Signs in at `/staf/masuk` (`staff.md` STAFF-1
 ## 4. Catalog and settings
 
 - **OWN-7** **Services and prices** (`/admin/layanan`): create, edit, switch on/off (also several at once), remove (soft delete), all per SVC-1 and SVC-2. Every change is logged.
-- **OWN-8** **Store settings** (`/admin/pengaturan/toko`): shop name, WhatsApp number, address; opening hours per day (open or closed, opening and closing time) and a temporary closure (until a date or until further notice, with an optional note for customers); pickup slots (SLOT-2); payment methods on/off (PAY-5); the inactivity threshold (OWN-6). Every change is logged.
+- **OWN-8** **Store settings** (`/admin/pengaturan/toko`): shop name, WhatsApp number, address; opening hours per day (open or closed, opening and closing time, always on a 24-hour clock) and a temporary closure (a start and an end date and time, the end after the start, with an optional note for customers; the landing shows it only between the two, then the normal hours resume); pickup days (on or off per weekday, SLOT-1) and pickup slots (SLOT-2); payment methods on/off (PAY-5); the inactivity threshold (OWN-6). Every change is logged.
 - **OWN-9** **Service areas** (`/admin/pengaturan/area`): every kecamatan grouped by kota/kabupaten, with an on/off switch (AREA-3) and a map. Every change is logged.
 - **OWN-10** **Staff accounts** (`/admin/pengaturan`): create (name, phone, initial password), edit, reset the password, deactivate without deleting history; shows each account's last sign-in. Every change is logged.
 

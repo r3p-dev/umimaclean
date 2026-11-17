@@ -40,6 +40,7 @@ Rules (`docs/CONVENTIONS.md` §14):
 | `embla-carousel-react` | Carousel engine powering the official shadcn Carousel component (`inertia/components/ui/carousel.tsx`) |
 | `proxy-addr` | Compiles the trusted proxy list for `http.trustProxy` in `config/app.ts` (`docs/ARCHITECTURE.md` §1.2 rule 1, D65); AdonisJS's string option takes one address only. Already used by `@adonisjs/http-server`, since M2c |
 | `maplibre-gl` | Map UI (WebGL vector maps, BSD-3-Clause), loaded only by the map component on pages with a map (MAP-2, NFR-3), since M4a |
+| `@internationalized/date` | Date and time values (`Time`, `CalendarDateTime`) for the React Aria time and date-time fields of the opening hours (D103). Already installed by `react-aria-components` at the same version; listed directly because the app imports it, since M4a-fix2 |
 | `pmtiles`, `@protomaps/basemaps` | Read the self-hosted PMTiles file in MapLibre (`pmtiles` protocol) and give its base map layers (`layers()`, flavor `light`; Styles 5 go with the Tiles 4 file, D96), since M4a |
 
 ### Development
