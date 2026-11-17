@@ -4,8 +4,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
 import Service from '#models/service'
 import { Role } from '#enums/role_enum'
-import path from 'node:path'
-import fs from 'node:fs/promises'
+import { saveScreenshot, saveScreenshotLog } from '../helpers/screenshots.js'
 
 const VIEWPORTS = [
   { name: '360', width: 360, height: 780 },
@@ -13,16 +12,13 @@ const VIEWPORTS = [
   { name: '1440', width: 1440, height: 900 },
 ] as const
 
-const EVIDENCE_DIR = path.resolve('docs/evidence/M3a-fix')
-
 test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
   group.each.setup(async () => {
-    await fs.mkdir(EVIDENCE_DIR, { recursive: true })
     await testUtils.db().seed()
     return testUtils.db().wrapInGlobalTransaction()
   })
 
-  test('landing page displays pricing section with interactive filter pills (GUEST-1)', async ({
+  test('landing page displays pricing section with a tab per item kind (GUEST-1)', async ({
     visit,
     assert,
   }) => {
@@ -41,27 +37,25 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
     })
     assert.isTrue(await heading.isVisible())
 
-    // Category buttons exist
-    const shoeBtn = pricingSection.getByRole('button', { name: /Sepatu/i })
-    const bagBtn = pricingSection.getByRole('button', { name: /Tas/i })
-    const helmetBtn = pricingSection.getByRole('button', { name: /Helm/i })
-    const allBtn = pricingSection.getByRole('button', { name: /Semua Layanan/i })
+    // Item kind tabs exist
+    const shoeBtn = pricingSection.getByRole('tab', { name: /Sepatu/i })
+    const bagBtn = pricingSection.getByRole('tab', { name: /Tas/i })
+    const helmetBtn = pricingSection.getByRole('tab', { name: /Helm/i })
 
     assert.isTrue(await shoeBtn.isVisible())
     assert.isTrue(await bagBtn.isVisible())
     assert.isTrue(await helmetBtn.isVisible())
-    assert.isTrue(await allBtn.isVisible())
 
-    // Click shoe button: should see shoe services like Mild
+    // Click shoe tab: should see shoe services like Mild
     await shoeBtn.click()
     assert.isTrue(await pricingSection.getByText('Mild').first().isVisible())
 
-    // Click helmet button: should see helmet shop-only alert (SVC-4)
+    // Click helmet tab: should see helmet shop-only alert (SVC-4)
     await helmetBtn.click()
     const helmetNotice = pricingSection.getByText(/Khusus Bawa Langsung ke Toko/i).first()
     assert.isTrue(await helmetNotice.isVisible())
 
-    // Click bag button
+    // Click bag tab
     await bagBtn.click()
     assert.isTrue(await pricingSection.getByText('Tas Medium · kanvas').first().isVisible())
   })
@@ -129,7 +123,7 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
 
         const pricing = page.locator('#harga')
         await pricing.scrollIntoViewIfNeeded()
-        const helmetBtn = pricing.getByRole('button', { name: /Helm/i })
+        const helmetBtn = pricing.getByRole('tab', { name: /Helm/i })
         await helmetBtn.click()
         await pricing
           .getByText(/Khusus Bawa Langsung ke Toko/i)
@@ -152,10 +146,7 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
         )
         assert.deepEqual(violations, [], `Landing helm axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `landing-harga-helm-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `landing-harga-helm-${vp.name}.png`)
         axeLogs.push(
           `landing-harga-helm-${vp.name}: path=/#harga (filter=helm) scrollWidth=${scrollWidth} axe=none`
         )
@@ -186,10 +177,7 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
           )
           assert.deepEqual(violations, [], `Owner menu axe violations at ${vp.name}px`)
 
-          await page.screenshot({
-            path: path.join(EVIDENCE_DIR, `admin-menu-layanan-${vp.name}.png`),
-            fullPage: true,
-          })
+          await saveScreenshot(page, `admin-menu-layanan-${vp.name}.png`)
           axeLogs.push(
             `admin-menu-layanan-${vp.name}: path=/admin/layanan (nav menu) scrollWidth=${scrollWidth} axe=none`
           )
@@ -210,10 +198,7 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
           )
           assert.deepEqual(violations, [], `Owner desktop menu axe violations at ${vp.name}px`)
 
-          await page.screenshot({
-            path: path.join(EVIDENCE_DIR, `admin-menu-layanan-${vp.name}.png`),
-            fullPage: true,
-          })
+          await saveScreenshot(page, `admin-menu-layanan-${vp.name}.png`)
           axeLogs.push(
             `admin-menu-layanan-${vp.name}: path=/admin/layanan (sidebar) scrollWidth=${scrollWidth} axe=none`
           )
@@ -238,10 +223,7 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
         )
         assert.deepEqual(violations, [], `Empty search axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-layanan-empty-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-layanan-empty-${vp.name}.png`)
         axeLogs.push(
           `admin-layanan-empty-${vp.name}: path=/admin/layanan (empty search) scrollWidth=${scrollWidth} axe=none`
         )
@@ -264,10 +246,7 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
         )
         assert.deepEqual(violations, [], `Inactive service axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-layanan-inactive-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-layanan-inactive-${vp.name}.png`)
         axeLogs.push(
           `admin-layanan-inactive-${vp.name}: path=/admin/layanan (inactive visible) scrollWidth=${scrollWidth} axe=none`
         )
@@ -299,10 +278,7 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
         )
         assert.deepEqual(violations, [], `Bulk bar axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-layanan-bulk-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-layanan-bulk-${vp.name}.png`)
         axeLogs.push(
           `admin-layanan-bulk-${vp.name}: path=/admin/layanan (bulk active) scrollWidth=${scrollWidth} axe=none`
         )
@@ -336,10 +312,7 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
         )
         assert.deepEqual(violations, [], `Delete dialog axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-layanan-delete-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-layanan-delete-${vp.name}.png`)
         axeLogs.push(
           `admin-layanan-delete-${vp.name}: path=/admin/layanan (delete dialog) scrollWidth=${scrollWidth} axe=none`
         )
@@ -376,10 +349,7 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
         )
         assert.deepEqual(violations, [], `Add form error axe violations at ${vp.name}px`)
 
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `admin-layanan-error-${vp.name}.png`),
-          fullPage: true,
-        })
+        await saveScreenshot(page, `admin-layanan-error-${vp.name}.png`)
         axeLogs.push(
           `admin-layanan-error-${vp.name}: path=/admin/layanan (add form validation errors) scrollWidth=${scrollWidth} axe=none`
         )
@@ -391,10 +361,6 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
       }
     }
 
-    await fs.writeFile(
-      path.join(EVIDENCE_DIR, 'screenshots.log'),
-      axeLogs.join('\n') + '\n',
-      'utf-8'
-    )
+    await saveScreenshotLog('screenshots.log', axeLogs)
   })
 })
