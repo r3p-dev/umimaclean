@@ -1,82 +1,88 @@
 # Working on `umimaclean`
 
-**Umima.Clean** is an ordering and payment web app for a shoe, bag and helmet cleaning business in Bandung Raya. It is built one milestone at a time from written specs. **Do not write application code until the active milestone is defined in `docs/PLAN.md`.**
+**Umima.Clean** is an ordering and payment web app for a shoe, bag and helmet cleaning business in Bandung Raya, built one milestone at a time from written specs. The owner must be able to read the code top to bottom and explain every flow: clarity beats cleverness, and a feature that works but can't be explained is not done. **Do not write application code until the active milestone is defined in `docs/PLAN.md`.**
 
-The codebase must be easy to read and explain: the owner wants to read it top to bottom and explain every flow to someone else. Clarity beats cleverness. A feature that works but can't be explained is not done.
+## Never
 
-## 1. Documents
+- State-changing git (`add`, `commit`, `push`, `tag`, `rebase`, `reset`, `stash`, creating or switching branches): the owner reviews and commits everything. Read-only git (`status`, `diff`, `log`, `show`) is fine.
+- Production systems or real customer data: this is a development checkout, and mistakes there hurt real people.
+- Real outside services from tests: they cost money, send real messages and make tests flaky. Midtrans: sandbox keys only. Fonnte: log driver by default; a real message only to a number the owner gives, and only when asked.
+- Hand edits to `database/schema.ts`: it is generated from the migrations.
+- Secrets, `.env` files, map/OSM/OSRM data, uploads, database dumps, logs or screenshots in a suggested commit: they are private, large or reproducible.
+- AI attribution in commit messages (`Co-Authored-By`, "Generated with", Claude or any assistant): the history is the owner's.
 
-Read these at the start of every session:
+## Session start
 
-| Document                              | Defines                                                                                                 | Who writes it               |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------- |
-| `AGENTS.md` (this file)               | How to work: milestone loop, rules, reporting, versioning, git                                          | Owner                       |
-| `docs/PRD/` (start with `summary.md`) | What the app does, per audience, with requirement IDs                                                   | Owner                       |
-| `docs/CONVENTIONS.md`                 | How code is written: project rules, naming, layers, frontend, styling, comments                         | Owner                       |
-| `docs/ARCHITECTURE.md`                | §1 fixed decisions and security (owner); §2+ components, data flow, state machines, decisions log (you) | Both                        |
-| `docs/SETUP.md`                       | Zero-to-running reproduction and complete teardown/cleanup steps                                        | You                         |
-| `docs/PLAN.md`                        | Milestones, versions, acceptance criteria, estimates, status                                            | You (approved by the owner) |
-| `docs/DEPENDENCIES.md`                | Approved packages and container images, with reasons                                                    | You                         |
-| `docs/evidence/M{N}/EVIDENCE.md`      | Proof that a milestone is done                                                                          | You                         |
+**Always read:** this file, and in `docs/PLAN.md` the status table and the **Active milestone** section. Its handoff says where the last session stopped.
 
-On behavior the PRD wins; on technology `docs/ARCHITECTURE.md` §1 wins; on code style `docs/CONVENTIONS.md` wins. If two documents conflict, say so in your report instead of choosing silently.
+**Read when needed:**
 
-**Visual design** (layouts, components, colors, typography, copy, images) and anything the documents leave open: ask me. I will point you to the reference.
+- `docs/PRD/`: the sections for the requirement IDs the milestone lists (`summary.md` explains the IDs).
+- `docs/ARCHITECTURE.md`: start from the code map in §3, then the sections you touch; look up decisions in §7 by D-number.
+- `docs/CONVENTIONS.md`: §0 always applies; then the sections for the layer you touch.
+- `docs/DEPENDENCIES.md` before adding a package or container image; `docs/SETUP.md` when changing setup.
 
-Always check the current stable versions and official documentation of every tool and library instead of relying on memory, and never use deprecated APIs. Pin exact versions of container images.
+**Not read routinely:** evidence of earlier milestones. The PLAN status table points to each folder.
 
-## 2. Milestone loop
+- Never `cat` long logs or large files; use `grep`, `tail`, `wc`, or read one section.
+- Use subagents for large exploration when your tool has them, and have them return summaries.
+- On behavior the PRD wins; on technology `docs/ARCHITECTURE.md` §1; on code style `docs/CONVENTIONS.md`. If two documents conflict, say so in your report instead of choosing silently.
+- Visual design (layouts, components, colors, typography, copy, images) and anything the documents leave open: ask the owner, who points you to the reference.
+- Check current stable versions and official documentation instead of memory; never use deprecated APIs; pin container images by tag and digest.
+- The owner writes this file, `docs/PRD/`, `docs/CONVENTIONS.md` and `docs/ARCHITECTURE.md` §1. You write `docs/ARCHITECTURE.md` §2+, `docs/SETUP.md` (zero-to-running and full teardown), `docs/DEPENDENCIES.md`, `docs/PLAN.md` (the owner approves it) and the evidence.
 
-1. **Align:** read `docs/PLAN.md` and the existing `docs/evidence/M*/EVIDENCE.md` files to find the active milestone. If the previous milestone has no confirmation from me, stop and ask.
-2. **Implement and test:** follow `docs/CONVENTIONS.md`. Cover the milestone's acceptance criteria with tests: unit tests for services, state machines and helpers; functional tests for every route (happy path, authorization, and the PRD rule it implements, named by requirement ID); browser tests for the main journeys. `npm run lint`, `npm run typecheck` and `npm test` pass with no deprecation warnings.
-3. **Keep the docs current:** update `docs/ARCHITECTURE.md` §2+ when routes, modules, schema, state machines or decisions change; every workaround gets a short code comment and a decisions-log entry. Update `docs/DEPENDENCIES.md` for every package or image added. Update the status column in `docs/PLAN.md`.
-4. **Seed data:** keep a usable development database: one owner, two staff, a few customers with addresses, the price list, the service areas, and sample orders in every status once orders exist. The seeder prints the demo accounts.
-5. **Produce evidence:** a milestone is not done until `docs/evidence/M{N}/EVIDENCE.md` exists with the content of the report below (in English is fine), with its screenshots and logs in the same folder, and known limitations or deferred items.
-6. **Report and stop** (§4), then wait for my confirmation before the next milestone.
+## Milestone loop
 
-## 3. Pace
+Progress is **slow and reviewable**: each milestone is small enough that the owner can look at the screens, read the code and understand it in one sitting. If a milestone grows, split it into checkpoints (`M5a`, `M5b`, …). **Stop after every milestone and every checkpoint.**
 
-I want **slow, reviewable progress**. Every milestone is small enough that I can look at the screens, read the code and understand how it works in one sitting. **Stop after every milestone.** If a milestone grows, split it into checkpoints (`M5a`, `M5b`, …) and stop at each one.
+1. **Align:** find the active milestone in the PLAN status table. If the previous one has no owner confirmation (Confirmed column), stop and ask.
+2. **Plan:** before writing code, send a 5–10 line plan (what you'll build, which files you'll touch) and wait for approval.
+3. **Implement and test** following `docs/CONVENTIONS.md`. Cover the acceptance criteria: unit tests for services, state machines and helpers; functional tests for every route (happy path, authorization, and the PRD rule it implements, named by requirement ID); browser tests for the main journeys. `npm run check` (lint, typecheck, tests) passes with no deprecation warnings.
+4. **Decide or ask:** ask before any decision that is hard to reverse or contradicts the documents. Otherwise decide, record the decision and its reason in `docs/ARCHITECTURE.md` §7, and continue.
+5. **Docs and seed data:** update `docs/ARCHITECTURE.md` §2+ when routes, modules, schema, state machines or decisions change; every workaround gets a short code comment and a decisions-log entry. Update `docs/DEPENDENCIES.md` for every package or image added, and the PLAN status. Keep a usable development database: one owner, two staff, a few customers with addresses, the price list, the service areas, and sample orders in every status once orders exist. The seeder prints the demo accounts.
+6. **Evidence and report** (below), then the **handoff:** update the Handoff of PLAN's Active milestone section (done, remaining, new decisions). The next session starts there. Then stop and wait for confirmation.
 
-## 4. Report format
+## Evidence
 
-Write the report to me **in Indonesian**, short and concrete:
+A milestone is not done until `docs/evidence/<milestone>/EVIDENCE.md` exists, following `docs/evidence/TEMPLATE.md`.
 
-1. **Ringkasan**: what was built, in a few sentences, with the requirement IDs covered.
-2. **Cara menjalankan dan melihat**: exact commands from a clean checkout, URLs, seeded accounts, and what to click to see each new thing.
-3. **Tampilan**: screenshots of every new or changed page (desktop and mobile width) in `docs/evidence/M{N}/`, linked.
-4. **Cara kerja**: how each new flow works from the click to the database and back (route → middleware → controller → validator → service → model → page), with a short sequence (text or Mermaid).
-5. **Tur kode**: the new or changed files **in reading order**, one line each, so I can read them in that order.
-6. **Keputusan dan penyimpangan**: decisions taken, deviations from the documents, every workaround added (with its reason).
-7. **Bukti**: the exact verification commands and their real, unedited output.
-8. **Pertanyaan terbuka**, then **Suggested commits** (§7), then the next milestone.
+- Never claim something works without running it. PASS only for what was actually run, exited 0, and whose output you checked.
+- Run the verification of each acceptance criterion through the evidence runner, **one run per criterion, not per command** (join commands with `sh -c '… && …'`): `node scripts/evidence_run.ts <milestone> <name> -- <cmd…>` (`docs/SETUP.md` §3).
+- Raw logs and screenshots go only to `tmp/evidence/<milestone>/` (git-ignored; screenshots with `EVIDENCE_MILESTONE`), only for the milestone being reviewed, and are **never committed**.
+- Excerpts in EVIDENCE.md (at most about 20 lines each) are exact text copied from those logs, never reconstructed or summarized.
+- Open every screenshot and describe it in one line in EVIDENCE.md: page, width, what it shows, and its local `tmp/evidence/…` path. Every new or changed page at desktop and mobile width.
+- Status per criterion: `PASS`, `FAIL`, `NOT RUN` (with the exact commands for the owner to run), or `decision recorded`.
+- List known limitations and deferred items.
+- Fixes and patches after review get their own folder: `docs/evidence/<milestone>-<version>/` for a patch release (`M2-0.2.1`, `M3-0.3.2`), or `<checkpoint>-fix<k>` (`M4a-fix1`) for a checkpoint that ships no version.
 
-## 5. Working with me
+## Report
 
-- Ask before any decision that is hard to reverse or contradicts the documents. Otherwise decide, record the decision and its reason in `docs/ARCHITECTURE.md` §7, and continue.
-- Never claim something works without having run it. If you can't run something, say so and give me the exact commands to run on my machine.
-- Never call real outside services from tests. Midtrans: sandbox keys only. Fonnte: log driver by default; a real message only to a number I give you, only when I ask.
-- No production systems, no real customer data.
-- Never edit `database/schema.ts` by hand; it is generated from migrations.
+To the owner, in chat, **in Indonesian**, short:
 
-## 6. Versioning
+1. **Ringkasan**: what was built, with the requirement IDs covered.
+2. A link to the EVIDENCE.md.
+3. **Pertanyaan terbuka**.
+4. **Suggested commits** (below).
+5. The next milestone.
 
-**Semantic Versioning.** The version lives in `package.json`; changes are recorded in `CHANGELOG.md` (Keep a Changelog).
+Everything else goes **only in EVIDENCE.md** (English is fine): how to run and view (commands from a clean checkout, URLs, seeded accounts, what to click), screens, how each flow works from the click to the database and back (route → middleware → controller → validator → service → model → page, with a short sequence), a code tour of new or changed files in reading order (one line each), and decisions, deviations and workarounds with their reasons.
 
-- **Before 1.0.0:** each milestone ends with a **minor** bump (the version in `docs/PLAN.md`). Fixes after my review of that milestone are **patch** bumps (`0.N.1`, …).
-- **1.0.0** = every requirement in the approved `docs/PLAN.md`, plus the hardening milestone. That is the version the business can actually use.
-- **After 1.0.0:** new features → minor, fixes → patch, breaking changes → major. "Breaking" means a data change that can't be migrated automatically, or a removed feature or URL.
-- You suggest the bump and the tag command; **I create tags myself**.
+## Versioning
 
-## 7. Git: I commit, you suggest
+Semantic Versioning. The version lives in `package.json`; changes go in `CHANGELOG.md` (Keep a Changelog).
 
-- **Never create commits, push, tag, rebase, reset, stash, or create/switch branches. Don't stage files with `git add` either.** Read-only git (`status`, `diff`, `log`, `show`) is fine. I review and commit everything myself.
-- At the end of every milestone (and at any natural checkpoint inside one), add a **"Suggested commits"** section: an ordered list of small, focused commits. For each:
-  - the Conventional Commits message: subject ≤ 72 characters, imperative mood, a scope where it helps (`feat(orders): …`, `test(payments): …`, `docs: …`), and a short body explaining **why**;
-  - the exact paths it includes;
-  - a copy-pasteable command for the **fish** shell (no heredocs, no `$'…'`):
-    `git add path/a path/b; and git commit -m "type(scope): subject" -m "Body paragraph."`
-- The last suggested commit of a milestone is the version bump (`package.json`, `package-lock.json`, `CHANGELOG.md`), followed by the tag command for me to run, e.g. `git tag -a v0.3.0 -m "v0.3.0"`.
-- Every changed path appears in exactly one suggested commit. Run `git status --short` at the end and confirm nothing is left out or listed twice.
-- Commit messages contain **no AI attribution**: no `Co-Authored-By`, no "Generated with", no mention of Claude or any assistant.
-- Never put secrets, `.env` files, map/OSM/OSRM data, uploads or database dumps in a suggested commit. Keep `.gitignore` up to date and mention every change to it.
+- Before 1.0.0: each milestone ends with a **minor** bump (the version in PLAN; a checkpoint `a` has none). Fixes after the owner's review are **patch** bumps (`0.N.1`, …).
+- 1.0.0 = every requirement in the approved PLAN plus the hardening milestone: the version the business can use.
+- After 1.0.0: features → minor, fixes → patch, breaking changes → major ("breaking" = a data change that can't be migrated automatically, or a removed feature or URL).
+- You suggest the bump and the tag command; the owner creates tags.
+
+## Git
+
+The owner commits; you suggest. At the end of every milestone, and at any natural checkpoint inside one, add **Suggested commits**: an ordered list of small, focused commits.
+
+- Conventional Commits: subject ≤ 72 characters, imperative mood, a scope where it helps (`feat(orders): …`, `docs: …`), and a short body explaining **why**.
+- The exact paths of each commit. Every changed path is in exactly one commit.
+- One command per commit for the **fish** shell (no heredocs, no `$'…'`): `git add path/a path/b; and git commit -m "type(scope): subject" -m "Body paragraph."`
+- The last commit of a milestone is the version bump (`package.json`, `package-lock.json`, `CHANGELOG.md`), followed by the tag command for the owner, e.g. `git tag -a v0.4.0 -m "v0.4.0"`.
+- Keep `.gitignore` current and mention every change to it.
+- Write the commits as a plan file under `tmp/` and run `node scripts/check_commits.ts <plan> --print-fish`: it checks every path against `git status`, the subjects, attribution and forbidden files, and prints the fish commands to paste. Only suggest commits it passes.

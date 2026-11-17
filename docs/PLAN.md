@@ -1,38 +1,82 @@
 # Plan
 
-Milestones in order. **Slow, reviewable progress**: each milestone is small enough to review the screens, read the code and understand how it works in one sitting. The implementer stops after every milestone and waits for confirmation (`AGENTS.md` §3). A milestone that grows is split into checkpoints (`M5a`, `M5b`, …), each with its own stop.
+Milestones in order. **Slow, reviewable progress**: each milestone is small enough to review the screens, read the code and understand how it works in one sitting. The implementer stops after every milestone and waits for confirmation (`AGENTS.md`, "Milestone loop"). A milestone that grows is split into checkpoints (`M5a`, `M5b`, …), each with its own stop.
 
 Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance criteria** (by requirement ID) and an **hour estimate** to every milestone below, and may propose a different split; the plan is final once approved.
 
-| #    | Version | Milestone                                       | Status      | Hours |
-| ---- | ------- | ----------------------------------------------- | ----------- | ----- |
-| M0   | –       | Spikes and plan                                 | done        | 8     |
-| M1a  | –       | Conventions across the existing code            | done        | 8     |
-| M1b  | –       | Foundation and look                             | done        | 10    |
-| M1c  | 0.1.0   | Landing, legal pages, SEO                       | done        | 10    |
-| M2a  | –       | Accounts: phone login, role redirects, seeders  | done        | 10    |
-| M2b  | –       | Accounts: register, OTP, forgot password        | done        | 8     |
-| M2c  | 0.2.0   | Accounts: profile, security, rate limits        | done        | 6     |
-| M3a  | –       | Services and landing price list                 | done        | 8     |
-| M3b  | 0.3.0   | Service areas, store settings, coverage service | done        | 8     |
-| M4a  | –       | Maps, area map and landing coverage check       | not started | 10    |
-| M4b  | 0.4.0   | Place search and addresses                      | not started | 10    |
-| M5a  | 0.5.0   | Online ordering: slots, new order, confirm      | not started | 14    |
-| M5b  | 0.5.0   | Order pages and tracking                        | not started | 12    |
-| M6   | 0.6.0   | Courier trips                                   | not started | 24    |
-| M7   | 0.7.0   | Workshop                                        | not started | 16    |
-| M8   | 0.8.0   | Payments                                        | not started | 24    |
-| M9   | 0.9.0   | Walk-in orders                                  | not started | 16    |
-| M10a | 0.10.0  | Owner area: orders, money, activity             | not started | 18    |
-| M10b | 0.10.0  | Owner area: customers, reports, staff accounts  | not started | 18    |
-| M11  | 0.11.0  | Live updates and jobs                           | not started | 10    |
-| M12  | 1.0.0   | Hardening and release                           | not started | 20    |
+| # | Version | Milestone | Status | Confirmed | Hours |
+| --- | --- | --- | --- | --- | --- |
+| M0 | – | Spikes and plan | done | v0.1.0 tag | 8 |
+| M1a | – | Conventions across the existing code | done | v0.1.0 tag | 8 |
+| M1b | – | Foundation and look | done | v0.1.0 tag | 10 |
+| M1c | 0.1.0 | Landing, legal pages, SEO | done | v0.1.0 tag | 10 |
+| M2a | – | Accounts: phone login, role redirects, seeders | done | v0.2.0 tag | 10 |
+| M2b | – | Accounts: register, OTP, forgot password | done | v0.2.0 tag | 8 |
+| M2c | 0.2.0 | Accounts: profile, security, rate limits | done | v0.2.0 tag | 6 |
+| M3a | – | Services and landing price list | done | v0.3.0 tag | 8 |
+| M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 tag | 8 |
+| M4a | – | Maps, area map and landing coverage check | not started | – | 10 |
+| M4b | 0.4.0 | Place search and addresses | not started | – | 10 |
+| M5a | 0.5.0 | Online ordering: slots, new order, confirm | not started | – | 14 |
+| M5b | 0.5.0 | Order pages and tracking | not started | – | 12 |
+| M6 | 0.6.0 | Courier trips | not started | – | 24 |
+| M7 | 0.7.0 | Workshop | not started | – | 16 |
+| M8 | 0.8.0 | Payments | not started | – | 24 |
+| M9 | 0.9.0 | Walk-in orders | not started | – | 16 |
+| M10a | 0.10.0 | Owner area: orders, money, activity | not started | – | 18 |
+| M10b | 0.10.0 | Owner area: customers, reports, staff accounts | not started | – | 18 |
+| M11 | 0.11.0 | Live updates and jobs | not started | – | 10 |
+| M12 | 1.0.0 | Hardening and release | not started | – | 20 |
 
 Hours are the implementer's estimate for building, testing and writing the evidence of each milestone; review time is not included. Total M1a–M12: 260 hours.
 
 **Checkpoints:** M5 and M10 each became two checkpoints (`a`, `b`) in M0 so that each stop stays reviewable in one sitting; M3 (D72) and M4 (D81) were split the same way later; M1 became M1a (conventions applied to the existing code, added by the owner after M0), M1b (foundation and look) and M1c (landing, legal pages, SEO). A checkpoint `a` ends with a report and suggested commits but no version bump; the minor version is bumped at the end of checkpoint `b`.
 
-**Every milestone** also meets the general acceptance criteria of `AGENTS.md` §2: tests for its criteria (unit for services, state machines and helpers; functional for every route, including authorization and the PRD rule, named by requirement ID; browser tests for the main journeys), `npm run lint`, `npm run typecheck` and `npm test` pass without deprecation warnings, seed data updated, `docs/ARCHITECTURE.md` and `docs/DEPENDENCIES.md` current, `docs/evidence/M{N}/EVIDENCE.md` with desktop and mobile screenshots and logs in the same folder.
+**Every milestone** also meets the general acceptance criteria of `AGENTS.md` ("Milestone loop", "Evidence"): tests for its criteria (unit for services, state machines and helpers; functional for every route, including authorization and the PRD rule, named by requirement ID; browser tests for the main journeys), `npm run lint`, `npm run typecheck` and `npm test` pass without deprecation warnings, seed data updated, `docs/ARCHITECTURE.md` and `docs/DEPENDENCIES.md` current, `docs/evidence/M{N}/EVIDENCE.md` following `docs/evidence/TEMPLATE.md`, with exact log excerpts and a one-line description of every desktop and mobile screenshot; the logs and screenshots themselves stay in the git-ignored `tmp/evidence/M{N}/` (D84).
+
+**Confirmed** shows the owner's release tag that includes the milestone (the owner creates tags, `AGENTS.md` "Versioning"); no other written confirmation exists. `?` means no evidence of confirmation, `–` not done yet.
+
+**Evidence of finished milestones** (not read routinely; each folder holds `EVIDENCE.md`, fixes and patches next to it):
+
+- M0: `docs/evidence/M0/`
+- M1a: `docs/evidence/M1a/`
+- M1b: `docs/evidence/M1b/`
+- M1c: `docs/evidence/M1c/` (patch 0.1.2: `docs/evidence/M1c/PATCH-0.1.2.md`)
+- M2a: `docs/evidence/M2a/` (review fixes: `FIX.md`, `FIX2.md`)
+- M2b: `docs/evidence/M2b/` (review fixes: `FIX.md`, `FIX2.md`)
+- M2c: `docs/evidence/M2c/`; patches 0.2.1 and 0.2.2: `docs/evidence/M2-0.2.1/`, `docs/evidence/M2-0.2.2/`
+- M3a: `docs/evidence/M3a/`; review fixes: `docs/evidence/M3a-fix/`
+- M3b: `docs/evidence/M3b/`; patches 0.3.1 and 0.3.2: `docs/evidence/M3-0.3.1/`, `docs/evidence/M3-0.3.2/`
+
+## Active milestone
+
+**M4a (checkpoint of 0.4.0): Maps, area map and landing coverage check.** Full criteria in the M4a section below; not started.
+
+**Requirement IDs:** MAP-2, AREA-1 (credit on maps), AREA-4 (public check), OWN-9 (map), GUEST-1 (coverage check). Decisions: D73 (what moved here from M3b), D77 (display geometry derived from the full boundaries), D78 (border points count as covered), D80 (rate limits), D81 (the split).
+
+**Likely touched** (names from `docs/ARCHITECTURE.md` §3):
+
+- Backend: `app/controllers/area_check_controller.ts` (new), `app/services/area_service.ts` (`checkCoverage` exists; display geometry), `start/routes.ts`, `start/limiter.ts` (new, D80), `start/env.ts` and `.env.example` (optional tiles file setting), `commands/osm_import.ts` (new, `node ace osm:import`, §6.2)
+- Frontend: `inertia/lib/map/` (MapLibre GL JS + `pmtiles` protocol, loaded only on map pages), a map organism, `inertia/pages/admin/settings/areas.tsx`, the landing coverage section on `inertia/pages/home.tsx`, self-hosted style fonts and sprites under `public/`
+- Tests: unit (display geometry), functional (coverage endpoint, rate limit, authorization), browser (area map, coverage check, no request to another host)
+- Docs: `docs/DEPENDENCIES.md` (`maplibre-gl`, `pmtiles`, `@protomaps/basemaps`), `docs/ARCHITECTURE.md` §3 and §6, `docs/SETUP.md` (map data)
+
+**Acceptance criteria** (summary; the M4a section is the source):
+
+- MAP-2: MapLibre GL JS from the self-hosted PMTiles file, only on map pages; optional tiles setting, empty in `.env.test`, plain background without it; self-hosted fonts and sprites; a browser test proves no request to another host.
+- MAP-2, AREA-1: attribution control (`compact: false`) with "© OpenStreetMap contributors" and the district boundary credit, CC BY-IGO 3.0 link and a "modified" note.
+- Display geometry derived from the full boundaries, used only for drawing; coverage is decided on the server.
+- OWN-9: `/admin/pengaturan/area` shows the districts on a map, active and inactive distinguished by more than color.
+- GUEST-1, AREA-4: landing coverage check with "use my location" and a draggable pin; one debounced request after the pin stops; 60 requests per minute per IP with an Indonesian wait message; no text place search for guests.
+- `node ace osm:import` runs the §6.2 pipeline (checks first that the clip box contains every service area), once the owner approves how it runs in development and production.
+
+**Out of scope** (to confirm with the owner): place search and the street label under a pin (MAP-1, M4b); saving addresses and checking saved pins (CUST-2, CUST-3, CUST-14, AREA-4 saving, M4b); refusing out-of-area addresses when ordering (M5a, D82); OSRM routing (M6); the version bump (0.4.0 comes with M4b).
+
+**Handoff** (from the M3b evidence and patches 0.3.1, 0.3.2):
+
+- Done: `AreaService.checkCoverage` with unit tests (M3b, D78); full-resolution boundaries seeded (D77); the server's GEOS 3.14.1 supports `ST_CoverageSimplify` for the display geometry (0.3.1); licence attribution planned (0.3.1 §6.4); OSM import measured in a throwaway database, the D6 box contains every service area (0.3.2 §5); map rate limits in the PRD (D80).
+- Remaining: everything in the criteria above. Open: how `osm:import` runs in development and production (owner approval).
+- New decisions since M3b: D77–D83, and the process changes D84–D86.
 
 ## M0: Spikes and plan
 
