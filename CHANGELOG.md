@@ -6,6 +6,24 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-17
+
+### Changed
+
+- Service areas are checked against the district boundaries at their full source resolution instead of
+  a simplified copy, so pins near a district border are judged correctly (AREA-1, AREA-4).
+- A pin exactly on the border between an active and an inactive district counts as covered, every time
+  (AREA-4).
+- The seeders run in a fixed order from one index seeder, and the demo accounts are printed only in
+  development.
+- `npm test` no longer changes committed files: screenshots go to `tmp/screenshots/`, and evidence
+  folders are written only when `EVIDENCE_DIR` is set, never overwriting a file.
+- The landing price list shows one tab per item kind with a list of prices, the add-ons in one card
+  and the helmet store-only note in the helmet tab; the explanatory texts above it are gone (GUEST-1,
+  SVC-4).
+- Rate limits for the coverage check (60 per minute per IP) and place search (30 per minute per user)
+  added to the requirements; M4 split into M4a and M4b.
+
 ## [0.3.0] - 2026-11-17
 
 ### Added
@@ -38,7 +56,6 @@ All notable changes to this project are documented here. The format follows
 - Owner navigation links for "Pengaturan Toko" and "Area Layanan" added to sidebar and mobile sheet menu.
 - Activity logs recorded for all owner actions: service CRUD, area toggle, store settings update, and
   pickup slots update.
-
 
 ## [0.2.2] - 2026-11-16
 
