@@ -142,15 +142,21 @@ npm run typecheck    # TypeScript checks for backend and Inertia frontend
 npm test             # Japa test runner (unit, functional, and browser tests)
 ```
 
+`npm run check` runs the three steps above with one line of output per step; a failing step prints its name and the end of its log (full logs in `tmp/check/`). `VERBOSE=1 npm run check` prints the full output. The tests run with Japa's `dot` reporter there; `npm test` keeps the default reporter.
+
 A test run never changes a committed file. Browser tests save their screenshots and axe logs in the git-ignored `tmp/screenshots/`.
 
-**Evidence screenshots** for a checkpoint are written only on request: set `EVIDENCE_DIR` to a new folder and run the browser tests of that checkpoint. Each file is copied there as well, and a test fails rather than overwrite a file that already exists, so committed evidence is never replaced.
+**Evidence for a milestone** is written only on request and only into the git-ignored `tmp/evidence/<milestone>/`; it is never committed (`docs/ARCHITECTURE.md` D84, `docs/evidence/README.md`).
+
+- Verification logs: run each command through the evidence runner. The command's output goes only to `tmp/evidence/<milestone>/logs/<name>.log`, with a header (time, command, commit, uncommitted changes); the runner prints one line, `PASS|FAIL exit=<n> log=<path>`, plus the last 40 lines on failure, and exits with the command's exit code. An existing log is never overwritten.
+- Screenshots and axe logs: set `EVIDENCE_MILESTONE` to the milestone and run the browser tests of that milestone. Each file is copied to `tmp/evidence/<milestone>/screenshots/` as well, and a test fails rather than overwrite a file that already exists.
 
 ```sh
-EVIDENCE_DIR=docs/evidence/M4a node ace test browser --files=tests/browser/<spec>.spec.ts
+node scripts/evidence_run.ts M4a lint -- npm run lint
+node scripts/evidence_run.ts M4a browser-area -- env EVIDENCE_MILESTONE=M4a node ace test browser --files=tests/browser/<spec>.spec.ts
 ```
 
-`EVIDENCE_DIR=… cmd` works in bash and in fish 3.1 or newer.
+The runner starts the command without a shell, so set variables with `env NAME=value cmd`, which works the same in bash and fish.
 
 ---
 

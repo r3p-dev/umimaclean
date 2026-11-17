@@ -27,3 +27,7 @@ yarn-error.log
 
 # Platform specific
 .DS_Store
+
+# Evidence artifacts live only in tmp/evidence/ (docs/ARCHITECTURE.md D84); safety net for old habits
+docs/evidence/**/*.log
+docs/evidence/**/*.png

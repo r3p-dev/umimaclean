@@ -12,19 +12,27 @@ type ScreenshotElement = {
   screenshot(options: { path: string }): Promise<unknown>
 }
 
-// A normal test run writes only to the git-ignored OUTPUT_DIR. Committed evidence is written
-// only when EVIDENCE_DIR names a folder (docs/SETUP.md §3), and an existing file is never
-// overwritten: COPYFILE_EXCL makes the copy fail instead.
+// A normal test run writes only to the git-ignored OUTPUT_DIR. Evidence for a milestone is copied
+// to tmp/evidence/<milestone>/screenshots/ only when EVIDENCE_MILESTONE names one (docs/SETUP.md §3,
+// docs/ARCHITECTURE.md D84). The milestone must be a plain folder name, so nothing can be written
+// outside tmp/evidence/, and an existing file is never overwritten: COPYFILE_EXCL makes the copy fail.
 async function copyToEvidence(fileName: string) {
-  const evidenceDir = process.env.EVIDENCE_DIR
-  if (!evidenceDir) {
+  const milestone = process.env.EVIDENCE_MILESTONE
+  if (!milestone) {
     return
   }
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(milestone)) {
+    throw new Error(`EVIDENCE_MILESTONE must be a folder name like M4a, got "${milestone}"`)
+  }
+  if (path.basename(fileName) !== fileName) {
+    throw new Error(`Screenshot file names must not contain a folder, got "${fileName}"`)
+  }
 
-  await mkdir(path.resolve(evidenceDir), { recursive: true })
+  const evidenceDir = path.resolve('tmp/evidence', milestone, 'screenshots')
+  await mkdir(evidenceDir, { recursive: true })
   await copyFile(
     path.join(OUTPUT_DIR, fileName),
-    path.resolve(evidenceDir, fileName),
+    path.join(evidenceDir, fileName),
     constants.COPYFILE_EXCL
   )
 }
