@@ -1,4 +1,0 @@
-
-> umimaclean@0.1.2 typecheck
-> tsc --noEmit && tsc --noEmit --project inertia/tsconfig.json
-
