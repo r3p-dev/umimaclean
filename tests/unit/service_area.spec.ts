@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { readFile } from 'node:fs/promises'
 import db from '@adonisjs/lucid/services/db'
 import testUtils from '@adonisjs/core/services/test_utils'
 import ServiceArea from '#models/service_area'
@@ -169,5 +170,31 @@ test.group('Service Areas & Point-in-Polygon Check (AREA-1..4)', (group) => {
     const result = await new AreaService().checkCoverage(lat, lng)
     assert.isTrue(result.isCovered)
     assert.equal(result.district?.name, 'Cibiru')
+  })
+
+  test('the committed OSM clip polygon covers every service area, a smaller one does not (D88)', async ({
+    assert,
+  }) => {
+    const clip = JSON.parse(await readFile('maps/clip_polygon.geojson', 'utf8'))
+    assert.deepEqual(
+      await ServiceArea.findNamesOutside(JSON.stringify(clip.features[0].geometry)),
+      []
+    )
+
+    const centralBandung = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [107.55, -6.95],
+          [107.65, -6.95],
+          [107.65, -6.88],
+          [107.55, -6.88],
+          [107.55, -6.95],
+        ],
+      ],
+    }
+    const outside = await ServiceArea.findNamesOutside(JSON.stringify(centralBandung))
+    assert.isNotEmpty(outside)
+    assert.include(outside, 'Ciwidey')
   })
 })
