@@ -1,0 +1,4 @@
+$ npx --yes mapshaper@0.7.97 idn_admin3.geojson -filter '"ID3204,ID3273,ID3277".includes(adm2_pcode)' -each 'city = adm2_name === "Kota Bandung" ? "Kota Bandung" : (adm2_name === "Kota Cimahi" ? "Kota Cimahi" : "Kabupaten Bandung"), name = adm3_name, code = adm3_pcode' -filter-fields city,name,code -o format=geojson service_areas.geojson
+[filter] Retained 64 of 7,069 features
+[o] Wrote full.geojson
+exit 0

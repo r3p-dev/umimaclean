@@ -1,0 +1,3 @@
+landing-harga-360: section=#harga scrollWidth=360 axe=none
+landing-harga-390: section=#harga scrollWidth=390 axe=none
+landing-harga-1440: section=#harga scrollWidth=1440 axe=none

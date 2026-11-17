@@ -1,0 +1,4 @@
+$ npx --yes mapshaper@0.7.97 idn_admin3.geojson -filter '"ID3204,ID3273,ID3277".includes(admin2Pcod)' -simplify 15% keep-shapes -each 'city = admin2Name === "Kota Bandung" ? "Kota Bandung" : (admin2Name === "Kota Cimahi" ? "Kota Cimahi" : "Kabupaten Bandung"), name = admin3Name, code = admin3Pcod' -filter-fields city,name,code -o format=geojson recorded.geojson
+[filter] ReferenceError in expression ["ID3204,ID3273,ID3277".includes(admin2Pcod)]: admin2Pcod is not defined
+Run mapshaper -h to view help
+exit 1

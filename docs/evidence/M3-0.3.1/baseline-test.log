@@ -1,0 +1,583 @@
+
+> umimaclean@0.3.0 test
+> node ace test
+
+c[ info ] loading hooks...
+[ info ] generating indexes...
+[ info ] codegen: created 7 file(s)
+[ info ] booting application to run tests...
+8:01:16 AM [vite] (client) Re-optimizing dependencies because vite config has changed
+❯ Executed 9 migrations (490 ms)
+✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔{"level":30,"time":1794877278435,"pid":726518,"hostname":"fedora","name":"umimaclean","phone":"62812****0000","kind":"otp","msg":"WhatsApp message logged (outside allowed list)"}
+✔✔✔✔✔✔✔✔✔✔✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔✔✔✔✔✔✔✔✔✔{"level":30,"time":1794877280583,"pid":726518,"hostname":"fedora","name":"umimaclean","phone":"62812****5432","kind":"otp","msg":"WhatsApp message dispatched"}
+✔✔✔{"level":30,"time":1794877280583,"pid":726518,"hostname":"fedora","name":"umimaclean","phone":"62819****8777","kind":"otp","msg":"WhatsApp message logged (outside allowed list)"}
+{"level":30,"time":1794877280583,"pid":726518,"hostname":"fedora","name":"umimaclean","phone":"62812****5432","kind":"otp","msg":"WhatsApp message logged (outside allowed list)"}
+{"level":30,"time":1794877280583,"pid":726518,"hostname":"fedora","name":"umimaclean","phone":"62812****5432","kind":"otp","msg":"WhatsApp message dispatched"}
+✔✔✔✔✔✔✔8:01:20 AM [vite] (ssr) connected.
+✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+{"level":40,"time":1794877286525,"pid":726518,"hostname":"fedora","name":"umimaclean","request_id":"495e3371-e9f2-441e-9aed-70e9eb7c3ffa","x-request-id":"495e3371-e9f2-441e-9aed-70e9eb7c3ffa","msg":"Layanan tidak ditemukan."}
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔✔✔✔✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔
+================================================================
+Akun Demo Umima Clean:
+----------------------------------------------------------------
+Pemilik (Owner) : 081298765432 / password123 -> /staf/masuk
+Staf 1          : 081312345678 / password123 -> /staf/masuk
+Staf 2          : 081387654321 / password123 -> /staf/masuk
+Pelanggan 1     : 082111223344 / password123 -> /masuk
+Pelanggan 2     : 085299887766 / password123 -> /masuk
+Akun Nonaktif   : 087812345670 / password123 (dinonaktifkan)
+================================================================
+
+❯ Executed 4 seeders
+✔❯ Reverted 9 migrations (54 ms)
+
+
+ PASSED 
+
+Tests  210 passed (210)
+ Time  3m

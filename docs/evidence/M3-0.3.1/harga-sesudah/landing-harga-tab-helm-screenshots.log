@@ -1,0 +1,3 @@
+landing-harga-tab-helm-360: section=#harga tab=Helm scrollWidth=360 axe=none
+landing-harga-tab-helm-390: section=#harga tab=Helm scrollWidth=390 axe=none
+landing-harga-tab-helm-1440: section=#harga tab=Helm scrollWidth=1440 axe=none

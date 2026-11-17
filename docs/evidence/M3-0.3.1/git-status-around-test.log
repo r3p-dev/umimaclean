@@ -1,0 +1,58 @@
+$ git status --short   (just before npm test)
+ M .prettierignore
+ M CHANGELOG.md
+ M app/services/area_service.ts
+ M config/database.ts
+ D database/data/service_areas.geojson
+ M database/seeders/service_area_seeder.ts
+ M database/seeders/user_seeder.ts
+ M docs/ARCHITECTURE.md
+ M docs/DEPENDENCIES.md
+ M docs/PLAN.md
+ M docs/PRD/guest.md
+ M docs/PRD/shared.md
+ M docs/SETUP.md
+ M inertia/components/organisms/landing/pricing_section.tsx
+ M tests/browser/services_flow.spec.ts
+ M tests/browser/settings_flow.spec.ts
+ M tests/unit/service_area.spec.ts
+?? database/data/service_areas_full.geojson
+?? database/seeders/main/
+?? docs/evidence/M3-0.3.1/
+?? inertia/components/ui/tabs.tsx
+?? tests/browser/landing_pricing.spec.ts
+?? tests/helpers/screenshots.ts
+
+$ git status --short   (just after npm test)
+ M .prettierignore
+ M CHANGELOG.md
+ M app/services/area_service.ts
+ M config/database.ts
+ D database/data/service_areas.geojson
+ M database/seeders/service_area_seeder.ts
+ M database/seeders/user_seeder.ts
+ M docs/ARCHITECTURE.md
+ M docs/DEPENDENCIES.md
+ M docs/PLAN.md
+ M docs/PRD/guest.md
+ M docs/PRD/shared.md
+ M docs/SETUP.md
+ M inertia/components/organisms/landing/pricing_section.tsx
+ M tests/browser/services_flow.spec.ts
+ M tests/browser/settings_flow.spec.ts
+ M tests/unit/service_area.spec.ts
+?? database/data/service_areas_full.geojson
+?? database/seeders/main/
+?? docs/evidence/M3-0.3.1/
+?? inertia/components/ui/tabs.tsx
+?? tests/browser/landing_pricing.spec.ts
+?? tests/helpers/screenshots.ts
+
+$ diff <before> <after>
+diff exit 0
+
+$ git status --short -- docs/evidence/M3a-fix docs/evidence/M3b
+(no output = unchanged)
+
+$ grep -c "Akun Demo" test.log
+0
