@@ -3,6 +3,7 @@ import { Head, router } from '@inertiajs/react'
 import { IconMapPin, IconSearch } from '@tabler/icons-react'
 import { cn } from 'cn'
 import OwnerPageHeader from '~/components/organisms/owner_page_header'
+import ServiceAreaMap from '~/components/organisms/service_area_map'
 import SettingsTabs from '~/components/organisms/settings/settings_tabs'
 import OwnerLayout from '~/components/templates/owner_layout'
 import { Badge } from '~/components/ui/badge'
@@ -16,7 +17,15 @@ export type ServiceAreaCity = Data.ServiceArea['city']
 
 const CITY_ORDER: ServiceAreaCity[] = ['Kota Bandung', 'Kota Cimahi', 'Kabupaten Bandung']
 
-export default function AdminAreas({ areas }: { areas: ServiceAreaItem[] }) {
+export default function AdminAreas({
+  areas,
+  shapes,
+  tilesUrl,
+}: {
+  areas: ServiceAreaItem[]
+  shapes: Data.ServiceAreaShape[]
+  tilesUrl: string | null
+}) {
   const [search, setSearch] = useState('')
 
   const activeTotal = useMemo(() => areas.filter((a) => a.isActive).length, [areas])
@@ -77,6 +86,25 @@ export default function AdminAreas({ areas }: { areas: ServiceAreaItem[] }) {
             </Badge>
           </div>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">Peta area</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <ServiceAreaMap shapes={shapes} tilesUrl={tilesUrl} className="h-80 lg:h-96" />
+            <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <span className="size-4 rounded-sm border-2 border-primary bg-primary/20" />
+                Aktif
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="size-4 rounded-sm border-2 border-dashed border-muted-foreground" />
+                Nonaktif
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
 
         {filteredAreas.length === 0 ? (
           <Card>

@@ -27,4 +27,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   TURNSTILE_SITE_KEY: Env.schema.string.optional(),
   TURNSTILE_SECRET_KEY: Env.schema.string.optional(),
   TURNSTILE_ENABLED: Env.schema.boolean.optional(),
+
+  MAP_TILES_FILE: Env.schema.string.optional(),
 })
