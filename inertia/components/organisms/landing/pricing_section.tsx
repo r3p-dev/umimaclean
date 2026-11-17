@@ -71,6 +71,7 @@ export default function PricingSection({ services }: { services: PricingService[
     const ofKind = services.filter((service) => service.itemKinds.includes(kind))
     return {
       kind,
+      hasStartingFromPrice: ofKind.some((service) => service.isStartingFrom),
       main: ofKind.filter((service) => service.type === ServiceType.MAIN),
       addons: ofKind.filter((service) => service.type === ServiceType.ADDON),
     }
@@ -123,6 +124,11 @@ export default function PricingSection({ services }: { services: PricingService[
                   ))}
                   {group.addons.length > 0 && <AddonCard addons={group.addons} />}
                 </ul>
+                {group.hasStartingFromPrice && (
+                  <p className="pt-2 text-sm text-muted-foreground">
+                    Harga bertanda “mulai dari” dipastikan setelah barang diperiksa.
+                  </p>
+                )}
               </TabsContent>
             ))}
           </Tabs>
