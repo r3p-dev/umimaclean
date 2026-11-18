@@ -14,12 +14,18 @@ All notable changes to this project are documented here. The format follows
 - The landing hero says whether a kecamatan is served: type its name and read one line back, limited to 60 checks per minute per IP (GUEST-1, AREA-4).
 - Opening hours per day and a temporary closure in the store settings; the landing says whether the shop is open now, and the footer lists the week (OWN-8, GUEST-1).
 - In development, a map without its base map says why (setting empty or file missing, or a failed load).
-- The owner chooses the pickup days (Monday to Saturday by default) next to the pickup slots (SLOT-1, OWN-8).
 
 ### Changed
 
 - Opening hours use a 24-hour clock in every browser language, and a temporary closure has a start and an end: the landing shows it only in between, then the normal hours resume (OWN-8, GUEST-1).
 - An error while reading the store settings for a page is logged, and fails the page in development and tests instead of silently using the defaults.
+- Pickup dates follow the opening hours and the temporary closure, with no separate pickup days to keep in step (SLOT-1, OWN-8).
+- The landing hero checks a kecamatan as you type, in a card with the order button, and the price list comes after "Cara kerja" (GUEST-1).
+- The store settings page is reorganised: shop profile, opening hours with a copy-Monday button, pickup slots with a capacity stepper, and the temporary closure in its own card (OWN-8).
+
+### Fixed
+
+- A service saved without any item kind is refused with the Indonesian message instead of VineJS's English one.
 
 ## [0.3.2] - 2026-11-17
 
