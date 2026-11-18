@@ -116,7 +116,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         await page
           .getByRole('heading', { name: 'Pengaturan Toko & Jadwal' })
           .waitFor({ state: 'visible' })
-        await page.getByText('Informasi Toko').first().waitFor({ state: 'visible' })
+        await page.getByText('Profil toko').first().waitFor({ state: 'visible' })
 
         const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
         assert.isAtMost(
@@ -152,7 +152,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         const phoneInput = page.locator('#store-whatsapp')
         await phoneInput.fill('123')
 
-        const submitBtn = page.getByRole('button', { name: 'Simpan Informasi Toko' })
+        const submitBtn = page.getByRole('button', { name: 'Simpan Profil Toko' })
         await submitBtn.click()
         await page.waitForLoadState('networkidle')
         await page.locator('[data-slot="field-error"]').first().waitFor({ state: 'visible' })
@@ -188,16 +188,16 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         await page.setViewportSize({ width: vp.width, height: vp.height })
         await page.waitForLoadState('networkidle')
 
-        const slotCard = page.getByText('Slot Penjemputan').first()
+        const slotCard = page.getByText('Slot penjemputan').first()
         await slotCard.scrollIntoViewIfNeeded()
-        await page
-          .getByText(/slot aktif/i)
-          .first()
-          .waitFor({ state: 'visible' })
 
-        // Change capacity of slot-1
+        // Change capacity of slot-1 with the stepper's + button (React Aria NumberField).
         const capInput = page.locator('#capacity-slot-1')
-        await capInput.fill('10')
+        await page
+          .getByRole('button', { name: /Tambah|Increase/ })
+          .first()
+          .click()
+        assert.equal(await capInput.inputValue(), '7')
 
         const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
         assert.isAtMost(

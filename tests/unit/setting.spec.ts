@@ -24,8 +24,6 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
     assert.isFalse(hours.days[6].isOpen)
     assert.deepEqual(hours.closure, { isClosed: false, startsAt: null, endsAt: null, note: null })
 
-    assert.deepEqual(await service.getPickupDays(), [1, 2, 3, 4, 5, 6])
-
     const slots = await service.getPickupSlots()
     assert.equal(slots.length, 3)
     assert.equal(slots[0].label, '09.00–12.00')
@@ -124,27 +122,5 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
         ]),
       /validation/i
     )
-  })
-
-  test('updates pickup days in weekday order and logs them (SLOT-1, D103)', async ({ assert }) => {
-    const service = new SettingService()
-    const owner = await User.query().where('role', Role.ADMIN).firstOrFail()
-
-    assert.deepEqual(await service.updatePickupDays(owner, [4, 2]), [2, 4])
-    assert.deepEqual(await service.getPickupDays(), [2, 4])
-
-    const log = await ActivityLog.findByOrFail('action', 'settings.pickup_days.update')
-    assert.equal(log.description, 'Memperbarui hari penjemputan (Selasa, Kamis)')
-  })
-
-  test('rejects no pickup day, a repeated day or a day outside 1..7 (SLOT-1)', async ({
-    assert,
-  }) => {
-    const service = new SettingService()
-    const owner = await User.query().where('role', Role.ADMIN).firstOrFail()
-
-    for (const days of [[], [2, 2], [0], [8]]) {
-      await assert.rejects(async () => service.updatePickupDays(owner, days), /validation/i)
-    }
   })
 })

@@ -18,7 +18,6 @@ export default class StoreSettingsController {
 
     return inertia.render('admin/settings/store', {
       slots: PickupSlotTransformer.transform(slots),
-      pickupDays: await this.settingService.getPickupDays(),
       hours: OpeningHoursTransformer.transform(await this.settingService.getOpeningHours()),
     })
   }
@@ -44,10 +43,9 @@ export default class StoreSettingsController {
 
   async updateSlots({ request, response, auth, session }: HttpContext) {
     const actor = auth.user!
-    const { slots, pickupDays } = await request.validateUsing(pickupSlotsSettingValidator)
+    const { slots } = await request.validateUsing(pickupSlotsSettingValidator)
 
     await this.settingService.updatePickupSlots(actor, slots)
-    await this.settingService.updatePickupDays(actor, pickupDays)
 
     session.flash('success', 'Jadwal slot penjemputan berhasil disimpan.')
     return response.redirect().back()

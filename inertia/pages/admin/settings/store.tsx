@@ -1,19 +1,20 @@
 import { useState, type SyntheticEvent, type ReactNode } from 'react'
 import { Head, router, usePage } from '@inertiajs/react'
-import { IconClock, IconDeviceFloppy, IconInfoCircle } from '@tabler/icons-react'
+import { IconDeviceFloppy } from '@tabler/icons-react'
+import { cn } from 'cn'
+import NumberStepper from '~/components/molecules/number_stepper'
 import PhoneInput from '~/components/molecules/phone_input'
 import OwnerPageHeader from '~/components/organisms/owner_page_header'
+import ClosureCard from '~/components/organisms/settings/closure_card'
 import OpeningHoursForm from '~/components/organisms/settings/opening_hours_form'
 import SettingsTabs from '~/components/organisms/settings/settings_tabs'
 import OwnerLayout from '~/components/templates/owner_layout'
-import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
 import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Switch } from '~/components/ui/switch'
 import { Textarea } from '~/components/ui/textarea'
-import { DAY_NAMES } from '~/lib/store/days'
 import type { Data } from '@generated/data'
 
 export type StoreInfo = NonNullable<Data.SharedProps['store']>
@@ -21,11 +22,9 @@ export type PickupSlotItem = Data.PickupSlot
 
 export default function AdminStoreSettings({
   slots,
-  pickupDays,
   hours,
 }: {
   slots: PickupSlotItem[]
-  pickupDays: number[]
   hours: Data.OpeningHours
 }) {
   const sharedStore = usePage<Data.SharedProps>().props.store
@@ -39,7 +38,6 @@ export default function AdminStoreSettings({
   const [isSubmittingStore, setIsSubmittingStore] = useState(false)
 
   const [slotsState, setSlotsState] = useState<PickupSlotItem[]>(slots)
-  const [pickupDaysState, setPickupDaysState] = useState(pickupDays)
   const [slotsErrors, setSlotsErrors] = useState<Record<string, string>>({})
   const [isSubmittingSlots, setIsSubmittingSlots] = useState(false)
 
@@ -79,12 +77,6 @@ export default function AdminStoreSettings({
     setSlotsState((prev) => prev.map((s) => (s.id === id ? { ...s, isActive } : s)))
   }
 
-  function handlePickupDayToggle(day: number, isOn: boolean) {
-    setPickupDaysState((prev) =>
-      isOn ? [...prev, day].sort((a, b) => a - b) : prev.filter((d) => d !== day)
-    )
-  }
-
   function handleSlotsSubmit(e: SyntheticEvent) {
     e.preventDefault()
     setSlotsErrors({})
@@ -92,7 +84,7 @@ export default function AdminStoreSettings({
 
     router.put(
       '/admin/pengaturan/slot',
-      { slots: slotsState, pickupDays: pickupDaysState },
+      { slots: slotsState },
       {
         preserveScroll: true,
         onSuccess: () => {
@@ -109,182 +101,141 @@ export default function AdminStoreSettings({
     )
   }
 
-  const activeSlotsCount = slotsState.filter((s) => s.isActive).length
-
   return (
     <>
       <Head title="Pengaturan Toko & Jadwal" />
       <OwnerPageHeader
         title="Pengaturan Toko & Jadwal"
-        status="Kelola identitas toko, nomor kontak WhatsApp, alamat operasional, dan kapasitas slot penjemputan harian."
+        status="Kelola profil toko, jam operasional, tutup sementara, dan kapasitas slot penjemputan."
       />
 
       <SettingsTabs active="store" />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Informasi Toko */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <IconInfoCircle className="size-5 text-primary" />
-              <CardTitle>Informasi Toko</CardTitle>
-            </div>
-            <CardDescription>
-              Data ini ditampilkan di footer situs, halaman kebijakan privasi, dan nota pesanan.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleStoreSubmit} className="flex flex-col gap-4">
-              <Field>
-                <FieldLabel htmlFor="store-name">Nama Toko</FieldLabel>
-                <Input
-                  id="store-name"
-                  value={storeForm.name}
-                  onChange={(e) => setStoreForm((prev) => ({ ...prev, name: e.target.value }))}
-                  placeholder="Contoh: Umima Clean"
-                  required
-                />
-                {activeStoreErrors.name && <FieldError>{activeStoreErrors.name}</FieldError>}
-              </Field>
+      <div className="grid items-start gap-6 lg:grid-cols-5">
+        <div className="flex min-w-0 flex-col gap-6 lg:col-span-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profil toko</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleStoreSubmit} className="flex flex-col gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel htmlFor="store-name">Nama toko</FieldLabel>
+                    <Input
+                      id="store-name"
+                      value={storeForm.name}
+                      onChange={(e) => setStoreForm((prev) => ({ ...prev, name: e.target.value }))}
+                      placeholder="Contoh: Umima Clean"
+                      className="h-11"
+                      required
+                    />
+                    {activeStoreErrors.name && <FieldError>{activeStoreErrors.name}</FieldError>}
+                  </Field>
 
-              <PhoneInput
-                id="store-whatsapp"
-                label="Nomor WhatsApp"
-                description="Nomor resmi untuk konfirmasi pesanan dan kontak bantuan pelanggan."
-                value={storeForm.whatsapp}
-                onChange={(val) => setStoreForm((prev) => ({ ...prev, whatsapp: val }))}
-                error={activeStoreErrors.whatsapp}
-                required
-              />
-
-              <Field>
-                <FieldLabel htmlFor="store-address">Alamat Operasional Toko</FieldLabel>
-                <Textarea
-                  id="store-address"
-                  rows={3}
-                  value={storeForm.address}
-                  onChange={(e) => setStoreForm((prev) => ({ ...prev, address: e.target.value }))}
-                  placeholder="Alamat lengkap workshop / toko..."
-                  required
-                />
-                <FieldDescription>
-                  Alamat workshop tempat operasional pencucian sepatu dan helm.
-                </FieldDescription>
-                {activeStoreErrors.address && <FieldError>{activeStoreErrors.address}</FieldError>}
-              </Field>
-
-              <div className="pt-2">
-                <Button type="submit" isDisabled={isSubmittingStore} className="w-full sm:w-auto">
-                  <IconDeviceFloppy className="mr-1.5 size-4" />
-                  Simpan Informasi Toko
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        <OpeningHoursForm hours={hours} />
-
-        {/* Slot Penjemputan */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <IconClock className="size-5 text-primary" />
-                <CardTitle>Slot Penjemputan</CardTitle>
-              </div>
-              <Badge variant="outline" className="text-xs">
-                {activeSlotsCount} slot aktif
-              </Badge>
-            </div>
-            <CardDescription>
-              Tentukan hari penjemputan, jam penjemputan, dan batas kuota pesanan per kurir (1–20
-              pasang/item).
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSlotsSubmit} className="flex flex-col gap-4">
-              <fieldset className="flex flex-col gap-2">
-                <legend className="mb-2 text-sm font-medium text-foreground">
-                  Hari penjemputan
-                </legend>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {DAY_NAMES.map((name, index) => (
-                    <div key={name} className="flex items-center gap-2">
-                      <Switch
-                        isSelected={pickupDaysState.includes(index + 1)}
-                        onChange={(isOn) => handlePickupDayToggle(index + 1, isOn)}
-                        aria-label={`Jemput hari ${name}`}
-                      />
-                      <span className="text-sm text-foreground">{name}</span>
-                    </div>
-                  ))}
+                  <PhoneInput
+                    id="store-whatsapp"
+                    label="WhatsApp bisnis"
+                    value={storeForm.whatsapp}
+                    onChange={(val) => setStoreForm((prev) => ({ ...prev, whatsapp: val }))}
+                    error={activeStoreErrors.whatsapp}
+                    required
+                  />
                 </div>
-                {slotsErrors.pickupDays && <FieldError>{slotsErrors.pickupDays}</FieldError>}
-              </fieldset>
 
-              <div className="flex flex-col divide-y divide-border rounded-lg border border-border">
-                {slotsState.map((slot) => (
-                  <div
-                    key={slot.id}
-                    className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-foreground">{slot.label}</span>
-                        {!slot.isActive && (
-                          <Badge variant="secondary" className="text-[10px]">
-                            Nonaktif
-                          </Badge>
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground">ID: {slot.id}</span>
-                    </div>
+                <Field>
+                  <FieldLabel htmlFor="store-address">Alamat toko</FieldLabel>
+                  <Textarea
+                    id="store-address"
+                    rows={2}
+                    value={storeForm.address}
+                    onChange={(e) => setStoreForm((prev) => ({ ...prev, address: e.target.value }))}
+                    placeholder="Alamat lengkap workshop / toko..."
+                    required
+                  />
+                  <FieldDescription>
+                    Ditampilkan di footer situs, halaman kebijakan privasi, dan nota pesanan.
+                  </FieldDescription>
+                  {activeStoreErrors.address && (
+                    <FieldError>{activeStoreErrors.address}</FieldError>
+                  )}
+                </Field>
 
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <label
-                          htmlFor={`capacity-${slot.id}`}
-                          className="text-xs font-medium text-muted-foreground whitespace-nowrap"
-                        >
-                          Kapasitas:
-                        </label>
-                        <Input
-                          id={`capacity-${slot.id}`}
-                          type="number"
-                          min={1}
-                          max={20}
-                          value={slot.capacity}
-                          onChange={(e) =>
-                            handleSlotCapacityChange(slot.id, Number(e.target.value))
-                          }
-                          className="h-9 w-20 text-center"
-                          aria-label={`Kapasitas slot ${slot.label}`}
-                          required
-                        />
-                      </div>
+                <div>
+                  <Button type="submit" isDisabled={isSubmittingStore} className="w-full sm:w-auto">
+                    <IconDeviceFloppy aria-hidden="true" className="mr-1.5 size-4" />
+                    Simpan Profil Toko
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
 
+          <OpeningHoursForm hours={hours} />
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Slot penjemputan</CardTitle>
+              <CardDescription>
+                Kapasitas = jumlah penjemputan per slot; slot penuh tetap terlihat tapi nonaktif
+                bagi pelanggan.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSlotsSubmit} className="flex flex-col gap-4">
+                <ul className="flex flex-col gap-3">
+                  {slotsState.map((slot) => (
+                    <li
+                      key={slot.id}
+                      className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-lg border border-border p-3"
+                    >
                       <Switch
                         isSelected={slot.isActive}
                         onChange={(active) => handleSlotToggle(slot.id, active)}
                         aria-label={`Status aktif slot ${slot.label}`}
                       />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                      <span
+                        className={cn(
+                          'flex-1 font-semibold tabular-nums',
+                          slot.isActive ? 'text-foreground' : 'text-muted-foreground'
+                        )}
+                      >
+                        {slot.label}
+                        {!slot.isActive && (
+                          <span className="ml-2 text-sm font-normal">(nonaktif)</span>
+                        )}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Kapasitas</span>
+                        <NumberStepper
+                          id={`capacity-${slot.id}`}
+                          label={`Kapasitas slot ${slot.label}`}
+                          value={slot.capacity}
+                          onChange={(capacity) => handleSlotCapacityChange(slot.id, capacity)}
+                          minValue={1}
+                          maxValue={20}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
 
-              {slotsErrors.slots && <FieldError>{slotsErrors.slots}</FieldError>}
+                {slotsErrors.slots && <FieldError>{slotsErrors.slots}</FieldError>}
 
-              <div className="pt-2">
-                <Button type="submit" isDisabled={isSubmittingSlots} className="w-full sm:w-auto">
-                  <IconDeviceFloppy className="mr-1.5 size-4" />
-                  Simpan Jadwal Slot
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                <div>
+                  <Button type="submit" isDisabled={isSubmittingSlots} className="w-full sm:w-auto">
+                    <IconDeviceFloppy aria-hidden="true" className="mr-1.5 size-4" />
+                    Simpan Jadwal Slot
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-6 lg:col-span-2">
+          <ClosureCard hours={hours} />
+        </div>
       </div>
     </>
   )

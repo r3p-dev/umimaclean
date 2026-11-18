@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
-import { openingStatus, weeklyHours } from '#helpers/opening_hours'
+import { closurePhase, openingStatus, pickupDates, weeklyHours } from '#helpers/opening_hours'
 import { DEFAULT_OPENING_HOURS, type OpeningHoursSetting } from '#services/setting_service'
 
 // 2026-11-18 is a Wednesday, 2026-11-21 a Saturday.
@@ -122,5 +122,60 @@ test.group('Opening hours (OWN-8, GUEST-1)', () => {
       'Sabtu 09.00–15.00',
       'Minggu tutup',
     ])
+  })
+
+  test('pickup dates are the open weekdays between two dates, inclusive (SLOT-1, D104)', ({
+    assert,
+  }) => {
+    assert.deepEqual(
+      pickupDates(DEFAULT_OPENING_HOURS, at('2026-11-19T00:00'), at('2026-11-25T23:59')),
+      ['2026-11-19', '2026-11-20', '2026-11-21', '2026-11-23', '2026-11-24', '2026-11-25']
+    )
+
+    const closedMonday: OpeningHoursSetting = {
+      ...DEFAULT_OPENING_HOURS,
+      days: DEFAULT_OPENING_HOURS.days.map((day) =>
+        day.day === 1 ? { ...day, isOpen: false } : day
+      ),
+    }
+    assert.notInclude(
+      pickupDates(closedMonday, at('2026-11-23T08:00'), at('2026-11-24T08:00')),
+      '2026-11-23'
+    )
+  })
+
+  test('a temporary closure removes every date whose hours it touches (SLOT-1, D104)', ({
+    assert,
+  }) => {
+    const from = at('2026-11-18T00:00')
+    const to = at('2026-11-21T00:00')
+    assert.deepEqual(pickupDates(closed('2026-11-19T00:00', '2026-11-20T12:00'), from, to), [
+      '2026-11-18',
+      '2026-11-21',
+    ])
+    // Ending as the shop opens, or starting as it closes, leaves the day bookable.
+    assert.deepEqual(pickupDates(closed('2026-11-18T20:00', '2026-11-19T09:00'), from, to), [
+      '2026-11-18',
+      '2026-11-19',
+      '2026-11-20',
+      '2026-11-21',
+    ])
+    const switchedOff = closed('2026-11-19T00:00', '2026-11-20T12:00')
+    switchedOff.closure.isClosed = false
+    assert.lengthOf(pickupDates(switchedOff, from, to), 4)
+  })
+
+  test('pickup dates are counted in Asia/Jakarta whatever the zone of the bounds', ({ assert }) => {
+    // 2026-11-21T18:00 UTC is already Sunday 01:00 in Jakarta, a closed day.
+    const utc = DateTime.fromISO('2026-11-21T18:00', { zone: 'utc' })
+    assert.deepEqual(pickupDates(DEFAULT_OPENING_HOURS, utc, utc), [])
+  })
+
+  test('the closure is upcoming, active or ended around its window (OWN-8)', ({ assert }) => {
+    const renovation = closed('2026-11-19T08:00', '2026-11-20T20:00')
+    assert.equal(closurePhase(renovation, at('2026-11-19T07:59')), 'upcoming')
+    assert.equal(closurePhase(renovation, at('2026-11-19T08:00')), 'active')
+    assert.equal(closurePhase(renovation, at('2026-11-20T20:00')), 'ended')
+    assert.isNull(closurePhase(DEFAULT_OPENING_HOURS, at('2026-11-19T10:00')))
   })
 })

@@ -33,7 +33,8 @@ vine.messagesProvider = new SimpleMessagesProvider({
   'min': 'Nilai minimal {{ min }}.',
   'max': 'Nilai maksimal {{ max }}.',
   'itemKinds.required': 'Pilih minimal satu jenis barang.',
-  'itemKinds.minLength': 'Pilih minimal satu jenis barang.',
+  // VineJS names an array's length rule array.minLength.
+  'itemKinds.array.minLength': 'Pilih minimal satu jenis barang.',
   'type.required': 'Pilih jenis layanan.',
   'price.required': 'Harga wajib diisi.',
   'price.min': 'Harga tidak boleh kurang dari {{ min }}.',
@@ -41,5 +42,4 @@ vine.messagesProvider = new SimpleMessagesProvider({
   'description.required': 'Deskripsi wajib diisi.',
   'q.required': 'Ketik nama kecamatan.',
   'q.minLength': 'Ketik minimal {{ min }} huruf nama kecamatan.',
-  'pickupDays.array.minLength': 'Pilih minimal satu hari penjemputan.',
 })

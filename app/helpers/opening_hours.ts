@@ -2,7 +2,7 @@ import { DateTime } from 'luxon'
 import type { OpeningHoursSetting } from '#services/setting_service'
 
 // ISO weekday 1 (Monday) to 7 (Sunday), as Luxon numbers them.
-export const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
 
 export type OpeningStatus = { isOpen: boolean; label: string; note: string | null }
 
@@ -37,6 +37,17 @@ function when(moment: DateTime, today: DateTime, timeWord: 'pukul ' | '') {
   if (daysAhead === 1) return `besok ${timeWord}${time}`
   const day = moment.setLocale('id').toFormat(daysAhead <= 6 ? 'cccc' : 'cccc, d LLLL')
   return `${day} ${timeWord}${time}`
+}
+
+// Where `now` stands against the temporary closure, for the owner's settings page (OWN-8).
+export type ClosurePhase = 'upcoming' | 'active' | 'ended'
+
+export function closurePhase(hours: OpeningHoursSetting, now: DateTime): ClosurePhase | null {
+  const { closure } = hours
+  if (!closure.isClosed || !closure.startsAt || !closure.endsAt) return null
+  const nowStamp = now.setZone(ZONE).toFormat(STAMP)
+  if (nowStamp < closure.startsAt) return 'upcoming'
+  return nowStamp < closure.endsAt ? 'active' : 'ended'
 }
 
 // Whether the shop is open at `now`, said the way the landing shows it (OWN-8, GUEST-1).
@@ -82,6 +93,32 @@ export function openingStatus(hours: OpeningHoursSetting, now: DateTime): Openin
     return { isOpen: false, label: `Tutup · buka ${when(opening, local, 'pukul ')}`, note: null }
   }
   return { isOpen: false, label: 'Tutup', note: null }
+}
+
+// The dates from `from` to `to` (inclusive, Asia/Jakarta) on which a pickup can be booked: the shop
+// opens that weekday and no temporary closure touches its hours (SLOT-1, D104).
+// shortcut: a closure covering part of a day removes the whole day; per-slot checks come with M5a.
+export function pickupDates(hours: OpeningHoursSetting, from: DateTime, to: DateTime) {
+  const { closure } = hours
+  const last = to.setZone(ZONE).toISODate()!
+  const dates: string[] = []
+  for (
+    let date = from.setZone(ZONE).startOf('day');
+    date.toISODate()! <= last;
+    date = date.plus({ days: 1 })
+  ) {
+    const iso = date.toISODate()!
+    const day = dayHours(hours, date.weekday)
+    if (!day?.isOpen) continue
+    const isTouchedByClosure =
+      closure.isClosed &&
+      closure.startsAt !== null &&
+      closure.endsAt !== null &&
+      closure.startsAt < `${iso}T${day.closes}` &&
+      closure.endsAt > `${iso}T${day.opens}`
+    if (!isTouchedByClosure) dates.push(iso)
+  }
+  return dates
 }
 
 // One line per run of days with the same hours: "Senin–Sabtu 09.00–20.00", "Minggu tutup".

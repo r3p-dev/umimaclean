@@ -4,7 +4,6 @@ import User from '#models/user'
 import Setting from '#models/setting'
 import ActivityLog from '#models/activity_log'
 import { Role } from '#enums/role_enum'
-import { visitRedirect } from '../helpers/inertia.js'
 
 function createUser(phone: string, role: Role) {
   return User.create({
@@ -126,7 +125,6 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
         { id: 'slot-2', label: '12.00–15.00', capacity: 8, isActive: true },
         { id: 'slot-3', label: '15.00–18.00', capacity: 5, isActive: false },
       ],
-      pickupDays: [6, 2, 4],
     }
 
     const response = await client
@@ -152,11 +150,6 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
       .where('user_id', owner.id)
       .firstOrFail()
     assert.include(log.description, '3 slot')
-
-    const days = await Setting.findByOrFail('key', 'pickup_days')
-    assert.deepEqual(days.value, [2, 4, 6])
-    const daysLog = await ActivityLog.findByOrFail('action', 'settings.pickup_days.update')
-    assert.equal(daysLog.description, 'Memperbarui hari penjemputan (Selasa, Kamis, Sabtu)')
   })
 
   test('pickup slots update rejects capacity over 20 or under 1', async ({ client }) => {
@@ -168,42 +161,18 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
       .withCsrfToken()
       .json({
         slots: [{ id: 'slot-1', label: '09.00–12.00', capacity: 25, isActive: true }],
-        pickupDays: [1],
       })
       .redirects(0)
 
     response.assertStatus(302)
   })
-
-  test('the owner page gets the pickup days, Monday to Saturday by default (SLOT-1, D103)', async ({
+  test('pickup days follow the opening hours: there is no separate setting (SLOT-1, D104)', async ({
     client,
     assert,
   }) => {
     const owner = await User.query().where('role', Role.ADMIN).firstOrFail()
     const response = await client.get('/admin/pengaturan/toko').withInertia().loginAs(owner)
-    assert.deepEqual(response.inertiaProps.pickupDays, [1, 2, 3, 4, 5, 6])
-  })
-
-  test('saving without any pickup day is refused with its message (SLOT-1)', async ({
-    client,
-    assert,
-  }) => {
-    const owner = await User.query().where('role', Role.ADMIN).firstOrFail()
-    const response = await client
-      .put('/admin/pengaturan/slot')
-      .loginAs(owner)
-      .withCsrfToken()
-      .json({
-        slots: [{ id: 'slot-1', label: '09.00–12.00', capacity: 6, isActive: true }],
-        pickupDays: [],
-      })
-      .redirects(0)
-
-    const next = await visitRedirect(client, response)
-    next.assertInertiaPropsContains({
-      errors: { pickupDays: 'Pilih minimal satu hari penjemputan.' },
-    })
-    const days = await Setting.findByOrFail('key', 'pickup_days')
-    assert.deepEqual(days.value, [1, 2, 3, 4, 5, 6])
+    assert.notProperty(response.inertiaProps, 'pickupDays')
+    assert.isNull(await Setting.findBy('key', 'pickup_days'))
   })
 })

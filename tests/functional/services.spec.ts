@@ -129,6 +129,31 @@ test.group('Services & Prices (SVC-1..5, OWN-7, GUEST-1)', (group) => {
     assert.isDefined(errors.itemKinds)
   })
 
+  test('a service without any item kind is refused in Indonesian (SVC-1)', async ({ client }) => {
+    const owner = await createUser('6281299990015', Role.ADMIN)
+
+    const response = await client
+      .post('/admin/layanan')
+      .header('referer', '/admin/layanan')
+      .loginAs(owner)
+      .withCsrfToken()
+      .redirects(0)
+      .json({
+        name: 'Tanpa Jenis',
+        type: ServiceType.MAIN,
+        itemKinds: [],
+        price: 50000,
+        estimatedDays: 3,
+        isStartingFrom: false,
+        description: 'Layanan uji tanpa jenis barang.',
+      })
+
+    const redirected = await visitRedirect(client, response)
+    redirected.assertInertiaPropsContains({
+      errors: { itemKinds: 'Pilih minimal satu jenis barang.' },
+    })
+  })
+
   test('owner updates an existing service (SVC-1, OWN-7)', async ({ client, assert }) => {
     const owner = await createUser('6281299990006', Role.ADMIN)
     const service = await Service.query().where('name', 'Mild').firstOrFail()

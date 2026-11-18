@@ -63,17 +63,8 @@ export const pickupSlotItemSchema = vine.object({
   isActive: vine.boolean(),
 })
 
-// ISO weekdays with pickups, 1 (Monday) to 7 (Sunday) (SLOT-1, D103).
-const pickupDaysSchema = vine
-  .array(vine.number().in([1, 2, 3, 4, 5, 6, 7]))
-  .minLength(1)
-  .distinct()
-
 export const pickupSlotsSettingValidator = vine.create({
   slots: vine.array(pickupSlotItemSchema).minLength(1),
-  pickupDays: pickupDaysSchema,
 })
-
-export const pickupDaysArrayValidator = vine.create(pickupDaysSchema.clone())
 
 export const pickupSlotsArrayValidator = vine.create(vine.array(pickupSlotItemSchema).minLength(1))

@@ -7,7 +7,7 @@ import SettingService, {
   DEFAULT_STORE_SETTING,
   type StoreInfoSetting,
 } from '#services/setting_service'
-import { openingStatus, weeklyHours } from '#helpers/opening_hours'
+import { closurePhase, openingStatus, weeklyHours } from '#helpers/opening_hours'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import env from '#start/env'
 import app from '@adonisjs/core/services/app'
@@ -44,6 +44,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       openingHours: ctx.inertia.always({
         status: openingStatus(hours, DateTime.now()),
         weekly: weeklyHours(hours),
+        closurePhase: closurePhase(hours, DateTime.now()),
       }),
     }
   }
