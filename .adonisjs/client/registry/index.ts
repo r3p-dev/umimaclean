@@ -254,11 +254,23 @@ const routes = {
     tokens: [[0,"admin"],[0,"pengaturan"],[0,"toko"]],
     types: placeholder as Registry['admin.settings.store.update']['types'],
   },
-  'admin.settings.slots.update': {
-    methods: ["PUT"],
+  'admin.settings.slots': {
+    methods: ["GET","HEAD"],
     pattern: '/admin/pengaturan/slot',
     tokens: [[0,"admin"],[0,"pengaturan"],[0,"slot"]],
+    types: placeholder as Registry['admin.settings.slots']['types'],
+  },
+  'admin.settings.slots.update': {
+    methods: ["PUT"],
+    pattern: '/admin/pengaturan/slot/:weekday',
+    tokens: [[0,"admin"],[0,"pengaturan"],[0,"slot"],[1,"weekday"]],
     types: placeholder as Registry['admin.settings.slots.update']['types'],
+  },
+  'admin.settings.slots.copy': {
+    methods: ["POST"],
+    pattern: '/admin/pengaturan/slot/:weekday/salin',
+    tokens: [[0,"admin"],[0,"pengaturan"],[0,"slot"],[1,"weekday"],[0,"salin"]],
+    types: placeholder as Registry['admin.settings.slots.copy']['types'],
   },
   'admin.settings.hours.update': {
     methods: ["PUT"],

@@ -71,6 +71,36 @@ export class OtpCodeSchema extends BaseModel {
   declare purpose: OtpPurpose
 }
 
+export class PickupSlotSchema extends BaseModel {
+  static $columns = [
+    'capacity',
+    'createdAt',
+    'endsAt',
+    'id',
+    'isActive',
+    'startsAt',
+    'updatedAt',
+    'weekday',
+  ] as const
+  $columns = PickupSlotSchema.$columns
+  @column()
+  declare capacity: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare endsAt: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare startsAt: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare weekday: number
+}
+
 export class RateLimitSchema extends BaseModel {
   static $columns = ['expire', 'key', 'points'] as const
   $columns = RateLimitSchema.$columns

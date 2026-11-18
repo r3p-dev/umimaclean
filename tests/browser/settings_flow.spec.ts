@@ -113,9 +113,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         await page.waitForLoadState('networkidle')
         await page.assertPath('/admin/pengaturan/toko')
 
-        await page
-          .getByRole('heading', { name: 'Pengaturan Toko & Jadwal' })
-          .waitFor({ state: 'visible' })
+        await page.getByRole('heading', { name: 'Pengaturan Toko' }).waitFor({ state: 'visible' })
         await page.getByText('Profil toko').first().waitFor({ state: 'visible' })
 
         const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
@@ -182,17 +180,14 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         )
       }
 
-      // 5. Slots section on store settings page (admin-pengaturan-slot-*)
+      // 5. Pickup slots page (admin-pengaturan-slot-*)
       {
-        const page = await visit('/admin/pengaturan/toko')
+        const page = await visit('/admin/pengaturan/slot')
         await page.setViewportSize({ width: vp.width, height: vp.height })
         await page.waitForLoadState('networkidle')
 
-        const slotCard = page.getByText('Slot penjemputan').first()
-        await slotCard.scrollIntoViewIfNeeded()
-
-        // Change capacity of slot-1 with the stepper's + button (React Aria NumberField).
-        const capInput = page.locator('#capacity-slot-1')
+        // Change the first slot's capacity with the stepper's + button (React Aria NumberField).
+        const capInput = page.locator('[id^="capacity-"]').first()
         await page
           .getByRole('button', { name: /Tambah|Increase/ })
           .first()
@@ -217,7 +212,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
 
         await saveScreenshot(page, `admin-pengaturan-slot-${vp.name}.png`)
         axeLogs.push(
-          `admin-pengaturan-slot-${vp.name}: path=/admin/pengaturan/toko (slot section) scrollWidth=${scrollWidth} axe=none`
+          `admin-pengaturan-slot-${vp.name}: path=/admin/pengaturan/slot scrollWidth=${scrollWidth} axe=none`
         )
       }
 
@@ -232,7 +227,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
           await menuBtn.click()
           const dialog = page.getByRole('dialog')
           await dialog.waitFor({ state: 'visible' })
-          await dialog.getByRole('link', { name: 'Area Layanan' }).waitFor({ state: 'visible' })
+          await dialog.getByRole('link', { name: 'Pengaturan' }).waitFor({ state: 'visible' })
         }
 
         const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))

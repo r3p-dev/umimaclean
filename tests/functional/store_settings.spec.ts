@@ -52,7 +52,7 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
     response.assertStatus(403)
   })
 
-  test('owner opens /admin/pengaturan/toko and receives store settings and pickup slots', async ({
+  test('owner opens /admin/pengaturan/toko and receives the opening hours; slots have their own page (D106)', async ({
     client,
     assert,
   }) => {
@@ -61,9 +61,8 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
 
     response.assertStatus(200)
     response.assertInertiaComponent('admin/settings/store')
-    const slots = response.inertiaProps.slots as Array<{ id: string; label: string }>
-    assert.isArray(slots)
-    assert.equal(slots.length, 3)
+    assert.lengthOf(response.inertiaProps.hours.days, 7)
+    assert.notProperty(response.inertiaProps, 'slots')
   })
 
   test('owner updates store info and logs activity (OWN-8)', async ({ client, assert }) => {
@@ -116,56 +115,6 @@ test.group('Store Settings & Pickup Slots (OWN-8, SLOT-2)', (group) => {
     response.assertStatus(302)
   })
 
-  test('owner updates pickup slots and logs activity (SLOT-2)', async ({ client, assert }) => {
-    const owner = await createUser('6281299990026', Role.ADMIN)
-
-    const payload = {
-      slots: [
-        { id: 'slot-1', label: '09.00–12.00', capacity: 10, isActive: true },
-        { id: 'slot-2', label: '12.00–15.00', capacity: 8, isActive: true },
-        { id: 'slot-3', label: '15.00–18.00', capacity: 5, isActive: false },
-      ],
-    }
-
-    const response = await client
-      .put('/admin/pengaturan/slot')
-      .loginAs(owner)
-      .withCsrfToken()
-      .json(payload)
-      .redirects(0)
-
-    response.assertStatus(302)
-
-    const row = await Setting.findByOrFail('key', 'pickup_slots')
-    const stored = (typeof row.value === 'string' ? JSON.parse(row.value) : row.value) as Array<{
-      id: string
-      capacity: number
-      isActive: boolean
-    }>
-    assert.equal(stored[0].capacity, 10)
-    assert.isFalse(stored[2].isActive)
-
-    const log = await ActivityLog.query()
-      .where('action', 'settings.slots.update')
-      .where('user_id', owner.id)
-      .firstOrFail()
-    assert.include(log.description, '3 slot')
-  })
-
-  test('pickup slots update rejects capacity over 20 or under 1', async ({ client }) => {
-    const owner = await createUser('6281299990027', Role.ADMIN)
-
-    const response = await client
-      .put('/admin/pengaturan/slot')
-      .loginAs(owner)
-      .withCsrfToken()
-      .json({
-        slots: [{ id: 'slot-1', label: '09.00–12.00', capacity: 25, isActive: true }],
-      })
-      .redirects(0)
-
-    response.assertStatus(302)
-  })
   test('pickup days follow the opening hours: there is no separate setting (SLOT-1, D104)', async ({
     client,
     assert,

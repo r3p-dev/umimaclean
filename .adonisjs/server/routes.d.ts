@@ -45,7 +45,9 @@ export type ScannedRoutes = {
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.settings.store': { paramsTuple?: []; params?: {} }
     'admin.settings.store.update': { paramsTuple?: []; params?: {} }
-    'admin.settings.slots.update': { paramsTuple?: []; params?: {} }
+    'admin.settings.slots': { paramsTuple?: []; params?: {} }
+    'admin.settings.slots.update': { paramsTuple: [ParamValue]; params: {'weekday': ParamValue} }
+    'admin.settings.slots.copy': { paramsTuple: [ParamValue]; params: {'weekday': ParamValue} }
     'admin.settings.hours.update': { paramsTuple?: []; params?: {} }
     'admin.areas.index': { paramsTuple?: []; params?: {} }
     'admin.areas.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -74,6 +76,7 @@ export type ScannedRoutes = {
     'admin.services.index': { paramsTuple?: []; params?: {} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.settings.store': { paramsTuple?: []; params?: {} }
+    'admin.settings.slots': { paramsTuple?: []; params?: {} }
     'admin.areas.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
@@ -100,6 +103,7 @@ export type ScannedRoutes = {
     'admin.services.index': { paramsTuple?: []; params?: {} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.settings.store': { paramsTuple?: []; params?: {} }
+    'admin.settings.slots': { paramsTuple?: []; params?: {} }
     'admin.areas.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
@@ -115,13 +119,14 @@ export type ScannedRoutes = {
     'customer.phone.store': { paramsTuple?: []; params?: {} }
     'admin.services.store': { paramsTuple?: []; params?: {} }
     'admin.services.bulk_toggle': { paramsTuple?: []; params?: {} }
+    'admin.settings.slots.copy': { paramsTuple: [ParamValue]; params: {'weekday': ParamValue} }
   }
   PUT: {
     'account_security.update_password': { paramsTuple?: []; params?: {} }
     'customer.profile.update': { paramsTuple?: []; params?: {} }
     'admin.services.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.store.update': { paramsTuple?: []; params?: {} }
-    'admin.settings.slots.update': { paramsTuple?: []; params?: {} }
+    'admin.settings.slots.update': { paramsTuple: [ParamValue]; params: {'weekday': ParamValue} }
     'admin.settings.hours.update': { paramsTuple?: []; params?: {} }
   }
   PATCH: {

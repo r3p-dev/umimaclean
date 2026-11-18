@@ -10,6 +10,7 @@ export default class IndexSeeder extends BaseSeeder {
   override async run() {
     await this.#seed(await import('#database/seeders/user_seeder'))
     await this.#seed(await import('#database/seeders/setting_seeder'))
+    await this.#seed(await import('#database/seeders/pickup_slot_seeder'))
     await this.#seed(await import('#database/seeders/service_seeder'))
     await this.#seed(await import('#database/seeders/service_area_seeder'))
 

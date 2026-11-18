@@ -98,8 +98,16 @@ router
       .put('/admin/pengaturan/toko', [controllers.StoreSettings, 'update'])
       .as('admin.settings.store.update')
     router
-      .put('/admin/pengaturan/slot', [controllers.StoreSettings, 'updateSlots'])
+      .get('/admin/pengaturan/slot', [controllers.PickupSlots, 'index'])
+      .as('admin.settings.slots')
+    router
+      .put('/admin/pengaturan/slot/:weekday', [controllers.PickupSlots, 'update'])
+      .where('weekday', router.matchers.number())
       .as('admin.settings.slots.update')
+    router
+      .post('/admin/pengaturan/slot/:weekday/salin', [controllers.PickupSlots, 'copy'])
+      .where('weekday', router.matchers.number())
+      .as('admin.settings.slots.copy')
     router
       .put('/admin/pengaturan/jam', [controllers.StoreSettings, 'updateHours'])
       .as('admin.settings.hours.update')

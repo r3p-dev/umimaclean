@@ -8,6 +8,9 @@ function at(isoLocalTime: string) {
   return DateTime.fromISO(isoLocalTime, { zone: 'Asia/Jakarta' })
 }
 
+// Every weekday has an active slot unless a test says otherwise.
+const EVERY_DAY = new Set([1, 2, 3, 4, 5, 6, 7])
+
 function closed(startsAt: string, endsAt: string, note: string | null = null): OpeningHoursSetting {
   return { ...DEFAULT_OPENING_HOURS, closure: { isClosed: true, startsAt, endsAt, note } }
 }
@@ -128,7 +131,7 @@ test.group('Opening hours (OWN-8, GUEST-1)', () => {
     assert,
   }) => {
     assert.deepEqual(
-      pickupDates(DEFAULT_OPENING_HOURS, at('2026-11-19T00:00'), at('2026-11-25T23:59')),
+      pickupDates(DEFAULT_OPENING_HOURS, EVERY_DAY, at('2026-11-19T00:00'), at('2026-11-25T23:59')),
       ['2026-11-19', '2026-11-20', '2026-11-21', '2026-11-23', '2026-11-24', '2026-11-25']
     )
 
@@ -139,7 +142,7 @@ test.group('Opening hours (OWN-8, GUEST-1)', () => {
       ),
     }
     assert.notInclude(
-      pickupDates(closedMonday, at('2026-11-23T08:00'), at('2026-11-24T08:00')),
+      pickupDates(closedMonday, EVERY_DAY, at('2026-11-23T08:00'), at('2026-11-24T08:00')),
       '2026-11-23'
     )
   })
@@ -149,26 +152,24 @@ test.group('Opening hours (OWN-8, GUEST-1)', () => {
   }) => {
     const from = at('2026-11-18T00:00')
     const to = at('2026-11-21T00:00')
-    assert.deepEqual(pickupDates(closed('2026-11-19T00:00', '2026-11-20T12:00'), from, to), [
-      '2026-11-18',
-      '2026-11-21',
-    ])
+    assert.deepEqual(
+      pickupDates(closed('2026-11-19T00:00', '2026-11-20T12:00'), EVERY_DAY, from, to),
+      ['2026-11-18', '2026-11-21']
+    )
     // Ending as the shop opens, or starting as it closes, leaves the day bookable.
-    assert.deepEqual(pickupDates(closed('2026-11-18T20:00', '2026-11-19T09:00'), from, to), [
-      '2026-11-18',
-      '2026-11-19',
-      '2026-11-20',
-      '2026-11-21',
-    ])
+    assert.deepEqual(
+      pickupDates(closed('2026-11-18T20:00', '2026-11-19T09:00'), EVERY_DAY, from, to),
+      ['2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21']
+    )
     const switchedOff = closed('2026-11-19T00:00', '2026-11-20T12:00')
     switchedOff.closure.isClosed = false
-    assert.lengthOf(pickupDates(switchedOff, from, to), 4)
+    assert.lengthOf(pickupDates(switchedOff, EVERY_DAY, from, to), 4)
   })
 
   test('pickup dates are counted in Asia/Jakarta whatever the zone of the bounds', ({ assert }) => {
     // 2026-11-21T18:00 UTC is already Sunday 01:00 in Jakarta, a closed day.
     const utc = DateTime.fromISO('2026-11-21T18:00', { zone: 'utc' })
-    assert.deepEqual(pickupDates(DEFAULT_OPENING_HOURS, utc, utc), [])
+    assert.deepEqual(pickupDates(DEFAULT_OPENING_HOURS, EVERY_DAY, utc, utc), [])
   })
 
   test('the closure is upcoming, active or ended around its window (OWN-8)', ({ assert }) => {
@@ -177,5 +178,18 @@ test.group('Opening hours (OWN-8, GUEST-1)', () => {
     assert.equal(closurePhase(renovation, at('2026-11-19T08:00')), 'active')
     assert.equal(closurePhase(renovation, at('2026-11-20T20:00')), 'ended')
     assert.isNull(closurePhase(DEFAULT_OPENING_HOURS, at('2026-11-19T10:00')))
+  })
+
+  test('a weekday without an active slot is not a pickup date (SLOT-1, D106)', ({ assert }) => {
+    const noThursday = new Set([1, 2, 3, 5, 6])
+    assert.deepEqual(
+      pickupDates(
+        DEFAULT_OPENING_HOURS,
+        noThursday,
+        at('2026-11-18T00:00'),
+        at('2026-11-20T00:00')
+      ),
+      ['2026-11-18', '2026-11-20']
+    )
   })
 })

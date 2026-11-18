@@ -72,8 +72,9 @@ export interface ApiDefinition {
       store: typeof routes['admin.settings.store'] & {
         update: typeof routes['admin.settings.store.update']
       }
-      slots: {
+      slots: typeof routes['admin.settings.slots'] & {
         update: typeof routes['admin.settings.slots.update']
+        copy: typeof routes['admin.settings.slots.copy']
       }
       hours: {
         update: typeof routes['admin.settings.hours.update']

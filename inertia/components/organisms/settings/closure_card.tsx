@@ -92,7 +92,8 @@ export default function ClosureCard({ hours }: { hours: Data.OpeningHours }) {
         ) : (
           <form onSubmit={handleSchedule} className="flex flex-col gap-4">
             <h3 className="font-semibold text-foreground">Jadwalkan tutup</h3>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            {/* One column once the card sits in the narrow right column next to the side navigation. */}
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
               <DateTimeInput
                 value={draft.startsAt}
                 onChange={(startsAt) => setDraft((previous) => ({ ...previous, startsAt }))}

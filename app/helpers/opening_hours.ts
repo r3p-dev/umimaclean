@@ -2,7 +2,7 @@ import { DateTime } from 'luxon'
 import type { OpeningHoursSetting } from '#services/setting_service'
 
 // ISO weekday 1 (Monday) to 7 (Sunday), as Luxon numbers them.
-const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+export const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
 
 export type OpeningStatus = { isOpen: boolean; label: string; note: string | null }
 
@@ -96,9 +96,15 @@ export function openingStatus(hours: OpeningHoursSetting, now: DateTime): Openin
 }
 
 // The dates from `from` to `to` (inclusive, Asia/Jakarta) on which a pickup can be booked: the shop
-// opens that weekday and no temporary closure touches its hours (SLOT-1, D104).
+// opens that weekday, the weekday has an active slot (D106), and no temporary closure touches its
+// hours (SLOT-1, D104).
 // shortcut: a closure covering part of a day removes the whole day; per-slot checks come with M5a.
-export function pickupDates(hours: OpeningHoursSetting, from: DateTime, to: DateTime) {
+export function pickupDates(
+  hours: OpeningHoursSetting,
+  weekdaysWithSlots: ReadonlySet<number>,
+  from: DateTime,
+  to: DateTime
+) {
   const { closure } = hours
   const last = to.setZone(ZONE).toISODate()!
   const dates: string[] = []
@@ -109,7 +115,7 @@ export function pickupDates(hours: OpeningHoursSetting, from: DateTime, to: Date
   ) {
     const iso = date.toISODate()!
     const day = dayHours(hours, date.weekday)
-    if (!day?.isOpen) continue
+    if (!day?.isOpen || !weekdaysWithSlots.has(date.weekday)) continue
     const isTouchedByClosure =
       closure.isClosed &&
       closure.startsAt !== null &&

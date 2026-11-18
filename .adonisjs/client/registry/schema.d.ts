@@ -541,17 +541,43 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'admin.settings.slots.update': {
-    methods: ["PUT"]
+  'admin.settings.slots': {
+    methods: ["GET","HEAD"]
     pattern: '/admin/pengaturan/slot'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/setting_validator').pickupSlotsSettingValidator)>>
+      body: {}
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/setting_validator').pickupSlotsSettingValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateSlots']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateSlots']>>> | { status: 422; response: { errors: SimpleError[] } }
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/store_settings_controller').default['updateSlots']>>> | { status: 422; response: { errors: SimpleError[] } }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/pickup_slots_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/pickup_slots_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/pickup_slots_controller').default['index']>>>
+    }
+  }
+  'admin.settings.slots.update': {
+    methods: ["PUT"]
+    pattern: '/admin/pengaturan/slot/:weekday'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/pickup_slot_validator').pickupDaySlotsValidator)>>
+      paramsTuple: [ParamValue]
+      params: { weekday: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/pickup_slot_validator').pickupDaySlotsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/pickup_slots_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/pickup_slots_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/pickup_slots_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.settings.slots.copy': {
+    methods: ["POST"]
+    pattern: '/admin/pengaturan/slot/:weekday/salin'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/pickup_slot_validator').copyPickupSlotsValidator)>>
+      paramsTuple: [ParamValue]
+      params: { weekday: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/pickup_slot_validator').copyPickupSlotsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/pickup_slots_controller').default['copy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/pickup_slots_controller').default['copy']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/pickup_slots_controller').default['copy']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.settings.hours.update': {

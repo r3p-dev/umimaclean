@@ -10,6 +10,7 @@ export const controllers = {
   Otp: () => import('#controllers/otp_controller'),
   PasswordReset: () => import('#controllers/password_reset_controller'),
   PhoneChange: () => import('#controllers/phone_change_controller'),
+  PickupSlots: () => import('#controllers/pickup_slots_controller'),
   Profile: () => import('#controllers/profile_controller'),
   Registration: () => import('#controllers/registration_controller'),
   Seo: () => import('#controllers/seo_controller'),

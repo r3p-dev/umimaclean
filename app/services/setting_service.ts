@@ -2,11 +2,7 @@ import { inject } from '@adonisjs/core'
 import ActivityLog from '#models/activity_log'
 import Setting from '#models/setting'
 import type User from '#models/user'
-import {
-  openingHoursValidator,
-  pickupSlotsArrayValidator,
-  storeSettingValidator,
-} from '#validators/setting_validator'
+import { openingHoursValidator, storeSettingValidator } from '#validators/setting_validator'
 
 export interface StoreInfoSetting {
   [key: string]: string
@@ -26,16 +22,8 @@ export type OpeningHoursSetting = {
   }
 }
 
-export interface PickupSlotSetting {
-  id: string
-  label: string
-  capacity: number
-  isActive: boolean
-}
-
 export interface SettingValues {
   store: StoreInfoSetting
-  pickup_slots: PickupSlotSetting[]
   opening_hours: OpeningHoursSetting
 }
 
@@ -58,15 +46,8 @@ export const DEFAULT_OPENING_HOURS: OpeningHoursSetting = {
   closure: { isClosed: false, startsAt: null, endsAt: null, note: null },
 }
 
-export const DEFAULT_PICKUP_SLOTS: PickupSlotSetting[] = [
-  { id: 'slot-1', label: '09.00–12.00', capacity: 6, isActive: true },
-  { id: 'slot-2', label: '12.00–15.00', capacity: 6, isActive: true },
-  { id: 'slot-3', label: '15.00–18.00', capacity: 4, isActive: true },
-]
-
 export const DEFAULT_SETTINGS: SettingValues = {
   store: DEFAULT_STORE_SETTING,
-  pickup_slots: DEFAULT_PICKUP_SLOTS,
   opening_hours: DEFAULT_OPENING_HOURS,
 }
 
@@ -76,12 +57,6 @@ export default class SettingService {
     const row = await Setting.findBy('key', 'store')
     const raw = row?.value ?? DEFAULT_STORE_SETTING
     return storeSettingValidator.validate(raw)
-  }
-
-  async getPickupSlots(): Promise<PickupSlotSetting[]> {
-    const row = await Setting.findBy('key', 'pickup_slots')
-    const raw = row?.value ?? DEFAULT_PICKUP_SLOTS
-    return pickupSlotsArrayValidator.validate(raw)
   }
 
   async updateStoreSettings(actor: User, payload: unknown): Promise<StoreInfoSetting> {
@@ -137,22 +112,6 @@ export default class SettingService {
       category: 'settings',
       action: 'settings.hours.update',
       description: `Memperbarui jam buka (${closure})`,
-      isSensitive: false,
-    })
-
-    return validated
-  }
-
-  async updatePickupSlots(actor: User, payload: unknown): Promise<PickupSlotSetting[]> {
-    const validated = await pickupSlotsArrayValidator.validate(payload)
-
-    await Setting.updateOrCreate({ key: 'pickup_slots' }, { value: validated })
-
-    await ActivityLog.create({
-      userId: actor.id,
-      category: 'settings',
-      action: 'settings.slots.update',
-      description: `Memperbarui jadwal slot penjemputan (${validated.length} slot)`,
       isSensitive: false,
     })
 

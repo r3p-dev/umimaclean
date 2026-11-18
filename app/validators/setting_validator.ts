@@ -55,16 +55,3 @@ export const openingHoursValidator = vine.create({
     })
     .use(closureWindow()),
 })
-
-export const pickupSlotItemSchema = vine.object({
-  id: vine.string().trim().minLength(1),
-  label: vine.string().trim().minLength(1).maxLength(50),
-  capacity: vine.number().min(1).max(20),
-  isActive: vine.boolean(),
-})
-
-export const pickupSlotsSettingValidator = vine.create({
-  slots: vine.array(pickupSlotItemSchema).minLength(1),
-})
-
-export const pickupSlotsArrayValidator = vine.create(vine.array(pickupSlotItemSchema).minLength(1))
