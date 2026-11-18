@@ -105,9 +105,13 @@ test.group('Maps (MAP-2, AREA-1, OWN-9, GUEST-1, AREA-4)', (group) => {
 
       const form = page.locator('#cek-area')
       const status = form.getByRole('status')
-      await form.getByLabel('Cek area layanan').fill('kec. coblong')
-      await form.getByRole('button', { name: 'Cek' }).click()
-      await status.getByText('Coblong terjangkau.').waitFor()
+      const field = form.getByLabel('Cek dulu, alamat Anda bisa dijemput?')
+      await status.getByText('Ketik nama kecamatan untuk mengecek').waitFor()
+      // The check runs by itself once typing pauses (D100, M4a-fix3).
+      await field.fill('kec. coblong')
+      await status
+        .getByText('Kec. Coblong, Kota Bandung masuk area layanan. Antar-jemput gratis.')
+        .waitFor()
 
       const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
       assert.isAtMost(scrollWidth, viewport.width, `Horizontal scroll at ${viewport.name}px`)
@@ -121,9 +125,10 @@ test.group('Maps (MAP-2, AREA-1, OWN-9, GUEST-1, AREA-4)', (group) => {
         `hero-cek-terjangkau-${viewport.name}.png`
       )
 
-      await form.getByLabel('Cek area layanan').fill('Cileunyi')
-      await form.getByRole('button', { name: 'Cek' }).click()
-      await status.getByText('Cileunyi belum terjangkau.').waitFor()
+      // Enter checks at once.
+      await field.fill('Cileunyi')
+      await field.press('Enter')
+      await status.getByText('Kec. Cileunyi, Kabupaten Bandung belum masuk area layanan.').waitFor()
       await saveElementScreenshot(
         page.locator('section').first(),
         `hero-cek-belum-${viewport.name}.png`

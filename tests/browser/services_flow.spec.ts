@@ -18,6 +18,21 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
     return testUtils.db().wrapInGlobalTransaction()
   })
 
+  test('the landing shows the price list after how it works and before the reviews (GUEST-1)', async ({
+    visit,
+    assert,
+  }) => {
+    const page = await visit('/')
+    const headings = await page.locator('main h2').allInnerTexts()
+    assert.deepEqual(headings, [
+      'Yang kami cuci',
+      'Cara kerjanya',
+      'Daftar Layanan & Harga',
+      'Kata pelanggan',
+      'Pertanyaan umum',
+    ])
+  })
+
   test('landing page displays pricing section with a tab per item kind (GUEST-1)', async ({
     visit,
     assert,

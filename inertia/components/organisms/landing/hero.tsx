@@ -1,12 +1,10 @@
 import { Link } from '@adonisjs/inertia/react'
 import { usePage } from '@inertiajs/react'
-import { IconArrowRight, IconClock, IconTruckDelivery } from '@tabler/icons-react'
-import { cn } from 'cn'
+import { IconClock, IconTruckDelivery } from '@tabler/icons-react'
 import Photo from '~/components/atoms/photo'
 import AreaCheckForm from '~/components/molecules/area_check_form'
 import CompareSlider from '~/components/molecules/compare_slider'
 import { Badge } from '~/components/ui/badge'
-import { buttonVariants } from '~/components/ui/button'
 
 const PHOTO = {
   widths: [640, 1100],
@@ -25,7 +23,7 @@ export default function Hero() {
           className="h-auto gap-2 self-start rounded-full px-3 py-1.5 text-sm font-semibold"
         >
           <IconTruckDelivery className="size-4.5" />
-          Antar-jemput gratis · Bandung Raya
+          Antar-jemput · Bandung Raya
         </Badge>
         {openingHours && (
           <p className="flex items-start gap-2 text-sm font-medium text-foreground">
@@ -43,26 +41,17 @@ export default function Hero() {
           Kami jemput barang Anda, periksa kondisinya, lalu cuci dengan layanan yang paling sesuai.
           Setelah bersih, kami antar kembali.
         </p>
-        <div className="flex flex-col gap-3 sm:items-start">
-          <Link
-            route="register.create"
-            className={cn(buttonVariants({ className: 'h-14 gap-2 px-7 text-base sm:w-auto' }))}
-          >
-            Pesan Penjemputan
-            <IconArrowRight className="size-5" />
-          </Link>
-          <p className="text-center text-sm text-muted-foreground sm:text-left">
-            Sudah punya akun?{' '}
-            <Link route="session.create" className="font-semibold text-primary hover:underline">
-              Masuk
-            </Link>
-          </p>
-        </div>
         <AreaCheckForm />
+        <p className="text-sm text-muted-foreground">
+          Sudah punya akun?{' '}
+          <Link route="session.create" className="font-semibold text-primary hover:underline">
+            Masuk
+          </Link>
+        </p>
       </div>
 
       <CompareSlider
-        className="aspect-square shadow-lg"
+        className="aspect-16/11 shadow-lg"
         before={
           <Photo
             {...PHOTO}

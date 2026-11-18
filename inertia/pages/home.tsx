@@ -17,9 +17,9 @@ export default function Home({ services = [] }: { services: PricingService[] }) 
         description="Cuci sepatu dan tas dengan antar-jemput gratis di Kota Bandung, Kota Cimahi, dan sebagian Kabupaten Bandung. Helm dicuci langsung di toko."
       />
       <Hero />
-      <PricingSection services={services} />
       <LaundryItems />
       <HowItWorks />
+      <PricingSection services={services} />
       <ReviewsSection />
       <FaqSection />
     </>
