@@ -23,6 +23,10 @@ All notable changes to this project are documented here. The format follows
 - The landing hero checks a kecamatan as you type, in a card with the order button, and the price list comes after "Cara kerja" (GUEST-1).
 - The store settings page is reorganised: shop profile, opening hours with a copy-Monday button, pickup slots with a capacity stepper, and the temporary closure in its own card (OWN-8).
 
+- Pickup slots are set per weekday on their own settings page: add, switch off, change capacity, delete, and copy a day to the other open days; times are checked for order and overlaps (SLOT-2, OWN-8).
+- The settings pages use a side navigation (Toko, Slot penjemputan, Area layanan) instead of tabs, and the owner sidebar has one "Pengaturan" entry.
+- The landing header and footer list "Cara Kerja" before "Layanan & Harga", in the order of the sections.
+
 ### Fixed
 
 - A service saved without any item kind is refused with the Indonesian message instead of VineJS's English one.
