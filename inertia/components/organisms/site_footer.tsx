@@ -118,6 +118,11 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
           </div>
           <FooterColumn id="footer-layanan" title="Layanan">
             <li>
+              <a href="/#cara-kerja" className={LINK}>
+                Cara Kerja
+              </a>
+            </li>
+            <li>
               <a href="/#harga" className={LINK}>
                 Layanan & Harga
               </a>
@@ -125,11 +130,6 @@ export default function SiteFooter({ children }: { children?: ReactNode }) {
             <li>
               <a href="/#cek-area" className={LINK}>
                 Area Layanan
-              </a>
-            </li>
-            <li>
-              <a href="/#cara-kerja" className={LINK}>
-                Cara Kerja
               </a>
             </li>
             <li>

@@ -5,9 +5,9 @@ import Logo from '~/components/atoms/logo'
 import { buttonVariants } from '~/components/ui/button'
 
 const SECTION_LINKS = [
+  { href: '/#cara-kerja', label: 'Cara Kerja' },
   { href: '/#harga', label: 'Layanan & Harga' },
   { href: '/#cek-area', label: 'Area Layanan' },
-  { href: '/#cara-kerja', label: 'Cara Kerja' },
   { href: '/#ulasan', label: 'Ulasan' },
   { href: '/#faq', label: 'Pertanyaan Umum' },
 ]

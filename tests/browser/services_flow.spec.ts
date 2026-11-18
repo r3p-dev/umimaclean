@@ -31,6 +31,18 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
       'Kata pelanggan',
       'Pertanyaan umum',
     ])
+    // The header links follow the same order (M4a-fix4).
+    const links = await page
+      .getByRole('navigation', { name: 'Navigasi utama' })
+      .locator('a[href^="/#"]')
+      .allInnerTexts()
+    assert.deepEqual(links, [
+      'Cara Kerja',
+      'Layanan & Harga',
+      'Area Layanan',
+      'Ulasan',
+      'Pertanyaan Umum',
+    ])
   })
 
   test('landing page displays pricing section with a tab per item kind (GUEST-1)', async ({
