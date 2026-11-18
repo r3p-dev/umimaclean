@@ -50,7 +50,7 @@ Bag rows are two services each (kanvas and kulit). Sizes: Small < 25 cm, Medium 
 ## 4. Pickup schedule (`SLOT`)
 
 - **SLOT-1** A pickup date is **tomorrow up to 7 days ahead** (Asia/Jakarta), only on a weekday the shop is open and outside any temporary closure (OWN-8); a closure that touches a day's opening hours removes that day.
-- **SLOT-2** Each day has the owner's pickup slots, each with a label, a capacity (1–20) and an on/off switch. Defaults: `09.00–12.00` (6), `12.00–15.00` (6), `15.00–18.00` (4).
+- **SLOT-2** Each open weekday has its own pickup slots, set by the owner: a start and an end time (24-hour, the end after the start, no two slots of a day overlapping), a capacity (1–20) and an on/off switch. A day closed in the opening hours has no slots. Defaults on every open day: `09.00–12.00` (6), `12.00–15.00` (6), `15.00–18.00` (4).
 - **SLOT-3** A full or switched-off slot can't be chosen. Capacity is re-checked when the order is placed, safely under concurrency (two customers can't both take the last place).
 
 ## 5. Orders (`ORD`)
