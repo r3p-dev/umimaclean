@@ -1,8 +1,8 @@
 import type { ComponentType, SVGProps } from 'react'
-import CsrfField from '~/components/atoms/csrf_field'
-import { Form, Link } from '@adonisjs/inertia/react'
-import { usePage } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
+import { router, usePage } from '@inertiajs/react'
 import {
+  IconChevronDown,
   IconCirclePlus,
   IconCirclePlusFilled,
   IconHome,
@@ -16,7 +16,14 @@ import {
 import { cn } from 'cn'
 import Logo from '~/components/atoms/logo'
 import NavigationItem from '~/components/molecules/navigation_item'
-import { buttonVariants } from '~/components/ui/button'
+import { urlFor } from '~/client'
+import { Button } from '~/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown_menu'
 import { CUSTOMER_NAVIGATION, type CustomerSection } from '~/lib/navigation/customer_links'
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>
@@ -58,33 +65,37 @@ export function CustomerHeader({ active }: { active: CustomerSection }) {
           })}
         </nav>
         <div className="ml-auto flex items-center gap-3">
+          {/* The account menu: Profil and Keluar (D107). */}
           {user && (
-            <Link
-              route="customer.profile.show"
-              aria-current={active === 'profil' ? 'page' : undefined}
-              className="hidden min-h-11 items-center gap-2 rounded-md px-2 text-sm font-medium hover:bg-muted sm:inline-flex"
-            >
-              <span className="flex size-9 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
-                {user.initials}
-              </span>
-              {user.fullName}
-            </Link>
+            <DropdownMenuTrigger>
+              <Button
+                variant="ghost"
+                className={cn('h-11 gap-2 px-2', active === 'profil' && 'bg-muted')}
+              >
+                <span
+                  aria-hidden="true"
+                  className="flex size-9 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground"
+                >
+                  {user.initials}
+                </span>
+                {/* The name is the button's label: read out on phones, shown from sm up. */}
+                <span className="sr-only text-sm font-medium sm:not-sr-only">{user.fullName}</span>
+                <span className="sr-only">, menu akun</span>
+                <IconChevronDown aria-hidden="true" className="size-4 text-muted-foreground" />
+              </Button>
+              <DropdownMenu placement="bottom end" className="w-auto min-w-44">
+                <DropdownMenuItem onAction={() => router.visit(urlFor('customer.profile.show'))}>
+                  <IconUser aria-hidden="true" />
+                  Profil
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onAction={() => router.post(urlFor('session.destroy'))}>
+                  <IconLogout aria-hidden="true" />
+                  Keluar
+                </DropdownMenuItem>
+              </DropdownMenu>
+            </DropdownMenuTrigger>
           )}
-          <Form route="session.destroy">
-            <CsrfField />
-            <button
-              type="submit"
-              className={cn(
-                buttonVariants({
-                  variant: 'outline',
-                  className: 'h-11 gap-2 px-3 text-sm',
-                })
-              )}
-            >
-              <IconLogout className="size-4.5" />
-              Keluar
-            </button>
-          </Form>
         </div>
       </div>
     </header>

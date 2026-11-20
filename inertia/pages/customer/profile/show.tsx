@@ -2,7 +2,11 @@ import type { ReactNode } from 'react'
 import { Head } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import { cn } from 'cn'
-import { AccountIdentityCard, ActiveDevicesCard } from '~/components/organisms/account_security'
+import {
+  AccountCard,
+  AccountIdentityCard,
+  ActiveDevicesCard,
+} from '~/components/organisms/account_security'
 import CustomerLayout from '~/components/templates/customer_layout'
 import { buttonVariants } from '~/components/ui/button'
 
@@ -22,6 +26,7 @@ export default function ProfileShow({ deviceCount }: { deviceCount: number }) {
       </AccountIdentityCard>
 
       <ActiveDevicesCard deviceCount={deviceCount} />
+      <AccountCard />
     </div>
   )
 }

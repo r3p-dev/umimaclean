@@ -145,7 +145,9 @@ test.group('Authentication Browser Flow (M2a)', (group) => {
     const page = await visit('/beranda')
     await page.assertPath('/beranda')
 
-    await page.locator('form[action="/keluar"] button[type="submit"]').click()
+    // Customers sign out from the account menu in the header (D107).
+    await page.getByRole('button', { name: /^User Logout\s*,\s*menu akun$/ }).click()
+    await page.getByRole('menuitem', { name: 'Keluar' }).click()
     await page.waitForURL('**/masuk')
     await page.assertPath('/masuk')
   })

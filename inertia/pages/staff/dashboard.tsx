@@ -6,6 +6,7 @@ import {
   IconWashMachine,
   IconClipboardCheck,
 } from '@tabler/icons-react'
+import StatCard from '~/components/molecules/stat_card'
 import StaffTopBar from '~/components/organisms/staff_top_bar'
 import StaffLayout from '~/components/templates/staff_layout'
 
@@ -38,18 +39,9 @@ export default function StaffDashboard() {
           >
             Antrean Tugas
           </h2>
-          <ul className="mt-3 grid grid-cols-3 gap-3">
-            {QUEUES.map(({ label, count, icon: Icon }) => (
-              <li
-                key={label}
-                className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4 shadow-xs"
-              >
-                <span className="flex size-9 items-center justify-center rounded-md bg-accent text-accent-foreground">
-                  <Icon className="size-5" />
-                </span>
-                <span className="text-2xl font-bold">{count}</span>
-                <span className="text-sm font-semibold">{label}</span>
-              </li>
+          <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+            {QUEUES.map(({ label, count, icon }) => (
+              <StatCard key={label} label={label} value={count} icon={icon} />
             ))}
           </ul>
         </section>

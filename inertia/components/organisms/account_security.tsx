@@ -5,6 +5,7 @@ import { IconDevices } from '@tabler/icons-react'
 import CsrfField from '~/components/atoms/csrf_field'
 import PasswordInput from '~/components/molecules/password_input'
 import { Button } from '~/components/ui/button'
+import LogoutButton from '~/components/molecules/logout_button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
 import { formatPhone } from '~/lib/phone'
 
@@ -114,6 +115,21 @@ export function ActiveDevicesCard({
           )}
         </Form>
         {children}
+      </CardContent>
+    </Card>
+  )
+}
+
+// The last card of every Profil page: signing out, in the same place for every role (D107).
+export function AccountCard() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Akun</CardTitle>
+        <CardDescription>Keluar dari akun ini di perangkat ini.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <LogoutButton />
       </CardContent>
     </Card>
   )

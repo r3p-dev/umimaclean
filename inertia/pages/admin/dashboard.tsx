@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Head, usePage } from '@inertiajs/react'
-import { IconChartBar, IconHistory } from '@tabler/icons-react'
+import { IconHistory } from '@tabler/icons-react'
+import StatCard from '~/components/molecules/stat_card'
 import OwnerPageHeader from '~/components/organisms/owner_page_header'
 import OwnerLayout from '~/components/templates/owner_layout'
 
@@ -34,16 +35,7 @@ export default function AdminDashboard() {
           </h2>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {METRICS.map(({ label, value }) => (
-              <li
-                key={label}
-                className="flex flex-col gap-1 rounded-xl border border-border bg-card p-5 shadow-xs"
-              >
-                <div className="flex items-center justify-between text-muted-foreground">
-                  <span className="text-sm font-medium">{label}</span>
-                  <IconChartBar className="size-4.5" />
-                </div>
-                <span className="text-2xl font-bold tracking-tight">{value}</span>
-              </li>
+              <StatCard key={label} label={label} value={value} />
             ))}
           </ul>
         </section>

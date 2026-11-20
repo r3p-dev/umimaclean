@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Head } from '@inertiajs/react'
 import {
+  AccountCard,
   AccountIdentityCard,
   ActiveDevicesCard,
   PasswordForm,
@@ -19,6 +20,9 @@ export default function OwnerProfile({ deviceCount }: { deviceCount: number }) {
           <ActiveDevicesCard deviceCount={deviceCount} />
         </div>
         <PasswordForm />
+        <div className="lg:col-span-2">
+          <AccountCard />
+        </div>
       </div>
     </>
   )

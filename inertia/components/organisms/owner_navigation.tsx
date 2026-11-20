@@ -1,12 +1,9 @@
 import { useState, type ComponentType, type SVGProps } from 'react'
-import CsrfField from '~/components/atoms/csrf_field'
-import { Form } from '@adonisjs/inertia/react'
 import {
   IconArrowsExchange,
   IconChartBar,
   IconChartLine,
   IconHistoryToggle,
-  IconLogout,
   IconMenu2,
   IconReceipt,
   IconSettings,
@@ -17,6 +14,7 @@ import {
 } from '@tabler/icons-react'
 import { cn } from 'cn'
 import Logo from '~/components/atoms/logo'
+import LogoutButton from '~/components/molecules/logout_button'
 import NavigationItem from '~/components/molecules/navigation_item'
 import { Button } from '~/components/ui/button'
 import { Sheet, SheetClose, SheetTitle } from '~/components/ui/sheet'
@@ -80,13 +78,7 @@ function OwnerNavigationItems({ active, isCompact }: { active: OwnerSection; isC
           <IconUserCircle className="size-5 shrink-0" />
           <span className={labelClass}>{OWNER_PROFILE_LINK.label}</span>
         </NavigationItem>
-        <Form route="session.destroy">
-          <CsrfField />
-          <button type="submit" className={itemClass(false, isCompact)}>
-            <IconLogout className="size-5 shrink-0" />
-            <span className={labelClass}>Keluar</span>
-          </button>
-        </Form>
+        <LogoutButton className={itemClass(false, isCompact)} labelClassName={labelClass} />
       </div>
     </>
   )
