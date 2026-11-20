@@ -27,6 +27,10 @@ All notable changes to this project are documented here. The format follows
 - The settings pages use a side navigation (Toko, Slot penjemputan, Area layanan) instead of tabs, and the owner sidebar has one "Pengaturan" entry.
 - The landing header and footer list "Cara Kerja" before "Layanan & Harga", in the order of the sections.
 
+- Signing out sits in the same places for every role: the "Akun" card at the bottom of Profil, and the desktop side nav for staff and owner; customers use an account menu in the header.
+- Phones get compact rows: one line per pickup slot and per service, with edit and delete in a ⋯ menu; adding a slot opens a bottom sheet and the service form takes the full screen.
+- The area list can show only active or inactive kecamatan, with a smaller map preview; the staff queue uses the owner's summary cards.
+
 ### Fixed
 
 - A service saved without any item kind is refused with the Indonesian message instead of VineJS's English one.
