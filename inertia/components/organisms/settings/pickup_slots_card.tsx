@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { router, usePage } from '@inertiajs/react'
-import { IconCopy, IconDeviceFloppy, IconPlus, IconTrash } from '@tabler/icons-react'
+import { IconCopy, IconDeviceFloppy, IconDots, IconPlus, IconTrash } from '@tabler/icons-react'
 import { cn } from 'cn'
 import { ToggleButton, ToggleButtonGroup } from 'react-aria-components'
 import type { Data } from '@generated/data'
@@ -9,9 +9,19 @@ import NumberStepper from '~/components/molecules/number_stepper'
 import { TimeInput } from '~/components/molecules/time_fields'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '~/components/ui/dialog'
+import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '~/components/ui/dropdown_menu'
 import { FieldError } from '~/components/ui/field'
 import { Switch } from '~/components/ui/switch'
 import { DAY_NAMES } from '~/lib/store/days'
+import { BOTTOM_SHEET_ON_PHONE } from '~/lib/ui/dialog_layouts'
 
 type Slot = Data.PickupSlot
 type DraftSlot = Omit<Slot, 'id' | 'weekday'> & { id?: number; key: string }
@@ -48,6 +58,7 @@ export default function PickupSlotsCard({
   const [startsAt, setStartsAt] = useState('')
   const [endsAt, setEndsAt] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isAdding, setIsAdding] = useState(false)
   const name = DAY_NAMES[day - 1]
   const isOpen = openDays.includes(day)
   const isDirty =
@@ -76,6 +87,7 @@ export default function PickupSlotsCard({
     )
     setStartsAt('')
     setEndsAt('')
+    setIsAdding(false)
   }
 
   function save() {
@@ -115,7 +127,7 @@ export default function PickupSlotsCard({
             const [key] = [...keys]
             if (key) onDayChange(Number(key))
           }}
-          className="grid grid-cols-7 gap-1.5"
+          className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 sm:mx-0 sm:grid sm:grid-cols-7 sm:overflow-visible sm:px-0 sm:pb-0"
         >
           {SHORT_NAMES.map((short, index) => {
             const weekday = index + 1
@@ -128,23 +140,14 @@ export default function PickupSlotsCard({
                 isDisabled={!isDayOpen}
                 aria-label={`${DAY_NAMES[index]}, ${isDayOpen ? `${count} slot` : 'tutup'}`}
                 className={cn(
-                  'flex min-h-14 flex-col items-center justify-center rounded-md border border-border bg-card px-1 text-sm outline-none',
+                  // At least 44 px each way; on phones the row scrolls sideways.
+                  'flex min-h-14 min-w-16 shrink-0 flex-col items-center justify-center rounded-md border border-border bg-card px-1 text-sm outline-none sm:min-w-0',
                   'focus-visible:ring-3 focus-visible:ring-ring/50 data-selected:border-primary data-selected:bg-accent data-selected:text-accent-foreground',
                   'data-disabled:bg-muted data-disabled:text-muted-foreground'
                 )}
               >
                 <span className="font-semibold">{short}</span>
-                <span className="text-xs">
-                  {isDayOpen ? (
-                    <>
-                      {count}
-                      {/* The word only where it fits; the button's label always says it. */}
-                      <span className="hidden sm:inline"> slot</span>
-                    </>
-                  ) : (
-                    'Tutup'
-                  )}
-                </span>
+                <span className="text-xs">{isDayOpen ? `${count} slot` : 'Tutup'}</span>
               </ToggleButton>
             )
           })}
@@ -167,9 +170,10 @@ export default function PickupSlotsCard({
                   return (
                     <li
                       key={slot.key}
-                      className="flex flex-col gap-2 rounded-lg border border-border p-3"
+                      className="flex flex-col gap-2 rounded-lg border border-border px-2 py-2 sm:px-3"
                     >
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+                      {/* One compact row: switch, time, capacity, and the rest in a menu. */}
+                      <div className="flex items-center gap-1.5 sm:gap-3">
                         <Switch
                           isSelected={slot.isActive}
                           onChange={(isActive) => updateSlot(slot.key, { isActive })}
@@ -177,38 +181,46 @@ export default function PickupSlotsCard({
                         />
                         <span
                           className={cn(
-                            'flex-1 font-semibold tabular-nums',
-                            slot.isActive ? 'text-foreground' : 'text-muted-foreground'
+                            'min-w-0 flex-1 text-sm font-semibold whitespace-nowrap tabular-nums sm:text-base',
+                            slot.isActive ? 'text-foreground' : 'text-muted-foreground line-through'
                           )}
                         >
                           {range(slot)}
-                          {!slot.isActive && (
-                            <span className="ml-2 text-sm font-normal">(nonaktif)</span>
-                          )}
                         </span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">Kapasitas</span>
-                          <NumberStepper
-                            id={`capacity-${slot.key}`}
-                            label={`Kapasitas slot ${range(slot)}`}
-                            value={slot.capacity}
-                            onChange={(capacity) => updateSlot(slot.key, { capacity })}
-                            minValue={1}
-                            maxValue={20}
-                          />
+                        <span className="hidden text-sm text-muted-foreground sm:inline">
+                          Kapasitas
+                        </span>
+                        <NumberStepper
+                          id={`capacity-${slot.key}`}
+                          label={`Kapasitas slot ${range(slot)}`}
+                          value={slot.capacity}
+                          onChange={(capacity) => updateSlot(slot.key, { capacity })}
+                          minValue={1}
+                          maxValue={20}
+                        />
+                        <DropdownMenuTrigger>
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label={`Hapus slot ${range(slot)}`}
-                            onPress={() =>
-                              setDraft((previous) =>
-                                previous.filter((entry) => entry.key !== slot.key)
-                              )
-                            }
+                            aria-label={`Menu slot ${range(slot)}`}
+                            className="shrink-0"
                           >
-                            <IconTrash aria-hidden="true" className="size-4" />
+                            <IconDots aria-hidden="true" className="size-4" />
                           </Button>
-                        </div>
+                          <DropdownMenu placement="bottom end" className="w-auto min-w-36">
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onAction={() =>
+                                setDraft((previous) =>
+                                  previous.filter((entry) => entry.key !== slot.key)
+                                )
+                              }
+                            >
+                              <IconTrash aria-hidden="true" />
+                              Hapus slot
+                            </DropdownMenuItem>
+                          </DropdownMenu>
+                        </DropdownMenuTrigger>
                       </div>
                       {error && <FieldError>{error}</FieldError>}
                     </li>
@@ -218,35 +230,45 @@ export default function PickupSlotsCard({
             )}
             {listError && <FieldError>{listError}</FieldError>}
 
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-foreground">Mulai</span>
-                <TimeInput
-                  value={startsAt}
-                  onChange={setStartsAt}
-                  label={`Mulai slot baru hari ${name}`}
-                  className="w-28"
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-foreground">Selesai</span>
-                <TimeInput
-                  value={endsAt}
-                  onChange={setEndsAt}
-                  label={`Selesai slot baru hari ${name}`}
-                  className="w-28"
-                />
-              </div>
-              <Button
-                variant="outline"
-                className="h-11"
-                isDisabled={!startsAt || !endsAt}
-                onPress={addSlot}
-              >
+            <DialogTrigger isOpen={isAdding} onOpenChange={setIsAdding}>
+              <Button variant="outline" className="h-11 self-start">
                 <IconPlus aria-hidden="true" className="mr-1.5 size-4" />
                 Tambah slot {name}
               </Button>
-            </div>
+              {/* A bottom sheet on phones, a dialog on desktop (D107). */}
+              <Dialog className={BOTTOM_SHEET_ON_PHONE}>
+                <DialogHeader>
+                  <DialogTitle>Tambah slot {name}</DialogTitle>
+                  <DialogDescription>
+                    Jam 24 jam. Slot baru tersimpan setelah Anda menekan “Simpan slot {name}”.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-sm font-medium text-foreground">Mulai</span>
+                    <TimeInput
+                      value={startsAt}
+                      onChange={setStartsAt}
+                      label={`Mulai slot baru hari ${name}`}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-sm font-medium text-foreground">Selesai</span>
+                    <TimeInput
+                      value={endsAt}
+                      onChange={setEndsAt}
+                      label={`Selesai slot baru hari ${name}`}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button className="h-11" isDisabled={!startsAt || !endsAt} onPress={addSlot}>
+                    <IconPlus aria-hidden="true" className="mr-1.5 size-4" />
+                    Tambah ke daftar
+                  </Button>
+                </DialogFooter>
+              </Dialog>
+            </DialogTrigger>
 
             <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:justify-between">
               <div className="flex flex-col gap-1">

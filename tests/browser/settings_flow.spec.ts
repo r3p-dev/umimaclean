@@ -35,12 +35,9 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
         await page.waitForLoadState('networkidle')
         await page.assertPath('/admin/pengaturan/area')
 
-        // Ensure header and count badge are rendered
+        // Header and the Semua / Aktif / Nonaktif filter with its counts (D107)
         await page.getByRole('heading', { name: 'Area Layanan' }).waitFor({ state: 'visible' })
-        await page
-          .getByText(/kecamatan aktif/i)
-          .first()
-          .waitFor({ state: 'visible' })
+        await page.getByRole('radio', { name: /^Aktif \(\d+\)$/ }).waitFor({ state: 'visible' })
 
         const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
         assert.isAtMost(

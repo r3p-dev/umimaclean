@@ -281,15 +281,10 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
 
       // 5. Bulk selection bar (admin-layanan-bulk-*)
       {
-        if (vp.width < 640) {
-          const cards = page.locator('section div.divide-y > div')
-          await cards.nth(0).getByRole('checkbox').click({ force: true })
-          await cards.nth(1).getByRole('checkbox').click({ force: true })
-        } else {
-          const rows = page.locator('tbody tr')
-          await rows.nth(0).getByRole('checkbox').click({ force: true })
-          await rows.nth(1).getByRole('checkbox').click({ force: true })
-        }
+        // One compact list on every width (D107).
+        const rows = page.locator('section ul > li')
+        await rows.nth(0).getByRole('checkbox').click({ force: true })
+        await rows.nth(1).getByRole('checkbox').click({ force: true })
 
         await page.getByText(/layanan dipilih/i).waitFor({ state: 'visible' })
 
@@ -318,9 +313,11 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
 
       // 6. Delete confirmation dialog (admin-layanan-delete-*)
       {
-        const deleteButton = page.locator('button[aria-label="Hapus Medium"]:visible')
-        await deleteButton.click()
-        const deleteDialog = page.getByRole('dialog')
+        // Edit and delete sit in the row's ⋯ menu (D107).
+        await page.getByRole('button', { name: 'Menu Medium' }).click()
+        await page.getByRole('menuitem', { name: 'Hapus' }).click()
+        // By name: the closing menu popover is briefly a dialog too.
+        const deleteDialog = page.getByRole('dialog', { name: /Hapus Layanan/ })
         await deleteDialog.waitFor({ state: 'visible' })
         await deleteDialog
           .getByText(/Hapus Layanan/i)

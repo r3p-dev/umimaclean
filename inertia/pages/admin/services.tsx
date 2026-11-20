@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { Head, router } from '@inertiajs/react'
 import {
   IconCheck,
+  IconDots,
   IconPencil,
   IconPlus,
   IconSearch,
@@ -24,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog'
+import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '~/components/ui/dropdown_menu'
 import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Switch } from '~/components/ui/switch'
@@ -31,6 +33,7 @@ import { Textarea } from '~/components/ui/textarea'
 import { ItemKind, ItemKindLabel, ServiceType, ServiceTypeLabel } from '~/lib/service_enums'
 import type { Data } from '@generated/data'
 import { formatRupiah } from '~/lib/format'
+import { FULL_SCREEN_ON_PHONE } from '~/lib/ui/dialog_layouts'
 
 export type ServiceItem = Data.Service
 
@@ -407,222 +410,101 @@ export default function AdminServices({ services }: { services: ServiceItem[] })
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
-            {/* Desktop Table View */}
-            <div className="hidden sm:block">
-              <table className="w-full text-left text-sm">
-                <thead className="border-b border-border bg-muted/40 text-xs font-semibold text-muted-foreground">
-                  <tr>
-                    <th scope="col" className="w-10 px-4 py-3">
-                      <Checkbox
-                        isSelected={allVisibleSelected}
-                        onChange={handleSelectAll}
-                        aria-label="Pilih semua layanan"
-                      />
-                    </th>
-                    <th scope="col" className="px-4 py-3">
-                      Nama Layanan
-                    </th>
-                    <th scope="col" className="px-4 py-3">
-                      Jenis
-                    </th>
-                    <th scope="col" className="px-4 py-3">
-                      Kategori
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-right">
-                      Estimasi
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-right">
-                      Harga
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-center">
-                      Status
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-right">
-                      Aksi
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filteredServices.map((service) => {
-                    const isSelected = selectedIds.includes(service.id)
-                    return (
-                      <tr
-                        key={service.id}
-                        className={cn(
-                          'transition-colors hover:bg-muted/30',
-                          isSelected && 'bg-primary/5',
-                          !service.isActive && 'bg-muted/20'
-                        )}
-                      >
-                        <td className="px-4 py-3">
-                          <Checkbox
-                            isSelected={isSelected}
-                            onChange={() => handleToggleRow(service.id)}
-                            aria-label={`Pilih ${service.name}`}
-                          />
-                        </td>
-                        <td className="px-4 py-3 font-medium text-foreground">
-                          <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-1.5">
-                              <span>{service.name}</span>
-                              {service.isStartingFrom && (
-                                <Badge variant="outline" className="text-[10px]">
-                                  Mulai dari
-                                </Badge>
-                              )}
-                            </div>
-                            {service.description && (
-                              <span className="text-xs text-muted-foreground line-clamp-1">
-                                {service.description}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge
-                            variant={service.type === ServiceType.MAIN ? 'default' : 'secondary'}
-                          >
-                            {ServiceTypeLabel[service.type]}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-wrap gap-1">
-                            {service.itemKinds.map((kind) => (
-                              <Badge key={kind} variant="outline">
-                                {ItemKindLabel[kind]}
-                              </Badge>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-right text-muted-foreground">
-                          {service.estimatedDays > 0 ? `${service.estimatedDays} hari` : 'Langsung'}
-                        </td>
-                        <td className="px-4 py-3 text-right font-semibold text-foreground">
-                          {formatRupiah(service.price)}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <Switch
-                            isSelected={service.isActive}
-                            onChange={() => handleToggleActive(service)}
-                            aria-label={`Status aktif ${service.name}`}
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              onPress={() => handleOpenEdit(service)}
-                              aria-label={`Ubah ${service.name}`}
-                            >
-                              <IconPencil className="size-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              onPress={() => setDeletingService(service)}
-                              aria-label={`Hapus ${service.name}`}
-                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            >
-                              <IconTrash className="size-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+            {/* One compact row per service on every width (D107). */}
+            <div className="flex items-center gap-3 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-semibold text-muted-foreground">
+              <Checkbox
+                isSelected={allVisibleSelected}
+                onChange={handleSelectAll}
+                aria-label="Pilih semua layanan"
+              />
+              <span className="flex-1">Layanan</span>
+              <span className="hidden w-20 text-right sm:block">Estimasi</span>
+              <span className="hidden w-24 text-right sm:block">Harga</span>
+              <span className="w-24 text-right">Aktif</span>
             </div>
-
-            {/* Mobile Cards View (Below sm) */}
-            <div className="divide-y divide-border sm:hidden">
+            <ul className="divide-y divide-border">
               {filteredServices.map((service) => {
                 const isSelected = selectedIds.includes(service.id)
+                const duration =
+                  service.estimatedDays > 0 ? `${service.estimatedDays} hari` : 'Langsung'
                 return (
-                  <div
+                  <li
                     key={service.id}
                     className={cn(
-                      'flex flex-col gap-3 p-4 transition-colors',
+                      'flex items-center gap-3 px-4 py-2.5 transition-colors',
                       isSelected && 'bg-primary/5',
-                      !service.isActive && 'bg-muted/30 border-l-4 border-l-muted-foreground/40'
+                      !service.isActive && 'bg-muted/30'
                     )}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-2.5">
-                        <Checkbox
-                          isSelected={isSelected}
-                          onChange={() => handleToggleRow(service.id)}
-                          aria-label={`Pilih ${service.name}`}
-                          className="mt-1"
-                        />
-                        <div className="flex flex-col gap-1">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="font-semibold text-foreground">{service.name}</span>
-                            {service.isStartingFrom && (
-                              <Badge variant="outline" className="text-[10px]">
-                                Mulai dari
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground">{service.description}</p>
-                        </div>
-                      </div>
-                      <span className="text-sm font-bold text-foreground">
-                        {formatRupiah(service.price)}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <Badge variant={service.type === ServiceType.MAIN ? 'default' : 'secondary'}>
-                        {ServiceTypeLabel[service.type]}
-                      </Badge>
-                      {service.itemKinds.map((kind) => (
-                        <Badge key={kind} variant="outline">
-                          {ItemKindLabel[kind]}
-                        </Badge>
-                      ))}
-                      <span className="text-xs text-muted-foreground">
-                        · {service.estimatedDays > 0 ? `${service.estimatedDays} hari` : 'Langsung'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-border pt-2.5">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          isSelected={service.isActive}
-                          onChange={() => handleToggleActive(service)}
-                          aria-label={`Status aktif ${service.name}`}
-                        />
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {service.isActive ? 'Aktif' : 'Nonaktif'}
+                    <Checkbox
+                      isSelected={isSelected}
+                      onChange={() => handleToggleRow(service.id)}
+                      aria-label={`Pilih ${service.name}`}
+                    />
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={cn(
+                            'truncate font-medium',
+                            service.isActive ? 'text-foreground' : 'text-muted-foreground'
+                          )}
+                        >
+                          {service.name}
                         </span>
+                        {service.isStartingFrom && (
+                          <Badge
+                            variant="outline"
+                            className="hidden shrink-0 text-xs sm:inline-flex"
+                          >
+                            Mulai dari
+                          </Badge>
+                        )}
                       </div>
-
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onPress={() => handleOpenEdit(service)}
-                          aria-label={`Ubah ${service.name}`}
-                        >
-                          <IconPencil className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onPress={() => setDeletingService(service)}
-                          aria-label={`Hapus ${service.name}`}
-                          className="text-destructive hover:bg-destructive/10"
-                        >
-                          <IconTrash className="size-4" />
-                        </Button>
-                      </div>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {/* Phones fold price and duration into this line; the name keeps its room. */}
+                        <span className="sm:hidden">
+                          {service.isStartingFrom && 'mulai dari '}
+                          {formatRupiah(service.price)} · {duration} ·{' '}
+                        </span>
+                        {ServiceTypeLabel[service.type]} ·{' '}
+                        {service.itemKinds.map((kind) => ItemKindLabel[kind]).join(', ')}
+                      </span>
                     </div>
-                  </div>
+                    <span className="hidden w-20 text-right text-sm text-muted-foreground sm:block">
+                      {duration}
+                    </span>
+                    <span className="hidden w-24 text-right text-sm font-semibold text-foreground sm:block">
+                      {formatRupiah(service.price)}
+                    </span>
+                    <div className="flex w-24 items-center justify-end gap-1">
+                      <Switch
+                        isSelected={service.isActive}
+                        onChange={() => handleToggleActive(service)}
+                        aria-label={`Status aktif ${service.name}`}
+                      />
+                      <DropdownMenuTrigger>
+                        <Button variant="ghost" size="icon" aria-label={`Menu ${service.name}`}>
+                          <IconDots aria-hidden="true" className="size-4" />
+                        </Button>
+                        <DropdownMenu placement="bottom end" className="w-auto min-w-36">
+                          <DropdownMenuItem onAction={() => handleOpenEdit(service)}>
+                            <IconPencil aria-hidden="true" />
+                            Ubah
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onAction={() => setDeletingService(service)}
+                          >
+                            <IconTrash aria-hidden="true" />
+                            Hapus
+                          </DropdownMenuItem>
+                        </DropdownMenu>
+                      </DropdownMenuTrigger>
+                    </div>
+                  </li>
                 )
               })}
-            </div>
+            </ul>
           </div>
         )}
       </section>
@@ -631,7 +513,7 @@ export default function AdminServices({ services }: { services: ServiceItem[] })
       <Dialog
         isOpen={formOpen}
         onOpenChange={setFormOpen}
-        className="max-h-[calc(100dvh-2rem)] overflow-y-auto"
+        className={cn('max-h-[calc(100dvh-2rem)] overflow-y-auto', FULL_SCREEN_ON_PHONE)}
       >
         <DialogHeader>
           <DialogTitle>{editingService ? 'Ubah Layanan' : 'Tambah Layanan Baru'}</DialogTitle>

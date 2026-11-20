@@ -57,13 +57,13 @@ export default function SettingsNav({
       </nav>
       <nav
         aria-label="Bagian pengaturan"
-        className="rounded-lg border border-border bg-card px-3 lg:hidden"
+        className="rounded-lg border border-border bg-card lg:hidden"
       >
         {/* A plain disclosure, not the accordion: its trigger would be a heading inside a menu. */}
         <Disclosure className="group">
           <Button
             slot="trigger"
-            className="flex min-h-11 w-full items-center justify-between gap-2 rounded-md text-left text-base font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex min-h-12 w-full items-center justify-between gap-2 rounded-lg px-4 py-3 text-left text-base leading-none font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             Bagian: {current.label}
             <IconChevronDown
@@ -71,7 +71,7 @@ export default function SettingsNav({
               className="size-4 shrink-0 text-muted-foreground group-data-expanded:rotate-180"
             />
           </Button>
-          <DisclosurePanel className="pb-3">
+          <DisclosurePanel className="px-2 pb-2">
             <SectionLinks active={active} />
           </DisclosurePanel>
         </Disclosure>

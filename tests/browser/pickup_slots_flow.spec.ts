@@ -29,6 +29,20 @@ async function typeTime(page: Page, label: string, digits: string) {
   await page.keyboard.type(digits)
 }
 
+// "Tambah slot <hari>" opens a bottom sheet on phones and a dialog on desktop.
+async function addSlot(page: Page, day: string, starts: string, ends: string, screenshot?: string) {
+  await page.getByRole('button', { name: `Tambah slot ${day}` }).click()
+  const sheet = page.getByRole('dialog')
+  await sheet.waitFor()
+  await typeTime(page, `Mulai slot baru hari ${day}`, starts)
+  await typeTime(page, `Selesai slot baru hari ${day}`, ends)
+  if (screenshot) {
+    await saveScreenshot(page, `pengaturan-slot-tambah-${screenshot}.png`)
+  }
+  await sheet.getByRole('button', { name: 'Tambah ke daftar' }).click()
+  await sheet.waitFor({ state: 'hidden' })
+}
+
 async function waitForToast(page: Page, text: string) {
   await page.getByText(text).waitFor()
   await page.getByText(text).waitFor({ state: 'hidden' })
@@ -72,10 +86,10 @@ test.group('Pickup slots per weekday (OWN-8, SLOT-2, D106)', (group) => {
 
       // Replace the afternoon slot with an evening one.
       await page.getByRole('radio', { name: `${day}, 3 slot` }).click({ force: true })
-      await page.getByRole('button', { name: 'Hapus slot 15.00–18.00' }).click()
-      await typeTime(page, `Mulai slot baru hari ${day}`, '1800')
-      await typeTime(page, `Selesai slot baru hari ${day}`, '2000')
-      await page.getByRole('button', { name: `Tambah slot ${day}` }).click()
+      // Delete sits in the slot's ⋯ menu; adding opens a sheet (D107).
+      await page.getByRole('button', { name: 'Menu slot 15.00–18.00' }).click()
+      await page.getByRole('menuitem', { name: 'Hapus slot' }).click()
+      await addSlot(page, day, '1800', '2000', viewport.name)
       await page.getByRole('button', { name: `Simpan slot ${day}` }).click()
       await waitForToast(page, 'Slot penjemputan berhasil disimpan.')
       const list = await page.locator('[data-slot="card"]').innerText()
@@ -88,9 +102,7 @@ test.group('Pickup slots per weekday (OWN-8, SLOT-2, D106)', (group) => {
       await saveScreenshot(page, `pengaturan-slot-${viewport.name}.png`)
 
       // An overlapping slot is refused with the slot names in the message.
-      await typeTime(page, `Mulai slot baru hari ${day}`, '1100')
-      await typeTime(page, `Selesai slot baru hari ${day}`, '1300')
-      await page.getByRole('button', { name: `Tambah slot ${day}` }).click()
+      await addSlot(page, day, '1100', '1300')
       await page.getByRole('button', { name: `Simpan slot ${day}` }).click()
       await page.getByText('Slot 11.00–13.00 bertabrakan dengan 09.00–12.00.').waitFor()
       await saveScreenshot(page, `pengaturan-slot-tabrakan-${viewport.name}.png`)

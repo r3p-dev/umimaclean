@@ -1,7 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Head, router } from '@inertiajs/react'
-import { IconMapPin, IconSearch } from '@tabler/icons-react'
+import { IconSearch } from '@tabler/icons-react'
 import { cn } from 'cn'
+import { ToggleButton, ToggleButtonGroup } from 'react-aria-components'
 import OwnerPageHeader from '~/components/organisms/owner_page_header'
 import ServiceAreaMap from '~/components/organisms/service_area_map'
 import SettingsNav from '~/components/organisms/settings/settings_nav'
@@ -17,6 +18,8 @@ export type ServiceAreaCity = Data.ServiceArea['city']
 
 const CITY_ORDER: ServiceAreaCity[] = ['Kota Bandung', 'Kota Cimahi', 'Kabupaten Bandung']
 
+type StatusFilter = 'all' | 'active' | 'inactive'
+
 export default function AdminAreas({
   areas,
   shapes,
@@ -29,14 +32,24 @@ export default function AdminAreas({
   devWarning: string | null
 }) {
   const [search, setSearch] = useState('')
+  const [status, setStatus] = useState<StatusFilter>('all')
 
   const activeTotal = useMemo(() => areas.filter((a) => a.isActive).length, [areas])
 
   const filteredAreas = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return areas
-    return areas.filter((a) => a.name.toLowerCase().includes(q))
-  }, [areas, search])
+    return areas.filter(
+      (a) =>
+        (!q || a.name.toLowerCase().includes(q)) &&
+        (status === 'all' || a.isActive === (status === 'active'))
+    )
+  }, [areas, search, status])
+
+  const statusOptions: { key: StatusFilter; label: string; count: number }[] = [
+    { key: 'all', label: 'Semua', count: areas.length },
+    { key: 'active', label: 'Aktif', count: activeTotal },
+    { key: 'inactive', label: 'Nonaktif', count: areas.length - activeTotal },
+  ]
 
   const grouped = useMemo(() => {
     const map = new Map<ServiceAreaCity, ServiceAreaItem[]>()
@@ -69,7 +82,7 @@ export default function AdminAreas({
 
       <SettingsNav active="areas">
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <div className="relative w-full max-w-sm">
               <IconSearch className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -77,27 +90,43 @@ export default function AdminAreas({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari kecamatan..."
-                className="pl-9"
+                aria-label="Cari kecamatan"
+                className="h-11 pl-9"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="px-3 py-1 text-sm font-medium">
-                <IconMapPin className="mr-1.5 size-3.5 text-primary" />
-                {activeTotal} dari {areas.length} kecamatan aktif
-              </Badge>
-            </div>
+            <ToggleButtonGroup
+              aria-label="Tampilkan kecamatan"
+              selectionMode="single"
+              disallowEmptySelection
+              selectedKeys={[status]}
+              onSelectionChange={(keys) => {
+                const [key] = [...keys]
+                if (key) setStatus(key as StatusFilter)
+              }}
+              className="flex gap-1 rounded-lg bg-muted p-1"
+            >
+              {statusOptions.map((option) => (
+                <ToggleButton
+                  key={option.key}
+                  id={option.key}
+                  className="flex min-h-9 flex-1 items-center justify-center rounded-md px-2 text-sm font-medium whitespace-nowrap max-sm:text-xs sm:px-3 text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 data-selected:bg-card data-selected:text-foreground data-selected:shadow-xs sm:flex-none"
+                >
+                  {option.label} ({option.count})
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-semibold">Peta area</CardTitle>
+              <CardTitle className="text-base font-semibold">Pratinjau peta</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <ServiceAreaMap
                 shapes={shapes}
                 tilesUrl={tilesUrl}
                 devWarning={devWarning}
-                className="h-80 lg:h-96"
+                className="h-56 sm:h-64"
               />
               <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-2">
