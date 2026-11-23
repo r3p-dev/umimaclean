@@ -110,6 +110,9 @@ test.group('Password Reset (GUEST-12, ACC-5)', (group) => {
       role: Role.CUSTOMER,
       isActive: true,
     })
+    // Two devices that stayed signed in ("Ingat saya") before the reset.
+    await User.rememberMeTokens.create(user, '180d')
+    await User.rememberMeTokens.create(user, '180d')
 
     // 1. Request password reset
     const forgotResponse = await client.post('/lupa-kata-sandi').redirects(0).withCsrfToken().form({
@@ -165,5 +168,8 @@ test.group('Password Reset (GUEST-12, ACC-5)', (group) => {
     const isNewValid = await hash.verify(user.password, newPassword)
     assert.isFalse(isOldValid)
     assert.isTrue(isNewValid)
+
+    // 7. Every other device is signed out, remembered sign-ins included (ACC-5)
+    assert.lengthOf(await User.rememberMeTokens.all(user), 0)
   })
 })

@@ -125,32 +125,6 @@ test.group('Account security (ACC-4)', (group) => {
     assert.equal(verified.id, user.id)
   })
 
-  test('"Keluar dari perangkat lain" revokes the other devices remember-me tokens (ACC-4)', async ({
-    client,
-    assert,
-  }) => {
-    const user = await createUser('6281200000207', Role.STAFF)
-    const current = await User.rememberMeTokens.create(user, '180d')
-    await User.rememberMeTokens.create(user, '180d')
-    await User.rememberMeTokens.create(user, '180d')
-
-    const response = await client
-      .post('/akun/keluar-perangkat-lain')
-      .header('referer', '/staf/profil')
-      .loginAs(user)
-      .withEncryptedCookie('remember_web', current.value!.release())
-      .withCsrfToken()
-      .redirects(0)
-
-    response.assertHeader('location', '/staf/profil')
-    response.assertFlashMessage('success', 'Perangkat lain sudah dikeluarkan.')
-    const remaining = await User.rememberMeTokens.all(user)
-    assert.deepEqual(
-      remaining.map((token) => String(token.identifier)),
-      [String(current.identifier)]
-    )
-  })
-
   test('a password change signs out every other device, keeping this one (ACC-5)', async ({
     client,
     assert,
@@ -202,8 +176,13 @@ test.group('Account security (ACC-4)', (group) => {
   test('guests are refused on the account security actions', async ({ client }) => {
     const password = await client.put('/akun/kata-sandi').withCsrfToken().form({})
     password.assertRedirectsTo('/masuk')
+  })
 
-    const devices = await client.post('/akun/keluar-perangkat-lain').withCsrfToken()
-    devices.assertRedirectsTo('/masuk')
+  test('there is no separate "sign out other devices" action any more (D107)', async ({
+    client,
+  }) => {
+    const user = await createUser('6281200000209', Role.STAFF)
+    const response = await client.post('/akun/keluar-perangkat-lain').loginAs(user).withCsrfToken()
+    response.assertStatus(404)
   })
 })

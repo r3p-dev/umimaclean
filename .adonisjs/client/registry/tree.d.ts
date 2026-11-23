@@ -38,7 +38,6 @@ export interface ApiDefinition {
   }
   accountSecurity: {
     updatePassword: typeof routes['account_security.update_password']
-    signOutOtherDevices: typeof routes['account_security.sign_out_other_devices']
   }
   customer: {
     home: typeof routes['customer.home']

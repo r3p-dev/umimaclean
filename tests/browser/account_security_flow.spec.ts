@@ -48,7 +48,7 @@ test.group('Account security in the browser (ACC-4, ACC-5, CUST-13)', (group) =>
     return testUtils.db().wrapInGlobalTransaction()
   })
 
-  test('staff signs out other devices, and a password change signs them out too (ACC-4, ACC-5)', async ({
+  test('a password change signs out the other devices, remembered ones included (ACC-5)', async ({
     browser,
     assert,
   }) => {
@@ -79,26 +79,11 @@ test.group('Account security in the browser (ACC-4, ACC-5, CUST-13)', (group) =>
     await current.page.waitForLoadState('networkidle')
     await current.page.getByText('Akun ini masuk di 2 perangkat, termasuk perangkat ini.').waitFor()
 
-    // "Keluar dari perangkat lain": the remembered device must not sign itself back in on reload.
-    await current.page.getByRole('button', { name: 'Keluar dari perangkat lain' }).click()
-    await current.page.getByText('Perangkat lain sudah dikeluarkan.').waitFor()
-    await current.page.getByText('Akun ini masuk di 1 perangkat, termasuk perangkat ini.').waitFor()
-    await first.page.reload()
-    await first.page.waitForURL('**/staf/masuk')
-    await first.page.goto('/staf')
-    await first.page.waitForURL('**/staf/masuk')
-    assert.lengthOf(await User.rememberMeTokens.all(user), 0)
-
-    // A password change signs out the other devices too (ACC-5).
-    const second = await signInOnNewDevice(
-      browser,
-      '/staf/masuk',
-      '081200000501',
-      'password123',
-      true
+    // Only "Keluar" for this device; others end through a password or phone change (D107).
+    assert.equal(
+      await current.page.getByRole('button', { name: 'Keluar dari perangkat lain' }).count(),
+      0
     )
-    await current.page.reload()
-    await current.page.getByText('Akun ini masuk di 2 perangkat, termasuk perangkat ini.').waitFor()
     await current.page.locator('input[name="currentPassword"]').fill('password123')
     await current.page.locator('input[name="password"]').fill('newpassword456')
     await current.page.locator('input[name="passwordConfirmation"]').fill('newpassword456')
@@ -106,15 +91,15 @@ test.group('Account security in the browser (ACC-4, ACC-5, CUST-13)', (group) =>
     await current.page.getByText('Kata sandi diganti. Perangkat lain sudah dikeluarkan.').waitFor()
     await current.page.getByText('Akun ini masuk di 1 perangkat, termasuk perangkat ini.').waitFor()
     assert.equal(await current.page.locator('input[name="currentPassword"]').inputValue(), '')
-    await second.page.reload()
-    await second.page.waitForURL('**/staf/masuk')
+    // The remembered device must not sign itself back in on reload.
+    await first.page.reload()
+    await first.page.waitForURL('**/staf/masuk')
     assert.lengthOf(await User.rememberMeTokens.all(user), 0)
 
     await current.page.goto('/staf')
     assert.equal(new URL(current.page.url()).pathname, '/staf')
 
     await first.context.close()
-    await second.context.close()
     await current.context.close()
   })
 

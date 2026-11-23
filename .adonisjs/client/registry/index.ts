@@ -134,12 +134,6 @@ const routes = {
     tokens: [[0,"akun"],[0,"kata-sandi"]],
     types: placeholder as Registry['account_security.update_password']['types'],
   },
-  'account_security.sign_out_other_devices': {
-    methods: ["POST"],
-    pattern: '/akun/keluar-perangkat-lain',
-    tokens: [[0,"akun"],[0,"keluar-perangkat-lain"]],
-    types: placeholder as Registry['account_security.sign_out_other_devices']['types'],
-  },
   'customer.home': {
     methods: ["GET","HEAD"],
     pattern: '/beranda',

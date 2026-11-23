@@ -25,7 +25,6 @@ export type ScannedRoutes = {
     'otp.resend': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'account_security.update_password': { paramsTuple?: []; params?: {} }
-    'account_security.sign_out_other_devices': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
@@ -115,7 +114,6 @@ export type ScannedRoutes = {
     'otp.verify': { paramsTuple?: []; params?: {} }
     'otp.resend': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
-    'account_security.sign_out_other_devices': { paramsTuple?: []; params?: {} }
     'customer.phone.store': { paramsTuple?: []; params?: {} }
     'admin.services.store': { paramsTuple?: []; params?: {} }
     'admin.services.bulk_toggle': { paramsTuple?: []; params?: {} }

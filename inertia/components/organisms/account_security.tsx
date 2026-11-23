@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { Form } from '@adonisjs/inertia/react'
 import { usePage } from '@inertiajs/react'
-import { IconDevices } from '@tabler/icons-react'
 import CsrfField from '~/components/atoms/csrf_field'
 import PasswordInput from '~/components/molecules/password_input'
 import { Button } from '~/components/ui/button'
@@ -14,15 +13,19 @@ export function AccountIdentityCard({ children }: { children?: ReactNode }) {
 
   return (
     <Card>
-      <CardContent className="flex-row items-center gap-4">
+      <CardContent className="flex-row flex-wrap items-start gap-4 sm:flex-nowrap">
         <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-accent text-lg font-semibold text-accent-foreground">
           {user?.initials}
         </span>
-        <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="truncate text-xl font-bold">{user?.fullName}</span>
+        <span className="flex min-w-0 flex-1 basis-48 flex-col gap-1 self-center sm:basis-0">
+          {/* A long name wraps instead of being cut or running under "Ubah". */}
+          <span data-slot="account-name" className="text-xl leading-snug font-bold wrap-break-word">
+            {user?.fullName}
+          </span>
           <span className="text-sm text-muted-foreground">{formatPhone(user?.phone ?? '')}</span>
         </span>
-        {children}
+        {/* On phones "Ubah" goes under the name, aligned with it, so the name has the width. */}
+        {children && <div className="ml-18 sm:ml-0">{children}</div>}
       </CardContent>
     </Card>
   )
@@ -80,13 +83,9 @@ export function PasswordForm() {
   )
 }
 
-export function ActiveDevicesCard({
-  deviceCount,
-  children,
-}: {
-  deviceCount: number
-  children?: ReactNode
-}) {
+// How many devices are signed in; signing out others happens only through a password or phone
+// change or a reset (ACC-5, D107).
+export function ActiveDevicesCard({ deviceCount }: { deviceCount: number }) {
   return (
     <Card>
       <CardHeader>
@@ -97,25 +96,6 @@ export function ActiveDevicesCard({
           Akun ini masuk di {deviceCount} perangkat, termasuk perangkat ini.
         </CardDescription>
       </CardHeader>
-      <CardContent className="sm:flex-row sm:flex-wrap">
-        <Form route="account_security.sign_out_other_devices" options={{ preserveScroll: true }}>
-          {({ processing }) => (
-            <>
-              <CsrfField />
-              <Button
-                type="submit"
-                variant="outline"
-                isDisabled={processing}
-                className="h-11 w-full gap-2 text-base"
-              >
-                <IconDevices className="size-5" />
-                Keluar dari perangkat lain
-              </Button>
-            </>
-          )}
-        </Form>
-        {children}
-      </CardContent>
     </Card>
   )
 }

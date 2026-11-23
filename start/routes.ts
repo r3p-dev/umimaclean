@@ -45,9 +45,6 @@ router
     router
       .put('/akun/kata-sandi', [controllers.AccountSecurity, 'updatePassword'])
       .as('account_security.update_password')
-    router
-      .post('/akun/keluar-perangkat-lain', [controllers.AccountSecurity, 'signOutOtherDevices'])
-      .as('account_security.sign_out_other_devices')
   })
   .use(middleware.auth())
 

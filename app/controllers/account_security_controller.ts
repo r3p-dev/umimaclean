@@ -22,14 +22,4 @@ export default class AccountSecurityController {
     session.flash('success', 'Kata sandi diganti. Perangkat lain sudah dikeluarkan.')
     return response.redirect().back()
   }
-
-  async signOutOtherDevices({ auth, request, response, session }: HttpContext) {
-    await this.accountService.signOutOtherDevices(auth.getUserOrFail(), {
-      sessionId: session.sessionId,
-      rememberMeToken: request.encryptedCookie(auth.use('web').rememberMeKeyName),
-    })
-
-    session.flash('success', 'Perangkat lain sudah dikeluarkan.')
-    return response.redirect().back()
-  }
 }

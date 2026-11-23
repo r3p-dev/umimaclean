@@ -46,6 +46,9 @@ test.group('Signing out and dashboard cards (D107)', (group) => {
     const logLines: string[] = []
     for (const profile of PROFILES) {
       const user = await User.query().where('role', profile.role).firstOrFail()
+      // A name long enough to need two lines at 360 px.
+      user.fullName = `${user.fullName} Kusumawardhani Wijayakusuma`
+      await user.save()
       for (const viewport of VIEWPORTS) {
         await browserContext.clearCookies()
         await browserContext.loginAs(user)
@@ -53,6 +56,27 @@ test.group('Signing out and dashboard cards (D107)', (group) => {
         await page.setViewportSize({ width: viewport.width, height: viewport.height })
         await page.waitForLoadState('networkidle')
 
+        // A long name wraps: never cut, never under "Ubah" (customers only have "Ubah").
+        const name = page.locator('[data-slot="account-name"]')
+        assert.equal(await name.innerText(), user.fullName)
+        // A string, like the other page checks here: the test tsconfig has no DOM types.
+        const nameFits = Boolean(
+          await page.evaluate(
+            `(() => { const el = document.querySelector('[data-slot="account-name"]'); return el.scrollWidth <= el.clientWidth })()`
+          )
+        )
+        assert.isTrue(nameFits, `${profile.name} name cut at ${viewport.name}px`)
+        // Squeezed into a narrow column, a name breaks inside its words: keep it wide.
+        const nameWidth = (await name.boundingBox())!.width
+        assert.isAtLeast(nameWidth, 150, `${profile.name} name squeezed at ${viewport.name}px`)
+        const edit = page.getByRole('link', { name: 'Ubah' })
+        if ((await edit.count()) > 0) {
+          const [nameBox, editBox] = [await name.boundingBox(), await edit.boundingBox()]
+          // "Ubah" sits beside the name on wide screens and below it on phones: never on top.
+          const isBeside = nameBox!.x + nameBox!.width <= editBox!.x
+          const isBelow = nameBox!.y + nameBox!.height <= editBox!.y
+          assert.isTrue(isBeside || isBelow, `name and Ubah overlap at ${viewport.name}px`)
+        }
         const card = page.locator('[data-slot="card"]', { hasText: 'Keluar dari akun ini' })
         await card.getByRole('button', { name: 'Keluar' }).waitFor()
         // Staff and owner also find it at the bottom of the desktop side nav.

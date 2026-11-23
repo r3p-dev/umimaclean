@@ -281,19 +281,6 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['updatePassword']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'account_security.sign_out_other_devices': {
-    methods: ["POST"]
-    pattern: '/akun/keluar-perangkat-lain'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['signOutOtherDevices']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['signOutOtherDevices']>>>
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['signOutOtherDevices']>>>
-    }
-  }
   'customer.home': {
     methods: ["GET","HEAD"]
     pattern: '/beranda'
