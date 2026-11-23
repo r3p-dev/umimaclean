@@ -182,6 +182,30 @@ const routes = {
     tokens: [[0,"staf"],[0,"profil"]],
     types: placeholder as Registry['staff.profile']['types'],
   },
+  'staff.profile.edit': {
+    methods: ["GET","HEAD"],
+    pattern: '/staf/profil/ubah',
+    tokens: [[0,"staf"],[0,"profil"],[0,"ubah"]],
+    types: placeholder as Registry['staff.profile.edit']['types'],
+  },
+  'staff.profile.update': {
+    methods: ["PUT"],
+    pattern: '/staf/profil',
+    tokens: [[0,"staf"],[0,"profil"]],
+    types: placeholder as Registry['staff.profile.update']['types'],
+  },
+  'staff.phone.edit': {
+    methods: ["GET","HEAD"],
+    pattern: '/staf/profil/nomor',
+    tokens: [[0,"staf"],[0,"profil"],[0,"nomor"]],
+    types: placeholder as Registry['staff.phone.edit']['types'],
+  },
+  'staff.phone.store': {
+    methods: ["POST"],
+    pattern: '/staf/profil/nomor',
+    tokens: [[0,"staf"],[0,"profil"],[0,"nomor"]],
+    types: placeholder as Registry['staff.phone.store']['types'],
+  },
   'admin.home': {
     methods: ["GET","HEAD"],
     pattern: '/admin',
@@ -193,6 +217,30 @@ const routes = {
     pattern: '/admin/profil',
     tokens: [[0,"admin"],[0,"profil"]],
     types: placeholder as Registry['admin.profile']['types'],
+  },
+  'admin.profile.edit': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/profil/ubah',
+    tokens: [[0,"admin"],[0,"profil"],[0,"ubah"]],
+    types: placeholder as Registry['admin.profile.edit']['types'],
+  },
+  'admin.profile.update': {
+    methods: ["PUT"],
+    pattern: '/admin/profil',
+    tokens: [[0,"admin"],[0,"profil"]],
+    types: placeholder as Registry['admin.profile.update']['types'],
+  },
+  'admin.phone.edit': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/profil/nomor',
+    tokens: [[0,"admin"],[0,"profil"],[0,"nomor"]],
+    types: placeholder as Registry['admin.phone.edit']['types'],
+  },
+  'admin.phone.store': {
+    methods: ["POST"],
+    pattern: '/admin/profil/nomor',
+    tokens: [[0,"admin"],[0,"profil"],[0,"nomor"]],
+    types: placeholder as Registry['admin.phone.store']['types'],
   },
   'admin.services.index': {
     methods: ["GET","HEAD"],

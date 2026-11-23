@@ -84,13 +84,16 @@ test.group('Account security in the browser (ACC-4, ACC-5, CUST-13)', (group) =>
       await current.page.getByRole('button', { name: 'Keluar dari perangkat lain' }).count(),
       0
     )
+    // The password form sits on Ubah profil, as for customers (D108).
+    await current.page.goto('/staf/profil/ubah')
     await current.page.locator('input[name="currentPassword"]').fill('password123')
     await current.page.locator('input[name="password"]').fill('newpassword456')
     await current.page.locator('input[name="passwordConfirmation"]').fill('newpassword456')
     await current.page.getByRole('button', { name: 'Ubah Kata Sandi' }).click()
     await current.page.getByText('Kata sandi diganti. Perangkat lain sudah dikeluarkan.').waitFor()
-    await current.page.getByText('Akun ini masuk di 1 perangkat, termasuk perangkat ini.').waitFor()
     assert.equal(await current.page.locator('input[name="currentPassword"]').inputValue(), '')
+    await current.page.goto('/staf/profil')
+    await current.page.getByText('Akun ini masuk di 1 perangkat, termasuk perangkat ini.').waitFor()
     // The remembered device must not sign itself back in on reload.
     await first.page.reload()
     await first.page.waitForURL('**/staf/masuk')
@@ -121,6 +124,8 @@ test.group('Account security in the browser (ACC-4, ACC-5, CUST-13)', (group) =>
     await current.page.goto('/profil/nomor')
     await current.page.waitForLoadState('networkidle')
     await current.page.locator('input[name="phone"]').fill('081200000599')
+    // The number is the sign-in identity: the current password comes first (D108).
+    await current.page.locator('input[name="currentPassword"]').fill('password123')
     await current.page.getByRole('button', { name: 'Kirim Kode' }).click()
     await current.page.waitForURL('**/verifikasi')
     await current.page.getByRole('heading', { name: 'Verifikasi Nomor Baru' }).waitFor()
@@ -139,6 +144,47 @@ test.group('Account security in the browser (ACC-4, ACC-5, CUST-13)', (group) =>
     await other.page.waitForURL('**/masuk')
 
     await other.context.close()
+    await current.context.close()
+  })
+
+  test('staff change their phone from their own Profil, like customers (STAFF-16, D108)', async ({
+    browser,
+    assert,
+  }) => {
+    await User.create({
+      fullName: 'Asep Staf',
+      phone: '6281200000503',
+      password: 'password123',
+      role: Role.STAFF,
+      isActive: true,
+    })
+    const current = await signInOnNewDevice(
+      browser,
+      '/staf/masuk',
+      '081200000503',
+      'password123',
+      false
+    )
+
+    await current.page.goto('/staf/profil')
+    await current.page.getByRole('link', { name: 'Ubah' }).click()
+    await current.page.waitForURL('**/staf/profil/ubah')
+    await current.page.getByRole('link', { name: 'Ganti nomor WhatsApp' }).click()
+    await current.page.waitForURL('**/staf/profil/nomor')
+    await current.page.locator('input[name="phone"]').fill('081200000598')
+    await current.page.locator('input[name="currentPassword"]').fill('password123')
+    await current.page.getByRole('button', { name: 'Kirim Kode' }).click()
+    await current.page.waitForURL('**/verifikasi')
+
+    const code = fakeWhatsApp.getLatestOtpCode('6281200000598')
+    assert.isDefined(code)
+    for (let index = 0; index < 6; index++) {
+      await current.page.locator(`input[aria-label="Digit ${index + 1} dari 6"]`).fill(code![index])
+    }
+    await current.page.getByRole('button', { name: 'Verifikasi & Ganti Nomor' }).click()
+    await current.page.waitForURL('**/staf/profil')
+    await current.page.getByText('+62 812 0000 0598').waitFor()
+
     await current.context.close()
   })
 })

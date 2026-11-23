@@ -97,6 +97,49 @@ test.group('Profile pages (CUST-12, OWN-13, STAFF-16, ACC-4)', (group) => {
     staffPage.assertInertiaComponent('staff/profile')
   })
 
+  test('staff and the owner edit their name on the same page as customers (OWN-13, STAFF-16, D108)', async ({
+    client,
+    assert,
+  }) => {
+    const staff = await createUser('6281200000110', Role.STAFF)
+    const owner = await createUser('6281200000111', Role.ADMIN)
+
+    for (const [user, base, page] of [
+      [staff, '/staf/profil', 'staff/profile_edit'],
+      [owner, '/admin/profil', 'admin/profile_edit'],
+      // The owner may use the staff area too, and stays in it.
+      [owner, '/staf/profil', 'staff/profile_edit'],
+    ] as const) {
+      const edit = await client.get(`${base}/ubah`).loginAs(user).withInertia()
+      edit.assertInertiaComponent(page)
+
+      const response = await client
+        .put(base)
+        .loginAs(user)
+        .withCsrfToken()
+        .redirects(0)
+        .form({ name: `Nama ${user.role} Baru` })
+      response.assertHeader('location', base)
+      response.assertFlashMessage('success', 'Nama diperbarui.')
+      await user.refresh()
+      assert.equal(user.fullName, `Nama ${user.role} Baru`)
+    }
+  })
+
+  test('a customer cannot use the staff or owner profile actions (D108)', async ({ client }) => {
+    const customer = await createUser('6281200000112', Role.CUSTOMER)
+    for (const url of ['/staf/profil', '/admin/profil']) {
+      const rename = await client.put(url).loginAs(customer).withCsrfToken().form({ name: 'X Y' })
+      rename.assertStatus(403)
+      const phone = await client
+        .post(`${url}/nomor`)
+        .loginAs(customer)
+        .withCsrfToken()
+        .form({ phone: '081200000199', currentPassword: 'password123' })
+      phone.assertStatus(403)
+    }
+  })
+
   test('every role is refused on the profile pages it does not belong to', async ({ client }) => {
     const customer = await createUser('6281200000107', Role.CUSTOMER)
     const staff = await createUser('6281200000108', Role.STAFF)

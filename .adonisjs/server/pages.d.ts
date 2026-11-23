@@ -13,6 +13,8 @@ type ExtractProps<T> =
 declare module '@adonisjs/inertia/types' {
   export interface InertiaPages {
     'admin/dashboard': ExtractProps<(typeof import('../../inertia/pages/admin/dashboard.tsx'))['default']>
+    'admin/profile_edit': ExtractProps<(typeof import('../../inertia/pages/admin/profile_edit.tsx'))['default']>
+    'admin/profile_phone': ExtractProps<(typeof import('../../inertia/pages/admin/profile_phone.tsx'))['default']>
     'admin/profile': ExtractProps<(typeof import('../../inertia/pages/admin/profile.tsx'))['default']>
     'admin/services': ExtractProps<(typeof import('../../inertia/pages/admin/services.tsx'))['default']>
     'admin/settings/areas': ExtractProps<(typeof import('../../inertia/pages/admin/settings/areas.tsx'))['default']>
@@ -38,6 +40,8 @@ declare module '@adonisjs/inertia/types' {
     'og_image': ExtractProps<(typeof import('../../inertia/pages/og_image.tsx'))['default']>
     'staff/dashboard': ExtractProps<(typeof import('../../inertia/pages/staff/dashboard.tsx'))['default']>
     'staff/print_template_preview': ExtractProps<(typeof import('../../inertia/pages/staff/print_template_preview.tsx'))['default']>
+    'staff/profile_edit': ExtractProps<(typeof import('../../inertia/pages/staff/profile_edit.tsx'))['default']>
+    'staff/profile_phone': ExtractProps<(typeof import('../../inertia/pages/staff/profile_phone.tsx'))['default']>
     'staff/profile': ExtractProps<(typeof import('../../inertia/pages/staff/profile.tsx'))['default']>
     'staff/template_preview': ExtractProps<(typeof import('../../inertia/pages/staff/template_preview.tsx'))['default']>
   }

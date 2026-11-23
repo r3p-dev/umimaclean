@@ -7,6 +7,7 @@ export const updateProfileValidator = vine.create({
 
 export const changePhoneValidator = vine.create({
   phone: phoneRule(),
+  currentPassword: vine.string(),
 })
 
 export const changePasswordValidator = vine.create({

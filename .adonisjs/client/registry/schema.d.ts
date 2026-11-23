@@ -380,9 +380,61 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showStaff']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showStaff']>>>
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showStaff']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+    }
+  }
+  'staff.profile.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/staf/profil/ubah'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['edit']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['edit']>>>
+    }
+  }
+  'staff.profile.update': {
+    methods: ["PUT"]
+    pattern: '/staf/profil'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').updateProfileValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').updateProfileValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.phone.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/staf/profil/nomor'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['edit']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['edit']>>>
+    }
+  }
+  'staff.phone.store': {
+    methods: ["POST"]
+    pattern: '/staf/profil/nomor'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.home': {
@@ -406,9 +458,61 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showOwner']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showOwner']>>>
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['showOwner']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+    }
+  }
+  'admin.profile.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/profil/ubah'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['edit']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['edit']>>>
+    }
+  }
+  'admin.profile.update': {
+    methods: ["PUT"]
+    pattern: '/admin/profil'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').updateProfileValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').updateProfileValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.phone.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/profil/nomor'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['edit']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['edit']>>>
+    }
+  }
+  'admin.phone.store': {
+    methods: ["POST"]
+    pattern: '/admin/profil/nomor'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'admin.services.index': {

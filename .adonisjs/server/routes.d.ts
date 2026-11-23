@@ -33,8 +33,16 @@ export type ScannedRoutes = {
     'customer.phone.store': { paramsTuple?: []; params?: {} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
+    'staff.profile.edit': { paramsTuple?: []; params?: {} }
+    'staff.profile.update': { paramsTuple?: []; params?: {} }
+    'staff.phone.edit': { paramsTuple?: []; params?: {} }
+    'staff.phone.store': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
     'admin.profile': { paramsTuple?: []; params?: {} }
+    'admin.profile.edit': { paramsTuple?: []; params?: {} }
+    'admin.profile.update': { paramsTuple?: []; params?: {} }
+    'admin.phone.edit': { paramsTuple?: []; params?: {} }
+    'admin.phone.store': { paramsTuple?: []; params?: {} }
     'admin.services.index': { paramsTuple?: []; params?: {} }
     'admin.services.store': { paramsTuple?: []; params?: {} }
     'admin.services.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -70,8 +78,12 @@ export type ScannedRoutes = {
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
+    'staff.profile.edit': { paramsTuple?: []; params?: {} }
+    'staff.phone.edit': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
     'admin.profile': { paramsTuple?: []; params?: {} }
+    'admin.profile.edit': { paramsTuple?: []; params?: {} }
+    'admin.phone.edit': { paramsTuple?: []; params?: {} }
     'admin.services.index': { paramsTuple?: []; params?: {} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.settings.store': { paramsTuple?: []; params?: {} }
@@ -97,8 +109,12 @@ export type ScannedRoutes = {
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
+    'staff.profile.edit': { paramsTuple?: []; params?: {} }
+    'staff.phone.edit': { paramsTuple?: []; params?: {} }
     'admin.home': { paramsTuple?: []; params?: {} }
     'admin.profile': { paramsTuple?: []; params?: {} }
+    'admin.profile.edit': { paramsTuple?: []; params?: {} }
+    'admin.phone.edit': { paramsTuple?: []; params?: {} }
     'admin.services.index': { paramsTuple?: []; params?: {} }
     'admin.settings.index': { paramsTuple?: []; params?: {} }
     'admin.settings.store': { paramsTuple?: []; params?: {} }
@@ -115,6 +131,8 @@ export type ScannedRoutes = {
     'otp.resend': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'customer.phone.store': { paramsTuple?: []; params?: {} }
+    'staff.phone.store': { paramsTuple?: []; params?: {} }
+    'admin.phone.store': { paramsTuple?: []; params?: {} }
     'admin.services.store': { paramsTuple?: []; params?: {} }
     'admin.services.bulk_toggle': { paramsTuple?: []; params?: {} }
     'admin.settings.slots.copy': { paramsTuple: [ParamValue]; params: {'weekday': ParamValue} }
@@ -122,6 +140,8 @@ export type ScannedRoutes = {
   PUT: {
     'account_security.update_password': { paramsTuple?: []; params?: {} }
     'customer.profile.update': { paramsTuple?: []; params?: {} }
+    'staff.profile.update': { paramsTuple?: []; params?: {} }
+    'admin.profile.update': { paramsTuple?: []; params?: {} }
     'admin.services.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.settings.store.update': { paramsTuple?: []; params?: {} }
     'admin.settings.slots.update': { paramsTuple: [ParamValue]; params: {'weekday': ParamValue} }

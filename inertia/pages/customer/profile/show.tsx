@@ -1,14 +1,12 @@
 import type { ReactNode } from 'react'
 import { Head } from '@inertiajs/react'
-import { Link } from '@adonisjs/inertia/react'
-import { cn } from 'cn'
 import {
   AccountCard,
   AccountIdentityCard,
   ActiveDevicesCard,
 } from '~/components/organisms/account_security'
+import { EditProfileLink } from '~/components/organisms/profile_forms'
 import CustomerLayout from '~/components/templates/customer_layout'
-import { buttonVariants } from '~/components/ui/button'
 
 export default function ProfileShow({ deviceCount }: { deviceCount: number }) {
   return (
@@ -17,12 +15,7 @@ export default function ProfileShow({ deviceCount }: { deviceCount: number }) {
       <h1 className="text-3xl font-bold tracking-tight">Profil</h1>
 
       <AccountIdentityCard>
-        <Link
-          route="customer.profile.edit"
-          className={cn(buttonVariants({ variant: 'outline', className: 'h-11 px-3 text-base' }))}
-        >
-          Ubah
-        </Link>
+        <EditProfileLink area="customer" />
       </AccountIdentityCard>
 
       <ActiveDevicesCard deviceCount={deviceCount} />

@@ -108,6 +108,37 @@ test.group('Signing out and dashboard cards (D107)', (group) => {
     await saveScreenshotLog('profil-screenshots.log', logLines)
   })
 
+  test('the edit and phone pages look the same for every role (D108)', async ({
+    visit,
+    browserContext,
+    assert,
+  }) => {
+    for (const profile of PROFILES) {
+      const user = await User.query().where('role', profile.role).firstOrFail()
+      await browserContext.clearCookies()
+      await browserContext.loginAs(user)
+      for (const [suffix, shot] of [
+        ['/ubah', 'ubah'],
+        ['/nomor', 'nomor'],
+      ] as const) {
+        for (const viewport of VIEWPORTS) {
+          const page = await visit(`${profile.path}${suffix}`)
+          await page.setViewportSize({ width: viewport.width, height: viewport.height })
+          await page.waitForLoadState('networkidle')
+          if (suffix === '/nomor') {
+            await page.locator('input[name="currentPassword"]').waitFor()
+          } else {
+            await page.getByRole('link', { name: 'Ganti nomor WhatsApp' }).waitFor()
+          }
+          assert.isAtMost(await scrollWidth(page), viewport.width)
+          const violations = await axeViolations(page)
+          assert.deepEqual(violations, [], `${profile.name}${suffix} at ${viewport.name}px`)
+          await saveScreenshot(page, `profil-${shot}-${profile.name}-${viewport.name}.png`)
+        }
+      }
+    }
+  })
+
   test('a customer opens the account menu in the header for Profil and Keluar', async ({
     visit,
     browserContext,

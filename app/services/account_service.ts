@@ -141,12 +141,9 @@ export default class AccountService {
     await user.save()
   }
 
-  async changePassword(
-    user: User,
-    currentPassword: string,
-    newPassword: string,
-    device: CurrentDevice
-  ): Promise<void> {
+  // The current password guards a password change and a phone change alike, with one shared
+  // limit per account: 5 wrong passwords per 15 minutes, then a wait (ACC-4, D108).
+  async verifyCurrentPassword(user: User, currentPassword: string): Promise<void> {
     const attempts = limiter.use({
       requests: PASSWORD_CHANGE_MAX_FAILURES,
       duration: FAILURE_WINDOW,
@@ -169,7 +166,15 @@ export default class AccountService {
         'throttle'
       )
     }
+  }
 
+  async changePassword(
+    user: User,
+    currentPassword: string,
+    newPassword: string,
+    device: CurrentDevice
+  ): Promise<void> {
+    await this.verifyCurrentPassword(user, currentPassword)
     user.password = newPassword
     await user.save()
 

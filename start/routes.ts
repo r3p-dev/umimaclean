@@ -62,14 +62,22 @@ router
 router
   .group(() => {
     router.on('/staf').renderInertia('staff/dashboard', {}).as('staff.home')
-    router.get('/staf/profil', [controllers.Profile, 'showStaff']).as('staff.profile')
+    router.get('/staf/profil', [controllers.Profile, 'show']).as('staff.profile')
+    router.get('/staf/profil/ubah', [controllers.Profile, 'edit']).as('staff.profile.edit')
+    router.put('/staf/profil', [controllers.Profile, 'update']).as('staff.profile.update')
+    router.get('/staf/profil/nomor', [controllers.PhoneChange, 'edit']).as('staff.phone.edit')
+    router.post('/staf/profil/nomor', [controllers.PhoneChange, 'store']).as('staff.phone.store')
   })
   .use(middleware.staff())
 
 router
   .group(() => {
     router.on('/admin').renderInertia('admin/dashboard', {}).as('admin.home')
-    router.get('/admin/profil', [controllers.Profile, 'showOwner']).as('admin.profile')
+    router.get('/admin/profil', [controllers.Profile, 'show']).as('admin.profile')
+    router.get('/admin/profil/ubah', [controllers.Profile, 'edit']).as('admin.profile.edit')
+    router.put('/admin/profil', [controllers.Profile, 'update']).as('admin.profile.update')
+    router.get('/admin/profil/nomor', [controllers.PhoneChange, 'edit']).as('admin.phone.edit')
+    router.post('/admin/profil/nomor', [controllers.PhoneChange, 'store']).as('admin.phone.store')
     router.get('/admin/layanan', [controllers.Services, 'index']).as('admin.services.index')
     router.post('/admin/layanan', [controllers.Services, 'store']).as('admin.services.store')
     router.put('/admin/layanan/:id', [controllers.Services, 'update']).as('admin.services.update')

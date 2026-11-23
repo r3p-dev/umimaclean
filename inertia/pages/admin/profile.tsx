@@ -4,25 +4,23 @@ import {
   AccountCard,
   AccountIdentityCard,
   ActiveDevicesCard,
-  PasswordForm,
 } from '~/components/organisms/account_security'
 import OwnerPageHeader from '~/components/organisms/owner_page_header'
+import { EditProfileLink } from '~/components/organisms/profile_forms'
 import OwnerLayout from '~/components/templates/owner_layout'
 
+// The same Profil cards as customers and staff (D108).
 export default function OwnerProfile({ deviceCount }: { deviceCount: number }) {
   return (
     <>
       <Head title="Profil" />
       <OwnerPageHeader title="Profil" />
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <div className="flex flex-col gap-4">
-          <AccountIdentityCard />
-          <ActiveDevicesCard deviceCount={deviceCount} />
-        </div>
-        <PasswordForm />
-        <div className="lg:col-span-2">
-          <AccountCard />
-        </div>
+      <div className="flex max-w-2xl flex-col gap-4">
+        <AccountIdentityCard>
+          <EditProfileLink area="admin" />
+        </AccountIdentityCard>
+        <ActiveDevicesCard deviceCount={deviceCount} />
+        <AccountCard />
       </div>
     </>
   )

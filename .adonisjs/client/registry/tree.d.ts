@@ -53,11 +53,25 @@ export interface ApiDefinition {
   }
   staff: {
     home: typeof routes['staff.home']
-    profile: typeof routes['staff.profile']
+    profile: typeof routes['staff.profile'] & {
+      edit: typeof routes['staff.profile.edit']
+      update: typeof routes['staff.profile.update']
+    }
+    phone: {
+      edit: typeof routes['staff.phone.edit']
+      store: typeof routes['staff.phone.store']
+    }
   }
   admin: {
     home: typeof routes['admin.home']
-    profile: typeof routes['admin.profile']
+    profile: typeof routes['admin.profile'] & {
+      edit: typeof routes['admin.profile.edit']
+      update: typeof routes['admin.profile.update']
+    }
+    phone: {
+      edit: typeof routes['admin.phone.edit']
+      store: typeof routes['admin.phone.store']
+    }
     services: {
       index: typeof routes['admin.services.index']
       store: typeof routes['admin.services.store']

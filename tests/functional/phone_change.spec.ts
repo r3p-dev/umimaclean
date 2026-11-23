@@ -31,14 +31,26 @@ test.group('Phone change (CUST-13, ACC-2, ACC-5)', (group) => {
     return testUtils.db().wrapInGlobalTransaction()
   })
 
-  function startChange(client: ApiClient, user: User, phone: string) {
+  // Each role posts to its own Profil URL; every role must give its current password (D108).
+  const PHONE_URLS = {
+    [Role.CUSTOMER]: '/profil/nomor',
+    [Role.STAFF]: '/staf/profil/nomor',
+    [Role.ADMIN]: '/admin/profil/nomor',
+  }
+
+  function startChange(
+    client: ApiClient,
+    user: User,
+    phone: string,
+    currentPassword = 'password123'
+  ) {
     return client
-      .post('/profil/nomor')
-      .header('referer', '/profil/nomor')
+      .post(PHONE_URLS[user.role])
+      .header('referer', PHONE_URLS[user.role])
       .loginAs(user)
       .withCsrfToken()
       .redirects(0)
-      .form({ phone })
+      .form({ phone, currentPassword })
   }
 
   test('GET /profil/nomor renders the phone change form (CUST-13)', async ({ client }) => {
@@ -196,5 +208,74 @@ test.group('Phone change (CUST-13, ACC-2, ACC-5)', (group) => {
     await other.refresh()
     assert.equal(owner.phone, '6281200000308')
     assert.equal(other.phone, '6281200000309')
+  })
+
+  test('a wrong current password is refused and sends no code (CUST-13, ACC-4, D108)', async ({
+    client,
+    assert,
+  }) => {
+    const user = await createUser('6281200000310')
+
+    const response = await startChange(client, user, '081200000399', 'wrongpassword')
+
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({ errors: { currentPassword: 'Kata sandi saat ini salah.' } })
+    assert.lengthOf(fakeWhatsApp.getDispatchedMessages(), 0)
+  })
+
+  test('wrong passwords on the phone form and the password form share the 5-try limit (D108)', async ({
+    client,
+  }) => {
+    const user = await createUser('6281200000311')
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      await startChange(client, user, '081200000399', 'wrongpassword')
+    }
+    await client.put('/akun/kata-sandi').loginAs(user).withCsrfToken().redirects(0).form({
+      currentPassword: 'wrongpassword',
+      password: 'newpassword456',
+      passwordConfirmation: 'newpassword456',
+    })
+
+    // The sixth try is blocked even with the right password.
+    const blocked = await visitRedirect(client, await startChange(client, user, '081200000399'))
+    blocked.assertInertiaPropsContains({
+      errors: { currentPassword: 'Terlalu banyak percobaan. Coba lagi dalam 15 menit.' },
+    })
+  })
+
+  test('staff and the owner change their phone the same way and return to their Profil (D108)', async ({
+    client,
+    assert,
+  }) => {
+    // Each its own new number: an OTP to one number can be resent only after 60 s (ACC-2).
+    for (const [role, phone, profile, newPhone] of [
+      [Role.STAFF, '6281200000312', '/staf/profil', '6281200000397'],
+      [Role.ADMIN, '6281200000313', '/admin/profil', '6281200000398'],
+    ] as const) {
+      fakeWhatsApp.clear()
+      const user = await createUser(phone, role)
+      await User.rememberMeTokens.create(user, '180d')
+
+      const page = await client.get(`${profile}/nomor`).loginAs(user).withInertia()
+      page.assertInertiaComponent(
+        role === Role.STAFF ? 'staff/profile_phone' : 'admin/profile_phone'
+      )
+
+      const started = await startChange(client, user, `0${newPhone.slice(2)}`)
+      started.assertHeader('location', '/verifikasi')
+      const verified = await client
+        .post('/verifikasi')
+        .withSession(started.session())
+        .loginAs(user)
+        .withCsrfToken()
+        .redirects(0)
+        .form({ code: fakeWhatsApp.getLatestOtpCode(newPhone) })
+
+      verified.assertHeader('location', profile)
+      await user.refresh()
+      assert.equal(user.phone, newPhone)
+      // The new number is the sign-in identity; other devices are signed out (ACC-5).
+      assert.lengthOf(await User.rememberMeTokens.all(user), 0)
+    }
   })
 })
