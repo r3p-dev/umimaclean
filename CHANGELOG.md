@@ -31,8 +31,11 @@ All notable changes to this project are documented here. The format follows
 - Phones get compact rows: one line per pickup slot and per service, with edit and delete in a ⋯ menu; adding a slot opens a bottom sheet and the service form takes the full screen.
 - The area list can show only active or inactive kecamatan, with a smaller map preview; the staff queue uses the owner's summary cards.
 
+- The "Keluar dari perangkat lain" button is gone; every device signs out with "Keluar", and a password reset, password change or phone change still signs out the other devices (ACC-4, ACC-5).
+
 ### Fixed
 
+- A long name on the Profil card wraps instead of being cut next to "Ubah".
 - A service saved without any item kind is refused with the Indonesian message instead of VineJS's English one.
 
 ## [0.3.2] - 2026-11-17
