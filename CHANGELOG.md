@@ -32,6 +32,7 @@ All notable changes to this project are documented here. The format follows
 - The area list can show only active or inactive kecamatan, with a smaller map preview; the staff queue uses the owner's summary cards.
 
 - The "Keluar dari perangkat lain" button is gone; every device signs out with "Keluar", and a password reset, password change or phone change still signs out the other devices (ACC-4, ACC-5).
+- Staff and the owner change their own name and phone on the same Profil pages as customers; changing a phone, for every role, asks the current password before the code to the new number (ACC-6, D108).
 
 ### Fixed
 
