@@ -37,7 +37,7 @@
 
 ## 5. More
 
-- **STAFF-16** **History** (`/staf/riwayat`): the staff member's own work of the last 7 days. **Profile** (`/staf/profil`): account security (ACC-4). **More** (`/staf/lainnya`): links to history, profile, the map-app preference and sign-out.
+- **STAFF-16** **History** (`/staf/riwayat`): the staff member's own work of the last 7 days. **Profile** (`/staf/profil`, `/staf/profil/ubah`, `/staf/profil/nomor`): name, phone and password on the same pages as customers (ACC-6). **More** (`/staf/lainnya`): links to history, profile, the map-app preference and sign-out.
 
 ## 6. Pages
 

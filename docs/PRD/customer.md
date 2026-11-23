@@ -34,8 +34,8 @@ A customer has an account (`guest.md` GUEST-10) and signs in at `/masuk`. Bottom
 
 ## 5. Profile
 
-- **CUST-12** **Profile** (`/profil`, `/profil/ubah`): change name; account security (ACC-4).
-- **CUST-13** **Change phone number** (`/profil/nomor`): OTP to the new number (ACC-2); a number already used by another account is refused; on success every other device is signed out (ACC-5), and unlinked walk-in orders made with the new number are linked to the account (as in `guest.md` GUEST-13).
+- **CUST-12** **Profile** (`/profil`, `/profil/ubah`): change name; account security (ACC-4). Staff and the owner use the same Profil pages (ACC-6).
+- **CUST-13** **Change phone number** (`/profil/nomor`): the current password first (same rule and 5-try limit as ACC-4, the two forms share it), then an OTP to the new number (ACC-2); a number already used by another account is refused; on success every other device is signed out (ACC-5), and unlinked walk-in orders made with the new number are linked to the account (as in `guest.md` GUEST-13).
 - **CUST-14** **Addresses** (`/profil/alamat`, `/profil/alamat/baru`, `/profil/alamat/:id/ubah`): list, add, edit, make primary, delete (CUST-2, CUST-3).
 
 ## 6. Pages
