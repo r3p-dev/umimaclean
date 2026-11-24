@@ -16,7 +16,7 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M3a | – | Services and landing price list | done | v0.3.0 | 8 |
 | M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 | 8 |
 | M4a | – | Maps, area map and landing coverage check | done | 2026-11-24 | 10 |
-| M4b | 0.4.0 | Place search and addresses | not started | – | 10 |
+| M4b | 0.4.0 | Place search and addresses | in progress (stop 1 done) | – | 10 |
 | M5a | 0.5.0 | Online ordering: slots, new order, confirm | not started | – | 14 |
 | M5b | 0.5.0 | Order pages and tracking | not started | – | 12 |
 | M6 | 0.6.0 | Courier trips | not started | – | 24 |
@@ -47,37 +47,21 @@ Hours are the implementer's estimate for building, testing and writing the evide
 - M2c: `docs/evidence/M2c/`; patches 0.2.1 and 0.2.2: `docs/evidence/M2-0.2.1/`, `docs/evidence/M2-0.2.2/`
 - M3a: `docs/evidence/M3a/`; review fixes: `docs/evidence/M3a-fix/`
 - M3b: `docs/evidence/M3b/` (the process checkpoint after it: [section Process checkpoint](evidence/M3b/EVIDENCE.md#process-checkpoint-2026-11-17)); patches 0.3.1 and 0.3.2: `docs/evidence/M3-0.3.1/`, `docs/evidence/M3-0.3.2/`
+- M4a: `docs/evidence/M4a/`; fix stops: `docs/evidence/M4a-fix1/` to `docs/evidence/M4a-fix8/`
 
 ## Active milestone
 
-**M4a (checkpoint of 0.4.0): Maps, area map and landing coverage check.** Full criteria in the M4a section below; done (both stops and the fix stops M4a-fix1 to M4a-fix8), confirmed by the owner on 2026-11-24; M4b waits for its plan's approval.
+**M4b (0.4.0): Place search and addresses.** Full criteria in the M4b section below; two stops (owner, 2026-11-24). Stop 1 done, waiting for the owner's review; stop 2 not started.
 
-**Requirement IDs:** MAP-2, AREA-1 (credit on maps), AREA-4 (public check), OWN-9 (map), GUEST-1 (coverage check). Decisions: D73 (what moved here from M3b), D77 (display geometry derived from the full boundaries), D78 (border points count as covered), D80 (rate limits), D81 (the split).
+**Requirement IDs:** MAP-1, CUST-2, CUST-3, CUST-14, AREA-4 (saving an address). Decisions: D80 (rate limits), D82 (an address in a district turned off later), D109 (addresses, the pin check, "Gunakan lokasi saya").
 
-**Likely touched** (names from `docs/ARCHITECTURE.md` §3):
+**Handoff** (after stop 1, 2026-11-24):
 
-- Backend: `app/controllers/area_check_controller.ts` (new), `app/services/area_service.ts` (`checkCoverage` exists; display geometry), `start/routes.ts`, `start/limiter.ts` (new, D80), `start/env.ts` and `.env.example` (optional tiles file setting), `commands/osm_import.ts` (new, `node ace osm:import`, §6.2)
-- Frontend: `inertia/lib/map/` (MapLibre GL JS + `pmtiles` protocol, loaded only on map pages), a map organism, `inertia/pages/admin/settings/areas.tsx`, the landing coverage section on `inertia/pages/home.tsx`, self-hosted style fonts and sprites under `public/`
-- Tests: unit (display geometry), functional (coverage endpoint, rate limit, authorization), browser (area map, coverage check, no request to another host)
-- Docs: `docs/DEPENDENCIES.md` (`maplibre-gl`, `pmtiles`, `@protomaps/basemaps`), `docs/ARCHITECTURE.md` §3 and §6, `docs/SETUP.md` (map data)
-
-**Acceptance criteria** (summary; the M4a section is the source):
-
-- MAP-2: MapLibre GL JS from the self-hosted PMTiles file, only on map pages; optional tiles setting, empty in `.env.test`, plain background without it; self-hosted fonts and sprites; a browser test proves no request to another host.
-- MAP-2, AREA-1: attribution control (`compact: false`) with "© OpenStreetMap contributors" and the district boundary credit, CC BY-IGO 3.0 link and a "modified" note.
-- Display geometry derived from the full boundaries, used only for drawing; coverage is decided on the server.
-- OWN-9: `/admin/pengaturan/area` shows the districts on a map, active and inactive distinguished by more than color.
-- GUEST-1, AREA-4: the hero checks a typed kecamatan name against `service_areas` and answers in one line; 60 requests per minute per IP with an Indonesian wait message; no map on the landing (M4a-fix1, D100).
-- `node ace osm:import <YYMMDD>` runs the §6.2 pipeline in development (checks the snapshot's MD5 and that the clip polygon covers every service area first); production loads its artifact with two documented commands (D87–D93).
-
-**Out of scope** (approved by the owner, 2026-11-17): place search and the street label under a pin (MAP-1, M4b); saving addresses and checking saved pins (CUST-2, CUST-3, CUST-14, AREA-4 saving, M4b); refusing out-of-area addresses when ordering (M5a, D82); OSRM routing (M6); the version bump (0.4.0 comes with M4b).
-
-**Handoff** (after M4a-fix8, 2026-11-24):
-
-- Done: every M4a criterion. First stop: `node ace osm:import <YYMMDD>` (D87–D93). Second stop: MapLibre with the self-hosted base map, fonts and sprites, uncollapsed credits, display geometry, the owner's area map (D94–D99). Fix stop: the landing coverage check is a kecamatan name input in the hero (`GET /area/cek?q=`, D100; the landing map and the point form of the endpoint are gone); opening hours per day and a temporary closure in the store settings, the open or closed status in the hero and the week in the footer (OWN-8, D101); development warnings when the base map is not configured, missing or fails to load (D102). Second fix stop: 24-hour time fields in every browser language, a closure with a start and an end that the landing shows only in between, and a database error in the shared page props is logged and fails the page in development and tests (OWN-8, D103). Third fix stop: the owner's design for the landing hero and the store settings (D105), the price list after "Cara kerja", pickup dates that follow the opening hours and the closure (`pickupDates`, SLOT-1, D104; the pickup days setting is gone), and the Indonesian message for a service without item kinds. Fourth fix stop: pickup slots per weekday in the `pickup_slots` table on `/admin/pengaturan/slot` (SLOT-2, D106; the setting is migrated and gone), a side navigation for the settings pages instead of tabs, one "Pengaturan" entry in the owner sidebar, and the landing header in section order. Fifth fix stop (UI polish, D107): compact phone rows for slots and services with ⋯ menus, a bottom sheet for adding a slot and a full-screen service form on phones, the area filter and a map preview, one stat card for the owner and staff dashboards, and one sign-out button in the same places for every role (customers: an account menu). Sixth fix stop: the "Keluar dari perangkat lain" button and route are removed (ACC-4, D107; a reset, password change or phone change still ends the other sessions), and long names wrap on the Profil card. Seventh fix stop: staff and the owner edit their own name and phone on the customers' Profil components; every phone change asks the current password (shared 5-try limit) before the OTP (ACC-6, D108). Eighth fix stop: a phone change keeps the Profil area it started from, so the owner in the staff area returns there and the code page's "Ganti nomor" opens the right form. Evidence: `docs/evidence/M4a/EVIDENCE.md`, `docs/evidence/M4a-fix1/EVIDENCE.md`, `docs/evidence/M4a-fix2/EVIDENCE.md`, `docs/evidence/M4a-fix3/EVIDENCE.md`, `docs/evidence/M4a-fix4/EVIDENCE.md`, `docs/evidence/M4a-fix5/EVIDENCE.md`, `docs/evidence/M4a-fix6/EVIDENCE.md`, `docs/evidence/M4a-fix7/EVIDENCE.md`, `docs/evidence/M4a-fix8/EVIDENCE.md`.
-- Remaining for M4b: place search and the street label under a pin (MAP-1, 30/min/user, D80), addresses (CUST-2, CUST-3, CUST-14) with a map pin that reuses `organisms/service_area_map.tsx` (it has no pin yet; the point check `AreaService.checkCoverage` exists, its route was removed in D100), the "Di luar area layanan" label (D82), version 0.4.0. For M5a: SLOT-1 lists dates with `pickupDates(hours, await pickupSlotService.weekdaysWithActiveSlots(), tomorrow, tomorrow + 6 days)`, offers `pickupSlotService.forWeekday(date.weekday)` and checks closures per slot; **to decide in M5a with the owner:** what deleting (or copying over) a slot that already has orders does (for example: refused, only switching off allowed).
-- Known limits carried over: at 360 px the uncollapsed credit line covers the bottom of the owner's map (D99, kept for the licences); the design's closure warning ("2 penjemputan sudah terjadwal di rentang ini") waits for orders (M5a); the payment, inactivity and staff account cards of the design wait for M8 and M10; on hold from the owner: a date-only temporary closure (the closure card is unchanged).
-- New decisions since M3b: D77–D83, the process changes D84–D86, the OSM import D87–D93, the maps D94–D99, M4a-fix1 D100–D102, M4a-fix2 D103, M4a-fix3 D104–D105, M4a-fix4 D106, M4a-fix5 and M4a-fix6 D107, M4a-fix7 D108.
+- Done (stop 1): `customer_addresses` (max 3 in `AddressService` under a row lock, one primary by a partial unique index, deleting the primary promotes the newest); `AddressesController` with `/profil/alamat`, `/profil/alamat/baru`, `/profil/alamat/:id/ubah`, `POST /profil/alamat/:id/utama`, `DELETE /profil/alamat/:id`, linked from the customer's Profil; the pin in the centre of `organisms/service_area_map.tsx` with four arrow buttons, `organisms/pin_picker.tsx` with the server check `GET /area/cek-titik` (signed-in, `areaCheckThrottle`) after the map stops and again on save; "Gunakan lokasi saya" (D109, added to CUST-2); "Di luar area layanan" in the list (D82); `customer_address_seeder` (Rina: Rumah, Kantor and "Kos Adik" in inactive Cileunyi; Dimas: Rumah). Evidence: `docs/evidence/M4b/EVIDENCE.md`.
+- Remaining (stop 2): place search and the street label under the pin from the `osm` schema (`PlaceService`, `places_controller`), signed-in only, 30/min per user (D80), typo and space tolerant, generic words ignored (jalan, gang, komplek); without `osm` the manual pin keeps working; a few `osm` rows seeded in the test database; the search field and street label on the address form; version 0.4.0 and the CHANGELOG.
+- For M5a (carried over): SLOT-1 lists dates with `pickupDates(hours, await pickupSlotService.weekdaysWithActiveSlots(), tomorrow, tomorrow + 6 days)`, offers `pickupSlotService.forWeekday(date.weekday)` and checks closures per slot; ordering refuses an address outside the area (D82, re-check both addresses with `checkCoverage`); **to decide in M5a with the owner:** what deleting (or copying over) a slot that already has orders does.
+- Known limits carried over: at 360 px the uncollapsed credit line covers the bottom of the maps (D99, kept for the licences); the design's closure warning waits for orders (M5a); the payment, inactivity and staff account cards wait for M8 and M10; on hold from the owner: a date-only temporary closure.
+- New decisions since M4a: D109.
 
 ## M0: Spikes and plan
 
@@ -220,6 +204,9 @@ Acceptance criteria:
 - AREA-4: every saved pin is checked against active areas on the server; inside/outside feedback after the pin stops moving, as in M4a.
 - CUST-2, CUST-3, CUST-14: at most 3 addresses, exactly one primary (database-enforced), deleting the primary promotes the newest; label, recipient name and phone, address text, landmark, pin; list, add, edit, make primary, delete.
 - A saved address whose district was turned off later stays saved and shows "Di luar area layanan" in the address list (D82); blocking it when ordering is M5a.
+- CUST-2, AREA-4: "Gunakan lokasi saya" only moves the pin to the browser's location, then the normal coverage check runs; refused or unavailable location hides the button quietly and the manual pin still works (D109).
+
+Stops (owner, 2026-11-24): **stop 1** addresses with a pin (`customer_addresses`, `AddressService`, the three pages, the pin on `service_area_map.tsx` with arrow buttons and "Gunakan lokasi saya", the pin check `GET /area/cek-titik`, seeded addresses); **stop 2** place search and the street label from the `osm` schema (signed-in, 30/min per user, D80), seeded `osm` rows in the test database, version 0.4.0.
 
 ## M5a (checkpoint of 0.5.0): Online ordering: slots, new order, confirm
 
