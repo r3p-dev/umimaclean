@@ -10,8 +10,8 @@ A customer has an account (`guest.md` GUEST-10) and signs in at `/masuk`. Bottom
 
 ## 2. Addresses
 
-- **CUST-2** A customer has **at most 3** saved addresses, exactly one of them primary when any exist. Deleting the primary promotes the newest remaining one. A customer can make any address primary. When placing a pin, "Gunakan lokasi saya" moves the map to the device's location (browser geolocation) and the normal coverage check follows (AREA-4); where location is refused or unavailable the button is hidden and the pin is placed by hand (D109).
-- **CUST-3** An address has: label ("Rumah", "Kantor" or custom), recipient name, recipient phone (prefilled with the account phone, may belong to someone else), address text, optional landmark, and a map pin inside an active area (AREA-4). The form uses place search and the street label under the pin (MAP-1).
+- **CUST-2** A customer has **at most 3** saved addresses, exactly one of them primary when any exist. Deleting the primary promotes the newest remaining one. A customer can make any address primary.
+- **CUST-3** An address has: label ("Rumah", "Kantor" or custom), recipient name, recipient phone (prefilled with the account phone, may belong to someone else), address text, optional landmark, and a map pin inside an active area (AREA-4). The form uses place search and the street label under the pin (MAP-1). "Gunakan lokasi saya" moves the map to the device's location (browser geolocation) and the normal coverage check follows (AREA-4); where location is refused or unavailable the button is hidden and the pin is placed by hand (D109).
 - **CUST-4** An order **copies** its pickup and delivery addresses when it is placed. Editing or deleting a saved address never changes an existing order.
 
 ## 3. Ordering
