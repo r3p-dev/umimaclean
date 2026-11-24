@@ -7,7 +7,7 @@ import TurnstileGateway from '#services/turnstile_gateway'
 import AccountService from '#services/account_service'
 import { maskPhone } from '#helpers/phone'
 import { verifyOtpValidator, resendOtpValidator } from '#validators/otp_validator'
-import { areaOfRole, profileRoute } from '#helpers/profile_route'
+import { profileRoute } from '#helpers/profile_route'
 import { errors as vineErrors } from '@vinejs/vine'
 
 @inject()
@@ -40,6 +40,7 @@ export default class OtpController {
       resendIn: await this.otpService.otpCooldownRemaining(flow.phone),
       ttlMinutes: OTP_TTL_MINUTES,
       isLocked: this.otpService.isOtpLocked(flow),
+      profileArea: flow.profileArea ?? 'customer',
     })
   }
 
@@ -93,7 +94,7 @@ export default class OtpController {
         rememberMeToken: request.encryptedCookie(auth.use('web').rememberMeKeyName),
       })
       session.flash('success', 'Nomor WhatsApp diganti. Perangkat lain sudah dikeluarkan.')
-      return response.redirect().toRoute(profileRoute(areaOfRole(user.role)))
+      return response.redirect().toRoute(profileRoute(flow.profileArea ?? 'customer'))
     }
 
     return response.redirect().toRoute('home')

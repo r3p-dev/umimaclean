@@ -24,11 +24,18 @@ export default class PhoneChangeController {
     return ctx.inertia.render(PAGES[profileArea(ctx)], {})
   }
 
-  async store({ auth, request, response, session }: HttpContext) {
+  async store(ctx: HttpContext) {
+    const { auth, request, response, session } = ctx
     const user = auth.getUserOrFail()
     const payload = await request.validateUsing(changePhoneValidator)
     await this.accountService.verifyCurrentPassword(user, payload.currentPassword)
-    await this.otpService.startPhoneChange(session, user, payload.phone, request.ip())
+    await this.otpService.startPhoneChange(
+      session,
+      user,
+      payload.phone,
+      request.ip(),
+      profileArea(ctx)
+    )
 
     return response.redirect().toRoute('otp.show')
   }

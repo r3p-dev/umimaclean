@@ -278,4 +278,40 @@ test.group('Phone change (CUST-13, ACC-2, ACC-5)', (group) => {
       assert.lengthOf(await User.rememberMeTokens.all(user), 0)
     }
   })
+
+  test('the owner changing their phone in the staff area stays in the staff area (D108)', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await createUser('6281200000314', Role.ADMIN)
+
+    const started = await client
+      .post('/staf/profil/nomor')
+      .header('referer', '/staf/profil/nomor')
+      .loginAs(owner)
+      .withCsrfToken()
+      .redirects(0)
+      .form({ phone: '081200000396', currentPassword: 'password123' })
+    started.assertHeader('location', '/verifikasi')
+
+    // "Ganti nomor" on the code page goes back to the staff form, not the customer one.
+    const otpPage = await client
+      .get('/verifikasi')
+      .withSession(started.session())
+      .loginAs(owner)
+      .withInertia()
+    otpPage.assertInertiaPropsContains({ profileArea: 'staff' })
+
+    const verified = await client
+      .post('/verifikasi')
+      .withSession(started.session())
+      .loginAs(owner)
+      .withCsrfToken()
+      .redirects(0)
+      .form({ code: fakeWhatsApp.getLatestOtpCode('6281200000396') })
+
+    verified.assertHeader('location', '/staf/profil')
+    await owner.refresh()
+    assert.equal(owner.phone, '6281200000396')
+  })
 })

@@ -21,6 +21,7 @@ import WhatsAppService from '#services/whatsapp_service'
 import env from '#start/env'
 import AccountService, { PHONE_IN_USE_MESSAGE } from '#services/account_service'
 import { maskPhone } from '#helpers/phone'
+import type { ProfileArea } from '#helpers/profile_route'
 
 export interface OtpFlow {
   purpose: OtpPurpose
@@ -28,6 +29,8 @@ export interface OtpFlow {
   name?: string
   passwordHash?: string
   userId?: number
+  // A phone change returns to the Profil area it started from; the owner may use the staff one (D108).
+  profileArea?: ProfileArea
   failures: number
 }
 
@@ -265,7 +268,13 @@ export default class OtpService {
     session.put(FLOW_KEY, flow)
   }
 
-  async startPhoneChange(session: Session, user: User, phone: string, ip: string): Promise<void> {
+  async startPhoneChange(
+    session: Session,
+    user: User,
+    phone: string,
+    ip: string,
+    profileArea: ProfileArea
+  ): Promise<void> {
     if (phone === user.phone) {
       validationError('phone', 'Ini nomor Anda saat ini.', 'phone')
     }
@@ -278,6 +287,7 @@ export default class OtpService {
       purpose: OtpPurpose.CHANGE_PHONE,
       phone,
       userId: user.id,
+      profileArea,
       failures: 0,
     }
 

@@ -8,6 +8,7 @@ import SeoHead from '~/components/molecules/seo_head'
 import TurnstileWidget from '~/components/molecules/turnstile_widget'
 import AuthLayout from '~/components/templates/auth_layout'
 import { Button } from '~/components/ui/button'
+import { PROFILE_ROUTES, type ProfileArea } from '~/lib/navigation/profile_links'
 import { useResendTimer } from '~/lib/shared/countdown'
 import { useTurnstile } from '~/lib/shared/turnstile'
 
@@ -17,12 +18,14 @@ export default function OtpPage({
   resendIn,
   ttlMinutes,
   isLocked,
+  profileArea,
 }: {
   purpose: 'register' | 'reset_password' | 'change_phone'
   maskedPhone: string
   resendIn: number
   ttlMinutes: number
   isLocked: boolean
+  profileArea: ProfileArea
 }) {
   const turnstile = useTurnstile()
   const page = usePage<{
@@ -55,7 +58,7 @@ export default function OtpPage({
       ? 'register.create'
       : purpose === 'reset_password'
         ? 'password_reset.create'
-        : 'customer.phone.edit'
+        : PROFILE_ROUTES[profileArea].phone
 
   function handleResend() {
     if (remaining > 0 || isResending) {
