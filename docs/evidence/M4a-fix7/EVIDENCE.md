@@ -57,14 +57,19 @@ Restart `npm run dev` (no migration). Sign in as staff or the owner, open Profil
 
 ## Screens
 
-Opened 12 of 27 (one or more per page and role); the other 15 are the same pages at the remaining widths, produced and axe-checked by the same test, not opened.
+All 27 opened (12 during the stop, the other 15 after the owner's review).
 
 - `/staf/profil/ubah` at 360 px: back link "Profil", "Data diri" (name, number with "Ganti"), "Ubah kata sandi"; the staff tab bar over the full-page capture (`tmp/evidence/M4a-fix7/screenshots/profil-ubah-staf-360.png`)
 - `/staf/profil/nomor` at 360 px: the explanation sentence, "Nomor WhatsApp baru", "Kata sandi saat ini", "Kirim Kode" (`tmp/evidence/M4a-fix7/screenshots/profil-nomor-staf-360.png`); at 1440 px in the staff layout (`…/profil-nomor-staf-1440.png`)
 - `/admin/profil/ubah` at 360 and 1440 px in the owner layout (`…/profil-ubah-owner-{360,1440}.png`); `/admin/profil/nomor` at 1440 px (`…/profil-nomor-owner-1440.png`)
 - `/profil/ubah` at 390 px and `/profil/nomor` at 360 px (customer) with the new password field (`…/profil-ubah-pelanggan-390.png`, `…/profil-nomor-pelanggan-360.png`)
 - `/staf/profil`, `/admin/profil` at 360 px and `/admin/profil` at 1440 px: the same cards as customers, now with "Ubah" (below the name on phones); `/profil` at 360 px (`…/profil-{staf,owner,pelanggan}-360.png`, `…/profil-owner-1440.png`)
-- not opened: `profil-ubah-{pelanggan-360,pelanggan-1440,staf-390,staf-1440,owner-390}`, `profil-nomor-{pelanggan-390,pelanggan-1440,staf-390,owner-360,owner-390}`, `profil-{pelanggan-390,pelanggan-1440,staf-390,staf-1440,owner-390}`
+- `/profil/ubah` at 360 px: the same cards as at 390 px, the customer tab bar over the password form in the full-page capture (`…/profil-ubah-pelanggan-360.png`); at 1440 px with the top bar and account menu, cards centred (`…/profil-ubah-pelanggan-1440.png`)
+- `/staf/profil/ubah` at 390 and 1440 px: "Ubah profil" title bar, back link, both cards; at 1440 px the staff side nav with "Profil" active (`…/profil-ubah-staf-{390,1440}.png`)
+- `/admin/profil/ubah` at 390 px: the owner's dark top bar with the menu button, both cards (`…/profil-ubah-owner-390.png`)
+- `/profil/nomor` at 390 and 1440 px: back link "Ubah profil", the explanation with the current number in bold, "Nomor WhatsApp baru" with "+62", "Kata sandi saat ini", "Kirim Kode" (`…/profil-nomor-pelanggan-{390,1440}.png`)
+- `/staf/profil/nomor` at 390 px and `/admin/profil/nomor` at 360/390 px: the same card in each layout; at 360 px the explanation wraps to five lines, nothing cut (`…/profil-nomor-staf-390.png`, `…/profil-nomor-owner-{360,390}.png`)
+- `/profil` at 390/1440 px, `/staf/profil` at 390/1440 px, `/admin/profil` at 390 px: the long test name wraps (three lines on phones, two on desktop), "Ubah" below it on phones and on the right on desktop, the device count, "Akun" with "Keluar" (`…/profil-{pelanggan,staf}-{390,1440}.png`, `…/profil-owner-390.png`)
 
 ## How it works
 

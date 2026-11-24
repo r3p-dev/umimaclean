@@ -37,6 +37,7 @@ All notable changes to this project are documented here. The format follows
 ### Fixed
 
 - A long name on the Profil card wraps instead of being cut next to "Ubah".
+- A phone change returns to the Profil it started from, also for the owner in the staff area, and "Ganti nomor" on the code page opens that same form instead of the customers' one.
 - A service saved without any item kind is refused with the Indonesian message instead of VineJS's English one.
 
 ## [0.3.2] - 2026-11-17
