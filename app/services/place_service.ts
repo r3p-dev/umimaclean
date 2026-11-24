@@ -5,6 +5,8 @@ export interface Place {
   id: string
   name: string
   detail: string
+  // What choosing the place writes into the address field, e.g. "Jalan Dipatiukur, Lebakgede, Coblong".
+  fullName: string
   lat: number
   lng: number
 }
@@ -143,6 +145,7 @@ export default class PlaceService {
       id: `${row.kind}-${row.id}`,
       name: row.name,
       detail: [row.kelurahan, row.kecamatan && `Kec. ${row.kecamatan}`].filter(Boolean).join(', '),
+      fullName: [row.name, row.kelurahan, row.kecamatan].filter(Boolean).join(', '),
       lat: row.lat,
       lng: row.lng,
     }

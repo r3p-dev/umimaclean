@@ -28,9 +28,11 @@ function addressOf(user: User, label: string, isPrimary = false) {
     label,
     recipientName: 'Rina Wulandari',
     recipientPhone: user.phone,
-    addressText: 'Jl. Dipatiukur No. 35, Coblong',
-    landmark: null,
+    addressText: 'Jalan Kidang Pananjung No. 35, Dago, Coblong',
+    details: null,
     ...COBLONG,
+    kecamatan: 'Coblong',
+    city: 'Kota Bandung',
     isPrimary,
   })
 }
@@ -40,7 +42,7 @@ const FORM = {
   recipientName: 'Rina Wulandari',
   recipientPhone: '0812 0000 0301',
   addressText: 'Jl. Dipatiukur No. 35, Coblong',
-  landmark: '',
+  details: '',
   lat: String(COBLONG.lat),
   lng: String(COBLONG.lng),
 }
@@ -72,9 +74,11 @@ test.group('Address pages (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
       label: 'Kos',
       recipientName: 'Sinta',
       recipientPhone: '6281200000999',
-      addressText: 'Jl. Raya Cileunyi No. 8, Cileunyi',
-      landmark: null,
+      addressText: 'Jl. Raya Cileunyi No. 8',
+      details: null,
       ...CILEUNYI,
+      kecamatan: 'Cileunyi',
+      city: 'Kabupaten Bandung',
       isPrimary: false,
     })
 
@@ -117,7 +121,26 @@ test.group('Address pages (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
     const saved = await CustomerAddress.findByOrFail('user_id', customer.id)
     assert.isTrue(saved.isPrimary)
     assert.equal(saved.recipientPhone, '6281200000301')
-    assert.isNull(saved.landmark)
+    assert.isNull(saved.details)
+    // The area comes from the pin, the detail as typed (D109).
+    assert.equal(saved.addressText, 'Jl. Dipatiukur No. 35, Coblong')
+    assert.equal(saved.kecamatan, 'Coblong')
+    assert.equal(saved.city, 'Kota Bandung')
+  })
+
+  test('a missing pin asks to pick the location first (CUST-3)', async ({ client }) => {
+    const customer = await createUser('6281200000314')
+
+    const response = await client
+      .post('/profil/alamat')
+      .header('referer', '/profil/alamat/baru')
+      .loginAs(customer)
+      .withCsrfToken()
+      .redirects(0)
+      .form({ ...FORM, lat: '', lng: '' })
+
+    const page = await visitRedirect(client, response)
+    page.assertInertiaPropsContains({ errors: { lat: 'Pilih lokasi di peta dulu.' } })
   })
 
   test('a pin outside the active areas is refused under the map (AREA-4)', async ({
@@ -184,13 +207,13 @@ test.group('Address pages (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
       .loginAs(customer)
       .withCsrfToken()
       .redirects(0)
-      .form({ ...FORM, label: 'Kantor Pusat', landmark: 'Lobi timur', isPrimary: 'true' })
+      .form({ ...FORM, label: 'Kantor Pusat', details: 'Lobi timur', isPrimary: 'true' })
 
     response.assertHeader('location', '/profil/alamat')
     await office.refresh()
     await home.refresh()
     assert.equal(office.label, 'Kantor Pusat')
-    assert.equal(office.landmark, 'Lobi timur')
+    assert.equal(office.details, 'Lobi timur')
     assert.isTrue(office.isPrimary)
     assert.isFalse(home.isPrimary)
   })

@@ -5,6 +5,7 @@ import { errors as vineErrors } from '@vinejs/vine'
 import CustomerAddress, { MAX_ADDRESSES } from '#models/customer_address'
 import User from '#models/user'
 import AreaService from '#services/area_service'
+import PlaceService from '#services/place_service'
 import type { AddressInput } from '#validators/address_validator'
 
 export const OUTSIDE_AREA_MESSAGE =
@@ -19,7 +20,10 @@ function fieldError(field: string, message: string, rule: string): never {
 // requests at once can neither pass the limit of 3 together nor both change the primary address.
 @inject()
 export default class AddressService {
-  constructor(protected areaService: AreaService) {}
+  constructor(
+    protected areaService: AreaService,
+    protected placeService: PlaceService
+  ) {}
 
   async listAddresses(user: User): Promise<CustomerAddress[]> {
     return CustomerAddress.query()
@@ -44,7 +48,7 @@ export default class AddressService {
   }
 
   async createAddress(user: User, input: AddressInput) {
-    await this.#assertCovered(input)
+    const location = await this.#resolveLocation(input)
 
     return db.transaction(async (transaction) => {
       await this.#lockCustomer(user, transaction)
@@ -63,14 +67,14 @@ export default class AddressService {
         await this.#clearPrimary(user, transaction)
       }
       return CustomerAddress.create(
-        { userId: user.id, isPrimary, ...this.#columns(input) },
+        { userId: user.id, isPrimary, ...this.#columns(input), ...location },
         { client: transaction }
       )
     })
   }
 
   async updateAddress(user: User, id: number, input: AddressInput) {
-    await this.#assertCovered(input)
+    const location = await this.#resolveLocation(input)
 
     return db.transaction(async (transaction) => {
       await this.#lockCustomer(user, transaction)
@@ -80,7 +84,7 @@ export default class AddressService {
         await this.#clearPrimary(user, transaction)
         address.isPrimary = true
       }
-      await address.merge(this.#columns(input)).save()
+      await address.merge({ ...this.#columns(input), ...location }).save()
       return address
     })
   }
@@ -119,11 +123,19 @@ export default class AddressService {
     })
   }
 
-  // Saving is checked on the server whatever the map showed (AREA-4).
-  async #assertCovered(input: AddressInput) {
-    const { isCovered } = await this.areaService.checkCoverage(input.lat, input.lng)
-    if (!isCovered) {
+  // Saving is checked on the server whatever the map showed (AREA-4). The area fields come from the
+  // pin, never from the form, so the detail the customer typed is never replaced (D109).
+  async #resolveLocation(input: AddressInput) {
+    const { isCovered, district } = await this.areaService.checkCoverage(input.lat, input.lng)
+    if (!isCovered || !district) {
       fieldError('lat', OUTSIDE_AREA_MESSAGE, 'area.outside')
+    }
+    const label = await this.placeService.describePoint(input)
+    return {
+      street: label?.street ?? null,
+      kelurahan: label?.kelurahan ?? null,
+      kecamatan: district.name,
+      city: district.city,
     }
   }
 
@@ -144,7 +156,7 @@ export default class AddressService {
       recipientName: input.recipientName,
       recipientPhone: input.recipientPhone,
       addressText: input.addressText,
-      landmark: input.landmark || null,
+      details: input.details || null,
       lat: input.lat,
       lng: input.lng,
     }

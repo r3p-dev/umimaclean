@@ -5,8 +5,15 @@
  * - label: "Rumah", "Kantor" or a name the customer types.
  * - recipient_phone: who staff call at this address, normalized to 62… like users.phone;
  *   prefilled with the account phone but may belong to someone else.
+ * - address_text: "Nama jalan, gedung, no. rumah" as the customer leaves it; a place search may fill
+ *   it first ("Jalan Dipatiukur, Lebakgede, Coblong") and the customer adds the house number.
+ * - details: optional "Detail lainnya" (block, unit number, landmark).
  * - lat, lng: the map pin, checked against the active service areas when saved (AREA-4). A pin
  *   whose district is turned off later stays saved and is shown as outside the area (D82).
+ * - street, kelurahan: read from our OSM data at the pin when saved, never typed; null without that
+ *   data or with no named street near the pin (MAP-1).
+ * - kecamatan, city: the service area the pin is in when saved (always known: an address outside
+ *   every active area is refused).
  * - is_primary: the address chosen first when ordering; deleting it promotes the newest remaining.
  *
  * Index on user_id: every read lists one customer's addresses.
@@ -32,9 +39,13 @@ export default class extends BaseSchema {
       table.string('recipient_name', 80).notNullable()
       table.string('recipient_phone', 15).notNullable()
       table.string('address_text', 300).notNullable()
-      table.string('landmark', 120).nullable()
+      table.string('details', 160).nullable()
       table.double('lat').notNullable()
       table.double('lng').notNullable()
+      table.string('street', 160).nullable()
+      table.string('kelurahan', 80).nullable()
+      table.string('kecamatan', 60).notNullable()
+      table.string('city', 60).notNullable()
       table.boolean('is_primary').notNullable().defaultTo(false)
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').notNullable()

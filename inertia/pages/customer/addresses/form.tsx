@@ -6,6 +6,7 @@ import type { Data } from '@generated/data'
 import { urlFor } from '~/client'
 import CsrfField from '~/components/atoms/csrf_field'
 import PhoneInput from '~/components/molecules/phone_input'
+import PlaceSearch from '~/components/molecules/place_search'
 import PinPicker from '~/components/organisms/pin_picker'
 import CustomerLayout from '~/components/templates/customer_layout'
 import { Button } from '~/components/ui/button'
@@ -20,7 +21,6 @@ import {
 } from '~/components/ui/dialog'
 import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
-import { Textarea } from '~/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle_group'
 import type { MapPoint } from '~/lib/map/area_map'
 
@@ -30,7 +30,9 @@ const CUSTOM_LABEL = 'Lainnya'
 // Alun-alun Bandung: where a new address's pin starts.
 const NEW_PIN_START: MapPoint = { lat: -6.9218, lng: 107.6098 }
 
-// CUST-14: add or edit one address; the pin is checked by the server when it stops and on save (AREA-4).
+// CUST-14: add or edit one address on one page (D109): contact, then the address text (which is also
+// the place search), other details and the map pin, then the label. The server checks the pin and
+// reads the area under it again on save (AREA-4).
 export default function AddressForm({
   address,
   isFirstAddress,
@@ -52,6 +54,10 @@ export default function AddressForm({
   const [customLabel, setCustomLabel] = useState(address && !isPreset ? address.label : '')
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
+  // The point under the pin, which ranks the place search, and where a search or the device's
+  // location moves the pin to.
+  const [pin, setPin] = useState<MapPoint>(address ?? NEW_PIN_START)
+  const [pinTarget, setPinTarget] = useState<MapPoint | null>(null)
   const isPrimaryLocked = isFirstAddress || (address?.isPrimary ?? false)
   const title = address ? 'Ubah alamat' : 'Tambah alamat'
 
@@ -68,17 +74,103 @@ export default function AddressForm({
   function renderFields({
     errors,
     processing,
+    clearErrors,
   }: {
     errors: Record<string, string | undefined>
     processing: boolean
+    clearErrors: (...fields: ('lat' | 'lng')[]) => void
   }) {
     return (
       <>
         <CsrfField />
-        <div className="grid items-start gap-x-10 gap-y-6 lg:grid-cols-2 lg:rounded-lg lg:border lg:border-border lg:bg-card lg:p-6">
-          <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-8">
+          <section aria-labelledby="contact-title" className="flex flex-col gap-5">
+            <h2 id="contact-title" className="text-lg font-semibold">
+              Kontak
+            </h2>
+            <Field data-invalid={errors.recipientName ? true : undefined}>
+              <FieldLabel htmlFor="recipientName">Nama penerima</FieldLabel>
+              <Input
+                id="recipientName"
+                name="recipientName"
+                autoComplete="name"
+                defaultValue={address?.recipientName ?? user?.fullName}
+                maxLength={80}
+                required
+                aria-invalid={errors.recipientName ? true : undefined}
+                aria-describedby={
+                  errors.recipientName ? 'recipientName-error' : 'recipientName-help'
+                }
+                className="h-12"
+              />
+              {errors.recipientName ? (
+                <FieldError id="recipientName-error">{errors.recipientName}</FieldError>
+              ) : (
+                <FieldDescription id="recipientName-help">
+                  Ganti bila yang menyerahkan barang orang lain.
+                </FieldDescription>
+              )}
+            </Field>
+            <PhoneInput
+              id="recipientPhone"
+              label="Nomor WhatsApp penerima"
+              defaultValue={address?.recipientPhone ?? user?.phone}
+              error={errors.recipientPhone}
+              description="Dihubungi staf saat menjemput dan mengantar."
+              required
+            />
+          </section>
+
+          <section aria-labelledby="address-title" className="flex flex-col gap-5">
+            <h2 id="address-title" className="text-lg font-semibold">
+              Alamat
+            </h2>
+            <PlaceSearch
+              defaultValue={address?.addressText ?? ''}
+              near={pin}
+              error={errors.addressText}
+              onPick={setPinTarget}
+            />
+            <Field data-invalid={errors.details ? true : undefined}>
+              <FieldLabel htmlFor="details">
+                <span>
+                  Detail lainnya (cth: blok / unit no., patokan){' '}
+                  <span className="font-normal text-muted-foreground">(opsional)</span>
+                </span>
+              </FieldLabel>
+              <Input
+                id="details"
+                name="details"
+                defaultValue={address?.details ?? ''}
+                maxLength={160}
+                aria-invalid={errors.details ? true : undefined}
+                aria-describedby={errors.details ? 'details-error' : undefined}
+                className="h-12"
+              />
+              {errors.details && <FieldError id="details-error">{errors.details}</FieldError>}
+            </Field>
+            <PinPicker
+              start={address ?? NEW_PIN_START}
+              target={pinTarget}
+              onTargetChange={setPinTarget}
+              onSettle={(point) => {
+                setPin(point)
+                // A save refused for the old pin no longer applies to the new one (D109).
+                clearErrors('lat', 'lng')
+              }}
+              shapes={shapes}
+              tilesUrl={tilesUrl}
+              devWarning={devWarning}
+              error={errors.lat ?? errors.lng}
+            />
+          </section>
+
+          <section aria-labelledby="settings-title" className="flex flex-col gap-5">
+            <h2 id="settings-title" className="text-lg font-semibold">
+              Pengaturan
+            </h2>
             <Field data-invalid={errors.label ? true : undefined}>
-              <FieldLabel id="label-title">Simpan sebagai</FieldLabel>
+              <FieldLabel id="label-title">Tandai sebagai</FieldLabel>
               <ToggleGroup
                 aria-labelledby="label-title"
                 variant="outline"
@@ -114,77 +206,6 @@ export default function AddressForm({
               {errors.label && <FieldError id="label-error">{errors.label}</FieldError>}
             </Field>
 
-            <Field data-invalid={errors.addressText ? true : undefined}>
-              <FieldLabel htmlFor="addressText">Alamat lengkap</FieldLabel>
-              <Textarea
-                id="addressText"
-                name="addressText"
-                defaultValue={address?.addressText}
-                maxLength={300}
-                required
-                aria-invalid={errors.addressText ? true : undefined}
-                aria-describedby={errors.addressText ? 'addressText-error' : 'addressText-help'}
-                className="min-h-24 text-base"
-              />
-              {errors.addressText ? (
-                <FieldError id="addressText-error">{errors.addressText}</FieldError>
-              ) : (
-                <FieldDescription id="addressText-help">
-                  Nama jalan, nomor rumah, RT/RW, nama gedung.
-                </FieldDescription>
-              )}
-            </Field>
-
-            <Field data-invalid={errors.landmark ? true : undefined}>
-              <FieldLabel htmlFor="landmark">
-                Patokan <span className="font-normal text-muted-foreground">(opsional)</span>
-              </FieldLabel>
-              <Input
-                id="landmark"
-                name="landmark"
-                defaultValue={address?.landmark ?? ''}
-                maxLength={120}
-                placeholder="mis. pagar hitam, sebelah warung"
-                aria-invalid={errors.landmark ? true : undefined}
-                aria-describedby={errors.landmark ? 'landmark-error' : undefined}
-                className="h-12"
-              />
-              {errors.landmark && <FieldError id="landmark-error">{errors.landmark}</FieldError>}
-            </Field>
-
-            <Field data-invalid={errors.recipientName ? true : undefined}>
-              <FieldLabel htmlFor="recipientName">Nama penerima</FieldLabel>
-              <Input
-                id="recipientName"
-                name="recipientName"
-                autoComplete="name"
-                defaultValue={address?.recipientName ?? user?.fullName}
-                maxLength={80}
-                required
-                aria-invalid={errors.recipientName ? true : undefined}
-                aria-describedby={
-                  errors.recipientName ? 'recipientName-error' : 'recipientName-help'
-                }
-                className="h-12"
-              />
-              {errors.recipientName ? (
-                <FieldError id="recipientName-error">{errors.recipientName}</FieldError>
-              ) : (
-                <FieldDescription id="recipientName-help">
-                  Ganti bila yang menyerahkan barang orang lain.
-                </FieldDescription>
-              )}
-            </Field>
-
-            <PhoneInput
-              id="recipientPhone"
-              label="Nomor WhatsApp penerima"
-              defaultValue={address?.recipientPhone ?? user?.phone}
-              error={errors.recipientPhone}
-              description="Dihubungi staf saat menjemput dan mengantar."
-              required
-            />
-
             <div className="flex flex-col gap-1">
               <Checkbox
                 name="isPrimary"
@@ -202,24 +223,6 @@ export default function AddressForm({
                 </p>
               )}
             </div>
-          </div>
-
-          <section aria-labelledby="pin-title" className="flex min-w-0 flex-col gap-3">
-            <div className="flex flex-col gap-1">
-              <h2 id="pin-title" className="text-lg font-semibold">
-                Titik penjemputan
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Geser peta atau pakai tombol panah sampai ujung penanda tepat di rumah Anda.
-              </p>
-            </div>
-            <PinPicker
-              start={address ? { lat: address.lat, lng: address.lng } : NEW_PIN_START}
-              shapes={shapes}
-              tilesUrl={tilesUrl}
-              devWarning={devWarning}
-              error={errors.lat ?? errors.lng}
-            />
           </section>
         </div>
 
@@ -247,7 +250,7 @@ export default function AddressForm({
   }
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-4 px-5 pt-4 pb-8 sm:pt-10">
+    <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pt-4 pb-8 sm:pt-10">
       <Head title={address ? 'Ubah Alamat' : 'Tambah Alamat'} />
       <Link
         route="customer.addresses.index"

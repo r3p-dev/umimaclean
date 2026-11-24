@@ -7,6 +7,7 @@ import User from '#models/user'
 import { Role } from '#enums/role_enum'
 import AddressService from '#services/address_service'
 import type { AddressInput } from '#validators/address_validator'
+import { loadOsmFixture } from '../helpers/osm.js'
 
 // Coblong (Kota Bandung) is active in the seed; Cileunyi is not.
 const COBLONG = { lat: -6.881768, lng: 107.61421 }
@@ -77,6 +78,30 @@ test.group('AddressService (CUST-2, CUST-3, AREA-4, D82)', (group) => {
       /Validation failure/
     )
     assert.equal(await service.countAddresses(customer), 3)
+  })
+
+  test('the area is read from the pin and never changes the typed address (CUST-3, D109)', async ({
+    assert,
+  }) => {
+    const service = await app.container.make(AddressService)
+    const customer = await createCustomer()
+
+    const withoutMapData = await service.createAddress(customer, input('Rumah'))
+    assert.equal(withoutMapData.addressText, 'Jl. Dipatiukur No. 35, Coblong')
+    assert.equal(withoutMapData.kecamatan, 'Coblong')
+    assert.equal(withoutMapData.city, 'Kota Bandung')
+    assert.isNull(withoutMapData.street)
+    assert.isNull(withoutMapData.kelurahan)
+
+    await loadOsmFixture()
+    const updated = await service.updateAddress(
+      customer,
+      withoutMapData.id,
+      input('Rumah', { addressText: 'Jalan Dipatiukur No. 35, Lebakgede, Coblong' })
+    )
+    assert.equal(updated.addressText, 'Jalan Dipatiukur No. 35, Lebakgede, Coblong')
+    assert.equal(updated.street, 'Jalan Dipatiukur')
+    assert.equal(updated.kelurahan, 'Lebakgede')
   })
 
   test('a pin outside the active areas is refused when saving (AREA-4)', async ({ assert }) => {
@@ -159,7 +184,9 @@ test.group('AddressService (CUST-2, CUST-3, AREA-4, D82)', (group) => {
           userId: customer.id,
           isPrimary: true,
           ...input('Kantor'),
-          landmark: null,
+          details: null,
+          kecamatan: 'Coblong',
+          city: 'Kota Bandung',
         }),
       /customer_addresses_one_primary_per_user/
     )

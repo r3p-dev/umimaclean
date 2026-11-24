@@ -1,11 +1,16 @@
 import { test } from '@japa/runner'
 import { AxeBuilder } from '@axe-core/playwright'
 import testUtils from '@adonisjs/core/services/test_utils'
+import limiter from '@adonisjs/limiter/services/main'
 import CustomerAddress from '#models/customer_address'
 import User from '#models/user'
 import { normalizePhone } from '#helpers/phone'
 import { loadOsmFixture } from '../helpers/osm.js'
-import { saveScreenshot, saveScreenshotLog } from '../helpers/screenshots.js'
+import {
+  saveScreenshot,
+  saveScreenshotLog,
+  saveViewportScreenshot,
+} from '../helpers/screenshots.js'
 
 const VIEWPORTS = [
   { name: '360', width: 360, height: 780 },
@@ -15,6 +20,8 @@ const VIEWPORTS = [
 // Inside Coblong (active) and Cileunyi (inactive in the seed).
 const COBLONG = { latitude: -6.881768, longitude: 107.61421 }
 const CILEUNYI = { latitude: -6.925479, longitude: 107.742516 }
+const SAVE_ERROR =
+  'Titik ini di luar area layanan. Geser peta ke alamat di area antar-jemput gratis.'
 
 async function axeViolations(page: ConstructorParameters<typeof AxeBuilder>[0]['page']) {
   const axe = await new AxeBuilder({ page })
@@ -25,12 +32,28 @@ async function axeViolations(page: ConstructorParameters<typeof AxeBuilder>[0]['
   )
 }
 
+type MapCanvas = {
+  boundingBox(): Promise<{ width: number; height: number } | null>
+  click(options: { position: { x: number; y: number } }): Promise<void>
+}
+
+// A tap 60 px above the pin moves that spot under it (D109).
+async function tapAbovePin(canvas: MapCanvas) {
+  const box = await canvas.boundingBox()
+  if (!box) {
+    throw new Error('The map canvas is not on the page')
+  }
+  await canvas.click({ position: { x: box.width / 2, y: box.height / 2 - 60 } })
+}
+
 function seededCustomer() {
   return User.findByOrFail('phone', normalizePhone('082111223344'))
 }
 
 test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
   group.each.setup(async () => {
+    // Each pin stop and resize asks the coverage check, which shares 60 per minute per IP (D80).
+    await limiter.clear(['memory'])
     await testUtils.db().seed()
     return testUtils.db().wrapInGlobalTransaction()
   })
@@ -65,61 +88,109 @@ test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
     await saveScreenshotLog('alamat-daftar-screenshots.log', logLines)
   })
 
-  test('a customer deletes an address, then adds one with "Gunakan lokasi saya" and the arrows (CUST-3, CUST-14, AREA-4)', async ({
+  test('a customer deletes an address, then adds one on one page: search, house number, pin (CUST-3, CUST-14, AREA-4, MAP-1)', async ({
     visit,
     browserContext,
     assert,
   }) => {
+    await loadOsmFixture()
     const customer = await seededCustomer()
     await browserContext.loginAs(customer)
     await browserContext.grantPermissions(['geolocation'])
     const logLines: string[] = []
 
-    const list = await visit('/profil/alamat')
-    await list.getByRole('link', { name: 'Ubah Kos Adik' }).click()
-    assert.deepEqual(await axeViolations(list), [], 'Address edit page axe')
-    await list.getByRole('button', { name: 'Hapus alamat' }).click()
-    await list.getByRole('dialog').waitFor()
-    assert.deepEqual(await axeViolations(list), [], 'Delete dialog axe')
-    await list.getByRole('dialog').getByRole('button', { name: 'Hapus alamat' }).click()
-    await list.getByText('Alamat Kos Adik dihapus.').waitFor()
-    await list.getByRole('link', { name: 'Tambah alamat' }).click()
+    const page = await visit('/profil/alamat')
+    await page.getByRole('link', { name: 'Ubah Kos Adik' }).click()
+    assert.deepEqual(await axeViolations(page), [], 'Address edit page axe')
+    await page.getByRole('button', { name: 'Hapus alamat' }).click()
+    await page.getByRole('dialog').waitFor()
+    assert.deepEqual(await axeViolations(page), [], 'Delete dialog axe')
+    await page.getByRole('dialog').getByRole('button', { name: 'Hapus alamat' }).click()
+    await page.getByText('Alamat Kos Adik dihapus.').waitFor()
+    await page.getByRole('link', { name: 'Tambah alamat' }).click()
 
-    const status = list.getByRole('status').filter({ hasText: /area/ })
-    await list.locator('.maplibregl-canvas').waitFor()
-    await status.getByText(/^Masuk area layanan: Kec\./).waitFor()
+    const status = page.getByRole('status')
+    await page.locator('.maplibregl-canvas').waitFor()
+    await status.getByText('Masuk area layanan.').waitFor()
 
-    // The device is outside the area: the pin follows it and the server says so.
-    await browserContext.setGeolocation(CILEUNYI)
-    await list.getByRole('button', { name: 'Gunakan lokasi saya' }).click()
-    await status.getByText(/^Di luar area layanan/).waitFor()
-
-    await browserContext.setGeolocation(COBLONG)
-    await list.getByRole('button', { name: 'Gunakan lokasi saya' }).click()
-    await status.getByText('Masuk area layanan: Kec. Coblong, Kota Bandung.').waitFor()
-
-    // One arrow press moves the pin north: a larger latitude, checked again.
-    const latBefore = Number(await list.locator('input[name="lat"]').inputValue())
-    await list.getByRole('button', { name: 'Geser titik ke utara' }).click()
-    await list.waitForFunction(
-      `Number(document.querySelector('input[name="lat"]').value) > ${latBefore}`
-    )
-    await status.getByText(/^Masuk area layanan: Kec\./).waitFor()
-
+    // The address field is the place search: typing lists places under it.
+    const street = page.getByRole('textbox', { name: 'Nama jalan, gedung, no. rumah' })
+    const result = page.getByRole('option', { name: /Jalan Dipatiukur/ })
     for (const viewport of VIEWPORTS) {
-      await list.setViewportSize({ width: viewport.width, height: viewport.height })
-      const scrollWidth = Number(await list.evaluate('document.documentElement.scrollWidth'))
+      await page.setViewportSize({ width: viewport.width, height: viewport.height })
+      await street.fill('')
+      await street.fill('dipati ukur')
+      await result.waitFor()
+      assert.include(await result.innerText(), 'Lebakgede, Kec. Coblong')
+      // Brings the field near the top, where it sits while the phone keyboard is open.
+      await page.evaluate(
+        "window.scrollBy(0, document.querySelector('[name=addressText]').getBoundingClientRect().top - 120)"
+      )
+      const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
       assert.isAtMost(scrollWidth, viewport.width, `Horizontal scroll at ${viewport.name}px`)
-      assert.deepEqual(await axeViolations(list), [], `Address form axe at ${viewport.name}px`)
-      await saveScreenshot(list, `alamat-tambah-${viewport.name}.png`)
-      logLines.push(`alamat-tambah-${viewport.name}: scrollWidth=${scrollWidth} axe=none`)
+      assert.deepEqual(await axeViolations(page), [], `Suggestions axe at ${viewport.name}px`)
+      await saveViewportScreenshot(page, `alamat-cari-${viewport.name}.png`)
+      logLines.push(`alamat-cari-${viewport.name}: suggestions open scrollWidth=${scrollWidth}`)
+      await page.keyboard.press('Escape')
+      await result.waitFor({ state: 'detached' })
     }
 
-    await list.getByRole('radio', { name: 'Lainnya' }).click()
-    await list.getByLabel('Nama label').fill('Rumah Ibu')
-    await list.getByLabel('Alamat lengkap').fill('Jl. Tubagus Ismail No. 12, Sekeloa, Coblong')
-    await list.getByRole('button', { name: 'Simpan alamat' }).click()
-    await list.getByText('Alamat disimpan.').waitFor()
+    // Choosing one fills the field with its full name and moves the pin; the house number goes after it.
+    await street.fill('')
+    await street.fill('dipati ukur')
+    await result.click()
+    assert.equal(await street.inputValue(), 'Jalan Dipatiukur, Lebakgede, Coblong')
+    // The keyboard picks the same way: down arrow into the list, Enter.
+    await street.fill('dipati ukur')
+    await result.waitFor()
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('Enter')
+    await result.waitFor({ state: 'detached' })
+    assert.equal(await street.inputValue(), 'Jalan Dipatiukur, Lebakgede, Coblong')
+    await status.getByText('Jalan Dipatiukur', { exact: true }).waitFor()
+    await status.getByText('Lebakgede, Kec. Coblong, Kota Bandung').waitFor()
+    await status.getByText('Masuk area layanan.').waitFor()
+    await street.press('End')
+    await street.pressSequentially(', No. 12')
+    await page
+      .getByLabel('Detail lainnya (cth: blok / unit no., patokan)')
+      .fill('RT 01/RW 03, pagar biru')
+
+    // Outside the area the status says so; the device's location moves the pin.
+    await browserContext.setGeolocation(CILEUNYI)
+    await page.getByRole('button', { name: 'Gunakan lokasi saya' }).click()
+    await status.getByText(/^Di luar area layanan/).waitFor()
+    await status.getByText('Kec. Cileunyi, Kabupaten Bandung').waitFor()
+    await browserContext.setGeolocation(COBLONG)
+    await page.getByRole('button', { name: 'Gunakan lokasi saya' }).click()
+    await status.getByText('Kec. Coblong, Kota Bandung').waitFor()
+
+    // The non-drag ways to move the pin (WCAG 2.5.7): a tap above it, then the up arrow key on the
+    // focused map; each moves it north and is checked again.
+    await tapAbovePin(page.locator('.maplibregl-canvas'))
+    await status.getByText('Masuk area layanan.').waitFor()
+    await page.locator('.maplibregl-canvas').focus()
+    await page.keyboard.press('ArrowUp')
+    await status.getByText('Mengecek area…').waitFor({ state: 'detached' })
+    await status.getByText(/Kec\. Coblong, Kota Bandung/).waitFor()
+    await page.getByRole('radio', { name: 'Lainnya' }).click()
+    await page.getByLabel('Nama label').fill('Rumah Ibu')
+
+    for (const viewport of VIEWPORTS) {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height })
+      await page.waitForTimeout(500)
+      await status.getByText('Masuk area layanan.').waitFor()
+      const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
+      assert.isAtMost(scrollWidth, viewport.width, `Horizontal scroll at ${viewport.name}px`)
+      assert.deepEqual(await axeViolations(page), [], `Address form axe at ${viewport.name}px`)
+      // From the top, so the sticky header is not drawn in the middle of the full-page capture.
+      await page.evaluate('window.scrollTo(0, 0)')
+      await saveScreenshot(page, `alamat-baru-${viewport.name}.png`)
+      logLines.push(`alamat-baru-${viewport.name}: scrollWidth=${scrollWidth} axe=none`)
+    }
+
+    await page.getByRole('button', { name: 'Simpan alamat' }).click()
+    await page.getByText('Alamat disimpan.').waitFor()
 
     const saved = await CustomerAddress.query()
       .where('user_id', customer.id)
@@ -127,81 +198,50 @@ test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
       .firstOrFail()
     assert.isFalse(saved.isPrimary)
     assert.equal(saved.recipientPhone, customer.phone)
+    assert.equal(saved.addressText, 'Jalan Dipatiukur, Lebakgede, Coblong, No. 12')
+    assert.equal(saved.details, 'RT 01/RW 03, pagar biru')
+    assert.equal(saved.kecamatan, 'Coblong')
+    assert.equal(saved.city, 'Kota Bandung')
     assert.isAbove(saved.lat, COBLONG.latitude)
-    await saveScreenshotLog('alamat-tambah-screenshots.log', logLines)
+    await saveScreenshotLog('alamat-baru-screenshots.log', logLines)
   })
 
-  test('without location permission the button goes away and the pin still works (AREA-4)', async ({
+  test('editing an address keeps its text and moves only the pin (CUST-3, D109)', async ({
     visit,
     browserContext,
     assert,
   }) => {
     await browserContext.loginAs(await seededCustomer())
     await browserContext.clearPermissions()
-
-    const page = await visit('/profil/alamat')
-    await page.getByRole('link', { name: 'Ubah Kantor' }).click()
-    await page.locator('.maplibregl-canvas').waitFor()
-    const locate = page.getByRole('button', { name: 'Gunakan lokasi saya' })
-    if (await locate.isVisible()) {
-      await locate.click()
-      await locate.waitFor({ state: 'detached' })
-    }
-
-    await page.getByRole('button', { name: 'Geser titik ke barat' }).click()
-    await page
-      .getByRole('status')
-      .getByText(/^Masuk area layanan: Kec\./)
-      .waitFor()
-    await page.getByRole('button', { name: 'Simpan alamat' }).click()
-    await page.getByText('Alamat diperbarui.').waitFor()
-    assert.isTrue(await page.getByRole('heading', { name: 'Alamat', level: 1 }).isVisible())
-  })
-
-  test('a customer finds a street by name, picks it and reads the street under the pin (MAP-1)', async ({
-    visit,
-    browserContext,
-    assert,
-  }) => {
-    await loadOsmFixture()
-    await browserContext.loginAs(await seededCustomer())
     const logLines: string[] = []
 
     const page = await visit('/profil/alamat')
     await page.getByRole('link', { name: 'Ubah Kantor' }).click()
     await page.locator('.maplibregl-canvas').waitFor()
-
-    const search = page.getByRole('combobox', { name: 'Cari jalan atau tempat' })
-    const result = page.getByRole('option', { name: /Jalan Dipatiukur/ })
-    const status = page.getByRole('status').filter({ hasText: /area/ })
-    for (const viewport of VIEWPORTS) {
-      await page.setViewportSize({ width: viewport.width, height: viewport.height })
-      await search.fill('')
-      await search.fill('dipati ukur')
-      await result.waitFor()
-      assert.include(await result.innerText(), 'Lebakgede, Kec. Coblong')
-      const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
-      assert.isAtMost(scrollWidth, viewport.width, `Horizontal scroll at ${viewport.name}px`)
-      await saveScreenshot(page, `alamat-cari-${viewport.name}.png`)
-      logLines.push(`alamat-cari-${viewport.name}: results open scrollWidth=${scrollWidth}`)
-      await page.keyboard.press('Escape')
+    // Without location permission the button goes away and the pin is placed by hand.
+    const locate = page.getByRole('button', { name: 'Gunakan lokasi saya' })
+    if (await locate.isVisible()) {
+      await locate.click()
+      await locate.waitFor({ state: 'detached' })
     }
-
-    await search.fill('')
-    await search.fill('dipati ukur')
-    await result.click()
-    await status.getByText('Jalan Dipatiukur, Lebakgede').waitFor()
-    await status.getByText('Masuk area layanan: Kec. Coblong, Kota Bandung.').waitFor()
-    assert.deepEqual(await axeViolations(page), [], 'Address form axe after a search')
+    await tapAbovePin(page.locator('.maplibregl-canvas'))
+    await page.getByRole('status').getByText('Masuk area layanan.').waitFor()
 
     for (const viewport of VIEWPORTS) {
       await page.setViewportSize({ width: viewport.width, height: viewport.height })
-      // A resize moves the map, so the label is read again.
-      await status.getByText('Jalan Dipatiukur, Lebakgede').waitFor()
-      await saveScreenshot(page, `alamat-label-${viewport.name}.png`)
-      logLines.push(`alamat-label-${viewport.name}: street label shown`)
+      await page.waitForTimeout(500)
+      await page.getByRole('status').getByText('Masuk area layanan.').waitFor()
+      await page.evaluate('window.scrollTo(0, 0)')
+      await saveScreenshot(page, `alamat-ubah-${viewport.name}.png`)
+      logLines.push(`alamat-ubah-${viewport.name}: edit form`)
     }
-    await saveScreenshotLog('alamat-cari-screenshots.log', logLines)
+
+    await page.getByRole('button', { name: 'Simpan alamat' }).click()
+    await page.getByText('Alamat diperbarui.').waitFor()
+    const kantor = await CustomerAddress.findByOrFail('label', 'Kantor')
+    assert.equal(kantor.addressText, 'Jalan Mulya Sari No. 120, Sukagalih, Sukajadi')
+    assert.equal(kantor.details, 'Lantai 2')
+    await saveScreenshotLog('alamat-ubah-screenshots.log', logLines)
   })
 
   test('without OSM data the search says so and the pin is still placed by hand (MAP-1, NFR-4)', async ({
@@ -213,18 +253,41 @@ test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
     const page = await visit('/profil/alamat')
     await page.getByRole('link', { name: 'Ubah Kantor' }).click()
     await page.locator('.maplibregl-canvas').waitFor()
-    await page.getByRole('combobox', { name: 'Cari jalan atau tempat' }).fill('dipatiukur')
-    await page
-      .getByText('Pencarian tempat belum tersedia. Geser peta untuk menaruh titik.')
-      .waitFor()
+    const street = page.getByRole('textbox', { name: 'Nama jalan, gedung, no. rumah' })
+    await street.fill('Jalan Dipatiukur No. 3')
+    await page.getByText('Pencarian tempat belum tersedia. Atur pin di peta.').waitFor()
 
     await page.keyboard.press('Escape')
-    await page.getByRole('button', { name: 'Geser titik ke utara' }).click()
-    await page
-      .getByRole('status')
-      .getByText(/^Masuk area layanan: Kec\./)
-      .waitFor()
+    await tapAbovePin(page.locator('.maplibregl-canvas'))
+    await page.getByRole('status').getByText('Masuk area layanan.').waitFor()
     await page.getByRole('button', { name: 'Simpan alamat' }).click()
     await page.getByText('Alamat diperbarui.').waitFor()
+  })
+
+  test('a save refused for a pin outside the area clears once the pin moves inside (AREA-4)', async ({
+    visit,
+    browserContext,
+    assert,
+  }) => {
+    await browserContext.loginAs(await seededCustomer())
+    await browserContext.grantPermissions(['geolocation'])
+
+    // "Kos Adik" is in Cileunyi, turned off after it was saved (D82): saving it is refused.
+    const page = await visit('/profil/alamat')
+    await page.getByRole('link', { name: 'Ubah Kos Adik' }).click()
+    await page.locator('.maplibregl-canvas').waitFor()
+    await page.getByRole('button', { name: 'Simpan alamat' }).click()
+    await page.getByText(SAVE_ERROR).waitFor()
+
+    await browserContext.setGeolocation(COBLONG)
+    await page.getByRole('button', { name: 'Gunakan lokasi saya' }).click()
+    await page.getByRole('status').getByText('Kec. Coblong, Kota Bandung').waitFor()
+    await page.getByText(SAVE_ERROR).waitFor({ state: 'detached' })
+
+    await page.getByRole('button', { name: 'Simpan alamat' }).click()
+    await page.getByText('Alamat diperbarui.').waitFor()
+    const kosAdik = await CustomerAddress.findByOrFail('label', 'Kos Adik')
+    assert.closeTo(kosAdik.lat, COBLONG.latitude, 0.0001)
+    assert.equal(kosAdik.kecamatan, 'Coblong')
   })
 })

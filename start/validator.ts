@@ -42,4 +42,6 @@ vine.messagesProvider = new SimpleMessagesProvider({
   'description.required': 'Deskripsi wajib diisi.',
   'q.required': 'Ketik nama kecamatan.',
   'q.minLength': 'Ketik minimal {{ min }} huruf nama kecamatan.',
+  'lat.required': 'Pilih lokasi di peta dulu.',
+  'addressText.required': 'Isi nama jalan, gedung atau no. rumah.',
 })

@@ -44,31 +44,41 @@ export class ActivityLogSchema extends BaseModel {
 export class CustomerAddressSchema extends BaseModel {
   static $columns = [
     'addressText',
+    'city',
     'createdAt',
+    'details',
     'id',
     'isPrimary',
+    'kecamatan',
+    'kelurahan',
     'label',
-    'landmark',
     'lat',
     'lng',
     'recipientName',
     'recipientPhone',
+    'street',
     'updatedAt',
     'userId',
   ] as const
   $columns = CustomerAddressSchema.$columns
   @column()
   declare addressText: string
+  @column()
+  declare city: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
+  @column()
+  declare details: string | null
   @column({ isPrimary: true })
   declare id: number
   @column()
   declare isPrimary: boolean
   @column()
-  declare label: string
+  declare kecamatan: string
   @column()
-  declare landmark: string | null
+  declare kelurahan: string | null
+  @column()
+  declare label: string
   @column()
   declare lat: number
   @column()
@@ -77,6 +87,8 @@ export class CustomerAddressSchema extends BaseModel {
   declare recipientName: string
   @column()
   declare recipientPhone: string
+  @column()
+  declare street: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
   @column()

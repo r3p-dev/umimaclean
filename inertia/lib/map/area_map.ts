@@ -1,12 +1,5 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
-import {
-  AttributionControl,
-  LngLatBounds,
-  Map,
-  NavigationControl,
-  addProtocol,
-  setWorkerUrl,
-} from 'maplibre-gl'
+import { LngLatBounds, Map, NavigationControl, addProtocol, setWorkerUrl } from 'maplibre-gl'
 import type { GeoJSONSource } from 'maplibre-gl'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import { Protocol } from 'pmtiles'
@@ -15,15 +8,8 @@ import type { Data } from '@generated/data'
 
 type AreaShape = Data.ServiceAreaShape
 
-// Credit for the base map (MAP-2) and the district boundaries (AREA-1, CC BY-IGO 3.0 §3(b), §4(a)).
-const ATTRIBUTION = [
-  '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>',
-  'Batas kecamatan: <a href="https://data.humdata.org/dataset/cod-ab-idn" target="_blank" rel="noopener">BPS via OCHA/HDX</a>, <a href="https://creativecommons.org/licenses/by/3.0/igo/" target="_blank" rel="noopener">CC BY-IGO 3.0</a>, diubah',
-]
-
 const LOCALE = {
   'Map.Title': 'Peta area layanan',
-  'AttributionControl.ToggleAttribution': 'Tampilkan atribusi',
   'NavigationControl.ZoomIn': 'Perbesar',
   'NavigationControl.ZoomOut': 'Perkecil',
 }
@@ -73,6 +59,7 @@ const PIN_ZOOM = 17
 // Without a tiles file the map is a plain background and the areas still show (MAP-2).
 // A base map that fails to load is logged, and reported to `onBaseMapError` once.
 // With a `pinStart` the map opens on that point, close up, for placing a pin.
+// The credits are drawn by `molecules/map_credits.tsx`.
 export function createAreaMap(
   container: HTMLElement,
   tilesUrl: string | null,
@@ -84,7 +71,14 @@ export function createAreaMap(
     container,
     center: pinStart ? [pinStart.lng, pinStart.lat] : BANDUNG_CENTER,
     zoom: pinStart ? PIN_ZOOM : 10,
-    locale: LOCALE,
+    // The map's accessible name says how to move a pin without dragging (WCAG 2.5.7, D109).
+    locale: pinStart
+      ? {
+          ...LOCALE,
+          'Map.Title':
+            'Peta titik penjemputan. Ketuk peta untuk memindahkan penanda ke sana, atau pakai tombol panah keyboard.',
+        }
+      : LOCALE,
     attributionControl: false,
     style: tilesUrl
       ? {
@@ -115,7 +109,6 @@ export function createAreaMap(
       onBaseMapError(`Peta dasar ${tilesUrl} gagal dimuat: ${event.error.message}`)
     }
   })
-  map.addControl(new AttributionControl({ compact: false, customAttribution: ATTRIBUTION }))
   map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
   return map
 }
@@ -173,12 +166,22 @@ export function showAreas(map: Map, shapes: AreaShape[], shouldFitView = true) {
   }
 }
 
-// The point under the centre pin, reported each time the map stops moving (AREA-4).
+// The point under the centre pin, reported each time the map stops moving (AREA-4). Tapping or
+// clicking the map moves that spot under the pin, the alternative to dragging (WCAG 2.5.7, D109);
+// MapLibre's own keyboard handler pans with the arrow keys while the map has focus.
 export function followPin(map: Map, onPinSettle: (point: MapPoint) => void) {
+  let last = map.getCenter()
   map.on('moveend', () => {
     const { lat, lng } = map.getCenter()
+    // A resize also ends with `moveend` but keeps the centre. Reporting it would re-check the same
+    // pin, and the status text changing height resizes the map again: an endless loop (D109).
+    if (lat === last.lat && lng === last.lng) {
+      return
+    }
+    last = map.getCenter()
     onPinSettle({ lat, lng })
   })
+  map.on('click', (event) => map.easeTo({ center: event.lngLat }))
 }
 
 export function movePinTo(map: Map, point: MapPoint) {

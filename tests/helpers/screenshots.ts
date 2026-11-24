@@ -42,6 +42,12 @@ export async function saveScreenshot(page: ScreenshotPage, fileName: string) {
   await copyToEvidence(fileName)
 }
 
+// What the screen shows, for a dialog over the page (a full-page capture adds the page below it).
+export async function saveViewportScreenshot(page: ScreenshotPage, fileName: string) {
+  await page.screenshot({ path: path.join(OUTPUT_DIR, fileName), fullPage: false })
+  await copyToEvidence(fileName)
+}
+
 export async function saveElementScreenshot(element: ScreenshotElement, fileName: string) {
   await element.screenshot({ path: path.join(OUTPUT_DIR, fileName) })
   await copyToEvidence(fileName)

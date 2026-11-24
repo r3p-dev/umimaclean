@@ -91,7 +91,10 @@ export default function AddressIndex({
                   </CardTitle>
                   <CardDescription className="flex flex-col gap-1 text-sm">
                     <span className="text-foreground">{address.addressText}</span>
-                    {address.landmark && <span>Patokan: {address.landmark}</span>}
+                    {address.details && <span>{address.details}</span>}
+                    <span>
+                      Kec. {address.kecamatan}, {address.city}
+                    </span>
                     <span>
                       Penerima: {address.recipientName} · {formatPhone(address.recipientPhone)}
                     </span>

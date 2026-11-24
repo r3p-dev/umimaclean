@@ -18,7 +18,12 @@ test.group('PlaceService with OSM data (MAP-1)', (group) => {
   })
 
   test('search tolerates spaces, typos and generic words', async ({ assert }) => {
-    for (const typed of ['dipati ukur', 'Jl. Dipatiukr', 'dipatiukur']) {
+    for (const typed of [
+      'dipati ukur',
+      'Jl. Dipatiukr',
+      'dipatiukur',
+      'Jl. Dipatiukur No. 35, RT 02/RW 05, Lebakgede',
+    ]) {
       const [first] = await namesFound(typed)
       assert.equal(first, 'Jalan Dipatiukur', typed)
     }
@@ -32,6 +37,7 @@ test.group('PlaceService with OSM data (MAP-1)', (group) => {
     const [road] = (await new PlaceService().searchPlaces('dipatiukur', DIPATIUKUR)) ?? []
     assert.match(road.id, /^road-\d+$/)
     assert.equal(road.detail, 'Lebakgede, Kec. Coblong')
+    assert.equal(road.fullName, 'Jalan Dipatiukur, Lebakgede, Coblong')
     assert.closeTo(road.lat, DIPATIUKUR.lat, 0.001)
     assert.closeTo(road.lng, DIPATIUKUR.lng, 0.001)
   })

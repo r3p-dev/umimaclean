@@ -12,13 +12,23 @@ const GENERIC_WORDS = new Set([
   'perum',
 ])
 
-// The typed search without generic words (MAP-1): "Jl. Gang Sukaluyu" → "sukaluyu". When nothing
-// specific is left ("jalan"), the text is searched as typed.
+// A house number, block or RT/RW with its value ("No. 35", "Blok C2", "RT 02/RW 05"): never in a
+// street or place name.
+const HOUSE_DETAILS = /\b(no|nomor|blok|rt|rw)\b\.?\s*[\w/-]*/gi
+
+// The searchable part of the address text the customer types (MAP-1, D110): the part before the
+// first comma, without house details and generic words. "Jl. Dipatiukur No. 35, RT 02/RW 05,
+// Lebakgede" → "dipatiukur". When nothing specific is left ("jalan"), the text is searched as typed.
 export function searchTerm(text: string) {
-  const words = text
+  const [firstPart] = text.split(',')
+  const words = firstPart
+    .replace(HOUSE_DETAILS, ' ')
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter(Boolean)
   const specific = words.filter((word) => !GENERIC_WORDS.has(word))
-  return (specific.length > 0 ? specific : words).join(' ')
+  if (specific.length > 0) {
+    return specific.join(' ')
+  }
+  return words.length > 0 ? words.join(' ') : text.toLowerCase().trim()
 }

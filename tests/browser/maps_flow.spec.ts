@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import { AxeBuilder } from '@axe-core/playwright'
 import testUtils from '@adonisjs/core/services/test_utils'
+import limiter from '@adonisjs/limiter/services/main'
 import User from '#models/user'
 import { Role } from '#enums/role_enum'
 import { saveElementScreenshot, saveScreenshot, saveScreenshotLog } from '../helpers/screenshots.js'
@@ -24,6 +25,8 @@ async function axeViolations(page: ConstructorParameters<typeof AxeBuilder>[0]['
 
 test.group('Maps (MAP-2, AREA-1, OWN-9, GUEST-1, AREA-4)', (group) => {
   group.each.setup(async () => {
+    // Each pin stop and resize asks the coverage check, which shares 60 per minute per IP (D80).
+    await limiter.clear(['memory'])
     await testUtils.db().seed()
     return testUtils.db().wrapInGlobalTransaction()
   })
@@ -49,13 +52,21 @@ test.group('Maps (MAP-2, AREA-1, OWN-9, GUEST-1, AREA-4)', (group) => {
       await page.locator('.maplibregl-canvas').waitFor()
       await page.waitForLoadState('networkidle')
 
-      const attribution = page.locator('.maplibregl-ctrl-attrib')
-      assert.notInclude(await attribution.getAttribute('class'), 'maplibregl-compact')
-      const credits = await page.locator('.maplibregl-ctrl-attrib-inner').innerText()
-      assert.include(credits, '© OpenStreetMap contributors')
-      assert.include(credits, 'BPS via OCHA/HDX')
-      assert.include(credits, 'CC BY-IGO 3.0')
-      assert.include(credits, 'diubah')
+      // Folded into a 44 px ⓘ button until pressed; pressing it shows the full credits (D109).
+      const credits = page.locator('#map-credits')
+      const creditsButton = page.getByRole('button', { name: 'Tampilkan atribusi' })
+      assert.isFalse(await credits.isVisible())
+      const buttonBox = await creditsButton.boundingBox()
+      assert.isAtLeast(buttonBox?.width ?? 0, 44)
+      assert.isAtLeast(buttonBox?.height ?? 0, 44)
+      await saveScreenshot(page, `admin-area-peta-${viewport.name}.png`)
+      await creditsButton.click()
+      await credits.waitFor()
+      const creditText = await credits.innerText()
+      assert.include(creditText, '© OpenStreetMap contributors')
+      assert.include(creditText, 'BPS via OCHA/HDX')
+      assert.include(creditText, 'CC BY-IGO 3.0')
+      assert.include(creditText, 'diubah')
       assert.isTrue(await page.getByText('Nonaktif', { exact: true }).isVisible())
 
       const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
@@ -66,7 +77,7 @@ test.group('Maps (MAP-2, AREA-1, OWN-9, GUEST-1, AREA-4)', (group) => {
         `Area map axe violations at ${viewport.name}px`
       )
 
-      await saveScreenshot(page, `admin-area-peta-${viewport.name}.png`)
+      await saveScreenshot(page, `admin-area-peta-atribusi-${viewport.name}.png`)
       logLines.push(`admin-area-peta-${viewport.name}: scrollWidth=${scrollWidth} axe=none`)
     }
 
