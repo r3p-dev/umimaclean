@@ -6,7 +6,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-24
+
 ### Added
+
+- Customers save up to three addresses on Profil → Alamat: label, recipient, address text, landmark and a map pin; one is the primary, any can be made primary, and deleting the primary makes the newest remaining one primary (CUST-2, CUST-3, CUST-14).
+- The address map keeps the pin in the centre: drag the map or use the arrow buttons, and the server says after each stop whether the pin is inside the service area; saving checks it again (AREA-4).
+- "Gunakan lokasi saya" moves the pin to the device's location; when location is refused or unavailable the button goes away and the pin is placed by hand (CUST-3).
+- Search for a street or place by name above the address map, forgiving spaces, small typos and words like "jalan", "gang" or "komplek"; the list also shows places near the pin, and the street and kelurahan under the pin are named (MAP-1).
+- An address whose kecamatan is turned off later stays saved and is marked "Di luar area layanan" (D82).
 
 - `node ace osm:import <YYMMDD>` (development): loads the street and place data for address search from a dated monthly OpenStreetMap snapshot of Java, clipped to the service areas plus 5 km, and writes the file production loads with two documented commands; a bad import is undone by loading the previous file.
 - Maps from the self-hosted base map, with the OpenStreetMap and district boundary credits always visible (MAP-2, AREA-1).
