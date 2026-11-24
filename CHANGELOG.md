@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-24
+
+### Changed
+
+- Adding or editing an address is one page: Kontak (recipient name and WhatsApp), Alamat ("Nama jalan, gedung, no. rumah", "Detail lainnya" and the map), then "Tandai sebagai" and "Jadikan alamat utama".
+- "Nama jalan, gedung, no. rumah" is also the place search: type a street, choose a suggestion, and the field gets its full name (e.g. "Jalan Dipatiukur, Lebakgede, Coblong") while the pin moves there; then add the house number in the same field.
+- "Detail lainnya (cth: blok / unit no., patokan)" replaces the separate landmark field.
+- The map sits under the fields with a reminder to check the pin; the street, kelurahan, kecamatan and kota under the pin and the coverage line are shown below it, and they are stored with the address when it is saved.
+- The ⓘ map credits button is larger (44 px) and easier to tap.
+
+### Fixed
+
+- The coverage check under the map no longer repeats endlessly after the map changes size.
+
 ## [0.4.1] - 2026-11-24
 
 ### Changed
