@@ -2,7 +2,7 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import app from '@adonisjs/core/services/app'
 import router from '@adonisjs/core/services/router'
-import { areaCheckThrottle } from '#start/limiter'
+import { areaCheckThrottle, placeThrottle } from '#start/limiter'
 
 router.get('/', [controllers.Home, 'index']).as('home')
 router.get('/area/cek', [controllers.AreaCheck, 'show']).as('area.check').use(areaCheckThrottle)
@@ -50,6 +50,8 @@ router
       .get('/area/cek-titik', [controllers.AreaCheck, 'showPoint'])
       .as('area.check_point')
       .use(areaCheckThrottle)
+    router.get('/tempat', [controllers.Places, 'index']).as('places.index').use(placeThrottle)
+    router.get('/tempat/titik', [controllers.Places, 'show']).as('places.show').use(placeThrottle)
   })
   .use(middleware.auth())
 

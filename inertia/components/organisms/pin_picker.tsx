@@ -10,12 +10,14 @@ import type { Data } from '@generated/data'
 import type { Registry } from '@generated/registry/schema'
 import { urlFor } from '~/client'
 import Note from '~/components/atoms/note'
+import PlaceSearch from '~/components/molecules/place_search'
 import ServiceAreaMap from '~/components/organisms/service_area_map'
 import { Button } from '~/components/ui/button'
 import { FieldError } from '~/components/ui/field'
 import type { MapPoint } from '~/lib/map/area_map'
 
 type CheckResponse = Registry['area.check_point']['types']['response']
+type PointLabel = Registry['places.show']['types']['response']
 // The JSON bodies of a refused check: @adonisjs/limiter's 429 and VineJS's 422 (D80).
 type ErrorBody = { errors: { message: string }[] }
 type Status = { tone: ComponentProps<typeof Note>['tone'] | 'checking'; text: string }
@@ -56,6 +58,20 @@ async function checkPoint(point: MapPoint, signal: AbortSignal): Promise<Status>
   }
 }
 
+// The street and kelurahan under the pin (MAP-1); nothing when the map data is missing or the
+// request fails, because the coverage line already says where the pin is.
+async function readLabel(point: MapPoint, signal: AbortSignal) {
+  const response = await fetch(urlFor('places.show', {}, { qs: point }), {
+    headers: { Accept: 'application/json' },
+    signal,
+  })
+  if (!response.ok) {
+    return null
+  }
+  const { street, kelurahan }: PointLabel = await response.json()
+  return [street, kelurahan].filter(Boolean).join(', ') || null
+}
+
 // AREA-4: a pin in the centre of the map, checked by the server each time the map stops, and sent
 // with the form as `lat` and `lng`. "Gunakan lokasi saya" only moves the map (D109).
 export default function PinPicker({
@@ -74,6 +90,7 @@ export default function PinPicker({
   const [point, setPoint] = useState(start)
   const [target, setTarget] = useState<MapPoint | null>(null)
   const [status, setStatus] = useState<Status>(CHECKING)
+  const [label, setLabel] = useState<string | null>(null)
   // Signed-in pages render only in the browser, so `navigator` is there (config/inertia.ts).
   const [canLocate, setCanLocate] = useState(() => 'geolocation' in navigator)
   const [isLocating, setIsLocating] = useState(false)
@@ -81,6 +98,12 @@ export default function PinPicker({
   useEffect(() => {
     const controller = new AbortController()
     const timer = setTimeout(() => {
+      readLabel(point, controller.signal)
+        .then(setLabel)
+        .catch((labelError: unknown) => {
+          if (controller.signal.aborted) return
+          console.error(labelError)
+        })
       checkPoint(point, controller.signal)
         .then(setStatus)
         .catch((checkError: unknown) => {
@@ -107,6 +130,7 @@ export default function PinPicker({
 
   function settle(nextPoint: MapPoint) {
     setStatus(CHECKING)
+    setLabel(null)
     setPoint(nextPoint)
   }
 
@@ -129,6 +153,7 @@ export default function PinPicker({
   const Icon = ICONS[status.tone]
   return (
     <div className="flex flex-col gap-3">
+      <PlaceSearch near={point} onPick={setTarget} />
       <ServiceAreaMap
         shapes={shapes}
         tilesUrl={tilesUrl}
@@ -138,7 +163,8 @@ export default function PinPicker({
       />
       <input type="hidden" name="lat" value={point.lat} />
       <input type="hidden" name="lng" value={point.lng} />
-      <div role="status" aria-live="polite">
+      <div role="status" aria-live="polite" className="flex flex-col gap-1">
+        {label && <p className="text-base font-semibold">{label}</p>}
         <Note
           tone={status.tone === 'checking' ? 'info' : status.tone}
           variant="plain"

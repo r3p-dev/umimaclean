@@ -40,6 +40,10 @@ export interface ApiDefinition {
   accountSecurity: {
     updatePassword: typeof routes['account_security.update_password']
   }
+  places: {
+    index: typeof routes['places.index']
+    show: typeof routes['places.show']
+  }
   customer: {
     home: typeof routes['customer.home']
     profile: {

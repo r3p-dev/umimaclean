@@ -294,6 +294,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/area_check_controller').default['showPoint']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'places.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/tempat'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/place_validator').searchPlacesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/places_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/places_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/places_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'places.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/tempat/titik'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/address_validator').checkPointValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/places_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/places_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/places_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'customer.home': {
     methods: ["GET","HEAD"]
     pattern: '/beranda'

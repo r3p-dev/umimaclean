@@ -26,6 +26,8 @@ export type ScannedRoutes = {
     'session.destroy': { paramsTuple?: []; params?: {} }
     'account_security.update_password': { paramsTuple?: []; params?: {} }
     'area.check_point': { paramsTuple?: []; params?: {} }
+    'places.index': { paramsTuple?: []; params?: {} }
+    'places.show': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
@@ -81,6 +83,8 @@ export type ScannedRoutes = {
     'password_reset.edit': { paramsTuple?: []; params?: {} }
     'otp.show': { paramsTuple?: []; params?: {} }
     'area.check_point': { paramsTuple?: []; params?: {} }
+    'places.index': { paramsTuple?: []; params?: {} }
+    'places.show': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
@@ -116,6 +120,8 @@ export type ScannedRoutes = {
     'password_reset.edit': { paramsTuple?: []; params?: {} }
     'otp.show': { paramsTuple?: []; params?: {} }
     'area.check_point': { paramsTuple?: []; params?: {} }
+    'places.index': { paramsTuple?: []; params?: {} }
+    'places.show': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }

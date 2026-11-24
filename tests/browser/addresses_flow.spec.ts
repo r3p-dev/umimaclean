@@ -4,6 +4,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import CustomerAddress from '#models/customer_address'
 import User from '#models/user'
 import { normalizePhone } from '#helpers/phone'
+import { loadOsmFixture } from '../helpers/osm.js'
 import { saveScreenshot, saveScreenshotLog } from '../helpers/screenshots.js'
 
 const VIEWPORTS = [
@@ -64,7 +65,7 @@ test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
     await saveScreenshotLog('alamat-daftar-screenshots.log', logLines)
   })
 
-  test('a customer deletes an address, then adds one with "Gunakan lokasi saya" and the arrows (CUST-14, AREA-4)', async ({
+  test('a customer deletes an address, then adds one with "Gunakan lokasi saya" and the arrows (CUST-3, CUST-14, AREA-4)', async ({
     visit,
     browserContext,
     assert,
@@ -76,7 +77,10 @@ test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
 
     const list = await visit('/profil/alamat')
     await list.getByRole('link', { name: 'Ubah Kos Adik' }).click()
+    assert.deepEqual(await axeViolations(list), [], 'Address edit page axe')
     await list.getByRole('button', { name: 'Hapus alamat' }).click()
+    await list.getByRole('dialog').waitFor()
+    assert.deepEqual(await axeViolations(list), [], 'Delete dialog axe')
     await list.getByRole('dialog').getByRole('button', { name: 'Hapus alamat' }).click()
     await list.getByText('Alamat Kos Adik dihapus.').waitFor()
     await list.getByRole('link', { name: 'Tambah alamat' }).click()
@@ -152,5 +156,75 @@ test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
     await page.getByRole('button', { name: 'Simpan alamat' }).click()
     await page.getByText('Alamat diperbarui.').waitFor()
     assert.isTrue(await page.getByRole('heading', { name: 'Alamat', level: 1 }).isVisible())
+  })
+
+  test('a customer finds a street by name, picks it and reads the street under the pin (MAP-1)', async ({
+    visit,
+    browserContext,
+    assert,
+  }) => {
+    await loadOsmFixture()
+    await browserContext.loginAs(await seededCustomer())
+    const logLines: string[] = []
+
+    const page = await visit('/profil/alamat')
+    await page.getByRole('link', { name: 'Ubah Kantor' }).click()
+    await page.locator('.maplibregl-canvas').waitFor()
+
+    const search = page.getByRole('combobox', { name: 'Cari jalan atau tempat' })
+    const result = page.getByRole('option', { name: /Jalan Dipatiukur/ })
+    const status = page.getByRole('status').filter({ hasText: /area/ })
+    for (const viewport of VIEWPORTS) {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height })
+      await search.fill('')
+      await search.fill('dipati ukur')
+      await result.waitFor()
+      assert.include(await result.innerText(), 'Lebakgede, Kec. Coblong')
+      const scrollWidth = Number(await page.evaluate('document.documentElement.scrollWidth'))
+      assert.isAtMost(scrollWidth, viewport.width, `Horizontal scroll at ${viewport.name}px`)
+      await saveScreenshot(page, `alamat-cari-${viewport.name}.png`)
+      logLines.push(`alamat-cari-${viewport.name}: results open scrollWidth=${scrollWidth}`)
+      await page.keyboard.press('Escape')
+    }
+
+    await search.fill('')
+    await search.fill('dipati ukur')
+    await result.click()
+    await status.getByText('Jalan Dipatiukur, Lebakgede').waitFor()
+    await status.getByText('Masuk area layanan: Kec. Coblong, Kota Bandung.').waitFor()
+    assert.deepEqual(await axeViolations(page), [], 'Address form axe after a search')
+
+    for (const viewport of VIEWPORTS) {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height })
+      // A resize moves the map, so the label is read again.
+      await status.getByText('Jalan Dipatiukur, Lebakgede').waitFor()
+      await saveScreenshot(page, `alamat-label-${viewport.name}.png`)
+      logLines.push(`alamat-label-${viewport.name}: street label shown`)
+    }
+    await saveScreenshotLog('alamat-cari-screenshots.log', logLines)
+  })
+
+  test('without OSM data the search says so and the pin is still placed by hand (MAP-1, NFR-4)', async ({
+    visit,
+    browserContext,
+  }) => {
+    await browserContext.loginAs(await seededCustomer())
+
+    const page = await visit('/profil/alamat')
+    await page.getByRole('link', { name: 'Ubah Kantor' }).click()
+    await page.locator('.maplibregl-canvas').waitFor()
+    await page.getByRole('combobox', { name: 'Cari jalan atau tempat' }).fill('dipatiukur')
+    await page
+      .getByText('Pencarian tempat belum tersedia. Geser peta untuk menaruh titik.')
+      .waitFor()
+
+    await page.keyboard.press('Escape')
+    await page.getByRole('button', { name: 'Geser titik ke utara' }).click()
+    await page
+      .getByRole('status')
+      .getByText(/^Masuk area layanan: Kec\./)
+      .waitFor()
+    await page.getByRole('button', { name: 'Simpan alamat' }).click()
+    await page.getByText('Alamat diperbarui.').waitFor()
   })
 })

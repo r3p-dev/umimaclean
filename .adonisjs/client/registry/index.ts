@@ -140,6 +140,18 @@ const routes = {
     tokens: [[0,"area"],[0,"cek-titik"]],
     types: placeholder as Registry['area.check_point']['types'],
   },
+  'places.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/tempat',
+    tokens: [[0,"tempat"]],
+    types: placeholder as Registry['places.index']['types'],
+  },
+  'places.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/tempat/titik',
+    tokens: [[0,"tempat"],[0,"titik"]],
+    types: placeholder as Registry['places.show']['types'],
+  },
   'customer.home': {
     methods: ["GET","HEAD"],
     pattern: '/beranda',
