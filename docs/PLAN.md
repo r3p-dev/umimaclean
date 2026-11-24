@@ -16,7 +16,7 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M3a | – | Services and landing price list | done | v0.3.0 | 8 |
 | M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 | 8 |
 | M4a | – | Maps, area map and landing coverage check | done | v0.4.0 | 10 |
-| M4b | 0.4.0 | Place search and addresses | done (patch 0.4.1 in review) | v0.4.0 | 10 |
+| M4b | 0.4.0 | Place search and addresses | done (patches 0.4.1, 0.4.2 in review) | v0.4.0 | 10 |
 | M5a | 0.5.0 | Online ordering: slots, new order, confirm | not started | – | 14 |
 | M5b | 0.5.0 | Order pages and tracking | not started | – | 12 |
 | M6 | 0.6.0 | Courier trips | not started | – | 24 |
@@ -48,21 +48,21 @@ Hours are the implementer's estimate for building, testing and writing the evide
 - M3a: `docs/evidence/M3a/`; review fixes: `docs/evidence/M3a-fix/`
 - M3b: `docs/evidence/M3b/` (the process checkpoint after it: [section Process checkpoint](evidence/M3b/EVIDENCE.md#process-checkpoint-2026-11-17)); patches 0.3.1 and 0.3.2: `docs/evidence/M3-0.3.1/`, `docs/evidence/M3-0.3.2/`
 - M4a: `docs/evidence/M4a/`; fix stops: `docs/evidence/M4a-fix1/` to `docs/evidence/M4a-fix8/`
-- M4b: `docs/evidence/M4b/`; patch 0.4.1 (M4b-fix1): `docs/evidence/M4-0.4.1/`
+- M4b: `docs/evidence/M4b/`; patch 0.4.1 (M4b-fix1): `docs/evidence/M4-0.4.1/`; patch 0.4.2: `docs/evidence/M4-0.4.2/`
 
 ## Active milestone
 
-**M4b-fix1 (patch 0.4.1): map UX after the owner's review of M4b**, then **M5a**. M4b is confirmed by the tag `v0.4.0`. The owner approved the M5a plan (section M5a below) on 2026-11-24; M5a stop 1 starts only after the owner approves the fix1 screenshots.
+**Patches 0.4.1 and 0.4.2: the address flow after the owner's reviews of M4b**, then **M5a**. M4b is confirmed by the tag `v0.4.0`. The owner approved the M5a plan (section M5a below) on 2026-11-24; M5a starts only after the owner approves the 0.4.2 screenshots.
 
-**M4b-fix1 scope** (owner, 2026-11-24): the credits folded into an ⓘ button on every map; "Gunakan lokasi saya" as a round button on the map; no arrow buttons (tap or click and the arrow keys instead, WCAG 2.5.7); one field: "Alamat lengkap" is also the place search; a refused save's error clears when the pin moves (browser test fails on the old code). Decisions: D109 and D110 (both amended).
+**0.4.1 (M4b-fix1, not approved as it stood):** folded credits, the round location button on the map, tap and arrow keys instead of arrow buttons, one address field that searches, a refused save's error cleared when the pin moves. **0.4.2 (owner, 2026-11-24, after a two-step version was dropped in review):** one page like the owner's reference: Kontak; Alamat with "Nama jalan, gedung, no. rumah" (a textarea that is also the place search; a pick writes the full name and moves the pin), "Detail lainnya (cth: blok / unit no., patokan)" (replaces landmark) and the map with the notice, pin, tap, location button, ⓘ and coverage line; then "Tandai sebagai" and "Jadikan alamat utama"; the area read at the pin stored apart (`street`, `kelurahan`, `kecamatan`, `city`); the ⓘ a 44 px button. Decisions: D109 and D110 (both amended twice).
 
-**Handoff** (after M4b-fix1, 2026-11-24):
+**Handoff** (after 0.4.2, 2026-11-24):
 
-- Done: the five fix1 items, version 0.4.1 and its CHANGELOG entry. Evidence: `docs/evidence/M4-0.4.1/EVIDENCE.md`.
-- Next: the owner reviews the fix1 screenshots; then M5a stop 1 (section M5a below).
-- For M5a: SLOT-1 lists dates with `pickupDates(hours, await pickupSlotService.weekdaysWithActiveSlots(), tomorrow, tomorrow + 6 days)` and offers `pickupSlotService.forWeekday(date.weekday)`; `PickupSlotService.replaceDay` must refuse to delete, re-time or copy over a slot with upcoming active orders (decision 1 below); the address form's `PinPicker` (with `target`, `onTarget`, `onPointChange`) and `checkCoverage` are reused to re-check both addresses.
-- Known limits carried over: MapLibre's ⓘ button is 24 px, below CONVENTIONS' 44 px tap target (WCAG 2.1 AA has no target size rule; kept as MapLibre draws it); the design's closure warning waits for orders (M5a); the payment, inactivity and staff account cards wait for M8 and M10; on hold from the owner: a date-only temporary closure.
-- New decisions since M4a: D109, D110 (both amended in 0.4.1).
+- Done: 0.4.1 and 0.4.2 as above; the 0.4.1 refused-save browser test kept (now: an address in a district turned off later is refused, moving the pin inside clears the error, the save succeeds); the resize loop of the pin check fixed (D109). Evidence: `docs/evidence/M4-0.4.1/EVIDENCE.md`, `docs/evidence/M4-0.4.2/EVIDENCE.md`.
+- Next: the owner reviews the 0.4.2 screenshots; then M5a stop 1 (section M5a below).
+- For M5a: SLOT-1 lists dates with `pickupDates(hours, await pickupSlotService.weekdaysWithActiveSlots(), tomorrow, tomorrow + 6 days)` and offers `pickupSlotService.forWeekday(date.weekday)`; `PickupSlotService.replaceDay` must refuse to delete, re-time or copy over a slot with upcoming active orders (decision 1 below); `order_addresses` copies the address including `street`, `kelurahan`, `kecamatan` and `city`; `checkCoverage` re-checks both addresses.
+- Known limits carried over: the design's closure warning waits for orders (M5a); the payment, inactivity and staff account cards wait for M8 and M10; on hold from the owner: a date-only temporary closure.
+- New decisions since M4a: D109, D110 (both amended in 0.4.1 and 0.4.2).
 
 ## M0: Spikes and plan
 
