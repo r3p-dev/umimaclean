@@ -94,7 +94,7 @@ For features involving spatial lookups, routing, and interactive maps:
    node ace osm:import 261101
    ```
 
-   The command checks the snapshot's MD5 and that `maps/clip_polygon.geojson` covers every service area, clips the snapshot to `storage/osm/bandung-raya.osm.pbf`, loads the staging schema `osm_import` with osm2pgsql, writes the production artifact `storage/osm/osm-import-261101.dump` with its `.sha256`, and refills `osm` in one transaction. It prints the snapshot's SHA-256 for `docs/DEPENDENCIES.md` §4. After a change to `database/data/service_areas_full.geojson`, regenerate the clip polygon first:
+   The command checks the snapshot's MD5 and that `maps/clip_polygon.geojson` covers every service area, clips the snapshot to `storage/osm/bandung-raya.osm.pbf`, loads the staging schema `osm_import` with osm2pgsql, writes the production artifact `storage/osm/osm-import-261101.dump` with its `.sha256`, and refills `osm` in one transaction. The address form's place search and the street label under the pin read this schema; without it the search says it is unavailable and the pin is placed by hand (D110). It prints the snapshot's SHA-256 for `docs/DEPENDENCIES.md` §4. After a change to `database/data/service_areas_full.geojson`, regenerate the clip polygon first:
 
    ```sh
    podman compose --profile tools run --rm -T psql -At -f /maps/clip_polygon.sql > maps/clip_polygon.geojson

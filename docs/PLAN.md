@@ -16,7 +16,7 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M3a | – | Services and landing price list | done | v0.3.0 | 8 |
 | M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 | 8 |
 | M4a | – | Maps, area map and landing coverage check | done | 2026-11-24 | 10 |
-| M4b | 0.4.0 | Place search and addresses | in progress (stop 1 done) | – | 10 |
+| M4b | 0.4.0 | Place search and addresses | done | – | 10 |
 | M5a | 0.5.0 | Online ordering: slots, new order, confirm | not started | – | 14 |
 | M5b | 0.5.0 | Order pages and tracking | not started | – | 12 |
 | M6 | 0.6.0 | Courier trips | not started | – | 24 |
@@ -51,17 +51,18 @@ Hours are the implementer's estimate for building, testing and writing the evide
 
 ## Active milestone
 
-**M4b (0.4.0): Place search and addresses.** Full criteria in the M4b section below; two stops (owner, 2026-11-24). Stop 1 done, waiting for the owner's review; stop 2 not started.
+**M4b (0.4.0): Place search and addresses.** Full criteria in the M4b section below; two stops (owner, 2026-11-24). Stop 1 confirmed by the owner (2026-11-24); stop 2 done with version 0.4.0, waiting for the owner's review and the tag.
 
-**Requirement IDs:** MAP-1, CUST-2, CUST-3, CUST-14, AREA-4 (saving an address). Decisions: D80 (rate limits), D82 (an address in a district turned off later), D109 (addresses, the pin check, "Gunakan lokasi saya").
+**Requirement IDs:** MAP-1, CUST-2, CUST-3, CUST-14, AREA-4 (saving an address). Decisions: D80 (rate limits), D82 (an address in a district turned off later), D109 (addresses, the pin check, "Gunakan lokasi saya"), D110 (place search, nearby places, the street label).
 
-**Handoff** (after stop 1, 2026-11-24):
+**Handoff** (after stop 2, 2026-11-24):
 
-- Done (stop 1): `customer_addresses` (max 3 in `AddressService` under a row lock, one primary by a partial unique index, deleting the primary promotes the newest); `AddressesController` with `/profil/alamat`, `/profil/alamat/baru`, `/profil/alamat/:id/ubah`, `POST /profil/alamat/:id/utama`, `DELETE /profil/alamat/:id`, linked from the customer's Profil; the pin in the centre of `organisms/service_area_map.tsx` with four arrow buttons, `organisms/pin_picker.tsx` with the server check `GET /area/cek-titik` (signed-in, `areaCheckThrottle`) after the map stops and again on save; "Gunakan lokasi saya" (D109, added to CUST-2); "Di luar area layanan" in the list (D82); `customer_address_seeder` (Rina: Rumah, Kantor and "Kos Adik" in inactive Cileunyi; Dimas: Rumah). Evidence: `docs/evidence/M4b/EVIDENCE.md`.
-- Remaining (stop 2): place search and the street label under the pin from the `osm` schema (`PlaceService`, `places_controller`), signed-in only, 30/min per user (D80), typo and space tolerant, generic words ignored (jalan, gang, komplek); without `osm` the manual pin keeps working; a few `osm` rows seeded in the test database; the search field and street label on the address form; version 0.4.0 and the CHANGELOG.
+- Done (stop 1, confirmed): `customer_addresses` (max 3 under a row lock, one primary by a partial unique index, deleting the primary promotes the newest); the address pages under `/profil/alamat`; the centre pin with arrow buttons on `organisms/service_area_map.tsx`; `organisms/pin_picker.tsx` with the server check `GET /area/cek-titik` (shared 60/min per IP, kept by the owner); "Gunakan lokasi saya" (now in CUST-3); "Di luar area layanan" (D82); seeded addresses.
+- Done (stop 2): `PlaceService` and `PlacesController`: `GET /tempat` (search, or nearby places without `q`) and `GET /tempat/titik` (street and kelurahan), signed-in only, 30/min per user each (`placeThrottle`, D80); typo and space tolerant, generic words dropped (`searchTerm`); without the `osm` schema the search says it is unavailable and the pin works by hand (D110); `molecules/place_search.tsx` (shadcn combobox) above the address map and the street label above the coverage line; `tests/helpers/osm.ts` loads the schema and a few rows inside a test's transaction; the edit page's delete button is `outline` (contrast); version 0.4.0 and the CHANGELOG. Evidence: `docs/evidence/M4b/EVIDENCE.md`.
+- Next: M5a (online ordering: slots, new order, confirm) after the owner tags v0.4.0 and approves its plan.
 - For M5a (carried over): SLOT-1 lists dates with `pickupDates(hours, await pickupSlotService.weekdaysWithActiveSlots(), tomorrow, tomorrow + 6 days)`, offers `pickupSlotService.forWeekday(date.weekday)` and checks closures per slot; ordering refuses an address outside the area (D82, re-check both addresses with `checkCoverage`); **to decide in M5a with the owner:** what deleting (or copying over) a slot that already has orders does.
 - Known limits carried over: at 360 px the uncollapsed credit line covers the bottom of the maps (D99, kept for the licences); the design's closure warning waits for orders (M5a); the payment, inactivity and staff account cards wait for M8 and M10; on hold from the owner: a date-only temporary closure.
-- New decisions since M4a: D109.
+- New decisions since M4a: D109, D110.
 
 ## M0: Spikes and plan
 
@@ -204,7 +205,7 @@ Acceptance criteria:
 - AREA-4: every saved pin is checked against active areas on the server; inside/outside feedback after the pin stops moving, as in M4a.
 - CUST-2, CUST-3, CUST-14: at most 3 addresses, exactly one primary (database-enforced), deleting the primary promotes the newest; label, recipient name and phone, address text, landmark, pin; list, add, edit, make primary, delete.
 - A saved address whose district was turned off later stays saved and shows "Di luar area layanan" in the address list (D82); blocking it when ordering is M5a.
-- CUST-2, AREA-4: "Gunakan lokasi saya" only moves the pin to the browser's location, then the normal coverage check runs; refused or unavailable location hides the button quietly and the manual pin still works (D109).
+- CUST-3, AREA-4: "Gunakan lokasi saya" only moves the pin to the browser's location, then the normal coverage check runs; refused or unavailable location hides the button quietly and the manual pin still works (D109).
 
 Stops (owner, 2026-11-24): **stop 1** addresses with a pin (`customer_addresses`, `AddressService`, the three pages, the pin on `service_area_map.tsx` with arrow buttons and "Gunakan lokasi saya", the pin check `GET /area/cek-titik`, seeded addresses); **stop 2** place search and the street label from the `osm` schema (signed-in, 30/min per user, D80), seeded `osm` rows in the test database, version 0.4.0.
 
