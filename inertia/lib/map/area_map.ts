@@ -58,25 +58,28 @@ const PIN_ZOOM = 17
 
 // Without a tiles file the map is a plain background and the areas still show (MAP-2).
 // A base map that fails to load is logged, and reported to `onBaseMapError` once.
-// With a `pinStart` the map opens on that point, close up, for placing a pin.
+// With a `pinStart` the map opens on that point, close up, for placing a pin. A static map only shows
+// the pin (the phone preview, D109): no gestures, so scrolling the page never moves it.
 // The credits are drawn by `molecules/map_credits.tsx`.
 export function createAreaMap(
   container: HTMLElement,
   tilesUrl: string | null,
   onBaseMapError: (message: string) => void,
-  pinStart?: MapPoint
+  { pinStart, isStatic = false }: { pinStart?: MapPoint; isStatic?: boolean } = {}
 ) {
   const origin = window.location.origin
   const map = new Map({
     container,
     center: pinStart ? [pinStart.lng, pinStart.lat] : BANDUNG_CENTER,
     zoom: pinStart ? PIN_ZOOM : 10,
+    interactive: !isStatic,
     // The map's accessible name says how to move a pin without dragging (WCAG 2.5.7, D109).
     locale: pinStart
       ? {
           ...LOCALE,
-          'Map.Title':
-            'Peta titik penjemputan. Ketuk peta untuk memindahkan penanda ke sana, atau pakai tombol panah keyboard.',
+          'Map.Title': isStatic
+            ? 'Pratinjau titik penjemputan'
+            : 'Peta titik penjemputan. Ketuk peta untuk memindahkan penanda ke sana, atau pakai tombol panah keyboard.',
         }
       : LOCALE,
     attributionControl: false,
@@ -109,7 +112,9 @@ export function createAreaMap(
       onBaseMapError(`Peta dasar ${tilesUrl} gagal dimuat: ${event.error.message}`)
     }
   })
-  map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
+  if (!isStatic) {
+    map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
+  }
   return map
 }
 
@@ -173,9 +178,10 @@ export function followPin(map: Map, onPinSettle: (point: MapPoint) => void) {
   let last = map.getCenter()
   map.on('moveend', () => {
     const { lat, lng } = map.getCenter()
-    // A resize also ends with `moveend` but keeps the centre. Reporting it would re-check the same
-    // pin, and the status text changing height resizes the map again: an endless loop (D109).
-    if (lat === last.lat && lng === last.lng) {
+    // A resize also ends with `moveend` but keeps the centre, give or take the last digits of a
+    // float. Reporting it would re-check the same pin (and clear a refused save's error), and the
+    // status text changing height resizes the map again: an endless loop (D109). 1e-7° is about 1 cm.
+    if (Math.abs(lat - last.lat) < 1e-7 && Math.abs(lng - last.lng) < 1e-7) {
       return
     }
     last = map.getCenter()

@@ -38,23 +38,33 @@ async function askPlaces(query: string, near: MapPoint, signal: AbortSignal): Pr
   return { places, message: 'Tidak ditemukan di peta. Lanjutkan mengetik, lalu atur pin di peta.' }
 }
 
-// CUST-3, MAP-1: "Nama jalan, gedung, no. rumah", saved as `addressText`, is also the place search
-// (D110). Typing lists matching places under the field; choosing one writes its full name into the
-// field and moves the pin there, and the customer adds the house number after it.
+// The text before the first comma: the street or place name, the only part that is searched.
+function placeName(text: string) {
+  return text.split(',')[0].trim()
+}
+
+// CUST-3, MAP-1, D110: "Nama jalan, gedung, no. rumah", saved as `addressText`, is also the place
+// search. Typing lists matching places under the field; choosing one writes its full name into the
+// field and moves the pin there, and the customer adds the house number after it. The form holds the
+// text, because the phone's map sheet shows it too.
 export default function PlaceSearch({
-  defaultValue,
+  text,
+  onTextChange,
   near,
   error,
   onPick,
 }: {
-  defaultValue: string
+  text: string
+  onTextChange: (text: string) => void
   near: MapPoint
   error?: string
   onPick: (point: MapPoint) => void
 }) {
-  const [text, setText] = useState(defaultValue)
-  // False once the customer types; true again after a pick or Escape, so that text is not searched.
+  // False once the customer types; true again after Escape, so that text is not searched.
   const [isSettled, setIsSettled] = useState(true)
+  // The name of the chosen place (or of the saved text): typing a house number after it does not
+  // search again, only a change before the first comma does.
+  const [chosenName, setChosenName] = useState(placeName(text) || null)
   const [isFocused, setIsFocused] = useState(false)
   const [answer, setAnswer] = useState<Answer>(SEARCHING)
   // Read when a search starts: moving the pin alone must not search again.
@@ -65,7 +75,8 @@ export default function PlaceSearch({
   })
 
   const trimmed = text.trim()
-  const isSearching = !isSettled && trimmed.length >= MIN_QUERY_LENGTH
+  const isSearching =
+    !isSettled && trimmed.length >= MIN_QUERY_LENGTH && placeName(text) !== chosenName
 
   useEffect(() => {
     if (!isSearching) {
@@ -91,8 +102,8 @@ export default function PlaceSearch({
   function pick(id: unknown) {
     const place = answer.places.find((candidate) => candidate.id === id)
     if (place) {
-      setText(place.fullName)
-      setIsSettled(true)
+      onTextChange(place.fullName)
+      setChosenName(placeName(place.fullName))
       onPick({ lat: place.lat, lng: place.lng })
     }
   }
@@ -104,7 +115,7 @@ export default function PlaceSearch({
       inputValue={text}
       onInputChange={(value) => {
         setAnswer(SEARCHING)
-        setText(value)
+        onTextChange(value)
         setIsSettled(false)
       }}
       disableAutoFocusFirst

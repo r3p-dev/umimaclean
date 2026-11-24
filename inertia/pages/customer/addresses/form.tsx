@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog'
-import { Field, FieldDescription, FieldError, FieldLabel } from '~/components/ui/field'
+import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle_group'
 import type { MapPoint } from '~/lib/map/area_map'
@@ -58,6 +58,7 @@ export default function AddressForm({
   // location moves the pin to.
   const [pin, setPin] = useState<MapPoint>(address ?? NEW_PIN_START)
   const [pinTarget, setPinTarget] = useState<MapPoint | null>(null)
+  const [addressText, setAddressText] = useState(address?.addressText ?? '')
   const isPrimaryLocked = isFirstAddress || (address?.isPrimary ?? false)
   const title = address ? 'Ubah alamat' : 'Tambah alamat'
 
@@ -80,6 +81,15 @@ export default function AddressForm({
     processing: boolean
     clearErrors: (...fields: ('lat' | 'lng')[]) => void
   }) {
+    function movePin(point: MapPoint) {
+      setPin(point)
+      // The pin has arrived: a map mounted later (the layout switching between phone and desktop)
+      // must start from here, not jump back to an old search result.
+      setPinTarget(null)
+      // A save refused for the old pin no longer applies to the new one (D109).
+      clearErrors('lat', 'lng')
+    }
+
     return (
       <>
         <CsrfField />
@@ -98,17 +108,11 @@ export default function AddressForm({
                 maxLength={80}
                 required
                 aria-invalid={errors.recipientName ? true : undefined}
-                aria-describedby={
-                  errors.recipientName ? 'recipientName-error' : 'recipientName-help'
-                }
+                aria-describedby={errors.recipientName ? 'recipientName-error' : undefined}
                 className="h-12"
               />
-              {errors.recipientName ? (
+              {errors.recipientName && (
                 <FieldError id="recipientName-error">{errors.recipientName}</FieldError>
-              ) : (
-                <FieldDescription id="recipientName-help">
-                  Ganti bila yang menyerahkan barang orang lain.
-                </FieldDescription>
               )}
             </Field>
             <PhoneInput
@@ -116,7 +120,6 @@ export default function AddressForm({
               label="Nomor WhatsApp penerima"
               defaultValue={address?.recipientPhone ?? user?.phone}
               error={errors.recipientPhone}
-              description="Dihubungi staf saat menjemput dan mengantar."
               required
             />
           </section>
@@ -126,10 +129,14 @@ export default function AddressForm({
               Alamat
             </h2>
             <PlaceSearch
-              defaultValue={address?.addressText ?? ''}
+              text={addressText}
+              onTextChange={setAddressText}
               near={pin}
               error={errors.addressText}
-              onPick={setPinTarget}
+              onPick={(point) => {
+                movePin(point)
+                setPinTarget(point)
+              }}
             />
             <Field data-invalid={errors.details ? true : undefined}>
               <FieldLabel htmlFor="details">
@@ -150,14 +157,11 @@ export default function AddressForm({
               {errors.details && <FieldError id="details-error">{errors.details}</FieldError>}
             </Field>
             <PinPicker
-              start={address ?? NEW_PIN_START}
+              point={pin}
+              addressText={addressText}
               target={pinTarget}
               onTargetChange={setPinTarget}
-              onSettle={(point) => {
-                setPin(point)
-                // A save refused for the old pin no longer applies to the new one (D109).
-                clearErrors('lat', 'lng')
-              }}
+              onPointChange={movePin}
               shapes={shapes}
               tilesUrl={tilesUrl}
               devWarning={devWarning}

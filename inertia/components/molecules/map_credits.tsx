@@ -8,7 +8,7 @@ export default function MapCredits() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="pointer-events-none absolute right-16 bottom-2 left-2 flex items-end gap-1 *:pointer-events-auto">
+    <div className="pointer-events-none absolute right-16 bottom-2 left-2 z-10 flex items-end gap-1 *:pointer-events-auto">
       <Button
         type="button"
         variant="outline"

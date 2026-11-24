@@ -8,11 +8,13 @@ import MapCredits from '~/components/molecules/map_credits'
 import type { MapPoint } from '~/lib/map/area_map'
 
 // Placing a pin: the pin stays in the centre and the map moves under it (drag, tap or click, or the
-// arrow keys). `target` jumps the map to a point, for example the device's location.
+// arrow keys). `target` jumps the map to a point, for example the device's location. A static map
+// only shows the pin at `target`.
 export type MapPin = {
   start: MapPoint
   target: MapPoint | null
-  onSettle: (point: MapPoint) => void
+  onSettle?: (point: MapPoint) => void
+  isStatic?: boolean
 }
 
 export default function ServiceAreaMap({
@@ -49,9 +51,12 @@ export default function ServiceAreaMap({
         return
       }
       const pinAtStart = pinRef.current
-      createdMap = createAreaMap(containerRef.current, tilesUrl, setBaseMapError, pinAtStart?.start)
-      if (pinAtStart) {
-        followPin(createdMap, (point) => pinRef.current?.onSettle(point))
+      createdMap = createAreaMap(containerRef.current, tilesUrl, setBaseMapError, {
+        pinStart: pinAtStart?.start,
+        isStatic: pinAtStart?.isStatic,
+      })
+      if (pinAtStart && !pinAtStart.isStatic) {
+        followPin(createdMap, (point) => pinRef.current?.onSettle?.(point))
       }
       setMap(createdMap)
     })
