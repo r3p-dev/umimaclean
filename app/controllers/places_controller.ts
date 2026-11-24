@@ -11,9 +11,7 @@ export default class PlacesController {
 
   async index({ request }: HttpContext) {
     const { q, lat, lng } = await request.validateUsing(searchPlacesValidator)
-    const places = q
-      ? await this.placeService.searchPlaces(q, { lat, lng })
-      : await this.placeService.findNearbyPlaces({ lat, lng })
+    const places = await this.placeService.searchPlaces(q, { lat, lng })
 
     return { isAvailable: places !== null, places: places ?? [] }
   }

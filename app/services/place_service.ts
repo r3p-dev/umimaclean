@@ -27,8 +27,7 @@ type PlaceRow = {
 }
 
 const PLACE_LIMIT = 5
-// Degrees, not metres: about 1 km for nearby places and 220 m for the street under a pin.
-const NEARBY_DEGREES = 0.009
+// Degrees, not metres: about 220 m for the street under a pin.
 const STREET_DEGREES = 0.002
 
 // The kelurahan and kecamatan a candidate point lies in, for the line under its name.
@@ -73,24 +72,6 @@ const SEARCH_SQL = `
   ${PLACE_COLUMNS}
   ORDER BY candidate.is_prefix DESC, candidate.similarity DESC, candidate.distance`
 
-const NEARBY_SQL = `
-  WITH input AS (
-    SELECT ST_SetSRID(ST_MakePoint(?, ?), 4326) AS near
-  ), candidates AS (
-    SELECT 'road' AS kind, road.id, road.name, ST_ClosestPoint(road.geom, input.near) AS point,
-      road.geom <-> input.near AS distance
-    FROM osm.roads road, input
-    WHERE ST_DWithin(road.geom, input.near, ${NEARBY_DEGREES})
-    UNION ALL
-    SELECT 'poi', poi.id, poi.name, poi.geom, poi.geom <-> input.near
-    FROM osm.pois poi, input
-    WHERE ST_DWithin(poi.geom, input.near, ${NEARBY_DEGREES})
-    ORDER BY distance
-    LIMIT ${PLACE_LIMIT}
-  )
-  ${PLACE_COLUMNS}
-  ORDER BY candidate.distance`
-
 const LABEL_SQL = `
   WITH input AS (SELECT ST_SetSRID(ST_MakePoint(?, ?), 4326) AS point)
   SELECT road.name AS street, kelurahan.name AS kelurahan
@@ -105,7 +86,7 @@ const LABEL_SQL = `
     WHERE area.level = 7 AND ST_Covers(area.geom, input.point) LIMIT 1
   ) kelurahan ON true`
 
-// Place search, nearby places and the street under a pin, from our own OSM data (MAP-1). The `osm`
+// Place search and the street under a pin, from our own OSM data (MAP-1). The `osm`
 // schema is loaded by a command, not by migrations, so it may be missing: then every method
 // returns null and the pin is placed by hand (NFR-4).
 export default class PlaceService {
@@ -121,14 +102,6 @@ export default class PlaceService {
       return null
     }
     const result = await db.rawQuery(SEARCH_SQL, [searchTerm(text), near.lng, near.lat])
-    return result.rows.map((row: PlaceRow) => this.#toPlace(row))
-  }
-
-  async findNearbyPlaces(near: { lat: number; lng: number }): Promise<Place[] | null> {
-    if (!(await this.isAvailable())) {
-      return null
-    }
-    const result = await db.rawQuery(NEARBY_SQL, [near.lng, near.lat])
     return result.rows.map((row: PlaceRow) => this.#toPlace(row))
   }
 

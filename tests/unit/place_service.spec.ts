@@ -46,15 +46,6 @@ test.group('PlaceService with OSM data (MAP-1)', (group) => {
     assert.deepEqual(await namesFound('braga'), [])
   })
 
-  test('nearby places are ordered by distance from the pin', async ({ assert }) => {
-    const places = (await new PlaceService().findNearbyPlaces(DIPATIUKUR)) ?? []
-    assert.equal(places[0].name, 'Jalan Dipatiukur')
-    assert.notInclude(
-      places.map((place) => place.name),
-      'Gang Sukaluyu'
-    )
-  })
-
   test('the label under a pin names the street and the kelurahan', async ({ assert }) => {
     const service = new PlaceService()
     assert.deepEqual(await service.describePoint(DIPATIUKUR), {
@@ -72,7 +63,6 @@ test.group('PlaceService without OSM data (MAP-1, NFR-4)', (group) => {
     const service = new PlaceService()
     assert.isFalse(await service.isAvailable())
     assert.isNull(await service.searchPlaces('dipatiukur', DIPATIUKUR))
-    assert.isNull(await service.findNearbyPlaces(DIPATIUKUR))
     assert.isNull(await service.describePoint(DIPATIUKUR))
   })
 })

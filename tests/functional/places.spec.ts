@@ -39,14 +39,20 @@ test.group('Place search and street label GET /tempat, /tempat/titik (MAP-1, D80
     assert.equal(body.places[0].detail, 'Lebakgede, Kec. Coblong')
   })
 
-  test('without a search the places near the pin are listed (MAP-1)', async ({
+  test('staff may search too; a request without a search is refused (MAP-1)', async ({
     client,
     assert,
   }) => {
     const staff = await createUser('6281200000402', Role.STAFF)
 
-    const response = await client.get('/tempat').qs(DIPATIUKUR).accept('json').loginAs(staff)
+    const withoutSearch = await client.get('/tempat').qs(DIPATIUKUR).accept('json').loginAs(staff)
+    withoutSearch.assertStatus(422)
 
+    const response = await client
+      .get('/tempat')
+      .qs({ q: 'dipatiukur', ...DIPATIUKUR })
+      .accept('json')
+      .loginAs(staff)
     response.assertStatus(200)
     assert.equal(response.body().places[0].name, 'Jalan Dipatiukur')
   })
