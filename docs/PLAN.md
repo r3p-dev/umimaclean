@@ -15,8 +15,8 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M2c | 0.2.0 | Accounts: profile, security, rate limits | done | v0.2.0 | 6 |
 | M3a | – | Services and landing price list | done | v0.3.0 | 8 |
 | M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 | 8 |
-| M4a | – | Maps, area map and landing coverage check | done | 2026-11-24 | 10 |
-| M4b | 0.4.0 | Place search and addresses | done | – | 10 |
+| M4a | – | Maps, area map and landing coverage check | done | v0.4.0 | 10 |
+| M4b | 0.4.0 | Place search and addresses | done (patch 0.4.1 in review) | v0.4.0 | 10 |
 | M5a | 0.5.0 | Online ordering: slots, new order, confirm | not started | – | 14 |
 | M5b | 0.5.0 | Order pages and tracking | not started | – | 12 |
 | M6 | 0.6.0 | Courier trips | not started | – | 24 |
@@ -48,21 +48,21 @@ Hours are the implementer's estimate for building, testing and writing the evide
 - M3a: `docs/evidence/M3a/`; review fixes: `docs/evidence/M3a-fix/`
 - M3b: `docs/evidence/M3b/` (the process checkpoint after it: [section Process checkpoint](evidence/M3b/EVIDENCE.md#process-checkpoint-2026-11-17)); patches 0.3.1 and 0.3.2: `docs/evidence/M3-0.3.1/`, `docs/evidence/M3-0.3.2/`
 - M4a: `docs/evidence/M4a/`; fix stops: `docs/evidence/M4a-fix1/` to `docs/evidence/M4a-fix8/`
+- M4b: `docs/evidence/M4b/`; patch 0.4.1 (M4b-fix1): `docs/evidence/M4-0.4.1/`
 
 ## Active milestone
 
-**M4b (0.4.0): Place search and addresses.** Full criteria in the M4b section below; two stops (owner, 2026-11-24). Stop 1 confirmed by the owner (2026-11-24); stop 2 done with version 0.4.0, waiting for the owner's review and the tag.
+**M4b-fix1 (patch 0.4.1): map UX after the owner's review of M4b**, then **M5a**. M4b is confirmed by the tag `v0.4.0`. The owner approved the M5a plan (section M5a below) on 2026-11-24; M5a stop 1 starts only after the owner approves the fix1 screenshots.
 
-**Requirement IDs:** MAP-1, CUST-2, CUST-3, CUST-14, AREA-4 (saving an address). Decisions: D80 (rate limits), D82 (an address in a district turned off later), D109 (addresses, the pin check, "Gunakan lokasi saya"), D110 (place search, nearby places, the street label).
+**M4b-fix1 scope** (owner, 2026-11-24): the credits folded into an ⓘ button on every map; "Gunakan lokasi saya" as a round button on the map; no arrow buttons (tap or click and the arrow keys instead, WCAG 2.5.7); one field: "Alamat lengkap" is also the place search; a refused save's error clears when the pin moves (browser test fails on the old code). Decisions: D109 and D110 (both amended).
 
-**Handoff** (after stop 2, 2026-11-24):
+**Handoff** (after M4b-fix1, 2026-11-24):
 
-- Done (stop 1, confirmed): `customer_addresses` (max 3 under a row lock, one primary by a partial unique index, deleting the primary promotes the newest); the address pages under `/profil/alamat`; the centre pin with arrow buttons on `organisms/service_area_map.tsx`; `organisms/pin_picker.tsx` with the server check `GET /area/cek-titik` (shared 60/min per IP, kept by the owner); "Gunakan lokasi saya" (now in CUST-3); "Di luar area layanan" (D82); seeded addresses.
-- Done (stop 2): `PlaceService` and `PlacesController`: `GET /tempat` (search, or nearby places without `q`) and `GET /tempat/titik` (street and kelurahan), signed-in only, 30/min per user each (`placeThrottle`, D80); typo and space tolerant, generic words dropped (`searchTerm`); without the `osm` schema the search says it is unavailable and the pin works by hand (D110); `molecules/place_search.tsx` (shadcn combobox) above the address map and the street label above the coverage line; `tests/helpers/osm.ts` loads the schema and a few rows inside a test's transaction; the edit page's delete button is `outline` (contrast); version 0.4.0 and the CHANGELOG. Evidence: `docs/evidence/M4b/EVIDENCE.md`.
-- Next: M5a (online ordering: slots, new order, confirm) after the owner tags v0.4.0 and approves its plan.
-- For M5a (carried over): SLOT-1 lists dates with `pickupDates(hours, await pickupSlotService.weekdaysWithActiveSlots(), tomorrow, tomorrow + 6 days)`, offers `pickupSlotService.forWeekday(date.weekday)` and checks closures per slot; ordering refuses an address outside the area (D82, re-check both addresses with `checkCoverage`); **to decide in M5a with the owner:** what deleting (or copying over) a slot that already has orders does.
-- Known limits carried over: at 360 px the uncollapsed credit line covers the bottom of the maps (D99, kept for the licences); the design's closure warning waits for orders (M5a); the payment, inactivity and staff account cards wait for M8 and M10; on hold from the owner: a date-only temporary closure.
-- New decisions since M4a: D109, D110.
+- Done: the five fix1 items, version 0.4.1 and its CHANGELOG entry. Evidence: `docs/evidence/M4-0.4.1/EVIDENCE.md`.
+- Next: the owner reviews the fix1 screenshots; then M5a stop 1 (section M5a below).
+- For M5a: SLOT-1 lists dates with `pickupDates(hours, await pickupSlotService.weekdaysWithActiveSlots(), tomorrow, tomorrow + 6 days)` and offers `pickupSlotService.forWeekday(date.weekday)`; `PickupSlotService.replaceDay` must refuse to delete, re-time or copy over a slot with upcoming active orders (decision 1 below); the address form's `PinPicker` (with `target`, `onTarget`, `onPointChange`) and `checkCoverage` are reused to re-check both addresses.
+- Known limits carried over: MapLibre's ⓘ button is 24 px, below CONVENTIONS' 44 px tap target (WCAG 2.1 AA has no target size rule; kept as MapLibre draws it); the design's closure warning waits for orders (M5a); the payment, inactivity and staff account cards wait for M8 and M10; on hold from the owner: a date-only temporary closure.
+- New decisions since M4a: D109, D110 (both amended in 0.4.1).
 
 ## M0: Spikes and plan
 
@@ -223,6 +223,21 @@ Acceptance criteria:
 - MSG-1.1: "order received" with order number and pickup schedule; a failing send is logged and never fails the order (MSG-3); log driver without a token (MSG-4).
 - ORD-1: order number `UMC-00042` everywhere.
 
+Stops (approved by the owner, 2026-11-24):
+
+- **Stop 1, data, state machine and placing (backend):** migrations `orders`, `order_addresses` (copies, CUST-4), `order_items` (the declared items now; the inspected items join in M7) and `order_events` (the timeline); the status enum with labels and stages (ORD-2); the order number (ORD-1); the ORD-3 table in one place and `OrderService.transitionOrder` as the only writer, unit-tested over every status pair; slot availability per date (SLOT-1, SLOT-3); `placeOnlineOrder` (locks the `pickup_slots` row `FOR UPDATE` and re-counts, re-checks both addresses with `checkCoverage`, a `request_key` unique per user against double submits, `awaiting_pickup` with its first event, concurrency test); MSG-1.1 sent after commit, logged on failure (MSG-3, MSG-4); seeded orders in every ORD-2 status (status and timeline only).
+- **Stop 2, the order pages (CUST-5, CUST-6):** `/pesan` (item rows: shoes with brand, type, EU size; bags with brand, type, S/M/L/XL with SVC-5 hints; up to 20 of each; no helmets), pickup address, delivery address (the same or another saved one), date, slot (full or switched-off disabled), note ≤ 300, an "add address" shortcut that comes back to `/pesan`; the draft kept in the server session (`POST /pesan` validates and stores it, `/pesan/konfirmasi` shows it, "Ubah" returns with every value); "Pesan lagi" (`/pesan?ulang=:id`, own orders only) prefills the items; the flow layout with the main action fixed at the bottom on phones; a "Pesan" link on the dashboard and in the customer navigation; browser tests, evidence, handoff.
+
+Decisions (the owner's answers to the plan's questions, 2026-11-24):
+
+1. An order keeps a copy of its slot's times. A slot with upcoming active orders cannot be deleted, re-timed or overwritten by "copy to other days"; it can only be switched off or have its capacity changed. A capacity lowered below the orders already placed keeps those orders; the slot just shows as full.
+2. Per item: type required, brand optional, size required; shoe sizes EU 20–50 in half steps.
+3. After placing, the customer goes to `/beranda` with "Pesanan UMC-00042 diterima"; M5b switches this to the order page.
+4. The MSG-1.1 text: "Halo {nama}, pesanan UMC-00042 sudah kami terima. Penjemputan: Kamis, 27 Nov 2026, 09.00–12.00." The order link is added in M5b, with the order page.
+5. A cancelled order frees its place in the slot; a skipped pickup (`courier_en_route → awaiting_pickup`) keeps it.
+
+Estimate: 14 hours (about 7 per stop).
+
 ## M5b (0.5.0): Order pages and tracking
 
 ORD-4 (timeline, without live updates), CUST-1, CUST-7…CUST-9, GUEST-4…GUEST-6.
@@ -235,6 +250,7 @@ Acceptance criteria:
 - CUST-9: the orders list, newest first, status filter (active, finished, cancelled), search by order number.
 - CUST-1: first-visit welcome; later the active order panel, quick order and recent orders.
 - ORD-4: every status change appends an immutable timeline event.
+- MSG-1.1: the online "order received" text gains the order page link (decided with the M5a plan, 2026-11-24).
 
 ## M6 (0.6.0): Courier trips
 
