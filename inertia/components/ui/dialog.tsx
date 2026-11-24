@@ -84,8 +84,9 @@ function Dialog({
         >
           {children}
           {showCloseButton && (
-            <DialogClose variant="ghost" className="absolute top-4 right-4" size="icon-sm">
-              <IconX className="size-4" />
+            // A 44 px touch target (CONVENTIONS §9.2), in the same corner.
+            <DialogClose variant="ghost" className="absolute top-2 right-2 size-11" size="icon">
+              <IconX className="size-5" />
               <span className="sr-only">Tutup</span>
             </DialogClose>
           )}
