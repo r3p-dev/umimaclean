@@ -226,7 +226,7 @@ export default function AddressForm({
         <div className="mt-6 flex flex-wrap items-center gap-3 sm:flex-nowrap">
           {address && (
             <Button
-              variant="destructive"
+              variant="outline"
               onPress={() => setIsDeleting(true)}
               className="h-12 gap-2 px-4 sm:mr-auto"
             >
