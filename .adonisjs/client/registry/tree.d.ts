@@ -5,6 +5,7 @@ export interface ApiDefinition {
   home: typeof routes['home']
   area: {
     check: typeof routes['area.check']
+    checkPoint: typeof routes['area.check_point']
   }
   legal: {
     terms: typeof routes['legal.terms']
@@ -49,6 +50,15 @@ export interface ApiDefinition {
     phone: {
       edit: typeof routes['customer.phone.edit']
       store: typeof routes['customer.phone.store']
+    }
+    addresses: {
+      index: typeof routes['customer.addresses.index']
+      create: typeof routes['customer.addresses.create']
+      store: typeof routes['customer.addresses.store']
+      edit: typeof routes['customer.addresses.edit']
+      update: typeof routes['customer.addresses.update']
+      primary: typeof routes['customer.addresses.primary']
+      destroy: typeof routes['customer.addresses.destroy']
     }
   }
   staff: {

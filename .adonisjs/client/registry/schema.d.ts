@@ -281,6 +281,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/account_security_controller').default['updatePassword']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'area.check_point': {
+    methods: ["GET","HEAD"]
+    pattern: '/area/cek-titik'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/address_validator').checkPointValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/area_check_controller').default['showPoint']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/area_check_controller').default['showPoint']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/area_check_controller').default['showPoint']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'customer.home': {
     methods: ["GET","HEAD"]
     pattern: '/beranda'
@@ -357,6 +370,97 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/phone_change_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.addresses.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil/alamat'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['index']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['index']>>>
+    }
+  }
+  'customer.addresses.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil/alamat/baru'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['create']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['create']>>>
+    }
+  }
+  'customer.addresses.store': {
+    methods: ["POST"]
+    pattern: '/profil/alamat'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/address_validator').createAddressValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/address_validator').createAddressValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.addresses.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/profil/alamat/:id/ubah'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['edit']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['edit']>>>
+    }
+  }
+  'customer.addresses.update': {
+    methods: ["PUT"]
+    pattern: '/profil/alamat/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/address_validator').updateAddressValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/address_validator').updateAddressValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.addresses.primary': {
+    methods: ["POST"]
+    pattern: '/profil/alamat/:id/utama'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['makePrimary']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['makePrimary']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['makePrimary']>>>
+    }
+  }
+  'customer.addresses.destroy': {
+    methods: ["DELETE"]
+    pattern: '/profil/alamat/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['destroy']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/addresses_controller').default['destroy']>>>
     }
   }
   'staff.home': {

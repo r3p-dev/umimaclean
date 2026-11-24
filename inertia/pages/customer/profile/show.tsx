@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { Head } from '@inertiajs/react'
+import { Link } from '@adonisjs/inertia/react'
+import { IconChevronRight, IconMapPin } from '@tabler/icons-react'
 import {
   AccountCard,
   AccountIdentityCard,
@@ -7,6 +9,7 @@ import {
 } from '~/components/organisms/account_security'
 import { EditProfileLink } from '~/components/organisms/profile_forms'
 import CustomerLayout from '~/components/templates/customer_layout'
+import { Card, CardContent } from '~/components/ui/card'
 
 export default function ProfileShow({ deviceCount }: { deviceCount: number }) {
   return (
@@ -17,6 +20,24 @@ export default function ProfileShow({ deviceCount }: { deviceCount: number }) {
       <AccountIdentityCard>
         <EditProfileLink area="customer" />
       </AccountIdentityCard>
+
+      <Card>
+        <CardContent>
+          <Link
+            route="customer.addresses.index"
+            className="flex min-h-11 items-center gap-3 rounded-md text-base font-medium hover:text-primary"
+          >
+            <IconMapPin aria-hidden="true" className="size-5 text-primary" />
+            <span className="flex flex-1 flex-col">
+              Alamat
+              <span className="text-sm font-normal text-muted-foreground">
+                Alamat jemput dan antar, maksimal 3.
+              </span>
+            </span>
+            <IconChevronRight aria-hidden="true" className="size-5 text-muted-foreground" />
+          </Link>
+        </CardContent>
+      </Card>
 
       <ActiveDevicesCard deviceCount={deviceCount} />
       <AccountCard />

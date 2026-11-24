@@ -25,12 +25,20 @@ export type ScannedRoutes = {
     'otp.resend': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'account_security.update_password': { paramsTuple?: []; params?: {} }
+    'area.check_point': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.profile.update': { paramsTuple?: []; params?: {} }
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
     'customer.phone.store': { paramsTuple?: []; params?: {} }
+    'customer.addresses.index': { paramsTuple?: []; params?: {} }
+    'customer.addresses.create': { paramsTuple?: []; params?: {} }
+    'customer.addresses.store': { paramsTuple?: []; params?: {} }
+    'customer.addresses.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.addresses.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.addresses.primary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.addresses.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
     'staff.profile.edit': { paramsTuple?: []; params?: {} }
@@ -72,10 +80,14 @@ export type ScannedRoutes = {
     'password_reset.create': { paramsTuple?: []; params?: {} }
     'password_reset.edit': { paramsTuple?: []; params?: {} }
     'otp.show': { paramsTuple?: []; params?: {} }
+    'area.check_point': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
+    'customer.addresses.index': { paramsTuple?: []; params?: {} }
+    'customer.addresses.create': { paramsTuple?: []; params?: {} }
+    'customer.addresses.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
     'staff.profile.edit': { paramsTuple?: []; params?: {} }
@@ -103,10 +115,14 @@ export type ScannedRoutes = {
     'password_reset.create': { paramsTuple?: []; params?: {} }
     'password_reset.edit': { paramsTuple?: []; params?: {} }
     'otp.show': { paramsTuple?: []; params?: {} }
+    'area.check_point': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
+    'customer.addresses.index': { paramsTuple?: []; params?: {} }
+    'customer.addresses.create': { paramsTuple?: []; params?: {} }
+    'customer.addresses.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.home': { paramsTuple?: []; params?: {} }
     'staff.profile': { paramsTuple?: []; params?: {} }
     'staff.profile.edit': { paramsTuple?: []; params?: {} }
@@ -131,6 +147,8 @@ export type ScannedRoutes = {
     'otp.resend': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
     'customer.phone.store': { paramsTuple?: []; params?: {} }
+    'customer.addresses.store': { paramsTuple?: []; params?: {} }
+    'customer.addresses.primary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.phone.store': { paramsTuple?: []; params?: {} }
     'admin.phone.store': { paramsTuple?: []; params?: {} }
     'admin.services.store': { paramsTuple?: []; params?: {} }
@@ -140,6 +158,7 @@ export type ScannedRoutes = {
   PUT: {
     'account_security.update_password': { paramsTuple?: []; params?: {} }
     'customer.profile.update': { paramsTuple?: []; params?: {} }
+    'customer.addresses.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.profile.update': { paramsTuple?: []; params?: {} }
     'admin.profile.update': { paramsTuple?: []; params?: {} }
     'admin.services.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -147,12 +166,13 @@ export type ScannedRoutes = {
     'admin.settings.slots.update': { paramsTuple: [ParamValue]; params: {'weekday': ParamValue} }
     'admin.settings.hours.update': { paramsTuple?: []; params?: {} }
   }
+  DELETE: {
+    'customer.addresses.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.services.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+  }
   PATCH: {
     'admin.services.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.areas.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-  }
-  DELETE: {
-    'admin.services.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

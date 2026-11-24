@@ -1,6 +1,7 @@
 import limiter from '@adonisjs/limiter/services/main'
 
-// The public coverage check: 60 per minute per IP, generous because mobile carriers share IPs (D80).
+// The coverage checks (the public name check and the signed-in pin check): 60 per minute per IP,
+// generous because mobile carriers share IPs (D80, D109).
 export const areaCheckThrottle = limiter.define('areaCheck', (ctx) => {
   return limiter
     .allowRequests(60)

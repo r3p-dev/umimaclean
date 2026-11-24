@@ -65,18 +65,25 @@ function areaFeatures(shapes: AreaShape[]) {
   }
 }
 
+export type MapPoint = { lat: number; lng: number }
+
+// Close enough to tell houses apart when a customer places a pin.
+const PIN_ZOOM = 17
+
 // Without a tiles file the map is a plain background and the areas still show (MAP-2).
 // A base map that fails to load is logged, and reported to `onBaseMapError` once.
+// With a `pinStart` the map opens on that point, close up, for placing a pin.
 export function createAreaMap(
   container: HTMLElement,
   tilesUrl: string | null,
-  onBaseMapError: (message: string) => void
+  onBaseMapError: (message: string) => void,
+  pinStart?: MapPoint
 ) {
   const origin = window.location.origin
   const map = new Map({
     container,
-    center: BANDUNG_CENTER,
-    zoom: 10,
+    center: pinStart ? [pinStart.lng, pinStart.lat] : BANDUNG_CENTER,
+    zoom: pinStart ? PIN_ZOOM : 10,
     locale: LOCALE,
     attributionControl: false,
     style: tilesUrl
@@ -113,10 +120,11 @@ export function createAreaMap(
   return map
 }
 
-// Draws the districts, or refreshes them after a switch was toggled; the first call fits the view.
-export function showAreas(map: Map, shapes: AreaShape[]) {
+// Draws the districts, or refreshes them after a switch was toggled; the first call fits the view
+// unless the map is placing a pin.
+export function showAreas(map: Map, shapes: AreaShape[], shouldFitView = true) {
   if (!map.isStyleLoaded()) {
-    map.once('load', () => showAreas(map, shapes))
+    map.once('load', () => showAreas(map, shapes, shouldFitView))
     return
   }
 
@@ -160,7 +168,19 @@ export function showAreas(map: Map, shapes: AreaShape[]) {
       }
     }
   }
-  if (!bounds.isEmpty()) {
+  if (shouldFitView && !bounds.isEmpty()) {
     map.fitBounds(bounds, { padding: 16, animate: false })
   }
+}
+
+// The point under the centre pin, reported each time the map stops moving (AREA-4).
+export function followPin(map: Map, onPinSettle: (point: MapPoint) => void) {
+  map.on('moveend', () => {
+    const { lat, lng } = map.getCenter()
+    onPinSettle({ lat, lng })
+  })
+}
+
+export function movePinTo(map: Map, point: MapPoint) {
+  map.jumpTo({ center: [point.lng, point.lat], zoom: Math.max(map.getZoom(), PIN_ZOOM) })
 }

@@ -134,6 +134,12 @@ const routes = {
     tokens: [[0,"akun"],[0,"kata-sandi"]],
     types: placeholder as Registry['account_security.update_password']['types'],
   },
+  'area.check_point': {
+    methods: ["GET","HEAD"],
+    pattern: '/area/cek-titik',
+    tokens: [[0,"area"],[0,"cek-titik"]],
+    types: placeholder as Registry['area.check_point']['types'],
+  },
   'customer.home': {
     methods: ["GET","HEAD"],
     pattern: '/beranda',
@@ -169,6 +175,48 @@ const routes = {
     pattern: '/profil/nomor',
     tokens: [[0,"profil"],[0,"nomor"]],
     types: placeholder as Registry['customer.phone.store']['types'],
+  },
+  'customer.addresses.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/profil/alamat',
+    tokens: [[0,"profil"],[0,"alamat"]],
+    types: placeholder as Registry['customer.addresses.index']['types'],
+  },
+  'customer.addresses.create': {
+    methods: ["GET","HEAD"],
+    pattern: '/profil/alamat/baru',
+    tokens: [[0,"profil"],[0,"alamat"],[0,"baru"]],
+    types: placeholder as Registry['customer.addresses.create']['types'],
+  },
+  'customer.addresses.store': {
+    methods: ["POST"],
+    pattern: '/profil/alamat',
+    tokens: [[0,"profil"],[0,"alamat"]],
+    types: placeholder as Registry['customer.addresses.store']['types'],
+  },
+  'customer.addresses.edit': {
+    methods: ["GET","HEAD"],
+    pattern: '/profil/alamat/:id/ubah',
+    tokens: [[0,"profil"],[0,"alamat"],[1,"id"],[0,"ubah"]],
+    types: placeholder as Registry['customer.addresses.edit']['types'],
+  },
+  'customer.addresses.update': {
+    methods: ["PUT"],
+    pattern: '/profil/alamat/:id',
+    tokens: [[0,"profil"],[0,"alamat"],[1,"id"]],
+    types: placeholder as Registry['customer.addresses.update']['types'],
+  },
+  'customer.addresses.primary': {
+    methods: ["POST"],
+    pattern: '/profil/alamat/:id/utama',
+    tokens: [[0,"profil"],[0,"alamat"],[1,"id"],[0,"utama"]],
+    types: placeholder as Registry['customer.addresses.primary']['types'],
+  },
+  'customer.addresses.destroy': {
+    methods: ["DELETE"],
+    pattern: '/profil/alamat/:id',
+    tokens: [[0,"profil"],[0,"alamat"],[1,"id"]],
+    types: placeholder as Registry['customer.addresses.destroy']['types'],
   },
   'staff.home': {
     methods: ["GET","HEAD"],

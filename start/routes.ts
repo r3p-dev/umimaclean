@@ -45,6 +45,11 @@ router
     router
       .put('/akun/kata-sandi', [controllers.AccountSecurity, 'updatePassword'])
       .as('account_security.update_password')
+    // Every signed-in role places pins: customers on addresses, staff on walk-in deliveries (AREA-4).
+    router
+      .get('/area/cek-titik', [controllers.AreaCheck, 'showPoint'])
+      .as('area.check_point')
+      .use(areaCheckThrottle)
   })
   .use(middleware.auth())
 
@@ -56,6 +61,27 @@ router
     router.put('/profil', [controllers.Profile, 'update']).as('customer.profile.update')
     router.get('/profil/nomor', [controllers.PhoneChange, 'edit']).as('customer.phone.edit')
     router.post('/profil/nomor', [controllers.PhoneChange, 'store']).as('customer.phone.store')
+    router.get('/profil/alamat', [controllers.Addresses, 'index']).as('customer.addresses.index')
+    router
+      .get('/profil/alamat/baru', [controllers.Addresses, 'create'])
+      .as('customer.addresses.create')
+    router.post('/profil/alamat', [controllers.Addresses, 'store']).as('customer.addresses.store')
+    router
+      .group(() => {
+        router
+          .get('/profil/alamat/:id/ubah', [controllers.Addresses, 'edit'])
+          .as('customer.addresses.edit')
+        router
+          .put('/profil/alamat/:id', [controllers.Addresses, 'update'])
+          .as('customer.addresses.update')
+        router
+          .post('/profil/alamat/:id/utama', [controllers.Addresses, 'makePrimary'])
+          .as('customer.addresses.primary')
+        router
+          .delete('/profil/alamat/:id', [controllers.Addresses, 'destroy'])
+          .as('customer.addresses.destroy')
+      })
+      .where('id', router.matchers.number())
   })
   .use(middleware.customer())
 
