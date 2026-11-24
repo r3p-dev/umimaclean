@@ -11,9 +11,12 @@ All notable changes to this project are documented here. The format follows
 ### Changed
 
 - Adding or editing an address is one page: Kontak (recipient name and WhatsApp), Alamat ("Nama jalan, gedung, no. rumah", "Detail lainnya" and the map), then "Tandai sebagai" and "Jadikan alamat utama".
-- "Nama jalan, gedung, no. rumah" is also the place search: type a street, choose a suggestion, and the field gets its full name (e.g. "Jalan Dipatiukur, Lebakgede, Coblong") while the pin moves there; then add the house number in the same field.
+- "Nama jalan, gedung, no. rumah" is also the place search: type a street, choose a suggestion, and the field gets its full name (e.g. "Jalan Dipatiukur, Lebakgede, Coblong") while the pin moves there; then add the house number in the same field without the suggestions coming back.
 - "Detail lainnya (cth: blok / unit no., patokan)" replaces the separate landmark field.
-- The map sits under the fields with a reminder to check the pin; the street, kelurahan, kecamatan and kota under the pin and the coverage line are shown below it, and they are stored with the address when it is saved.
+- Only "Masuk area layanan" or "Di luar area layanan" shows under the map; the street, kelurahan, kecamatan and kota under the pin are stored with the address when it is saved.
+- On a phone the form shows a still map preview that scrolling never moves; "Atur pin" or a tap on it opens "Ubah lokasi": the chosen address with the kelurahan, kecamatan and kota under the pin, the map, the location button and "Konfirmasi". The back arrow keeps the old pin. On a wider screen the map moves inside the form.
+- Every dialog's close button is larger (44 px) and easier to tap.
+- Place search always needs a search term; the list of places near the pin without one is gone.
 - The ⓘ map credits button is larger (44 px) and easier to tap.
 
 ### Fixed
