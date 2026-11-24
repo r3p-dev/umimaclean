@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-24
+
+### Changed
+
+- Map credits fold into a small ⓘ button in the corner of every map and open in full when pressed; the OpenStreetMap and district boundary credits stay on every map.
+- "Gunakan lokasi saya" is a round button on the address map; it still disappears when location is refused or unavailable.
+- The arrow buttons on the address map are gone: tap or click a spot on the map to move the pin there, or use the arrow keys while the map has focus.
+- "Alamat lengkap" is also the place search: type a street or place and pick a suggestion to move the map; the text you typed is kept and saved. House numbers, RT/RW and anything after the first comma are left out of the search.
+
+### Fixed
+
+- After a save is refused because the pin is outside the service area, the error disappears as soon as the pin moves, and the coverage line under the map speaks for the new point.
+
 ## [0.4.0] - 2026-11-24
 
 ### Added
