@@ -13,6 +13,7 @@ export default class IndexSeeder extends BaseSeeder {
     await this.#seed(await import('#database/seeders/pickup_slot_seeder'))
     await this.#seed(await import('#database/seeders/service_seeder'))
     await this.#seed(await import('#database/seeders/service_area_seeder'))
+    await this.#seed(await import('#database/seeders/customer_address_seeder'))
 
     // Tests seed on almost every run and production must not print demo passwords.
     if (app.inDev) {

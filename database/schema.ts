@@ -41,6 +41,48 @@ export class ActivityLogSchema extends BaseModel {
   declare userId: number | null
 }
 
+export class CustomerAddressSchema extends BaseModel {
+  static $columns = [
+    'addressText',
+    'createdAt',
+    'id',
+    'isPrimary',
+    'label',
+    'landmark',
+    'lat',
+    'lng',
+    'recipientName',
+    'recipientPhone',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = CustomerAddressSchema.$columns
+  @column()
+  declare addressText: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isPrimary: boolean
+  @column()
+  declare label: string
+  @column()
+  declare landmark: string | null
+  @column()
+  declare lat: number
+  @column()
+  declare lng: number
+  @column()
+  declare recipientName: string
+  @column()
+  declare recipientPhone: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: number
+}
+
 export class OtpCodeSchema extends BaseModel {
   static $columns = [
     'attempts',
