@@ -83,23 +83,6 @@ export function PasswordForm() {
   )
 }
 
-// How many devices are signed in; signing out others happens only through a password or phone
-// change or a reset (ACC-5, D107).
-export function ActiveDevicesCard({ deviceCount }: { deviceCount: number }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <h2>Perangkat yang masuk</h2>
-        </CardTitle>
-        <CardDescription className="text-base">
-          Akun ini masuk di {deviceCount} perangkat, termasuk perangkat ini.
-        </CardDescription>
-      </CardHeader>
-    </Card>
-  )
-}
-
 // The last card of every Profil page: signing out, in the same place for every role (D107).
 export function AccountCard() {
   return (

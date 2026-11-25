@@ -1,16 +1,12 @@
 import type { ReactNode } from 'react'
 import { Head } from '@inertiajs/react'
-import {
-  AccountCard,
-  AccountIdentityCard,
-  ActiveDevicesCard,
-} from '~/components/organisms/account_security'
+import { AccountCard, AccountIdentityCard } from '~/components/organisms/account_security'
 import OwnerPageHeader from '~/components/organisms/owner_page_header'
 import { EditProfileLink } from '~/components/organisms/profile_forms'
 import OwnerLayout from '~/components/templates/owner_layout'
 
 // The same Profil cards as customers and staff (D108).
-export default function OwnerProfile({ deviceCount }: { deviceCount: number }) {
+export default function OwnerProfile() {
   return (
     <>
       <Head title="Profil" />
@@ -19,7 +15,6 @@ export default function OwnerProfile({ deviceCount }: { deviceCount: number }) {
         <AccountIdentityCard>
           <EditProfileLink area="admin" />
         </AccountIdentityCard>
-        <ActiveDevicesCard deviceCount={deviceCount} />
         <AccountCard />
       </div>
     </>

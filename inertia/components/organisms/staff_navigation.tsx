@@ -80,7 +80,7 @@ export function StaffSidebar({ active }: { active: StaffSection }) {
           <span className="sr-only lg:not-sr-only">{STAFF_PROFILE_LINK.label}</span>
         </NavigationItem>
         <LogoutButton
-          className="flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-sm font-medium text-foreground hover:bg-accent max-lg:justify-center"
+          className="flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 max-lg:justify-center"
           labelClassName="sr-only lg:not-sr-only"
         />
       </div>

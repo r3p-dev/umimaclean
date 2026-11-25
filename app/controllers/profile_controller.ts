@@ -1,6 +1,7 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { profileArea, profileRoute } from '#helpers/profile_route'
+import CustomerAddress from '#models/customer_address'
 import AccountService from '#services/account_service'
 import { updateProfileValidator } from '#validators/profile_validator'
 
@@ -16,8 +17,18 @@ export default class ProfileController {
   constructor(protected accountService: AccountService) {}
 
   async show(ctx: HttpContext) {
-    const deviceCount = await this.accountService.countActiveDevices(ctx.auth.getUserOrFail())
-    return ctx.inertia.render(PAGES[profileArea(ctx)].show, { deviceCount })
+    const area = profileArea(ctx)
+    if (area === 'customer') {
+      const addresses = await CustomerAddress.query()
+        .where('user_id', ctx.auth.getUserOrFail().id)
+        .select('label', 'is_primary')
+      const primary = addresses.find((address) => address.isPrimary)
+      return ctx.inertia.render(PAGES.customer.show, {
+        addressCount: addresses.length,
+        primaryLabel: primary?.label ?? null,
+      })
+    }
+    return ctx.inertia.render(PAGES[area].show, {})
   }
 
   async edit(ctx: HttpContext) {

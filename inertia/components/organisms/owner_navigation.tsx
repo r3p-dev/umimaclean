@@ -78,7 +78,13 @@ function OwnerNavigationItems({ active, isCompact }: { active: OwnerSection; isC
           <IconUserCircle className="size-5 shrink-0" />
           <span className={labelClass}>{OWNER_PROFILE_LINK.label}</span>
         </NavigationItem>
-        <LogoutButton className={itemClass(false, isCompact)} labelClassName={labelClass} />
+        <LogoutButton
+          className={cn(
+            itemClass(false, isCompact),
+            'text-red-300 hover:bg-red-500/15 hover:text-red-200'
+          )}
+          labelClassName={labelClass}
+        />
       </div>
     </>
   )

@@ -20,7 +20,13 @@ export default function LogoutButton({
         type="submit"
         className={
           className ??
-          cn(buttonVariants({ variant: 'outline', className: 'h-11 w-full gap-2 sm:w-auto' }))
+          cn(
+            buttonVariants({
+              variant: 'outline',
+              className:
+                'h-11 w-full gap-2 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto',
+            })
+          )
         }
       >
         <IconLogout aria-hidden="true" className="size-5 shrink-0" />

@@ -89,7 +89,10 @@ export function CustomerHeader({ active }: { active: CustomerSection }) {
                   Profil
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onAction={() => router.post(urlFor('session.destroy'))}>
+                <DropdownMenuItem
+                  onAction={() => router.post(urlFor('session.destroy'))}
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                >
                   <IconLogout aria-hidden="true" />
                   Keluar
                 </DropdownMenuItem>
