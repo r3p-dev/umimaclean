@@ -61,6 +61,15 @@ router
     router.post('/pesan', [controllers.Orders, 'storeDraft']).as('customer.orders.draft')
     router.get('/pesan/konfirmasi', [controllers.Orders, 'confirm']).as('customer.orders.confirm')
     router.post('/pesan/konfirmasi', [controllers.Orders, 'store']).as('customer.orders.store')
+    router.get('/pesanan', [controllers.Orders, 'index']).as('customer.orders.index')
+    router
+      .group(() => {
+        router.get('/pesanan/:id', [controllers.Orders, 'show']).as('customer.orders.show')
+        router
+          .post('/pesanan/:id/batal', [controllers.Orders, 'cancel'])
+          .as('customer.orders.cancel')
+      })
+      .where('id', router.matchers.number())
     router.get('/profil', [controllers.Profile, 'show']).as('customer.profile.show')
     router.get('/profil/ubah', [controllers.Profile, 'edit']).as('customer.profile.edit')
     router.put('/profil', [controllers.Profile, 'update']).as('customer.profile.update')

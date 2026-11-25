@@ -8,6 +8,8 @@ import type { InferData, InferVariants } from '@adonisjs/core/types/transformers
 import type { InferSharedProps, InferFlashData } from '@adonisjs/inertia/types'
 import type AddressTransformer from '#transformers/address_transformer'
 import type OpeningHoursTransformer from '#transformers/opening_hours_transformer'
+import type OrderDetailTransformer from '#transformers/order_detail_transformer'
+import type OrderSummaryTransformer from '#transformers/order_summary_transformer'
 import type PickupSlotTransformer from '#transformers/pickup_slot_transformer'
 import type ServiceAreaShapeTransformer from '#transformers/service_area_shape_transformer'
 import type ServiceAreaTransformer from '#transformers/service_area_transformer'
@@ -23,6 +25,14 @@ export namespace Data {
   export type OpeningHours = InferData<OpeningHoursTransformer>
   export namespace OpeningHours {
     export type Variants = InferVariants<OpeningHoursTransformer>
+  }
+  export type OrderDetail = InferData<OrderDetailTransformer>
+  export namespace OrderDetail {
+    export type Variants = InferVariants<OrderDetailTransformer>
+  }
+  export type OrderSummary = InferData<OrderSummaryTransformer>
+  export namespace OrderSummary {
+    export type Variants = InferVariants<OrderSummaryTransformer>
   }
   export type PickupSlot = InferData<PickupSlotTransformer>
   export namespace PickupSlot {

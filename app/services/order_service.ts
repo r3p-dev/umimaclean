@@ -220,6 +220,30 @@ export default class OrderService {
     return placed.order
   }
 
+  // CUST-8: customer cancels while `awaiting_pickup`, with a 3–200 char reason; sends no message.
+  async cancelOrderByCustomer(user: User, orderId: number, reason: string) {
+    return db.transaction(async (transaction) => {
+      const locked = await Order.query({ client: transaction })
+        .where('id', orderId)
+        .forUpdate()
+        .firstOrFail()
+      if (locked.userId !== user.id) {
+        throw new Exception('Akses ditolak.', { status: 403 })
+      }
+      if (locked.status !== OrderStatus.AWAITING_PICKUP) {
+        throw new Exception('Pesanan hanya bisa dibatalkan sebelum kurir berangkat.', {
+          status: 409,
+        })
+      }
+      return this.transitionOrder(
+        locked,
+        OrderStatus.CANCELLED,
+        { actor: user, note: reason },
+        transaction
+      )
+    })
+  }
+
   async #refuseOutsideArea(address: CustomerAddress, field: string, use: string) {
     const coverage = await this.areaService.checkCoverage(address.lat, address.lng)
     if (!coverage.isCovered) {

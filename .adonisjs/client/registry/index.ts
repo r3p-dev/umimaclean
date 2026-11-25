@@ -176,6 +176,24 @@ const routes = {
     tokens: [[0,"pesan"],[0,"konfirmasi"]],
     types: placeholder as Registry['customer.orders.store']['types'],
   },
+  'customer.orders.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/pesanan',
+    tokens: [[0,"pesanan"]],
+    types: placeholder as Registry['customer.orders.index']['types'],
+  },
+  'customer.orders.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/pesanan/:id',
+    tokens: [[0,"pesanan"],[1,"id"]],
+    types: placeholder as Registry['customer.orders.show']['types'],
+  },
+  'customer.orders.cancel': {
+    methods: ["POST"],
+    pattern: '/pesanan/:id/batal',
+    tokens: [[0,"pesanan"],[1,"id"],[0,"batal"]],
+    types: placeholder as Registry['customer.orders.cancel']['types'],
+  },
   'customer.profile.show': {
     methods: ["GET","HEAD"],
     pattern: '/profil',

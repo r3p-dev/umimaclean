@@ -50,6 +50,9 @@ export interface ApiDefinition {
       draft: typeof routes['customer.orders.draft']
       confirm: typeof routes['customer.orders.confirm']
       store: typeof routes['customer.orders.store']
+      index: typeof routes['customer.orders.index']
+      show: typeof routes['customer.orders.show']
+      cancel: typeof routes['customer.orders.cancel']
     }
     profile: {
       show: typeof routes['customer.profile.show']

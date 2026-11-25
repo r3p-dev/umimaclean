@@ -53,4 +53,9 @@ export const confirmOrderValidator = vine.create({
   requestKey: vine.string().trim().minLength(1).maxLength(64),
 })
 
+// CUST-8: customer cancellation reason (3–200 characters).
+export const cancelOrderValidator = vine.create({
+  reason: vine.string().trim().minLength(3).maxLength(200),
+})
+
 export type OrderDraft = Infer<typeof createOrderValidator>

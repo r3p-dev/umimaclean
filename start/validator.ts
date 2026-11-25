@@ -53,4 +53,5 @@ vine.messagesProvider = new SimpleMessagesProvider({
   'items.*.size.required': 'Pilih ukuran barang.',
   'items.*.size.regex': 'Ukuran sepatu EU 20–50, kelipatan 0,5.',
   'items.*.size.enum': 'Pilih ukuran tas: Small, Medium, Large atau X-Large.',
+  'reason.required': 'Alasan pembatalan wajib diisi.',
 })

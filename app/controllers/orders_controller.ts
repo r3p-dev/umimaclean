@@ -2,12 +2,20 @@ import { randomUUID } from 'node:crypto'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { MAX_ADDRESSES } from '#models/customer_address'
+import Order from '#models/order'
 import PickupSlot from '#models/pickup_slot'
+import OrderPolicy from '#policies/order_policy'
 import AddressService from '#services/address_service'
 import OrderService from '#services/order_service'
 import PickupSlotService from '#services/pickup_slot_service'
 import AddressTransformer from '#transformers/address_transformer'
-import { confirmOrderValidator, createOrderValidator } from '#validators/order_validator'
+import OrderDetailTransformer from '#transformers/order_detail_transformer'
+import OrderSummaryTransformer from '#transformers/order_summary_transformer'
+import {
+  cancelOrderValidator,
+  confirmOrderValidator,
+  createOrderValidator,
+} from '#validators/order_validator'
 
 export type SessionOrderDraft = {
   items: { itemKind: string; brand?: string; type: string; size: string }[]
@@ -19,8 +27,16 @@ export type SessionOrderDraft = {
 }
 
 const DRAFT_SESSION_KEY = 'order_draft'
+const LIST_FILTERS = ['semua', 'aktif', 'selesai', 'dibatalkan'] as const
+type ListFilter = (typeof LIST_FILTERS)[number]
 
-// CUST-5, CUST-6: the customer's online order flow (`/pesan` and `/pesan/konfirmasi`).
+function parseFilter(raw: unknown): ListFilter {
+  return typeof raw === 'string' && (LIST_FILTERS as readonly string[]).includes(raw)
+    ? (raw as ListFilter)
+    : 'semua'
+}
+
+// CUST-5…CUST-9: the customer's online order flow, order list, detail, and cancellation.
 @inject()
 export default class OrdersController {
   constructor(
@@ -28,6 +44,50 @@ export default class OrdersController {
     protected orderService: OrderService,
     protected pickupSlotService: PickupSlotService
   ) {}
+
+  async index({ auth, request, inertia }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const filter = parseFilter(request.qs().status)
+    const search = typeof request.qs().q === 'string' ? request.qs().q.trim() : ''
+    const pageRaw = Number(request.qs().page)
+    const page = Number.isInteger(pageRaw) && pageRaw > 0 ? pageRaw : 1
+
+    const paginated = await Order.forCustomerList(user.id, filter, search).paginate(page, 15)
+    const counts = await Order.countCustomerFilters(user.id)
+
+    return inertia.render('customer/orders/index', {
+      orders: OrderSummaryTransformer.transform(paginated.all()),
+      meta: {
+        currentPage: paginated.currentPage,
+        lastPage: paginated.lastPage,
+        total: paginated.total,
+      },
+      filter,
+      search,
+      counts,
+    })
+  }
+
+  async show({ bouncer, params, inertia, response }: HttpContext) {
+    const order = await Order.findDetail(Number(params.id))
+    if (await bouncer.with(OrderPolicy).denies('view', order)) {
+      return response.forbidden('Akses ditolak.')
+    }
+    return inertia.render('customer/orders/show', {
+      order: OrderDetailTransformer.transform(order),
+    })
+  }
+
+  async cancel({ auth, bouncer, params, request, response, session }: HttpContext) {
+    const order = await Order.findOrFail(Number(params.id))
+    if (await bouncer.with(OrderPolicy).denies('cancel', order)) {
+      return response.forbidden('Akses ditolak.')
+    }
+    const { reason } = await request.validateUsing(cancelOrderValidator)
+    await this.orderService.cancelOrderByCustomer(auth.getUserOrFail(), order.id, reason)
+    session.flash('success', `Pesanan ${order.number()} dibatalkan.`)
+    return response.redirect().toRoute('customer.orders.show', { id: order.id })
+  }
 
   async create({ auth, request, inertia, session }: HttpContext) {
     const user = auth.getUserOrFail()
@@ -131,6 +191,6 @@ export default class OrdersController {
 
     session.forget(DRAFT_SESSION_KEY)
     session.flash('success', `Pesanan ${order.number()} diterima`)
-    return response.redirect().toRoute('customer.home')
+    return response.redirect().toRoute('customer.orders.show', { id: order.id })
   }
 }

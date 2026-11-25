@@ -32,6 +32,9 @@ export type ScannedRoutes = {
     'customer.orders.draft': { paramsTuple?: []; params?: {} }
     'customer.orders.confirm': { paramsTuple?: []; params?: {} }
     'customer.orders.store': { paramsTuple?: []; params?: {} }
+    'customer.orders.index': { paramsTuple?: []; params?: {} }
+    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customer.orders.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.profile.update': { paramsTuple?: []; params?: {} }
@@ -90,6 +93,8 @@ export type ScannedRoutes = {
     'customer.home': { paramsTuple?: []; params?: {} }
     'customer.orders.create': { paramsTuple?: []; params?: {} }
     'customer.orders.confirm': { paramsTuple?: []; params?: {} }
+    'customer.orders.index': { paramsTuple?: []; params?: {} }
+    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
@@ -128,6 +133,8 @@ export type ScannedRoutes = {
     'customer.home': { paramsTuple?: []; params?: {} }
     'customer.orders.create': { paramsTuple?: []; params?: {} }
     'customer.orders.confirm': { paramsTuple?: []; params?: {} }
+    'customer.orders.index': { paramsTuple?: []; params?: {} }
+    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
@@ -159,6 +166,7 @@ export type ScannedRoutes = {
     'session.destroy': { paramsTuple?: []; params?: {} }
     'customer.orders.draft': { paramsTuple?: []; params?: {} }
     'customer.orders.store': { paramsTuple?: []; params?: {} }
+    'customer.orders.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'customer.phone.store': { paramsTuple?: []; params?: {} }
     'customer.addresses.store': { paramsTuple?: []; params?: {} }
     'customer.addresses.primary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

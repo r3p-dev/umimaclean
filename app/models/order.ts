@@ -40,6 +40,60 @@ export default class Order extends OrderSchema {
     query.whereIn('status', [...PICKUP_PENDING_STATUSES])
   })
 
+  // CUST-9: customer's orders, newest first, filtered by status group and order number search.
+  static forCustomerList(
+    userId: number,
+    filter: 'semua' | 'aktif' | 'selesai' | 'dibatalkan',
+    search: string
+  ) {
+    const query = this.query()
+      .where('user_id', userId)
+      .preload('items')
+      .orderBy('created_at', 'desc')
+      .orderBy('id', 'desc')
+
+    if (filter === 'aktif') {
+      query.whereNotIn('status', [OrderStatus.COMPLETED, OrderStatus.CANCELLED])
+    } else if (filter === 'selesai') {
+      query.where('status', OrderStatus.COMPLETED)
+    } else if (filter === 'dibatalkan') {
+      query.where('status', OrderStatus.CANCELLED)
+    }
+
+    const trimmed = search.trim()
+    if (trimmed) {
+      query.whereRaw("('UMC-' || lpad(id::text, 5, '0')) ILIKE ?", [`%${trimmed}%`])
+    }
+
+    return query
+  }
+
+  static async countCustomerFilters(userId: number) {
+    const rows = await this.query().where('user_id', userId).select('status')
+    let aktif = 0
+    let selesai = 0
+    let dibatalkan = 0
+    for (const row of rows) {
+      if (row.status === OrderStatus.COMPLETED) {
+        selesai += 1
+      } else if (row.status === OrderStatus.CANCELLED) {
+        dibatalkan += 1
+      } else {
+        aktif += 1
+      }
+    }
+    return { semua: rows.length, aktif, selesai, dibatalkan }
+  }
+
+  static findDetail(orderId: number) {
+    return this.query()
+      .where('id', orderId)
+      .preload('addresses')
+      .preload('items')
+      .preload('events', (events) => events.orderBy('created_at', 'asc').orderBy('id', 'asc'))
+      .firstOrFail()
+  }
+
   // ORD-1: the id, zero-padded, everywhere the order is named.
   number() {
     return `UMC-${String(this.id).padStart(5, '0')}`
