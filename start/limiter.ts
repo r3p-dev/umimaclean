@@ -14,12 +14,12 @@ export const areaCheckThrottle = limiter.define('areaCheck', (ctx) => {
     })
 })
 
-// Place search and the street under a pin: 30 per minute per signed-in user each (D80, D110).
+// Place search: 30 per minute per signed-in user (D80, D110).
 export const placeThrottle = limiter.define('places', (ctx) => {
   return limiter
     .allowRequests(30)
     .every('1 minute')
-    .usingKey(`places_${ctx.route?.name}_${ctx.auth.getUserOrFail().id}`)
+    .usingKey(`places_${ctx.auth.getUserOrFail().id}`)
     .limitExceeded((error) => {
       error.setMessage(
         `Terlalu banyak pencarian. Coba lagi dalam ${error.response.availableIn} detik.`

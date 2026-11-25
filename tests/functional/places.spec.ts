@@ -15,7 +15,7 @@ function createUser(phone: string, role: Role = Role.CUSTOMER) {
   })
 }
 
-test.group('Place search and street label GET /tempat, /tempat/titik (MAP-1, D80)', (group) => {
+test.group('Place search GET /tempat (MAP-1, D80)', (group) => {
   group.each.setup(async () => {
     await limiter.clear(['memory'])
     const rollback = await testUtils.db().wrapInGlobalTransaction()
@@ -57,27 +57,12 @@ test.group('Place search and street label GET /tempat, /tempat/titik (MAP-1, D80
     assert.equal(response.body().places[0].name, 'Jalan Dipatiukur')
   })
 
-  test('the label names the street and kelurahan under the pin (MAP-1)', async ({ client }) => {
-    const customer = await createUser('6281200000403')
-
-    const response = await client
-      .get('/tempat/titik')
-      .qs(DIPATIUKUR)
-      .accept('json')
-      .loginAs(customer)
-
-    response.assertStatus(200)
-    response.assertBody({ street: 'Jalan Dipatiukur', kelurahan: 'Lebakgede' })
-  })
-
-  test('guests may not search or read labels (MAP-1)', async ({ client }) => {
+  test('guests may not search (MAP-1)', async ({ client }) => {
     const search = await client
       .get('/tempat')
       .qs({ q: 'dipatiukur', ...DIPATIUKUR })
       .accept('json')
     search.assertStatus(401)
-    const label = await client.get('/tempat/titik').qs(DIPATIUKUR).accept('json')
-    label.assertStatus(401)
   })
 
   test('a search shorter than 3 letters is refused (MAP-1)', async ({ client }) => {
@@ -92,7 +77,7 @@ test.group('Place search and street label GET /tempat, /tempat/titik (MAP-1, D80
     response.assertStatus(422)
   })
 
-  test('the 31st search in a minute is refused with the wait time; labels have their own count (D80)', async ({
+  test('the 31st search in a minute is refused with the wait time (D80)', async ({
     client,
     assert,
   }) => {
@@ -118,8 +103,6 @@ test.group('Place search and street label GET /tempat, /tempat/titik (MAP-1, D80
       /^Terlalu banyak pencarian\. Coba lagi dalam \d+ detik\.$/
     )
 
-    const label = await client.get('/tempat/titik').qs(DIPATIUKUR).accept('json').loginAs(customer)
-    label.assertStatus(200)
     const otherUser = await client
       .get('/tempat')
       .qs({ q: 'dipatiukur', ...DIPATIUKUR })
@@ -135,7 +118,7 @@ test.group('Place search without OSM data (MAP-1, NFR-4)', (group) => {
     return testUtils.db().wrapInGlobalTransaction()
   })
 
-  test('search says it is unavailable and the label is empty (MAP-1)', async ({ client }) => {
+  test('search says it is unavailable (MAP-1)', async ({ client }) => {
     const customer = await createUser('6281200000407')
 
     const search = await client
@@ -144,8 +127,5 @@ test.group('Place search without OSM data (MAP-1, NFR-4)', (group) => {
       .accept('json')
       .loginAs(customer)
     search.assertBody({ isAvailable: false, places: [] })
-
-    const label = await client.get('/tempat/titik').qs(DIPATIUKUR).accept('json').loginAs(customer)
-    label.assertBody({ street: null, kelurahan: null })
   })
 })
