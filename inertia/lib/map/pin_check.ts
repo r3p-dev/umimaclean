@@ -4,7 +4,6 @@ import { urlFor } from '~/client'
 import type { MapPoint } from '~/lib/map/area_map'
 
 type CheckResponse = Registry['area.check_point']['types']['response']
-type LabelResponse = Registry['places.show']['types']['response']
 // The JSON bodies of a refused check: @adonisjs/limiter's 429 and VineJS's 422 (D80).
 type ErrorBody = { errors: { message: string }[] }
 
@@ -22,7 +21,7 @@ const CHECKING: PinCheck = {
   isCovered: null,
   district: null,
 }
-// Taps and keys come quickly one after another; only the point where they stop is asked about.
+// Taps and keys come quickly one after another; only the point where they stop is checked.
 const SETTLE_PAUSE_MS = 300
 
 async function checkPoint(point: MapPoint, signal: AbortSignal): Promise<PinCheck> {
@@ -53,61 +52,35 @@ async function checkPoint(point: MapPoint, signal: AbortSignal): Promise<PinChec
       }
 }
 
-// The street and kelurahan under the pin (MAP-1); empty when the map data is missing or the request
-// fails, because the kecamatan from the coverage check still says where the pin is.
-async function readLabel(point: MapPoint, signal: AbortSignal): Promise<LabelResponse> {
-  const response = await fetch(urlFor('places.show', {}, { qs: point }), {
-    headers: { Accept: 'application/json' },
-    signal,
-  })
-  return response.ok ? response.json() : { street: null, kelurahan: null }
-}
-
-// The server's answer about `point`, asked again each time the point changes; null until the answer
-// for this very point arrives. A failed request answers `onError`.
-function usePointAnswer<T>(
-  point: MapPoint,
-  ask: (point: MapPoint, signal: AbortSignal) => Promise<T>,
-  onError: T
-): T | null {
-  const [answer, setAnswer] = useState<{ point: MapPoint; value: T } | null>(null)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    const timer = setTimeout(() => {
-      ask(point, controller.signal)
-        .then((value) => setAnswer({ point, value }))
-        .catch((askError: unknown) => {
-          // The pin moved again and aborted this request; its answer no longer matters.
-          if (controller.signal.aborted) return
-          console.error(askError)
-          setAnswer({ point, value: onError })
-        })
-    }, SETTLE_PAUSE_MS)
-    return () => {
-      clearTimeout(timer)
-      controller.abort()
-    }
-  }, [point, ask, onError])
-
-  return answer?.point === point ? answer.value : null
-}
-
 const CHECK_FAILED: PinCheck = {
   tone: 'attention',
   text: 'Pengecekan area gagal. Periksa koneksi Anda.',
   isCovered: null,
   district: null,
 }
-const NO_LABEL: LabelResponse = { street: null, kelurahan: null }
 
-// AREA-4: whether the server says `point` is inside an active service area; "Mengecek area…" until
-// the answer for this point arrives.
+// AREA-4: whether the server says `point` is inside an active service area, asked again each time the
+// point changes. "Mengecek area…" until the answer for this very point arrives.
 export function usePinCheck(point: MapPoint): PinCheck {
-  return usePointAnswer(point, checkPoint, CHECK_FAILED) ?? CHECKING
-}
+  const [answer, setAnswer] = useState<{ point: MapPoint; check: PinCheck } | null>(null)
 
-// MAP-1: the street and kelurahan our OSM data names under `point` (`GET /tempat/titik`).
-export function usePinLabel(point: MapPoint): LabelResponse {
-  return usePointAnswer(point, readLabel, NO_LABEL) ?? NO_LABEL
+  useEffect(() => {
+    const controller = new AbortController()
+    const timer = setTimeout(() => {
+      checkPoint(point, controller.signal)
+        .then((check) => setAnswer({ point, check }))
+        .catch((checkError: unknown) => {
+          // The pin moved again and aborted this check; its answer no longer matters.
+          if (controller.signal.aborted) return
+          console.error(checkError)
+          setAnswer({ point, check: CHECK_FAILED })
+        })
+    }, SETTLE_PAUSE_MS)
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [point])
+
+  return answer?.point === point ? answer.check : CHECKING
 }

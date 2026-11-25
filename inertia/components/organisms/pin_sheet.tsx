@@ -7,7 +7,7 @@ import ServiceAreaMap from '~/components/organisms/service_area_map'
 import { Button } from '~/components/ui/button'
 import { Dialog, DialogClose, DialogTitle } from '~/components/ui/dialog'
 import type { MapPoint } from '~/lib/map/area_map'
-import { usePinCheck, usePinLabel } from '~/lib/map/pin_check'
+import { usePinCheck } from '~/lib/map/pin_check'
 
 // The phone's "Ubah lokasi" sheet (CUST-3, D109): full screen, no input fields. A read-only card
 // shows the form's address text and the area under the pin, then the map with its centre pin, the
@@ -70,16 +70,8 @@ function SheetBody({
   const [point, setPoint] = useState(start)
   const [target, setTarget] = useState<MapPoint | null>(null)
   const check = usePinCheck(point)
-  const label = usePinLabel(point)
-  // The same sources the server stores on save: kelurahan from our OSM data, kecamatan and kota from
-  // the service area under the pin.
-  const area = [
-    label.kelurahan,
-    check.district && `Kec. ${check.district.name}`,
-    check.district?.city,
-  ]
-    .filter(Boolean)
-    .join(', ')
+  // The kecamatan and kota of the service area under the pin, as the server stores them on save.
+  const area = check.district ? `Kec. ${check.district.name}, ${check.district.city}` : null
   // A pin known to be outside cannot be confirmed; a failed check can, the server checks on save.
   const canConfirm = check.tone !== 'checking' && check.isCovered !== false
 
