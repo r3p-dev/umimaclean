@@ -11,7 +11,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        'group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card p-6 text-sm text-card-foreground shadow-xs ring-1 ring-foreground/10 data-[size=sm]:p-4',
+        'group/card flex flex-col gap-3 overflow-hidden rounded-xl border border-border bg-card p-4 text-sm text-card-foreground sm:p-5 data-[size=sm]:p-4',
         className
       )}
       {...props}
@@ -57,7 +57,7 @@ function CardContent({ className, ...props }: ComponentProps<'div'>) {
 
 function CardFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
-    <div data-slot="card-footer" className={cn('flex items-center pt-3', className)} {...props} />
+    <div data-slot="card-footer" className={cn('flex items-center pt-1', className)} {...props} />
   )
 }
 
