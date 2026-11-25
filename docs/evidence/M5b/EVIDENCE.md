@@ -85,6 +85,21 @@ exit 0
 | Landing redirect, restyled `/beranda`, `/pesanan`, `/pesanan/:id`, `/profil`, consistent `CustomerLayout` + `max-w-6xl` on `/pesan`, destructive "Keluar", removed devices card | PASS | `EVIDENCE_MILESTONE=M5b-ui node scripts/evidence_run.ts M5b-ui ui-pass-tests -- sh -c 'npm run lint && npm run typecheck && node ace test --files="tests/functional/home_redirect.spec.ts,tests/functional/profile.spec.ts,tests/browser/customer_ui_pass.spec.ts,tests/browser/orders_flow.spec.ts,tests/browser/order_pages_flow.spec.ts"'` | `PASS exit=0` (14 tests passed, 0 axe violations, 0 overflow) |
 | Full `npm run check` (`lint`, `typecheck`, full `test`) | PASS | `node scripts/evidence_run.ts M5b-ui full-check -- npm run check` | `PASS exit=0` (`tmp/evidence/M5b-ui/logs/full-check.log`) |
 
+---
+
+## UI pass revisions (before Stop 2)
+
+| Criterion | Status | Command | Excerpt |
+| --- | --- | --- | --- |
+| Uniform `max-w-6xl px-5 pt-6 lg:pt-10` container, `"Riwayat"` nav/title, shared `Card` (`p-4 sm:p-5`), React Aria `data-hovered`/`data-pressed`/`data-focus-visible`/`data-disabled` + global cursor, icon hover colors, `/profil` archive layout | PASS | `EVIDENCE_MILESTONE=M5b-ui2 node scripts/evidence_run.ts M5b-ui2 ui-rev-tests -- sh -c 'npm run lint && npm run typecheck && node ace test --files="tests/browser/orders_flow.spec.ts,tests/browser/order_pages_flow.spec.ts,tests/browser/customer_ui_pass.spec.ts"'` | `PASS exit=0` (`tmp/evidence/M5b-ui2/logs/ui-rev-tests.log`) |
+| Full `npm run check` (`lint`, `typecheck`, full `test`) | PASS | `node scripts/evidence_run.ts M5b-ui2 full-check -- npm run check` | `PASS exit=0` (`tmp/evidence/M5b-ui2/logs/full-check.log`) |
+
+### Screens (`tmp/evidence/M5b-ui2/screenshots/`)
+
+- `/pesan` & `/pesan/konfirmasi` at 360 px & 1440 px: same `max-w-6xl px-5 pt-6 lg:pt-10` container as `/beranda` and `/pesanan`, `"Riwayat"` in navbar/tab bar, shared `Card` (`p-4 sm:p-5`) (`pesan-360.png`, `pesan-1440.png`, `pesan-konfirmasi-360.png`, `pesan-konfirmasi-1440.png`)
+- `/pesanan/:id` at 360 px & 1440 px + hover: uniform `p-4 sm:p-5` card padding on all 4 sides, and `"Batalkan Pesanan"` hover keeps icon and text red (`pesanan-detail-360.png`, `pesanan-detail-1440.png`, `pesanan-detail-hover-1440.png`)
+- `/profil` at 360 px & 1440 px: flat identity row on mobile (matching archive), 2-column cards on desktop, utility list, destructive red `"Keluar"` (`profil-360.png`, `profil-1440.png`)
+
 ### Screens (`tmp/evidence/M5b-ui/screenshots/`)
 
 - `/beranda` (new account) at 360 px & 1440 px: welcome header, first-order CTA card, 3-step guide, empty order state, address shortcut (`beranda-baru-360.png`, `beranda-baru-1440.png`)
