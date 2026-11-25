@@ -56,7 +56,10 @@ export default function AddressForm({
   const [isDeletePending, setIsDeletePending] = useState(false)
   // The point under the pin, which ranks the place search, and where a search or the device's
   // location moves the pin to.
-  const [pin, setPin] = useState<MapPoint>(address ?? NEW_PIN_START)
+  // Only the point: the pin is sent as the coverage check's query string.
+  const [pin, setPin] = useState<MapPoint>(
+    address ? { lat: address.lat, lng: address.lng } : NEW_PIN_START
+  )
   const [pinTarget, setPinTarget] = useState<MapPoint | null>(null)
   const [addressText, setAddressText] = useState(address?.addressText ?? '')
   const isPrimaryLocked = isFirstAddress || (address?.isPrimary ?? false)

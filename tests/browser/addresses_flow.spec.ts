@@ -222,6 +222,12 @@ test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
     await browserContext.clearPermissions()
 
     const page = await visit('/profil/alamat')
+    const checks: string[] = []
+    page.on('request', (request) => {
+      if (request.url().includes('/area/cek-titik')) {
+        checks.push(request.url())
+      }
+    })
     await page.getByRole('link', { name: 'Ubah Kantor' }).click()
     await page.locator('.maplibregl-canvas').waitFor()
     // Without location permission the button goes away and the pin is placed by hand.
@@ -238,6 +244,11 @@ test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
     const kantor = await CustomerAddress.findByOrFail('label', 'Kantor')
     assert.equal(kantor.addressText, 'Jalan Mulya Sari No. 120, Sukagalih, Sukajadi')
     assert.equal(kantor.details, 'Lantai 2')
+    // The coverage check is sent the pin and nothing else of the address.
+    assert.isAbove(checks.length, 0)
+    for (const url of checks) {
+      assert.deepEqual([...new URL(url).searchParams.keys()].sort(), ['lat', 'lng'], url)
+    }
   })
 
   test('on a phone: a still preview, then "Ubah lokasi"; back keeps the pin, "Konfirmasi" sets it (CUST-3, D109)', async ({
