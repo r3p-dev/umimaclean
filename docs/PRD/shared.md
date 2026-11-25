@@ -44,7 +44,7 @@ Bag rows are two services each (kanvas and kulit). Sizes: Small < 25 cm, Medium 
 
 ## 3. Maps (`MAP`)
 
-- **MAP-1** Address search, the nearby-places list and the street label under a pin come from **our own OpenStreetMap data in PostgreSQL** (roads, named places, kelurahan and postcodes for the Bandung Raya extent). Search tolerates typos and spacing differences ("dipati ukur" finds "Jalan Dipatiukur") and ignores generic words like "jalan", "gang", "komplek". It is available to signed-in users only, 30 searches per minute per user; a blocked search says how long to wait. If the data is missing, the pin can still be placed by hand.
+- **MAP-1** Address search and the street label under a pin come from **our own OpenStreetMap data in PostgreSQL** (roads, named places, kelurahan and postcodes for the Bandung Raya extent). Search tolerates typos and spacing differences ("dipati ukur" finds "Jalan Dipatiukur") and ignores generic words like "jalan", "gang", "komplek". It is available to signed-in users only, 30 searches per minute per user; a blocked search says how long to wait. If the data is missing, the pin can still be placed by hand.
 - **MAP-2** Maps use **self-hosted** vector tiles; the browser contacts no map provider. "© OpenStreetMap contributors" is shown on every map. Without the tile file, maps show a plain background and pins and routes still work.
 
 ## 4. Pickup schedule (`SLOT`)
