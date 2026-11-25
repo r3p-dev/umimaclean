@@ -17,8 +17,8 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 | 8 |
 | M4a | – | Maps, area map and landing coverage check | done | v0.4.0 | 10 |
 | M4b | 0.4.0 | Place search and addresses | done (patches 0.4.1, 0.4.2) | v0.4.2 | 10 |
-| M5a | 0.5.0 | Online ordering: slots, new order, confirm | in progress (stop 2 in review) | – | 14 |
-| M5b | 0.5.0 | Order pages and tracking | not started | – | 12 |
+| M5a | – | Online ordering: slots, new order, confirm | done | ? | 14 |
+| M5b | 0.5.0 | Order pages and tracking | in progress (stop 1 in review) | – | 12 |
 | M6 | 0.6.0 | Courier trips | not started | – | 24 |
 | M7 | 0.7.0 | Workshop | not started | – | 16 |
 | M8 | 0.8.0 | Payments | not started | – | 24 |
@@ -49,18 +49,16 @@ Hours are the implementer's estimate for building, testing and writing the evide
 - M3b: `docs/evidence/M3b/` (the process checkpoint after it: [section Process checkpoint](evidence/M3b/EVIDENCE.md#process-checkpoint-2026-11-17)); patches 0.3.1 and 0.3.2: `docs/evidence/M3-0.3.1/`, `docs/evidence/M3-0.3.2/`
 - M4a: `docs/evidence/M4a/`; fix stops: `docs/evidence/M4a-fix1/` to `docs/evidence/M4a-fix8/`
 - M4b: `docs/evidence/M4b/`; patch 0.4.1 (M4b-fix1): `docs/evidence/M4-0.4.1/`; patch 0.4.2: `docs/evidence/M4-0.4.2/`
+- M5a: `docs/evidence/M5a/` (stop 1 and stop 2)
 
 ## Active milestone
 
-**M5a: Online ordering** (section M5a below). M4b and its patches are confirmed by the tag `v0.4.2` (owner, 2026-11-25).
+**M5b: Order pages and tracking** (section M5b below). M5a is confirmed (owner, 2026-11-25; no version bump, 0.5.0 at the end of M5b).
 
-**Handoff** (after stop 2, 2026-11-25):
+**Handoff** (M5b stop 1, 2026-11-25):
 
-- Done before stop 2: removed `GET /tempat/titik` (`PlacesController.show`, route, rate-limit note, tests, docs); fixed the flaky refused-save browser test in `tests/browser/addresses_flow.spec.ts` (waiting for `CoverageStatus` to settle before clicking `Simpan alamat` so the two-line status does not shift the button mid-click); `npm run check` passed twice in a row.
-- Done, stop 2 (order pages, CUST-5, CUST-6): `OrdersController` (`/pesan`, `POST /pesan`, `/pesan/konfirmasi`, `POST /pesan/konfirmasi`), `OrderService.validateDraft` and `listRepeatItems` (`/pesan?ulang=:id`), `confirmOrderValidator`, `FlowLayout` pages `customer/orders/create.tsx` and `confirm.tsx` with fixed bottom CTA on phones, `?dari=pesan` return path on `customer/addresses/form.tsx`, `Pesan` in `CUSTOMER_NAVIGATION` and `customer/dashboard.tsx`, functional and browser tests with 360/1440 px screenshots and axe checks. Evidence: `docs/evidence/M5a/EVIDENCE.md`.
-- Next: owner reviews stop 2; then M5b (order pages `/pesanan`, `/pesanan/:id`, tracking, unlock, cancel, `CUST-1` dashboard active panel, `MSG-1.1` link).
-- Known limits: the slot settings page does not yet show how many places are taken per date; the order link in MSG-1.1 comes in M5b.
-- New decisions: D114 (plus D111–D113 from stop 1).
+- Done, stop 1 (order pages & cancel, CUST-7, CUST-8, CUST-9, ORD-4): `OrderPolicy` (`view`, `cancel`), `cancelOrderValidator`, `Order.forCustomerList`/`countCustomerFilters`/`findDetail`, `OrderService.cancelOrderByCustomer`, `OrderSummaryTransformer`, `OrderDetailTransformer`, `OrdersController` (`index`, `show`, `cancel`, and `store` redirect switched to `customer.orders.show`), `CUSTOMER_NAVIGATION` ("Pesanan"), `inertia/lib/order_status.ts`, `OrderStatusBadge`, `OrderStageProgress`, `OrderTimeline`, `OrderCancelDialog`, `customer/orders/{index,show}`, unit/functional/browser tests with 360/1440 px screenshots and axe checks. Evidence: `docs/evidence/M5b/EVIDENCE.md`.
+- Next: owner reviews stop 1; then stop 2 (guest 4-digit unlock `GUEST-4/5/6`, `CUST-1` dashboard welcome + active order panel, `MSG-1.1` order link) and stop 3 (`knip` cleanup, version `0.5.0`).
 
 ## M0: Spikes and plan
 
