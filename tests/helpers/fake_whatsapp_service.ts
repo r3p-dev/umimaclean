@@ -1,19 +1,24 @@
-import type { SendMessageResult } from '#services/whatsapp_service'
+import type { MessageKind, SendMessageResult } from '#services/whatsapp_service'
 import WhatsAppService from '#services/whatsapp_service'
 import { normalizePhone } from '#helpers/phone'
 
 export interface DispatchedWhatsAppMessage {
   phone: string
   text: string
+  kind: MessageKind
   dispatchedAt: number
 }
 
 export class FakeWhatsAppService extends WhatsAppService {
   #dispatched: DispatchedWhatsAppMessage[] = []
 
-  override async sendMessage(phone: string, text: string): Promise<SendMessageResult> {
+  override async sendMessage(
+    phone: string,
+    text: string,
+    kind: MessageKind = 'otp'
+  ): Promise<SendMessageResult> {
     const normalized = normalizePhone(phone)
-    this.#dispatched.push({ phone: normalized, text, dispatchedAt: Date.now() })
+    this.#dispatched.push({ phone: normalized, text, kind, dispatchedAt: Date.now() })
     return {
       sent: true,
       phone: normalized,

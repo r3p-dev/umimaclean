@@ -4,6 +4,10 @@ import type { ApiClient } from '@japa/api-client'
 import PickupSlot from '#models/pickup_slot'
 import User from '#models/user'
 import { Role } from '#enums/role_enum'
+import { DateTime } from 'luxon'
+import { OrderStatus } from '#enums/order_status_enum'
+import { ZONE } from '#helpers/opening_hours'
+import Order from '#models/order'
 import { visitRedirect } from '../helpers/inertia.js'
 
 async function owner() {
@@ -17,6 +21,16 @@ async function saveDay(client: ApiClient, weekday: number, slots: unknown[]) {
     .withCsrfToken()
     .json({ slots })
     .redirects(0)
+}
+
+function keep(slot: PickupSlot) {
+  return {
+    id: slot.id,
+    startsAt: slot.startsAt,
+    endsAt: slot.endsAt,
+    capacity: slot.capacity,
+    isActive: slot.isActive,
+  }
 }
 
 async function countOn(weekday: number) {
@@ -78,6 +92,48 @@ test.group('Pickup slots per weekday /admin/pengaturan/slot (OWN-8, SLOT-2, D106
       errors: { slots: 'Slot 11.00–14.00 bertabrakan dengan 09.00–12.00.' },
     })
     assert.equal(await countOn(1), 3)
+  })
+
+  test('a slot with a pending pickup cannot be deleted; it can be switched off (M5a decision 1)', async ({
+    client,
+    assert,
+  }) => {
+    const [morning, noon, afternoon] = await PickupSlot.query()
+      .where('weekday', 1)
+      .orderBy('starts_at')
+    let monday = DateTime.now().setZone(ZONE).plus({ days: 1 })
+    while (monday.weekday !== 1) {
+      monday = monday.plus({ days: 1 })
+    }
+    const customer = await User.query().where('role', Role.CUSTOMER).firstOrFail()
+    await Order.create({
+      userId: customer.id,
+      status: OrderStatus.AWAITING_PICKUP,
+      pickupDate: monday,
+      pickupSlotId: morning.id,
+      pickupStartsAt: morning.startsAt,
+      pickupEndsAt: morning.endsAt,
+      requestKey: 'slot-route-test',
+    })
+
+    const refused = await saveDay(client, 1, [keep(noon), keep(afternoon)])
+    const next = await visitRedirect(client, refused)
+    next.assertInertiaPropsContains({
+      errors: {
+        slots:
+          'Slot Senin 09.00–12.00 masih punya pesanan yang belum dijemput. Slot itu hanya bisa dimatikan atau diubah kapasitasnya.',
+      },
+    })
+    assert.equal(await countOn(1), 3)
+
+    const switchedOff = await saveDay(client, 1, [
+      { ...keep(morning), isActive: false },
+      keep(noon),
+      keep(afternoon),
+    ])
+    switchedOff.assertStatus(302)
+    await morning.refresh()
+    assert.isFalse(morning.isActive)
   })
 
   test('touching slots are fine, but a slot must end after it starts (SLOT-2)', async ({

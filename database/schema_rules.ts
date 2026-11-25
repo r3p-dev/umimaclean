@@ -57,6 +57,40 @@ export default {
         },
       },
     },
+    orders: {
+      columns: {
+        status: {
+          tsType: 'OrderStatus',
+          imports: [{ source: '#enums/order_status_enum', namedImports: ['type OrderStatus'] }],
+        },
+      },
+    },
+    order_addresses: {
+      columns: {
+        kind: {
+          tsType: 'OrderAddressKind',
+          imports: [
+            { source: '#enums/order_address_kind_enum', namedImports: ['type OrderAddressKind'] },
+          ],
+        },
+      },
+    },
+    order_items: {
+      columns: {
+        item_kind: {
+          tsType: 'ItemKind',
+          imports: [{ source: '#enums/item_kind_enum', namedImports: ['type ItemKind'] }],
+        },
+      },
+    },
+    order_events: {
+      columns: {
+        status: {
+          tsType: 'OrderStatus',
+          imports: [{ source: '#enums/order_status_enum', namedImports: ['type OrderStatus'] }],
+        },
+      },
+    },
     settings: {
       columns: {
         value: {

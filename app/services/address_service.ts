@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
-import { errors as vineErrors } from '@vinejs/vine'
+import { fieldError } from '#helpers/validation'
 import CustomerAddress, { MAX_ADDRESSES } from '#models/customer_address'
 import User from '#models/user'
 import AreaService from '#services/area_service'
@@ -11,10 +11,6 @@ import type { AddressInput } from '#validators/address_validator'
 export const OUTSIDE_AREA_MESSAGE =
   'Titik ini di luar area layanan. Geser peta ke alamat di area antar-jemput gratis.'
 export const TOO_MANY_ADDRESSES_MESSAGE = `Maksimal ${MAX_ADDRESSES} alamat tersimpan. Hapus salah satu dulu.`
-
-function fieldError(field: string, message: string, rule: string): never {
-  throw new vineErrors.E_VALIDATION_ERROR([{ field, message, rule }])
-}
 
 // A customer's saved addresses (CUST-2, CUST-3). Every change locks the customer's row first, so two
 // requests at once can neither pass the limit of 3 together nor both change the primary address.

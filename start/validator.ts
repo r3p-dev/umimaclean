@@ -44,4 +44,13 @@ vine.messagesProvider = new SimpleMessagesProvider({
   'q.minLength': 'Ketik minimal {{ min }} huruf nama kecamatan.',
   'lat.required': 'Pilih lokasi di peta dulu.',
   'addressText.required': 'Isi nama jalan, gedung atau no. rumah.',
+  // VineJS names an array's length rule array.minLength.
+  'items.array.minLength': 'Tambahkan minimal satu barang.',
+  'items.perKind': 'Maksimal {{ max }} sepatu dan {{ max }} tas per pesanan.',
+  'items.*.itemKind.enum': 'Pesanan online hanya untuk sepatu dan tas; helm dilayani di toko.',
+  'items.*.type.required': 'Isi jenis barang, mis. Air Force 1 atau ransel kanvas.',
+  'items.*.type.minLength': 'Isi jenis barang, mis. Air Force 1 atau ransel kanvas.',
+  'items.*.size.required': 'Pilih ukuran barang.',
+  'items.*.size.regex': 'Ukuran sepatu EU 20–50, kelipatan 0,5.',
+  'items.*.size.enum': 'Pilih ukuran tas: Small, Medium, Large atau X-Large.',
 })

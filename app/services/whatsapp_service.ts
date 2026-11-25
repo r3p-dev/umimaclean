@@ -13,6 +13,9 @@ export interface SendMessageResult {
     | 'network_error'
 }
 
+// What a message is, for the log line written instead of its text outside development.
+export type MessageKind = 'otp' | 'order_received'
+
 export default class WhatsAppService {
   isPhoneAllowed(phone: string): boolean {
     const isProduction = env.get('NODE_ENV') === 'production'
@@ -34,7 +37,11 @@ export default class WhatsAppService {
     return allowed.includes(normalizedRecipient)
   }
 
-  async sendMessage(phone: string, text: string): Promise<SendMessageResult> {
+  async sendMessage(
+    phone: string,
+    text: string,
+    kind: MessageKind = 'otp'
+  ): Promise<SendMessageResult> {
     const normalized = normalizePhone(phone)
     const masked = maskPhone(normalized)
     const isDevelopment = env.get('NODE_ENV') === 'development'
@@ -43,10 +50,7 @@ export default class WhatsAppService {
       if (isDevelopment) {
         logger.info({ phone: masked, text }, 'WhatsApp message logged (outside allowed list)')
       } else {
-        logger.info(
-          { phone: masked, kind: 'otp' },
-          'WhatsApp message logged (outside allowed list)'
-        )
+        logger.info({ phone: masked, kind }, 'WhatsApp message logged (outside allowed list)')
       }
       return {
         sent: false,
@@ -103,7 +107,7 @@ export default class WhatsAppService {
     if (isDevelopment) {
       logger.info({ phone: masked, text }, 'WhatsApp message dispatched')
     } else {
-      logger.info({ phone: masked, kind: 'otp' }, 'WhatsApp message dispatched')
+      logger.info({ phone: masked, kind }, 'WhatsApp message dispatched')
     }
     return {
       sent: true,

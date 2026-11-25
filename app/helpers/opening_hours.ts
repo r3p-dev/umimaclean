@@ -6,11 +6,13 @@ export const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 
 
 export type OpeningStatus = { isOpen: boolean; label: string; note: string | null }
 
-const ZONE = 'Asia/Jakarta'
+// Business dates and times are Jakarta's (docs/ARCHITECTURE.md §4.3).
+export const ZONE = 'Asia/Jakarta'
 // Local Jakarta time as stored in the setting: "2026-11-19T20:00". Such stamps sort as strings.
 const STAMP = "yyyy-MM-dd'T'HH:mm"
 
-function displayTime(time: string) {
+// "09:00" → "09.00", how times are written in Indonesian.
+export function displayTime(time: string) {
   return time.replace(':', '.')
 }
 

@@ -6,8 +6,10 @@
 
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
-import { type OtpPurpose } from '#enums/otp_purpose_enum'
+import { type OrderAddressKind } from '#enums/order_address_kind_enum'
+import { type OrderStatus } from '#enums/order_status_enum'
 import { type ItemKind } from '#enums/item_kind_enum'
+import { type OtpPurpose } from '#enums/otp_purpose_enum'
 import { type ServiceType } from '#enums/service_type_enum'
 import { type Role } from '#enums/role_enum'
 
@@ -89,6 +91,132 @@ export class CustomerAddressSchema extends BaseModel {
   declare recipientPhone: string
   @column()
   declare street: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: number
+}
+
+export class OrderAddressSchema extends BaseModel {
+  static $columns = [
+    'addressText',
+    'city',
+    'createdAt',
+    'details',
+    'id',
+    'kecamatan',
+    'kelurahan',
+    'kind',
+    'label',
+    'lat',
+    'lng',
+    'orderId',
+    'recipientName',
+    'recipientPhone',
+    'street',
+  ] as const
+  $columns = OrderAddressSchema.$columns
+  @column()
+  declare addressText: string
+  @column()
+  declare city: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare details: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare kecamatan: string
+  @column()
+  declare kelurahan: string | null
+  @column()
+  declare kind: OrderAddressKind
+  @column()
+  declare label: string
+  @column()
+  declare lat: number
+  @column()
+  declare lng: number
+  @column()
+  declare orderId: number
+  @column()
+  declare recipientName: string
+  @column()
+  declare recipientPhone: string
+  @column()
+  declare street: string | null
+}
+
+export class OrderEventSchema extends BaseModel {
+  static $columns = ['actorId', 'createdAt', 'id', 'note', 'orderId', 'status'] as const
+  $columns = OrderEventSchema.$columns
+  @column()
+  declare actorId: number | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare note: string | null
+  @column()
+  declare orderId: number
+  @column()
+  declare status: OrderStatus
+}
+
+export class OrderItemSchema extends BaseModel {
+  static $columns = ['brand', 'createdAt', 'id', 'itemKind', 'orderId', 'size', 'type'] as const
+  $columns = OrderItemSchema.$columns
+  @column()
+  declare brand: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare itemKind: ItemKind
+  @column()
+  declare orderId: number
+  @column()
+  declare size: string
+  @column()
+  declare type: string
+}
+
+export class OrderSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'id',
+    'note',
+    'pickupDate',
+    'pickupEndsAt',
+    'pickupSlotId',
+    'pickupStartsAt',
+    'requestKey',
+    'status',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = OrderSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare note: string | null
+  @column.date()
+  declare pickupDate: DateTime
+  @column()
+  declare pickupEndsAt: string
+  @column()
+  declare pickupSlotId: number | null
+  @column()
+  declare pickupStartsAt: string
+  @column()
+  declare requestKey: string
+  @column()
+  declare status: OrderStatus
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
   @column()
