@@ -121,9 +121,9 @@ test.group(
         .redirects(0)
 
       placeResponse.assertStatus(302)
-      placeResponse.assertHeader('location', '/beranda')
 
       const order = await Order.query().where('user_id', customer.id).firstOrFail()
+      placeResponse.assertHeader('location', `/pesanan/${order.id}`)
       assert.equal(order.status, OrderStatus.AWAITING_PICKUP)
       assert.equal(order.note, 'Titip di pos satpam')
       placeResponse.assertFlashMessage('success', `Pesanan ${order.number()} diterima`)

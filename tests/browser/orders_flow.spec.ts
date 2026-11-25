@@ -124,11 +124,12 @@ test.group('Online ordering flow (CUST-5, CUST-6)', (group) => {
     await page.getByRole('heading', { name: 'Konfirmasi Pesanan' }).waitFor()
     await page.getByRole('button', { name: 'Buat Pesanan' }).click()
 
-    await page.getByRole('heading', { name: /Selamat datang/ }).waitFor()
+    await page.waitForURL(/\/pesanan\/\d+$/)
     const placed = await Order.query()
       .where('user_id', customer.id)
       .where('note', 'Titip di pos satpam')
       .firstOrFail()
+    await page.getByRole('heading', { name: placed.number() }).waitFor()
     assert.equal(placed.status, OrderStatus.AWAITING_PICKUP)
     await page.getByText(`Pesanan ${placed.number()} diterima`).waitFor()
   })

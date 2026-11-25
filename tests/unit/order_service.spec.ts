@@ -389,3 +389,64 @@ test.group('OrderService.placeOnlineOrder under concurrency (SLOT-3)', (group) =
     assert.lengthOf(await Order.query().where('pickup_slot_id', slot.id), 1)
   })
 })
+
+test.group('OrderService.cancelOrderByCustomer (CUST-8)', (group) => {
+  group.each.setup(async () => {
+    await testUtils.db().seed()
+    return testUtils.db().wrapInGlobalTransaction()
+  })
+
+  test('cancels awaiting_pickup, frees slot place, and sends no WhatsApp message', async ({
+    assert,
+  }) => {
+    fakeWhatsApp.clear()
+    const customer = await createCustomer('6281200000693')
+    const address = await createAddress(customer, 'Rumah')
+    const slot = await slotOn(2)
+    const service = await app.container.make(OrderService)
+
+    const order = await service.placeOnlineOrder(
+      customer,
+      draftFor(address, slot),
+      'cancel-unit-1',
+      NOW
+    )
+    fakeWhatsApp.clear()
+
+    await service.cancelOrderByCustomer(customer, order.id, 'Jadwal berubah')
+    await order.refresh()
+    assert.equal(order.status, OrderStatus.CANCELLED)
+    assert.lengthOf(fakeWhatsApp.getDispatchedMessages(), 0)
+
+    const events = await OrderEvent.query().where('order_id', order.id).orderBy('id', 'asc')
+    assert.equal(events.at(-1)?.status, OrderStatus.CANCELLED)
+    assert.equal(events.at(-1)?.note, 'Jadwal berubah')
+  })
+
+  test('refuses non-owner (403) and statuses other than awaiting_pickup (409)', async ({
+    assert,
+  }) => {
+    const owner = await createCustomer('6281200000694')
+    const other = await createCustomer('6281200000695')
+    const slot = await slotOn(2)
+    const order = await Order.create({
+      userId: owner.id,
+      status: OrderStatus.COURIER_EN_ROUTE,
+      pickupDate: DateTime.fromISO(TUESDAY, { zone: ZONE }),
+      pickupSlotId: slot.id,
+      pickupStartsAt: slot.startsAt,
+      pickupEndsAt: slot.endsAt,
+      requestKey: 'cancel-unit-2',
+    })
+    const service = await app.container.make(OrderService)
+
+    await assert.rejects(
+      () => service.cancelOrderByCustomer(other, order.id, 'Coba batal'),
+      /Akses ditolak/
+    )
+    await assert.rejects(
+      () => service.cancelOrderByCustomer(owner, order.id, 'Coba batal'),
+      /sebelum kurir berangkat/
+    )
+  })
+})
