@@ -58,7 +58,8 @@ Hours are the implementer's estimate for building, testing and writing the evide
 **Handoff** (M5b stop 1, 2026-11-25):
 
 - Done, stop 1 (order pages & cancel, CUST-7, CUST-8, CUST-9, ORD-4): `OrderPolicy` (`view`, `cancel`), `cancelOrderValidator`, `Order.forCustomerList`/`countCustomerFilters`/`findDetail`, `OrderService.cancelOrderByCustomer`, `OrderSummaryTransformer`, `OrderDetailTransformer`, `OrdersController` (`index`, `show`, `cancel`, and `store` redirect switched to `customer.orders.show`), `CUSTOMER_NAVIGATION` ("Pesanan"), `inertia/lib/order_status.ts`, `OrderStatusBadge`, `OrderStageProgress`, `OrderTimeline`, `OrderCancelDialog`, `customer/orders/{index,show}`, unit/functional/browser tests with 360/1440 px screenshots and axe checks. Evidence: `docs/evidence/M5b/EVIDENCE.md`.
-- Next: owner reviews stop 1; then stop 2 (guest 4-digit unlock `GUEST-4/5/6`, `CUST-1` dashboard welcome + active order panel, `MSG-1.1` order link) and stop 3 (`knip` cleanup, version `0.5.0`).
+- Done, UI pass (before stop 2): signed-in users visiting `/` redirect to role home (`HomeController.index`); restyled `/beranda`, `/pesanan`, `/pesanan/:id`, `/profil` to the archive look; unified all customer pages on `CustomerLayout` and `max-w-6xl`; styled `Keluar` in destructive red; removed `Perangkat yang masuk` (`docs/PRD/shared.md` ACC-4, D115).
+- Next: owner reviews UI pass; then stop 2 (guest 4-digit unlock `GUEST-4/5/6`, `MSG-1.1` order link) and stop 3 (`knip` cleanup, version `0.5.0`).
 
 ## M0: Spikes and plan
 

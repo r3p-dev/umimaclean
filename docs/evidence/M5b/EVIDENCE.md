@@ -73,5 +73,23 @@ exit 0
 
 ## Known limitations / deferred
 
-- Guest 4-digit unlock (`GUEST-4/5/6`), `CUST-1` dashboard welcome/active panel, and `MSG-1.1` order link come in Stop 2.
+- Guest 4-digit unlock (`GUEST-4/5/6`) and `MSG-1.1` order link come in Stop 2.
 - `knip` cleanup and version bump `0.5.0` come in Stop 3.
+
+---
+
+## UI pass (before Stop 2)
+
+| Criterion | Status | Command | Excerpt |
+| --- | --- | --- | --- |
+| Landing redirect, restyled `/beranda`, `/pesanan`, `/pesanan/:id`, `/profil`, consistent `CustomerLayout` + `max-w-6xl` on `/pesan`, destructive "Keluar", removed devices card | PASS | `EVIDENCE_MILESTONE=M5b-ui node scripts/evidence_run.ts M5b-ui ui-pass-tests -- sh -c 'npm run lint && npm run typecheck && node ace test --files="tests/functional/home_redirect.spec.ts,tests/functional/profile.spec.ts,tests/browser/customer_ui_pass.spec.ts,tests/browser/orders_flow.spec.ts,tests/browser/order_pages_flow.spec.ts"'` | `PASS exit=0` (14 tests passed, 0 axe violations, 0 overflow) |
+| Full `npm run check` (`lint`, `typecheck`, full `test`) | PASS | `node scripts/evidence_run.ts M5b-ui full-check -- npm run check` | `PASS exit=0` (`tmp/evidence/M5b-ui/logs/full-check.log`) |
+
+### Screens (`tmp/evidence/M5b-ui/screenshots/`)
+
+- `/beranda` (new account) at 360 px & 1440 px: welcome header, first-order CTA card, 3-step guide, empty order state, address shortcut (`beranda-baru-360.png`, `beranda-baru-1440.png`)
+- `/beranda` (with orders) at 360 px & 1440 px: greeting, active order card with status badge, 5-step progress bar, "Lihat semua pesanan (2)", quick order card, recent completed orders with "Pesan lagi", saved addresses (`beranda-aktif-360.png`, `beranda-aktif-1440.png`)
+- `/pesanan` at 360 px & 1440 px: "Riwayat Pesanan" with dark active filter pill, search bar, mobile cards / desktop table (`pesanan-daftar-360.png`, `pesanan-daftar-1440.png`)
+- `/pesanan/:id` at 360 px & 1440 px: "Riwayat" back link, order number + status badge, 5-step progress, 2-column layout (status card first on mobile), timeline, "Pesan lagi", "Batalkan Pesanan", WhatsApp link (`pesanan-detail-360.png`, `pesanan-detail-1440.png`)
+- `/profil` at 360 px & 1440 px: identity card, 2-column address & password/phone tiles, no devices card, destructive red "Keluar" (`profil-360.png`, `profil-1440.png`)
+- `/pesan` & `/pesan/konfirmasi` at 360 px & 1440 px: `CustomerLayout` header/tab bar, `max-w-6xl` width, sticky mobile CTA above tab bar (`pesan-360.png`, `pesan-1440.png`, `pesan-konfirmasi-360.png`, `pesan-konfirmasi-1440.png`)
