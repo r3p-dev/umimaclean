@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Orders behind the scenes, ready for the order pages: an order keeps copies of its pickup and delivery addresses, the items the customer declares, its pickup date and slot times, and a timeline of every status. Placing an order re-checks both addresses against the service area and the slot's free places, and a double submit creates one order. The customer gets "Halo …, pesanan UMC-00042 sudah kami terima. Penjemputan: …" on WhatsApp; a failed message never stops the order.
+- The development database has a demo order in every status.
+
+### Fixed
+
+- Editing an address no longer sends the whole address (recipient name, phone, address text) along with the map's coverage check; only the pin is sent.
+
+### Changed
+
+- A pickup slot that still has orders waiting to be picked up can no longer be deleted, re-timed or copied over; it can be switched off or get another capacity.
+
 ## [0.4.2] - 2026-11-24
 
 ### Changed
