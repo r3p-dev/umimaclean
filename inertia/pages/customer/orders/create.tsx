@@ -254,7 +254,7 @@ export default function OrderCreate({
               return (
                 <div
                   key={index}
-                  className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4"
+                  className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:p-5"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-muted-foreground">
@@ -267,7 +267,7 @@ export default function OrderCreate({
                         size="icon"
                         aria-label={`Hapus barang ${index + 1}`}
                         onPress={() => removeItem(index)}
-                        className="size-11 text-muted-foreground hover:text-destructive"
+                        className="-my-3 -mr-2 size-11 text-muted-foreground hover:text-destructive"
                       >
                         <IconTrash aria-hidden="true" className="size-5" />
                       </Button>

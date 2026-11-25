@@ -55,20 +55,20 @@ export default function AddressPicker({
   return (
     <>
       {selected ? (
-        <div className="flex items-start justify-between gap-3 rounded-xl border border-border bg-card p-4">
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-border bg-card p-4 sm:p-5">
           <AddressDetails address={selected} />
           <Button
             type="button"
             variant="link"
             aria-label={changeLabel}
             onPress={() => onOpenChange(true)}
-            className="min-h-11 shrink-0 px-2"
+            className="-my-3 min-h-11 shrink-0 px-0"
           >
             Ganti
           </Button>
         </div>
       ) : (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-card p-4">
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-card p-4 sm:p-5">
           <p className="text-sm text-muted-foreground">
             Belum ada alamat dalam area layanan yang dipilih.
           </p>
@@ -98,7 +98,7 @@ export default function AddressPicker({
                 <label
                   key={address.id}
                   className={cn(
-                    'flex min-h-12 cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors',
+                    'flex min-h-12 cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors sm:p-5',
                     isChecked
                       ? 'border-primary bg-accent/50'
                       : 'border-border bg-card hover:bg-muted/40',

@@ -34,7 +34,7 @@ function CardHeader({ id, icon, title }: { id: string; icon: ReactNode; title: s
       </h2>
       <Link
         route="customer.orders.create"
-        className={buttonVariants({ variant: 'link', className: 'min-h-11 px-2' })}
+        className={buttonVariants({ variant: 'link', className: '-my-3 min-h-11 px-0' })}
       >
         Ubah
       </Link>
@@ -94,7 +94,7 @@ export default function OrderConfirm({
       <div className="flex flex-col gap-4">
         <section
           aria-labelledby="confirm-items-title"
-          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
+          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:p-5"
         >
           <CardHeader
             id="confirm-items-title"
@@ -128,7 +128,7 @@ export default function OrderConfirm({
 
         <section
           aria-labelledby="confirm-schedule-title"
-          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
+          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:p-5"
         >
           <CardHeader
             id="confirm-schedule-title"
@@ -148,7 +148,7 @@ export default function OrderConfirm({
 
         <section
           aria-labelledby="confirm-address-title"
-          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
+          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:p-5"
         >
           <CardHeader
             id="confirm-address-title"
