@@ -56,7 +56,7 @@ router
 
 router
   .group(() => {
-    router.on('/beranda').renderInertia('customer/dashboard', {}).as('customer.home')
+    router.get('/beranda', [controllers.Orders, 'home']).as('customer.home')
     router.get('/pesan', [controllers.Orders, 'create']).as('customer.orders.create')
     router.post('/pesan', [controllers.Orders, 'storeDraft']).as('customer.orders.draft')
     router.get('/pesan/konfirmasi', [controllers.Orders, 'confirm']).as('customer.orders.confirm')

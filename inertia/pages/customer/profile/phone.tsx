@@ -5,7 +5,7 @@ import CustomerLayout from '~/components/templates/customer_layout'
 
 export default function ProfilePhone() {
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pt-4 sm:pt-10">
+    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-4 sm:pt-10">
       <Head title="Ganti Nomor WhatsApp" />
       <BackLink area="customer" to="edit" />
       <h1 className="text-3xl font-bold tracking-tight">Ganti nomor WhatsApp</h1>

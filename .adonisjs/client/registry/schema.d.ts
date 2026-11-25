@@ -315,9 +315,9 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
-      rawResponse: ExtractRawResponse<unknown>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['home']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['home']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['home']>>>
     }
   }
   'customer.orders.create': {

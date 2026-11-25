@@ -260,7 +260,7 @@ export default function AddressForm({
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pt-4 pb-8 sm:pt-10">
+    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-4 pb-8 sm:pt-10">
       <Head title={address ? 'Ubah Alamat' : 'Tambah Alamat'} />
       <Link
         route={returnTo === 'pesan' ? 'customer.orders.create' : 'customer.addresses.index'}

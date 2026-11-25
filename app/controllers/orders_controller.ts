@@ -45,6 +45,24 @@ export default class OrdersController {
     protected pickupSlotService: PickupSlotService
   ) {}
 
+  async home({ auth, inertia }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const counts = await Order.countCustomerFilters(user.id)
+    const activeOrders = await Order.forCustomerList(user.id, 'aktif', '').exec()
+    const recentOrders = await Order.forCustomerList(user.id, 'selesai', '').limit(3)
+    const addresses = await this.addressService.listAddresses(user)
+    const primaryAddress = addresses.find((address) => address.isPrimary) ?? null
+
+    return inertia.render('customer/dashboard', {
+      totalOrders: counts.semua,
+      activeOrder: activeOrders[0] ? OrderSummaryTransformer.transform(activeOrders[0]) : null,
+      activeOrderCount: counts.aktif,
+      recentOrders: OrderSummaryTransformer.transform(recentOrders),
+      primaryAddress: primaryAddress ? AddressTransformer.transform(primaryAddress) : null,
+      addressLabels: addresses.map((address) => address.label),
+    })
+  }
+
   async index({ auth, request, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
     const filter = parseFilter(request.qs().status)

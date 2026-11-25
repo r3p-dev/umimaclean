@@ -2,7 +2,6 @@ import { useState, type ReactNode, type SyntheticEvent } from 'react'
 import { Head, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import {
-  IconArrowLeft,
   IconBackpack,
   IconHelmet,
   IconInfoCircle,
@@ -16,7 +15,7 @@ import { cn } from 'cn'
 import { urlFor } from '~/client'
 import Note from '~/components/atoms/note'
 import AddressPicker from '~/components/organisms/address_picker'
-import FlowLayout from '~/components/templates/flow_layout'
+import CustomerLayout from '~/components/templates/customer_layout'
 import { Badge } from '~/components/ui/badge'
 import { Button, buttonVariants } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
@@ -209,15 +208,9 @@ export default function OrderCreate({
     pickupSlotId !== null
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pt-4 pb-6 sm:pt-8 sm:pb-12">
+    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-4 pb-24 sm:pt-8 sm:pb-12">
       <Head title="Pesan Penjemputan" />
-      <Link
-        route="customer.home"
-        className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-medium text-foreground/80 hover:text-foreground"
-      >
-        <IconArrowLeft aria-hidden="true" className="size-4.5" />
-        Beranda
-      </Link>
+
       <div>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Pesan Penjemputan</h1>
         <p className="mt-1 text-base text-muted-foreground">
@@ -567,7 +560,7 @@ export default function OrderCreate({
           Layanan dan harga ditentukan tim kami setelah barang diperiksa.
         </Note>
 
-        <div className="sticky bottom-0 z-20 -mx-5 border-t border-border bg-card px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
+        <div className="sticky bottom-16 z-20 -mx-5 border-t border-border bg-card px-5 py-4 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
           <Button
             type="submit"
             isDisabled={!canProceed || isSubmitting}
@@ -581,4 +574,4 @@ export default function OrderCreate({
   )
 }
 
-OrderCreate.layout = (page: ReactNode) => <FlowLayout title="Pesan Penjemputan">{page}</FlowLayout>
+OrderCreate.layout = (page: ReactNode) => <CustomerLayout active="pesan">{page}</CustomerLayout>

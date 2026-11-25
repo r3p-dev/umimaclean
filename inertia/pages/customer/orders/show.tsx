@@ -31,35 +31,34 @@ export default function CustomerOrderShow({ order }: { order: Data.OrderDetail }
   const waHref = whatsappOrderLink(store.whatsapp, store.name, order.number)
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 px-5 pt-4 sm:pt-8">
+    <div className="mx-auto max-w-6xl px-5 pt-4 lg:pt-8">
       <Head title={order.number} />
 
-      <div>
-        <Link
-          route="customer.orders.index"
-          className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
-        >
-          <IconArrowLeft aria-hidden="true" className="size-4" />
-          Kembali ke Pesanan
-        </Link>
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <h1 className="font-mono text-2xl font-bold tracking-tight sm:text-3xl">
-            {order.number}
-          </h1>
-          <OrderStatusBadge status={order.status} />
-          <span className="text-sm text-muted-foreground">
-            dibuat {formatCreatedDateId(order.createdAt)}
-          </span>
-        </div>
+      <Link
+        route="customer.orders.index"
+        className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
+      >
+        <IconArrowLeft aria-hidden="true" className="size-4" />
+        Riwayat
+      </Link>
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <h1 className="font-mono text-2xl font-bold tracking-tight lg:text-3xl">{order.number}</h1>
+        <OrderStatusBadge status={order.status} />
+        <span className="text-sm text-muted-foreground">
+          dibuat {formatCreatedDateId(order.createdAt)}
+        </span>
       </div>
 
-      <OrderStageProgress status={order.status} />
+      <div className="mt-4">
+        <OrderStageProgress status={order.status} />
+      </div>
 
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="flex flex-col gap-4">
+      <div className="mt-5 grid grid-cols-1 items-start gap-4 lg:mt-7 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6">
+        <div className="flex flex-col gap-4 max-lg:order-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Barang yang didaftarkan</CardTitle>
+              <CardTitle className="text-lg">Barang &amp; layanan</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <ul className="divide-y divide-border">
@@ -142,10 +141,10 @@ export default function CustomerOrderShow({ order }: { order: Data.OrderDetail }
           </div>
         </div>
 
-        <aside className="flex flex-col gap-4">
+        <aside className="flex flex-col gap-4 max-lg:order-1">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Riwayat status</CardTitle>
+              <CardTitle className="text-lg">Status</CardTitle>
             </CardHeader>
             <CardContent>
               <OrderTimeline events={order.events} />

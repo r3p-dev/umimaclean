@@ -11,7 +11,7 @@ import {
 import type { Data } from '@generated/data'
 import { urlFor } from '~/client'
 import Note from '~/components/atoms/note'
-import FlowLayout from '~/components/templates/flow_layout'
+import CustomerLayout from '~/components/templates/customer_layout'
 import { Button, buttonVariants } from '~/components/ui/button'
 import { bagSizeLabel, formatPickupDate, formatSlotTime } from '~/lib/order_format'
 import { ItemKind } from '~/lib/service_enums'
@@ -78,7 +78,7 @@ export default function OrderConfirm({
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pt-4 pb-6 sm:pt-8 sm:pb-12">
+    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-4 pb-24 sm:pt-8 sm:pb-12">
       <Head title="Konfirmasi Pesanan" />
       <Link
         route="customer.orders.create"
@@ -187,7 +187,7 @@ export default function OrderConfirm({
 
       <form
         onSubmit={placeOrder}
-        className="sticky bottom-0 z-20 -mx-5 border-t border-border bg-card px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:mt-2 sm:border-0 sm:bg-transparent sm:p-0"
+        className="sticky bottom-16 z-20 -mx-5 border-t border-border bg-card px-5 py-4 sm:static sm:mx-0 sm:mt-2 sm:border-0 sm:bg-transparent sm:p-0"
       >
         <input type="hidden" name="requestKey" value={requestKey} />
         <Button type="submit" isDisabled={isPlacing} className="h-12 w-full text-base">
@@ -198,6 +198,4 @@ export default function OrderConfirm({
   )
 }
 
-OrderConfirm.layout = (page: ReactNode) => (
-  <FlowLayout title="Konfirmasi Pesanan">{page}</FlowLayout>
-)
+OrderConfirm.layout = (page: ReactNode) => <CustomerLayout active="pesan">{page}</CustomerLayout>
