@@ -15,7 +15,7 @@ Date: 2026-11-25. Commit: 351979e (0.4.2) + stop 1 + cleanup + stop 2.
 | Seed data: a demo order in every ORD-2 status with its timeline along ORD-3 and both address copies | PASS | `node scripts/evidence_run.ts M5a schema-and-seed -- sh -c 'node ace migration:fresh --seed && npx prettier --write database/schema.ts && podman exec postgres psql -U user -d umimaclean_dev -c "SELECT … FROM orders …" -c "SELECT kind, count(*) FROM order_addresses GROUP BY kind ORDER BY kind" -c "\d orders"'` | see below |
 | Cleanup before stop 2: `GET /tempat/titik` removed; flaky refused-save browser test fixed (waits for `CoverageStatus` to settle before clicking `Simpan alamat` so the two-line status does not shift the button mid-click); `npm run check` passes twice in a row | PASS | `npm run check && npm run check` | ok (31s+11s+434s), ok (33s+11s+438s) |
 | Stop 2 (CUST-5, CUST-6, SLOT-3, AREA-4, ORD-1): `/pesan`, `/pesan/konfirmasi`, session draft, "Ubah pesanan", "Pesan lagi" (`/pesan?ulang=:id`), `requestKey` on confirm, redirect to `/beranda` with `"Pesanan UMC-000XX diterima"`, 360/1440 px screenshots and axe | PASS | `node scripts/evidence_run.ts M5a stop2-orders-7 -- sh -c 'node ace test functional --files=tests/functional/orders.spec.ts && EVIDENCE_MILESTONE=M5a node ace test browser --files=tests/browser/orders_flow.spec.ts'` | see below |
-| Lint, typecheck and every test: `npm run check` | PASS (stop 2) | `node scripts/evidence_run.ts M5a check-stop2-2 -- npm run check` | see below |
+| Lint, typecheck and every test: `npm run check` | PASS (stop 2) | `node scripts/evidence_run.ts M5a check-stop2-fix -- npm run check` | see below |
 
 Excerpt for the state machine (`tmp/evidence/M5a/logs/state-machine.log`):
 
@@ -99,12 +99,12 @@ ok   test (427s)
 exit 0
 ```
 
-Excerpt for `npm run check` after stop 2 (`tmp/evidence/M5a/logs/check-stop2-2.log`):
+Excerpt for `npm run check` after stop 2 (`tmp/evidence/M5a/logs/check-stop2-fix.log`):
 
 ```text
-ok   lint (34s)
-ok   typecheck (12s)
-ok   test (437s)
+ok   lint (35s)
+ok   typecheck (13s)
+ok   test (435s)
 
 exit 0
 ```
@@ -123,14 +123,18 @@ There is no page yet: the order pages are stop 2. The seeded orders appear in th
 
 ## Screens
 
-- `/pesan` at 360 px: item rows (shoe + bag), saved address radio cards (with "Alamat pengantaran sama dengan penjemputan"), pickup date and slot selectors, note field, and the fixed bottom "Lanjut ke Konfirmasi" bar (`tmp/evidence/M5a/screenshots/pesan-360.png`).
-- `/pesan` at 1440 px: same order form in `FlowLayout` with inline "Lanjut ke Konfirmasi" button and `19/300` note counter (`tmp/evidence/M5a/screenshots/pesan-1440.png`).
-- `/pesan/konfirmasi` at 360 px: summary cards for items, schedule, pickup/delivery address, customer contact, inspection note, and fixed bottom "Buat Pesanan" bar (`tmp/evidence/M5a/screenshots/pesan-konfirmasi-360.png`).
-- `/pesan/konfirmasi` at 1440 px: same confirmation summary in `FlowLayout` with "Ubah" links per section and inline "Buat Pesanan" button (`tmp/evidence/M5a/screenshots/pesan-konfirmasi-1440.png`).
+- `/pesan` at 360 px: item rows (shoe + bag), compact selected pickup address card with "Ganti", "Alamat pengantaran sama dengan penjemputan" checkbox, pickup date/slot selectors, note field, and sticky bottom "Lanjut ke Konfirmasi" bar (`tmp/evidence/M5a/screenshots/pesan-360.png`).
+- `/pesan` at 1440 px: same order form in `FlowLayout` with inline "Lanjut ke Konfirmasi" button (`tmp/evidence/M5a/screenshots/pesan-1440.png`).
+- `/pesan` address picker at 360 px: full-screen "Pilih alamat penjemputan" sheet listing saved addresses as radio cards with "Kos Adik" disabled ("Di luar area layanan") (`tmp/evidence/M5a/screenshots/pesan-pilih-alamat-360.png`).
+- `/pesan` address picker at 1440 px: centered "Pilih alamat penjemputan" dialog over dimmed `/pesan` form (`tmp/evidence/M5a/screenshots/pesan-pilih-alamat-1440.png`).
+- `/pesan/konfirmasi` at 360 px: tidy summary cards with aligned icon + title + "Ubah" headers, `Sepatu · Nike Air Force 1 — EU 42` item rows, delivery line inside the address card, and sticky bottom "Buat Pesanan" bar (`tmp/evidence/M5a/screenshots/pesan-konfirmasi-360.png`).
+- `/pesan/konfirmasi` at 1440 px: same confirmation summary in `FlowLayout` with inline "Buat Pesanan" button (`tmp/evidence/M5a/screenshots/pesan-konfirmasi-1440.png`).
 
 Screenshot check (`tmp/evidence/M5a/screenshots/orders.log`):
 
 ```text
+pesan-pilih-alamat-360: scrollWidth=360 axe=none
+pesan-pilih-alamat-1440: scrollWidth=1440 axe=none
 pesan-360: scrollWidth=360 axe=none
 pesan-1440: scrollWidth=1440 axe=none
 pesan-konfirmasi-360: scrollWidth=360 axe=none
