@@ -17,7 +17,7 @@ Requirement IDs refer to `docs/PRD/`. In M0 the implementer adds **acceptance cr
 | M3b | 0.3.0 | Service areas, store settings, coverage service | done | v0.3.0 | 8 |
 | M4a | – | Maps, area map and landing coverage check | done | v0.4.0 | 10 |
 | M4b | 0.4.0 | Place search and addresses | done (patches 0.4.1, 0.4.2) | v0.4.2 | 10 |
-| M5a | 0.5.0 | Online ordering: slots, new order, confirm | in progress (stop 1 in review) | – | 14 |
+| M5a | 0.5.0 | Online ordering: slots, new order, confirm | in progress (stop 2 in review) | – | 14 |
 | M5b | 0.5.0 | Order pages and tracking | not started | – | 12 |
 | M6 | 0.6.0 | Courier trips | not started | – | 24 |
 | M7 | 0.7.0 | Workshop | not started | – | 16 |
@@ -54,14 +54,13 @@ Hours are the implementer's estimate for building, testing and writing the evide
 
 **M5a: Online ordering** (section M5a below). M4b and its patches are confirmed by the tag `v0.4.2` (owner, 2026-11-25).
 
-**Handoff** (after stop 1, 2026-11-25):
+**Handoff** (after stop 2, 2026-11-25):
 
-- Done, stop 1 (backend): tables `orders`, `order_addresses`, `order_items`, `order_events`; the status enum with labels, stages and `ORDER_TRANSITIONS` (ORD-2, ORD-3); `Order.number()` (ORD-1); `OrderService.transitionOrder`, unit-tested over all 121 status pairs; `PickupSlotService.listPickupDates` and `listSlotsForDate` (SLOT-1, SLOT-3); `OrderService.placeOnlineOrder` with the slot row lock, coverage re-check, `request_key`, first event and the after-commit "order received" message (CUST-4, CUST-6, MSG-1.1, MSG-3, MSG-4), with a concurrency test that fails without the lock; `createOrderValidator` (CUST-5, SVC-4, decision 2); the slot guard of decision 1 (D112); demo orders in every status (dev only, D113). Evidence: `docs/evidence/M5a/EVIDENCE.md`.
-- Next: the owner reviews stop 1; then stop 2, the order pages (`/pesan`, `/pesan/konfirmasi`), which call `createOrderValidator`, `listPickupDates`, `listSlotsForDate` and `placeOnlineOrder(user, draft, requestKey)`; the confirmation form carries the `request_key`, and after placing the customer goes to `/beranda` with "Pesanan UMC-00042 diterima" (decision 3).
-- Also done before stop 1: 0.4.2 approved; PRD MAP-1 no longer names the nearby-places list (owner's request).
-- Fixed on the way: the edit page's coverage check sent the whole saved address in its URL (D109 note). Open: the refused-save browser test failed in 1 of 2 full runs, cause not found (evidence).
-- Known limits: the slot page does not yet show how many places are taken; `GET /tempat/titik` is no longer called by any page (left in place, owner not yet asked to remove it).
-- New decisions: D111, D112, D113.
+- Done before stop 2: removed `GET /tempat/titik` (`PlacesController.show`, route, rate-limit note, tests, docs); fixed the flaky refused-save browser test in `tests/browser/addresses_flow.spec.ts` (waiting for `CoverageStatus` to settle before clicking `Simpan alamat` so the two-line status does not shift the button mid-click); `npm run check` passed twice in a row.
+- Done, stop 2 (order pages, CUST-5, CUST-6): `OrdersController` (`/pesan`, `POST /pesan`, `/pesan/konfirmasi`, `POST /pesan/konfirmasi`), `OrderService.validateDraft` and `listRepeatItems` (`/pesan?ulang=:id`), `confirmOrderValidator`, `FlowLayout` pages `customer/orders/create.tsx` and `confirm.tsx` with fixed bottom CTA on phones, `?dari=pesan` return path on `customer/addresses/form.tsx`, `Pesan` in `CUSTOMER_NAVIGATION` and `customer/dashboard.tsx`, functional and browser tests with 360/1440 px screenshots and axe checks. Evidence: `docs/evidence/M5a/EVIDENCE.md`.
+- Next: owner reviews stop 2; then M5b (order pages `/pesanan`, `/pesanan/:id`, tracking, unlock, cancel, `CUST-1` dashboard active panel, `MSG-1.1` link).
+- Known limits: the slot settings page does not yet show how many places are taken per date; the order link in MSG-1.1 comes in M5b.
+- New decisions: D114 (plus D111–D113 from stop 1).
 
 ## M0: Spikes and plan
 
