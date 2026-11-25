@@ -17,6 +17,7 @@ async function owner() {
 async function saveDay(client: ApiClient, weekday: number, slots: unknown[]) {
   return client
     .put(`/admin/pengaturan/slot/${weekday}`)
+    .header('Referer', '/admin/pengaturan/slot')
     .loginAs(await owner())
     .withCsrfToken()
     .json({ slots })

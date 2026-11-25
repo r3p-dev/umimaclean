@@ -122,9 +122,15 @@ test.group('Customer order list, detail and cancel (CUST-7, CUST-8, CUST-9)', (g
     await browserContext.loginAs(customer)
 
     const page = await visit('/pesanan')
-    await page.getByRole('heading', { name: 'Pesanan Saya' }).waitFor()
-    await page.getByText(awaiting.number()).waitFor()
-    await page.getByText(inCleaning.number()).waitFor()
+    await page.getByRole('heading', { name: 'Riwayat Pesanan' }).waitFor()
+    await page
+      .getByRole('link', { name: awaiting.number() })
+      .and(page.locator(':visible'))
+      .waitFor()
+    await page
+      .getByRole('link', { name: inCleaning.number() })
+      .and(page.locator(':visible'))
+      .waitFor()
 
     const logLines: string[] = []
     const recordEvidence = Boolean(env.get('EVIDENCE_MILESTONE'))
@@ -145,10 +151,16 @@ test.group('Customer order list, detail and cancel (CUST-7, CUST-8, CUST-9)', (g
     await page.waitForURL('**/pesanan?status=aktif')
     await page.getByLabel('Cari nomor pesanan').fill(inCleaning.number())
     await page.waitForURL(`**/pesanan?status=aktif&q=${inCleaning.number()}`)
-    await page.getByText(inCleaning.number()).waitFor()
+    await page
+      .getByRole('link', { name: inCleaning.number() })
+      .and(page.locator(':visible'))
+      .waitFor()
 
     // Open in_cleaning order: no cancel button, shows WhatsApp link.
-    await page.getByRole('link', { name: new RegExp(inCleaning.number()) }).click()
+    await page
+      .getByRole('link', { name: new RegExp(inCleaning.number()) })
+      .and(page.locator(':visible'))
+      .click()
     await page.waitForURL(`**/pesanan/${inCleaning.id}`)
     await page.getByRole('heading', { name: inCleaning.number() }).waitFor()
     assert.equal(await page.getByRole('button', { name: 'Batalkan Pesanan' }).count(), 0)

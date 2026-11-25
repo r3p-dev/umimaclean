@@ -144,6 +144,7 @@ test.group('Services & Pricing Browser Flow (M3a-fix)', (group) => {
     for (const vp of VIEWPORTS) {
       // 1. Landing price list filtered to Helm (landing-harga-helm-*)
       {
+        await browserContext.clearCookies()
         const page = await visit('/')
         await page.setViewportSize({ width: vp.width, height: vp.height })
         await page.waitForLoadState('networkidle')

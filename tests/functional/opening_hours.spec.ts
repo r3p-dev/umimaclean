@@ -118,6 +118,7 @@ test.group('Opening hours PUT /admin/pengaturan/jam (OWN-8, GUEST-1)', (group) =
     for (const { closure, message } of cases) {
       const response = await client
         .put('/admin/pengaturan/jam')
+        .header('Referer', '/admin/pengaturan/toko')
         .loginAs(owner)
         .withCsrfToken()
         .json({ ...shortSaturday(), closure })
@@ -136,6 +137,7 @@ test.group('Opening hours PUT /admin/pengaturan/jam (OWN-8, GUEST-1)', (group) =
 
     const response = await client
       .put('/admin/pengaturan/jam')
+      .header('Referer', '/admin/pengaturan/toko')
       .loginAs(owner)
       .withCsrfToken()
       .json(hours)
@@ -153,6 +155,7 @@ test.group('Opening hours PUT /admin/pengaturan/jam (OWN-8, GUEST-1)', (group) =
     const hours = shortSaturday()
     const response = await client
       .put('/admin/pengaturan/jam')
+      .header('Referer', '/admin/pengaturan/toko')
       .loginAs(owner)
       .withCsrfToken()
       .json({ ...hours, days: hours.days.slice(0, 6) })

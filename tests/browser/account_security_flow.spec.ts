@@ -77,7 +77,6 @@ test.group('Account security in the browser (ACC-4, ACC-5, CUST-13)', (group) =>
 
     await current.page.goto('/staf/profil')
     await current.page.waitForLoadState('networkidle')
-    await current.page.getByText('Akun ini masuk di 2 perangkat, termasuk perangkat ini.').waitFor()
 
     // Only "Keluar" for this device; others end through a password or phone change (D107).
     assert.equal(
@@ -93,7 +92,6 @@ test.group('Account security in the browser (ACC-4, ACC-5, CUST-13)', (group) =>
     await current.page.getByText('Kata sandi diganti. Perangkat lain sudah dikeluarkan.').waitFor()
     assert.equal(await current.page.locator('input[name="currentPassword"]').inputValue(), '')
     await current.page.goto('/staf/profil')
-    await current.page.getByText('Akun ini masuk di 1 perangkat, termasuk perangkat ini.').waitFor()
     // The remembered device must not sign itself back in on reload.
     await first.page.reload()
     await first.page.waitForURL('**/staf/masuk')

@@ -58,6 +58,7 @@ test.group('Opening hours (OWN-8, GUEST-1)', (group) => {
     const endsAt = now.plus({ days: 3 }).set({ hour: 20, minute: 0 })
 
     for (const viewport of VIEWPORTS) {
+      await browserContext.loginAs(owner)
       const settings = await visit('/admin/pengaturan/toko')
       await settings.setViewportSize({ width: viewport.width, height: viewport.height })
       const language = String(await settings.evaluate('navigator.language'))
@@ -106,6 +107,7 @@ test.group('Opening hours (OWN-8, GUEST-1)', (group) => {
       await saveElementScreenshot(closureCard, `tutup-sementara-${viewport.name}.png`)
       await saveScreenshot(settings, `pengaturan-toko-${viewport.name}.png`)
 
+      await browserContext.clearCookies()
       const landing = await visit('/')
       await landing.setViewportSize({ width: viewport.width, height: viewport.height })
       await saveScreenshot(landing, `landing-${viewport.name}.png`)

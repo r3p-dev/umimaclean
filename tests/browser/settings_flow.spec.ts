@@ -28,6 +28,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
     const axeLogs: string[] = []
 
     for (const vp of VIEWPORTS) {
+      await browserContext.loginAs(owner)
       // 1. Area Layanan initial page (/admin/pengaturan/area)
       {
         const page = await visit('/admin/pengaturan/area')
@@ -253,6 +254,7 @@ test.group('Settings & Service Areas Browser Flow (M3b)', (group) => {
 
       // 7. Landing footer showing dynamic store settings (landing-footer-*)
       {
+        await browserContext.clearCookies()
         const page = await visit('/')
         await page.setViewportSize({ width: vp.width, height: vp.height })
         await page.waitForLoadState('networkidle')
