@@ -15,6 +15,7 @@ import type { Data } from '@generated/data'
 import { cn } from 'cn'
 import { urlFor } from '~/client'
 import Note from '~/components/atoms/note'
+import AddressPicker from '~/components/organisms/address_picker'
 import FlowLayout from '~/components/templates/flow_layout'
 import { Badge } from '~/components/ui/badge'
 import { Button, buttonVariants } from '~/components/ui/button'
@@ -91,56 +92,6 @@ function firstAvailableSlotId(slots: SlotOption[]) {
   return slots.find((slot) => slot.isAvailable)?.id ?? null
 }
 
-function AddressRadioCard({
-  address,
-  name,
-  checked,
-  onSelect,
-}: {
-  address: Data.Address
-  name: string
-  checked: boolean
-  onSelect: () => void
-}) {
-  const isDisabled = address.isCovered === false
-  return (
-    <label
-      className={cn(
-        'flex min-h-12 cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors',
-        checked ? 'border-primary bg-accent/50' : 'border-border bg-card hover:bg-muted/40',
-        isDisabled && 'cursor-not-allowed bg-muted/40 opacity-60 hover:bg-muted/40'
-      )}
-    >
-      <input
-        type="radio"
-        name={name}
-        value={address.id}
-        checked={checked}
-        disabled={isDisabled}
-        onChange={onSelect}
-        className="mt-1 size-4 shrink-0 accent-primary"
-      />
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-base font-semibold">{address.label}</span>
-          {address.isPrimary && <Badge variant="secondary">Utama</Badge>}
-          {isDisabled && <Badge variant="destructive">Di luar area layanan</Badge>}
-        </div>
-        <p className="text-sm text-foreground">
-          {address.recipientName} · {address.recipientPhone}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {address.addressText}
-          {address.details ? `, ${address.details}` : ''}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Kec. {address.kecamatan}, {address.city}
-        </p>
-      </div>
-    </label>
-  )
-}
-
 // CUST-5: online order form (`/pesan`). Validates into session draft, then `/pesan/konfirmasi`.
 export default function OrderCreate({
   addresses,
@@ -180,6 +131,8 @@ export default function OrderCreate({
     return firstAvailableSlotId(slots)
   })
   const [note, setNote] = useState<string>(draft?.note ?? '')
+  const [isPickupPickerOpen, setIsPickupPickerOpen] = useState(false)
+  const [isDeliveryPickerOpen, setIsDeliveryPickerOpen] = useState(false)
   const [errors, setErrors] = useState<Record<string, string | undefined>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -256,7 +209,7 @@ export default function OrderCreate({
     pickupSlotId !== null
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pt-4 pb-28 sm:pt-8 sm:pb-12">
+    <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pt-4 pb-6 sm:pt-8 sm:pb-12">
       <Head title="Pesan Penjemputan" />
       <Link
         route="customer.home"
@@ -440,20 +393,9 @@ export default function OrderCreate({
         </section>
 
         <section aria-labelledby="address-section-title" className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 id="address-section-title" className="text-lg font-semibold">
-              Alamat penjemputan
-            </h2>
-            {canAddAddress && addresses.length > 0 && (
-              <Link
-                href={addAddressHref}
-                className={buttonVariants({ variant: 'outline', className: 'h-11 gap-2 px-3' })}
-              >
-                <IconMapPinPlus aria-hidden="true" className="size-4.5" />
-                Tambah alamat
-              </Link>
-            )}
-          </div>
+          <h2 id="address-section-title" className="text-lg font-semibold">
+            Alamat penjemputan
+          </h2>
 
           {addresses.length === 0 ? (
             <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-card p-5">
@@ -471,20 +413,20 @@ export default function OrderCreate({
             </div>
           ) : (
             <>
-              <div className="flex flex-col gap-3">
-                {addresses.map((address) => (
-                  <AddressRadioCard
-                    key={address.id}
-                    address={address}
-                    name="pickupAddressId"
-                    checked={pickupAddressId === address.id}
-                    onSelect={() => setPickupAddressId(address.id)}
-                  />
-                ))}
-              </div>
+              <AddressPicker
+                title="Pilih alamat penjemputan"
+                changeLabel="Ganti alamat penjemputan"
+                addresses={addresses}
+                selectedId={pickupAddressId}
+                onSelect={setPickupAddressId}
+                isOpen={isPickupPickerOpen}
+                onOpenChange={setIsPickupPickerOpen}
+                canAddAddress={canAddAddress}
+                addAddressHref={addAddressHref}
+              />
               {errors.pickupAddressId && <FieldError>{errors.pickupAddressId}</FieldError>}
 
-              <div className="flex flex-col gap-3 pt-2">
+              <div className="flex flex-col gap-3">
                 <Checkbox
                   isSelected={sameDelivery}
                   onChange={setSameDelivery}
@@ -494,17 +436,19 @@ export default function OrderCreate({
                 </Checkbox>
 
                 {!sameDelivery && (
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-2">
                     <h3 className="text-base font-semibold">Alamat pengantaran</h3>
-                    {addresses.map((address) => (
-                      <AddressRadioCard
-                        key={address.id}
-                        address={address}
-                        name="deliveryAddressId"
-                        checked={deliveryAddressId === address.id}
-                        onSelect={() => setDeliveryAddressId(address.id)}
-                      />
-                    ))}
+                    <AddressPicker
+                      title="Pilih alamat pengantaran"
+                      changeLabel="Ganti alamat pengantaran"
+                      addresses={addresses}
+                      selectedId={deliveryAddressId}
+                      onSelect={setDeliveryAddressId}
+                      isOpen={isDeliveryPickerOpen}
+                      onOpenChange={setIsDeliveryPickerOpen}
+                      canAddAddress={canAddAddress}
+                      addAddressHref={addAddressHref}
+                    />
                   </div>
                 )}
                 {errors.deliveryAddressId && <FieldError>{errors.deliveryAddressId}</FieldError>}
@@ -623,7 +567,7 @@ export default function OrderCreate({
           Layanan dan harga ditentukan tim kami setelah barang diperiksa.
         </Note>
 
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:static sm:border-0 sm:bg-transparent sm:p-0">
+        <div className="sticky bottom-0 z-20 -mx-5 border-t border-border bg-card px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
           <Button
             type="submit"
             isDisabled={!canProceed || isSubmitting}

@@ -1,12 +1,12 @@
 import { useState, type ReactNode, type SyntheticEvent } from 'react'
-import { Head, router, usePage } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import {
   IconArrowLeft,
   IconCalendarEvent,
   IconClipboardCheck,
   IconMapPin,
-  IconUser,
+  IconPackage,
 } from '@tabler/icons-react'
 import type { Data } from '@generated/data'
 import { urlFor } from '~/client'
@@ -25,21 +25,19 @@ type ConfirmDraft = {
   note?: string
 }
 
-function AddressBlock({ title, address }: { title: string; address: Data.Address }) {
+function CardHeader({ id, icon, title }: { id: string; icon: ReactNode; title: string }) {
   return (
-    <div className="flex flex-col gap-1">
-      <p className="text-sm font-medium text-muted-foreground">{title}</p>
-      <p className="text-base font-semibold">{address.label}</p>
-      <p className="text-sm">
-        {address.recipientName} · {address.recipientPhone}
-      </p>
-      <p className="text-sm text-muted-foreground">
-        {address.addressText}
-        {address.details ? `, ${address.details}` : ''}
-      </p>
-      <p className="text-xs text-muted-foreground">
-        Kec. {address.kecamatan}, {address.city}
-      </p>
+    <div className="flex items-center justify-between gap-2">
+      <h2 id={id} className="flex items-center gap-2 text-base font-semibold">
+        {icon}
+        <span>{title}</span>
+      </h2>
+      <Link
+        route="customer.orders.create"
+        className={buttonVariants({ variant: 'link', className: 'min-h-11 px-2' })}
+      >
+        Ubah
+      </Link>
     </div>
   )
 }
@@ -58,7 +56,6 @@ export default function OrderConfirm({
   slot: { id: number; startsAt: string; endsAt: string }
   requestKey: string
 }) {
-  const user = usePage().props.user
   const [errors, setErrors] = useState<Record<string, string | undefined>>({})
   const [isPlacing, setIsPlacing] = useState(false)
 
@@ -81,7 +78,7 @@ export default function OrderConfirm({
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pt-4 pb-28 sm:pt-8 sm:pb-12">
+    <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pt-4 pb-6 sm:pt-8 sm:pb-12">
       <Head title="Konfirmasi Pesanan" />
       <Link
         route="customer.orders.create"
@@ -99,17 +96,13 @@ export default function OrderConfirm({
           aria-labelledby="confirm-items-title"
           className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
         >
-          <div className="flex items-center justify-between gap-2">
-            <h2 id="confirm-items-title" className="text-base font-semibold">
-              Barang ({draft.items.length})
-            </h2>
-            <Link
-              route="customer.orders.create"
-              className={buttonVariants({ variant: 'link', className: 'min-h-11 px-2' })}
-            >
-              Ubah
-            </Link>
-          </div>
+          <CardHeader
+            id="confirm-items-title"
+            icon={
+              <IconPackage aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
+            }
+            title={`Barang (${draft.items.length})`}
+          />
           <ul className="flex flex-col gap-2 text-sm">
             {draft.items.map((item, index) => {
               const kindLabel = item.itemKind === ItemKind.BAG ? 'Tas' : 'Sepatu'
@@ -117,20 +110,17 @@ export default function OrderConfirm({
                 item.itemKind === ItemKind.BAG ? bagSizeLabel(item.size) : `EU ${item.size}`
               const name = [item.brand, item.type].filter(Boolean).join(' ')
               return (
-                <li
-                  key={index}
-                  className="flex items-baseline justify-between gap-3 border-t border-border pt-2 first:border-t-0 first:pt-0"
-                >
+                <li key={index} className="border-t border-border pt-2 first:border-t-0 first:pt-0">
                   <span className="font-medium">
                     {kindLabel} · {name}
                   </span>
-                  <span className="shrink-0 text-muted-foreground">{sizeText}</span>
+                  <span className="text-muted-foreground"> — {sizeText}</span>
                 </li>
               )
             })}
           </ul>
           {draft.note && (
-            <p className="border-t border-border pt-2 text-sm text-muted-foreground">
+            <p className="border-t border-border pt-3 text-sm text-muted-foreground">
               Catatan: {draft.note}
             </p>
           )}
@@ -138,24 +128,19 @@ export default function OrderConfirm({
 
         <section
           aria-labelledby="confirm-schedule-title"
-          className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4"
+          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
         >
-          <div className="flex items-center justify-between gap-2">
-            <h2 id="confirm-schedule-title" className="text-base font-semibold">
-              Jadwal penjemputan
-            </h2>
-            <Link
-              route="customer.orders.create"
-              className={buttonVariants({ variant: 'link', className: 'min-h-11 px-2' })}
-            >
-              Ubah
-            </Link>
-          </div>
-          <p className="flex items-center gap-2 text-sm font-medium">
-            <IconCalendarEvent
-              aria-hidden="true"
-              className="size-5 shrink-0 text-muted-foreground"
-            />
+          <CardHeader
+            id="confirm-schedule-title"
+            icon={
+              <IconCalendarEvent
+                aria-hidden="true"
+                className="size-5 shrink-0 text-muted-foreground"
+              />
+            }
+            title="Jadwal penjemputan"
+          />
+          <p className="text-sm font-medium">
             {formatPickupDate(draft.pickupDate, 'full')} ·{' '}
             {formatSlotTime(slot.startsAt, slot.endsAt)}
           </p>
@@ -163,44 +148,34 @@ export default function OrderConfirm({
 
         <section
           aria-labelledby="confirm-address-title"
-          className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4"
+          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
         >
-          <div className="flex items-center justify-between gap-2">
-            <h2
-              id="confirm-address-title"
-              className="flex items-center gap-2 text-base font-semibold"
-            >
-              <IconMapPin aria-hidden="true" className="size-5 text-muted-foreground" />
-              Alamat
-            </h2>
-            <Link
-              route="customer.orders.create"
-              className={buttonVariants({ variant: 'link', className: 'min-h-11 px-2' })}
-            >
-              Ubah
-            </Link>
+          <CardHeader
+            id="confirm-address-title"
+            icon={
+              <IconMapPin aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
+            }
+            title="Alamat"
+          />
+          <div className="flex flex-col gap-1 text-sm">
+            <p className="text-base font-semibold">{pickupAddress.label}</p>
+            <p>
+              {pickupAddress.recipientName} · {pickupAddress.recipientPhone}
+            </p>
+            <p className="text-muted-foreground">
+              {pickupAddress.addressText}
+              {pickupAddress.details ? `, ${pickupAddress.details}` : ''}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Kec. {pickupAddress.kecamatan}, {pickupAddress.city}
+            </p>
           </div>
-          <AddressBlock title="Alamat penjemputan" address={pickupAddress} />
-          <div className="border-t border-border pt-3">
-            {sameDelivery ? (
-              <p className="text-sm text-muted-foreground">
-                Pengantaran: sama dengan alamat penjemputan.
-              </p>
-            ) : (
-              <AddressBlock title="Alamat pengantaran" address={deliveryAddress} />
-            )}
-          </div>
+          <p className="border-t border-border pt-3 text-sm text-muted-foreground">
+            {sameDelivery
+              ? 'Pengantaran: sama dengan alamat penjemputan.'
+              : `Pengantaran: ${deliveryAddress.label} (${deliveryAddress.recipientName} · ${deliveryAddress.recipientPhone}) — ${deliveryAddress.addressText}, Kec. ${deliveryAddress.kecamatan}.`}
+          </p>
         </section>
-
-        {user && (
-          <section className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-            <IconUser aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
-            <div className="text-sm">
-              <p className="font-semibold">{user.fullName}</p>
-              <p className="text-muted-foreground">{user.phone}</p>
-            </div>
-          </section>
-        )}
 
         <Note
           tone="info"
@@ -212,7 +187,7 @@ export default function OrderConfirm({
 
       <form
         onSubmit={placeOrder}
-        className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:static sm:mt-2 sm:border-0 sm:bg-transparent sm:p-0"
+        className="sticky bottom-0 z-20 -mx-5 border-t border-border bg-card px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:mt-2 sm:border-0 sm:bg-transparent sm:p-0"
       >
         <input type="hidden" name="requestKey" value={requestKey} />
         <Button type="submit" isDisabled={isPlacing} className="h-12 w-full text-base">

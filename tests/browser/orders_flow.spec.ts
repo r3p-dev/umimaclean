@@ -58,9 +58,32 @@ test.group('Online ordering flow (CUST-5, CUST-6)', (group) => {
 
     await page.getByLabel(/Catatan untuk kurir/).fill('Titip di pos satpam')
 
+    // Test the Shopee-style address picker (sheet on mobile, dialog on desktop).
+    await page.getByRole('button', { name: 'Ganti alamat penjemputan' }).click()
+    await page.getByRole('heading', { name: 'Pilih alamat penjemputan' }).waitFor()
+    await page.getByText('Di luar area layanan').waitFor()
+
     const logLines: string[] = []
     const recordEvidence = Boolean(env.get('EVIDENCE_MILESTONE'))
     if (recordEvidence) {
+      for (const viewport of VIEWPORTS) {
+        await page.setViewportSize(viewport)
+        const scrollWidth = (await page.evaluate('document.documentElement.scrollWidth')) as number
+        assert.isAtMost(scrollWidth, viewport.width)
+        assert.deepEqual(await axeViolations(page), [])
+        await saveViewportScreenshot(page, `pesan-pilih-alamat-${viewport.name}.png`)
+        logLines.push(`pesan-pilih-alamat-${viewport.name}: scrollWidth=${scrollWidth} axe=none`)
+      }
+      await page.setViewportSize({ width: 1280, height: 720 })
+    }
+
+    await page.getByRole('radio', { name: /Kantor/ }).click()
+    await page
+      .getByRole('heading', { name: 'Pilih alamat penjemputan' })
+      .waitFor({ state: 'detached' })
+
+    if (recordEvidence) {
+      await page.getByText('Alamat pengantaran sama dengan penjemputan').scrollIntoViewIfNeeded()
       for (const viewport of VIEWPORTS) {
         await page.setViewportSize(viewport)
         const scrollWidth = (await page.evaluate('document.documentElement.scrollWidth')) as number
