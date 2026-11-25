@@ -365,6 +365,16 @@ test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
     const page = await visit('/profil/alamat')
     await page.getByRole('link', { name: 'Ubah Kos Adik' }).click()
     await page.locator('.maplibregl-canvas').waitFor()
+    // Let the initial coverage check settle before clicking so the two-line status does not shift the button mid-click.
+    await page
+      .getByRole('status')
+      .getByText(/Di luar area layanan/)
+      .waitFor()
+    // Let the initial coverage check settle before clicking so the two-line status does not shift the button mid-click.
+    await page
+      .getByRole('status')
+      .getByText(/Di luar area layanan/)
+      .waitFor()
     await page.getByRole('button', { name: 'Simpan alamat' }).click()
     await page.getByText(SAVE_ERROR).waitFor()
 
