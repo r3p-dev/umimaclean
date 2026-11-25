@@ -122,7 +122,7 @@ test.group('Customer order list, detail and cancel (CUST-7, CUST-8, CUST-9)', (g
     await browserContext.loginAs(customer)
 
     const page = await visit('/pesanan')
-    await page.getByRole('heading', { name: 'Riwayat Pesanan' }).waitFor()
+    await page.getByRole('heading', { name: 'Riwayat' }).waitFor()
     await page
       .getByRole('link', { name: awaiting.number() })
       .and(page.locator(':visible'))
@@ -186,6 +186,9 @@ test.group('Customer order list, detail and cancel (CUST-7, CUST-8, CUST-9)', (g
         await saveScreenshot(page, `pesanan-detail-${viewport.name}.png`)
         logLines.push(`pesanan-detail-${viewport.name}: scrollWidth=${scrollWidth} axe=none`)
       }
+      await page.setViewportSize({ width: 1440, height: 900 })
+      await page.getByRole('button', { name: 'Batalkan Pesanan' }).hover()
+      await saveScreenshot(page, 'pesanan-detail-hover-1440.png')
       await page.setViewportSize({ width: 1280, height: 720 })
     }
 

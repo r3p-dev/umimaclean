@@ -104,7 +104,7 @@ test.group('Addresses (CUST-2, CUST-3, CUST-14, AREA-4, D82)', (group) => {
     await page.getByRole('link', { name: 'Ubah Kos Adik' }).click()
     assert.deepEqual(await axeViolations(page), [], 'Address edit page axe')
     await page.getByRole('button', { name: 'Hapus alamat' }).click()
-    await page.getByRole('dialog').waitFor()
+    await page.locator('[data-slot="dialog-content"]:not([data-entering])').waitFor()
     assert.deepEqual(await axeViolations(page), [], 'Delete dialog axe')
     await page.getByRole('dialog').getByRole('button', { name: 'Hapus alamat' }).click()
     await page.getByText('Alamat Kos Adik dihapus.').waitFor()
