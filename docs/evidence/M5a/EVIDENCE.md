@@ -15,7 +15,7 @@ Date: 2026-11-25. Commit: 351979e (0.4.2) + stop 1 + cleanup + stop 2.
 | Seed data: a demo order in every ORD-2 status with its timeline along ORD-3 and both address copies | PASS | `node scripts/evidence_run.ts M5a schema-and-seed -- sh -c 'node ace migration:fresh --seed && npx prettier --write database/schema.ts && podman exec postgres psql -U user -d umimaclean_dev -c "SELECT … FROM orders …" -c "SELECT kind, count(*) FROM order_addresses GROUP BY kind ORDER BY kind" -c "\d orders"'` | see below |
 | Cleanup before stop 2: `GET /tempat/titik` removed; flaky refused-save browser test fixed (waits for `CoverageStatus` to settle before clicking `Simpan alamat` so the two-line status does not shift the button mid-click); `npm run check` passes twice in a row | PASS | `npm run check && npm run check` | ok (31s+11s+434s), ok (33s+11s+438s) |
 | Stop 2 (CUST-5, CUST-6, SLOT-3, AREA-4, ORD-1): `/pesan`, `/pesan/konfirmasi`, session draft, "Ubah pesanan", "Pesan lagi" (`/pesan?ulang=:id`), `requestKey` on confirm, redirect to `/beranda` with `"Pesanan UMC-000XX diterima"`, 360/1440 px screenshots and axe | PASS | `node scripts/evidence_run.ts M5a stop2-orders-7 -- sh -c 'node ace test functional --files=tests/functional/orders.spec.ts && EVIDENCE_MILESTONE=M5a node ace test browser --files=tests/browser/orders_flow.spec.ts'` | see below |
-| Lint, typecheck and every test: `npm run check` | PASS (stop 2) | `node scripts/evidence_run.ts M5a check-stop2-fix -- npm run check` | see below |
+| Lint, typecheck and every test: `npm run check` | PASS (stop 2) | `node scripts/evidence_run.ts M5a check-stop2-fix2 -- npm run check` | see below |
 
 Excerpt for the state machine (`tmp/evidence/M5a/logs/state-machine.log`):
 
@@ -99,12 +99,12 @@ ok   test (427s)
 exit 0
 ```
 
-Excerpt for `npm run check` after stop 2 (`tmp/evidence/M5a/logs/check-stop2-fix.log`):
+Excerpt for `npm run check` after stop 2 (`tmp/evidence/M5a/logs/check-stop2-fix2.log`):
 
 ```text
-ok   lint (35s)
-ok   typecheck (13s)
-ok   test (435s)
+ok   lint (39s)
+ok   typecheck (12s)
+ok   test (428s)
 
 exit 0
 ```
