@@ -307,19 +307,6 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/places_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'places.show': {
-    methods: ["GET","HEAD"]
-    pattern: '/tempat/titik'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: ExtractQueryForGet<InferInput<(typeof import('#validators/address_validator').checkPointValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/places_controller').default['show']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/places_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
-      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/places_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
   'customer.home': {
     methods: ["GET","HEAD"]
     pattern: '/beranda'
@@ -331,6 +318,58 @@ export interface Registry {
       response: unknown
       errorResponse: unknown
       rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'customer.orders.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/pesan'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['create']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['create']>>>
+    }
+  }
+  'customer.orders.draft': {
+    methods: ["POST"]
+    pattern: '/pesan'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/order_validator').createOrderValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/order_validator').createOrderValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['storeDraft']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['storeDraft']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['storeDraft']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.orders.confirm': {
+    methods: ["GET","HEAD"]
+    pattern: '/pesan/konfirmasi'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['confirm']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['confirm']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['confirm']>>>
+    }
+  }
+  'customer.orders.store': {
+    methods: ["POST"]
+    pattern: '/pesan/konfirmasi'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/order_validator').confirmOrderValidator)>|InferInput<(typeof import('#validators/order_validator').createOrderValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/order_validator').confirmOrderValidator)>|InferInput<(typeof import('#validators/order_validator').createOrderValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#controllers/orders_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'customer.profile.show': {

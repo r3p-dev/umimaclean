@@ -27,8 +27,11 @@ export type ScannedRoutes = {
     'account_security.update_password': { paramsTuple?: []; params?: {} }
     'area.check_point': { paramsTuple?: []; params?: {} }
     'places.index': { paramsTuple?: []; params?: {} }
-    'places.show': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
+    'customer.orders.create': { paramsTuple?: []; params?: {} }
+    'customer.orders.draft': { paramsTuple?: []; params?: {} }
+    'customer.orders.confirm': { paramsTuple?: []; params?: {} }
+    'customer.orders.store': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.profile.update': { paramsTuple?: []; params?: {} }
@@ -84,8 +87,9 @@ export type ScannedRoutes = {
     'otp.show': { paramsTuple?: []; params?: {} }
     'area.check_point': { paramsTuple?: []; params?: {} }
     'places.index': { paramsTuple?: []; params?: {} }
-    'places.show': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
+    'customer.orders.create': { paramsTuple?: []; params?: {} }
+    'customer.orders.confirm': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
@@ -121,8 +125,9 @@ export type ScannedRoutes = {
     'otp.show': { paramsTuple?: []; params?: {} }
     'area.check_point': { paramsTuple?: []; params?: {} }
     'places.index': { paramsTuple?: []; params?: {} }
-    'places.show': { paramsTuple?: []; params?: {} }
     'customer.home': { paramsTuple?: []; params?: {} }
+    'customer.orders.create': { paramsTuple?: []; params?: {} }
+    'customer.orders.confirm': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.profile.edit': { paramsTuple?: []; params?: {} }
     'customer.phone.edit': { paramsTuple?: []; params?: {} }
@@ -152,6 +157,8 @@ export type ScannedRoutes = {
     'otp.verify': { paramsTuple?: []; params?: {} }
     'otp.resend': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }
+    'customer.orders.draft': { paramsTuple?: []; params?: {} }
+    'customer.orders.store': { paramsTuple?: []; params?: {} }
     'customer.phone.store': { paramsTuple?: []; params?: {} }
     'customer.addresses.store': { paramsTuple?: []; params?: {} }
     'customer.addresses.primary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

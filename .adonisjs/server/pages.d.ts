@@ -31,6 +31,8 @@ declare module '@adonisjs/inertia/types' {
     'customer/addresses/index': ExtractProps<(typeof import('../../inertia/pages/customer/addresses/index.tsx'))['default']>
     'customer/dashboard': ExtractProps<(typeof import('../../inertia/pages/customer/dashboard.tsx'))['default']>
     'customer/flow_template_preview': ExtractProps<(typeof import('../../inertia/pages/customer/flow_template_preview.tsx'))['default']>
+    'customer/orders/confirm': ExtractProps<(typeof import('../../inertia/pages/customer/orders/confirm.tsx'))['default']>
+    'customer/orders/create': ExtractProps<(typeof import('../../inertia/pages/customer/orders/create.tsx'))['default']>
     'customer/profile/edit': ExtractProps<(typeof import('../../inertia/pages/customer/profile/edit.tsx'))['default']>
     'customer/profile/phone': ExtractProps<(typeof import('../../inertia/pages/customer/profile/phone.tsx'))['default']>
     'customer/profile/show': ExtractProps<(typeof import('../../inertia/pages/customer/profile/show.tsx'))['default']>

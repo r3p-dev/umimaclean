@@ -146,17 +146,35 @@ const routes = {
     tokens: [[0,"tempat"]],
     types: placeholder as Registry['places.index']['types'],
   },
-  'places.show': {
-    methods: ["GET","HEAD"],
-    pattern: '/tempat/titik',
-    tokens: [[0,"tempat"],[0,"titik"]],
-    types: placeholder as Registry['places.show']['types'],
-  },
   'customer.home': {
     methods: ["GET","HEAD"],
     pattern: '/beranda',
     tokens: [[0,"beranda"]],
     types: placeholder as Registry['customer.home']['types'],
+  },
+  'customer.orders.create': {
+    methods: ["GET","HEAD"],
+    pattern: '/pesan',
+    tokens: [[0,"pesan"]],
+    types: placeholder as Registry['customer.orders.create']['types'],
+  },
+  'customer.orders.draft': {
+    methods: ["POST"],
+    pattern: '/pesan',
+    tokens: [[0,"pesan"]],
+    types: placeholder as Registry['customer.orders.draft']['types'],
+  },
+  'customer.orders.confirm': {
+    methods: ["GET","HEAD"],
+    pattern: '/pesan/konfirmasi',
+    tokens: [[0,"pesan"],[0,"konfirmasi"]],
+    types: placeholder as Registry['customer.orders.confirm']['types'],
+  },
+  'customer.orders.store': {
+    methods: ["POST"],
+    pattern: '/pesan/konfirmasi',
+    tokens: [[0,"pesan"],[0,"konfirmasi"]],
+    types: placeholder as Registry['customer.orders.store']['types'],
   },
   'customer.profile.show': {
     methods: ["GET","HEAD"],

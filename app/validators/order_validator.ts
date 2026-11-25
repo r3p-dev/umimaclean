@@ -49,4 +49,8 @@ export const createOrderValidator = vine.create({
   note: vine.string().trim().maxLength(300).optional(),
 })
 
+export const confirmOrderValidator = vine.create({
+  requestKey: vine.string().trim().minLength(1).maxLength(64),
+})
+
 export type OrderDraft = Infer<typeof createOrderValidator>

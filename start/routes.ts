@@ -51,13 +51,16 @@ router
       .as('area.check_point')
       .use(areaCheckThrottle)
     router.get('/tempat', [controllers.Places, 'index']).as('places.index').use(placeThrottle)
-    router.get('/tempat/titik', [controllers.Places, 'show']).as('places.show').use(placeThrottle)
   })
   .use(middleware.auth())
 
 router
   .group(() => {
     router.on('/beranda').renderInertia('customer/dashboard', {}).as('customer.home')
+    router.get('/pesan', [controllers.Orders, 'create']).as('customer.orders.create')
+    router.post('/pesan', [controllers.Orders, 'storeDraft']).as('customer.orders.draft')
+    router.get('/pesan/konfirmasi', [controllers.Orders, 'confirm']).as('customer.orders.confirm')
+    router.post('/pesan/konfirmasi', [controllers.Orders, 'store']).as('customer.orders.store')
     router.get('/profil', [controllers.Profile, 'show']).as('customer.profile.show')
     router.get('/profil/ubah', [controllers.Profile, 'edit']).as('customer.profile.edit')
     router.put('/profil', [controllers.Profile, 'update']).as('customer.profile.update')

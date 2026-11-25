@@ -36,12 +36,14 @@ const NEW_PIN_START: MapPoint = { lat: -6.9218, lng: 107.6098 }
 export default function AddressForm({
   address,
   isFirstAddress,
+  returnTo = null,
   shapes,
   tilesUrl,
   devWarning,
 }: {
   address: Data.Address | null
   isFirstAddress: boolean
+  returnTo?: 'pesan' | null
   shapes: Data.ServiceAreaShape[]
   tilesUrl: string | null
   devWarning: string | null
@@ -96,6 +98,7 @@ export default function AddressForm({
     return (
       <>
         <CsrfField />
+        {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
         <div className="flex flex-col gap-8">
           <section aria-labelledby="contact-title" className="flex flex-col gap-5">
             <h2 id="contact-title" className="text-lg font-semibold">
@@ -260,11 +263,11 @@ export default function AddressForm({
     <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pt-4 pb-8 sm:pt-10">
       <Head title={address ? 'Ubah Alamat' : 'Tambah Alamat'} />
       <Link
-        route="customer.addresses.index"
+        route={returnTo === 'pesan' ? 'customer.orders.create' : 'customer.addresses.index'}
         className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-medium text-foreground/80 hover:text-foreground"
       >
         <IconArrowLeft aria-hidden="true" className="size-4.5" />
-        Alamat
+        {returnTo === 'pesan' ? 'Pesan penjemputan' : 'Alamat'}
       </Link>
       <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
 

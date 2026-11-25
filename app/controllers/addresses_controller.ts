@@ -24,7 +24,7 @@ export default class AddressesController {
     })
   }
 
-  async create({ auth, inertia, response, session }: HttpContext) {
+  async create({ auth, inertia, request, response, session }: HttpContext) {
     const count = await this.addressService.countAddresses(auth.getUserOrFail())
     if (count >= MAX_ADDRESSES) {
       session.flash('error', TOO_MANY_ADDRESSES_MESSAGE)
@@ -33,6 +33,7 @@ export default class AddressesController {
     return inertia.render('customer/addresses/form', {
       address: null,
       isFirstAddress: count === 0,
+      returnTo: request.qs().dari === 'pesan' ? 'pesan' : null,
       ...(await this.#mapProps()),
     })
   }
@@ -42,6 +43,9 @@ export default class AddressesController {
     await this.addressService.createAddress(auth.getUserOrFail(), payload)
 
     session.flash('success', 'Alamat disimpan.')
+    if (request.input('returnTo') === 'pesan') {
+      return response.redirect().toRoute('customer.orders.create')
+    }
     return response.redirect().toRoute('customer.addresses.index')
   }
 
@@ -50,6 +54,7 @@ export default class AddressesController {
     return inertia.render('customer/addresses/form', {
       address: AddressTransformer.transform(address),
       isFirstAddress: false,
+      returnTo: null,
       ...(await this.#mapProps()),
     })
   }

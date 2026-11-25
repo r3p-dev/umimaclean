@@ -8,6 +8,7 @@ export const controllers = {
   Addresses: () => import('#controllers/addresses_controller'),
   AreaCheck: () => import('#controllers/area_check_controller'),
   Home: () => import('#controllers/home_controller'),
+  Orders: () => import('#controllers/orders_controller'),
   Otp: () => import('#controllers/otp_controller'),
   PasswordReset: () => import('#controllers/password_reset_controller'),
   PhoneChange: () => import('#controllers/phone_change_controller'),

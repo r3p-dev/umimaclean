@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { Head, usePage } from '@inertiajs/react'
-import { IconArchive } from '@tabler/icons-react'
+import { Link } from '@adonisjs/inertia/react'
+import { IconArchive, IconCirclePlus } from '@tabler/icons-react'
 import CustomerLayout from '~/components/templates/customer_layout'
+import { buttonVariants } from '~/components/ui/button'
 
 export default function CustomerDashboard() {
   const user = usePage().props.user
@@ -10,13 +12,22 @@ export default function CustomerDashboard() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8 px-5 pt-8 sm:pt-10">
       <Head title="Beranda Pelanggan" />
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Selamat datang, {firstName}
-        </h1>
-        <p className="mt-2 text-base text-muted-foreground">
-          Pesan cuci sepatu, tas, dan helm dengan layanan antar-jemput Bandung Raya.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Selamat datang, {firstName}
+          </h1>
+          <p className="mt-2 text-base text-muted-foreground">
+            Pesan cuci sepatu, tas, dan helm dengan layanan antar-jemput Bandung Raya.
+          </p>
+        </div>
+        <Link
+          route="customer.orders.create"
+          className={buttonVariants({ size: 'lg', className: 'h-12 gap-2 px-5 text-base' })}
+        >
+          <IconCirclePlus aria-hidden="true" className="size-5" />
+          Pesan penjemputan
+        </Link>
       </div>
 
       <section

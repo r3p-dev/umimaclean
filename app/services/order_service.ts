@@ -4,6 +4,7 @@ import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
+import { ItemKind } from '#enums/item_kind_enum'
 import { OrderAddressKind } from '#enums/order_address_kind_enum'
 import { OrderStatus, OrderStatusLabel } from '#enums/order_status_enum'
 import { ZONE } from '#helpers/opening_hours'
@@ -78,6 +79,47 @@ export default class OrderService {
     }
     order.status = status
     return locked
+  }
+
+  // CUST-5: checks a draft before saving it to the session; `placeOnlineOrder` re-checks under a
+  // lock when the customer confirms.
+  async validateDraft(user: User, draft: OrderDraft, now: DateTime = DateTime.now()) {
+    const pickupAddress = await this.addressService.findAddressOf(user, draft.pickupAddressId)
+    const deliveryAddress = await this.addressService.findAddressOf(user, draft.deliveryAddressId)
+    await this.#refuseOutsideArea(pickupAddress, 'pickupAddressId', 'penjemputan')
+    await this.#refuseOutsideArea(deliveryAddress, 'deliveryAddressId', 'pengantaran')
+
+    const date = draft.pickupDate.toISODate()!
+    const dates = await this.pickupSlotService.listPickupDates(now)
+    if (!dates.includes(date)) {
+      fieldError('pickupDate', DATE_UNAVAILABLE_MESSAGE, 'dateUnavailable')
+    }
+
+    const slots = await this.pickupSlotService.listSlotsForDate(date)
+    const chosen = slots.find((entry) => entry.slot.id === draft.pickupSlotId)
+    if (!chosen || !chosen.slot.isActive) {
+      fieldError('pickupSlotId', SLOT_UNAVAILABLE_MESSAGE, 'slotUnavailable')
+    }
+    if (!chosen.isAvailable) {
+      fieldError('pickupSlotId', SLOT_FULL_MESSAGE, 'slotFull')
+    }
+  }
+
+  // CUST-5: declared items from an order owned by the customer, for "Pesan lagi" (`/pesan?ulang=:id`).
+  async listRepeatItems(user: User, orderId: number) {
+    const order = await Order.query()
+      .where('id', orderId)
+      .where('user_id', user.id)
+      .preload('items')
+      .firstOrFail()
+    return order.items
+      .filter((item) => item.itemKind === ItemKind.SHOE || item.itemKind === ItemKind.BAG)
+      .map((item) => ({
+        itemKind: item.itemKind,
+        brand: item.brand ?? '',
+        type: item.type,
+        size: item.size,
+      }))
   }
 
   // CUST-6: places an online order from a checked draft. Re-checks both addresses against the

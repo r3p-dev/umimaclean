@@ -42,10 +42,15 @@ export interface ApiDefinition {
   }
   places: {
     index: typeof routes['places.index']
-    show: typeof routes['places.show']
   }
   customer: {
     home: typeof routes['customer.home']
+    orders: {
+      create: typeof routes['customer.orders.create']
+      draft: typeof routes['customer.orders.draft']
+      confirm: typeof routes['customer.orders.confirm']
+      store: typeof routes['customer.orders.store']
+    }
     profile: {
       show: typeof routes['customer.profile.show']
       edit: typeof routes['customer.profile.edit']
