@@ -208,17 +208,17 @@ export default function OrderCreate({
     pickupSlotId !== null
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-4 pb-24 sm:pt-8 sm:pb-12">
+    <div className="mx-auto max-w-6xl px-5 pt-6 lg:pt-10">
       <Head title="Pesan Penjemputan" />
 
       <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Pesan Penjemputan</h1>
+        <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Pesan Penjemputan</h1>
         <p className="mt-1 text-base text-muted-foreground">
           Isi barang yang akan dijemput, pilih alamat, dan tentukan jadwalnya.
         </p>
       </div>
 
-      <form onSubmit={submitOrder} className="flex flex-col gap-8">
+      <form onSubmit={submitOrder} className="mt-5 flex flex-col gap-8">
         <section aria-labelledby="items-section-title" className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 id="items-section-title" className="text-lg font-semibold">

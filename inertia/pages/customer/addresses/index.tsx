@@ -44,7 +44,7 @@ export default function AddressIndex({
   }
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-4 pb-8 sm:pt-10">
+    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-6 lg:pt-10">
       <Head title="Alamat" />
       <BackLink area="customer" to="show" />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

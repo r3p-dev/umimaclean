@@ -31,7 +31,7 @@ export default function CustomerOrderShow({ order }: { order: Data.OrderDetail }
   const waHref = whatsappOrderLink(store.whatsapp, store.name, order.number)
 
   return (
-    <div className="mx-auto max-w-6xl px-5 pt-4 lg:pt-8">
+    <div className="mx-auto max-w-6xl px-5 pt-6 lg:pt-10">
       <Head title={order.number} />
 
       <Link
@@ -96,7 +96,7 @@ export default function CustomerOrderShow({ order }: { order: Data.OrderDetail }
           <div className="grid gap-4 sm:grid-cols-2">
             {pickup && (
               <Card>
-                <CardContent className="flex items-start gap-3 pt-6">
+                <CardContent className="flex flex-row items-start gap-3">
                   <IconArrowUpRight
                     aria-hidden="true"
                     className="mt-0.5 size-5 shrink-0 text-muted-foreground"
@@ -120,7 +120,7 @@ export default function CustomerOrderShow({ order }: { order: Data.OrderDetail }
             )}
             {delivery && (
               <Card>
-                <CardContent className="flex items-start gap-3 pt-6">
+                <CardContent className="flex flex-row items-start gap-3">
                   <IconArrowDownLeft
                     aria-hidden="true"
                     className="mt-0.5 size-5 shrink-0 text-muted-foreground"
@@ -166,7 +166,7 @@ export default function CustomerOrderShow({ order }: { order: Data.OrderDetail }
             <Button
               type="button"
               variant="outline"
-              className="min-h-11 gap-2 border-destructive/40 text-base text-destructive hover:bg-destructive/10"
+              className="min-h-11 gap-2 border-destructive/40 text-base text-destructive hover:bg-destructive/10 hover:text-destructive data-hovered:bg-destructive/10 data-hovered:text-destructive"
               onPress={() => setCancelOpen(true)}
             >
               <IconBan aria-hidden="true" className="size-5" />

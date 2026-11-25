@@ -8,9 +8,10 @@ import {
   IconLock,
   IconMapPin,
 } from '@tabler/icons-react'
-import { AccountCard, AccountIdentityCard } from '~/components/organisms/account_security'
+import { AccountCard } from '~/components/organisms/account_security'
 import { EditProfileLink } from '~/components/organisms/profile_forms'
 import CustomerLayout from '~/components/templates/customer_layout'
+import { formatPhone } from '~/lib/phone'
 
 function addressSummary(count: number, primaryLabel: string | null) {
   if (count === 0) {
@@ -20,7 +21,7 @@ function addressSummary(count: number, primaryLabel: string | null) {
 }
 
 const TILE =
-  'flex min-h-16 w-full items-center gap-3.5 border-b border-border px-4 py-3 text-left text-foreground transition-colors last:border-b-0 hover:bg-muted/50 sm:min-h-0 sm:flex-col sm:items-start sm:gap-2 sm:rounded-xl sm:border sm:bg-card sm:p-5 sm:last:border-b'
+  'flex min-h-16 w-full cursor-pointer items-center gap-3.5 border-b border-border px-4 py-3 text-left text-foreground transition-colors last:border-b-0 hover:bg-muted/60 active:bg-muted sm:min-h-0 sm:flex-col sm:items-start sm:gap-2 sm:rounded-xl sm:border sm:bg-card sm:p-5 sm:last:border-b'
 
 export default function ProfileShow({
   addressCount,
@@ -29,7 +30,7 @@ export default function ProfileShow({
   addressCount: number
   primaryLabel: string | null
 }) {
-  const { store } = usePage().props
+  const { user, store } = usePage().props
 
   return (
     <div className="mx-auto max-w-6xl px-5 pt-6 lg:pt-10">
@@ -37,9 +38,20 @@ export default function ProfileShow({
       <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Profil</h1>
 
       <div className="mt-5 flex flex-col gap-4 lg:mt-6">
-        <AccountIdentityCard>
-          <EditProfileLink area="customer" />
-        </AccountIdentityCard>
+        <section className="flex flex-wrap items-center gap-4 sm:flex-nowrap sm:rounded-xl sm:border sm:border-border sm:bg-card sm:p-5">
+          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-accent text-lg font-semibold text-accent-foreground">
+            {user?.initials}
+          </span>
+          <span className="flex min-w-0 flex-1 basis-48 flex-col gap-1 sm:basis-0">
+            <span data-slot="account-name" className="text-xl font-bold wrap-break-word">
+              {user?.fullName}
+            </span>
+            <span className="text-sm text-muted-foreground">{formatPhone(user?.phone ?? '')}</span>
+          </span>
+          <div className="ml-18 sm:ml-0">
+            <EditProfileLink area="customer" />
+          </div>
+        </section>
 
         <div className="overflow-hidden rounded-xl border border-border bg-card sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:border-0 sm:bg-transparent">
           <Link route="customer.addresses.index" className={TILE}>

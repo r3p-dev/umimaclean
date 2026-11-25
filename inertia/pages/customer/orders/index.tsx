@@ -110,9 +110,9 @@ export default function CustomerOrdersIndex({
 
   return (
     <div className="mx-auto max-w-6xl px-5 pt-6 lg:pt-10">
-      <Head title="Riwayat Pesanan" />
+      <Head title="Riwayat" />
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Riwayat Pesanan</h1>
+        <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Riwayat</h1>
         <Link
           route="customer.orders.create"
           className={buttonVariants({ className: 'min-h-11 gap-2 px-4 text-base' })}

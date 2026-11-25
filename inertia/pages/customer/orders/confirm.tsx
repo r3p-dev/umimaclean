@@ -13,6 +13,7 @@ import { urlFor } from '~/client'
 import Note from '~/components/atoms/note'
 import CustomerLayout from '~/components/templates/customer_layout'
 import { Button, buttonVariants } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
 import { bagSizeLabel, formatPickupDate, formatSlotTime } from '~/lib/order_format'
 import { ItemKind } from '~/lib/service_enums'
 
@@ -78,7 +79,7 @@ export default function OrderConfirm({
   }
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-4 pb-24 sm:pt-8 sm:pb-12">
+    <div className="mx-auto max-w-6xl px-5 pt-6 lg:pt-10">
       <Head title="Konfirmasi Pesanan" />
       <Link
         route="customer.orders.create"
@@ -87,15 +88,16 @@ export default function OrderConfirm({
         <IconArrowLeft aria-hidden="true" className="size-4.5" />
         Ubah pesanan
       </Link>
-      <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Konfirmasi Pesanan</h1>
+      <h1 className="mt-2 text-2xl font-bold tracking-tight lg:text-3xl">Konfirmasi Pesanan</h1>
 
-      {firstError && <Note tone="danger">{firstError}</Note>}
+      {firstError && (
+        <div className="mt-4">
+          <Note tone="danger">{firstError}</Note>
+        </div>
+      )}
 
-      <div className="flex flex-col gap-4">
-        <section
-          aria-labelledby="confirm-items-title"
-          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:p-5"
-        >
+      <div className="mt-5 flex flex-col gap-4">
+        <Card role="region" aria-labelledby="confirm-items-title">
           <CardHeader
             id="confirm-items-title"
             icon={
@@ -124,12 +126,9 @@ export default function OrderConfirm({
               Catatan: {draft.note}
             </p>
           )}
-        </section>
+        </Card>
 
-        <section
-          aria-labelledby="confirm-schedule-title"
-          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:p-5"
-        >
+        <Card role="region" aria-labelledby="confirm-schedule-title">
           <CardHeader
             id="confirm-schedule-title"
             icon={
@@ -144,12 +143,9 @@ export default function OrderConfirm({
             {formatPickupDate(draft.pickupDate, 'full')} ·{' '}
             {formatSlotTime(slot.startsAt, slot.endsAt)}
           </p>
-        </section>
+        </Card>
 
-        <section
-          aria-labelledby="confirm-address-title"
-          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:p-5"
-        >
+        <Card role="region" aria-labelledby="confirm-address-title">
           <CardHeader
             id="confirm-address-title"
             icon={
@@ -175,7 +171,7 @@ export default function OrderConfirm({
               ? 'Pengantaran: sama dengan alamat penjemputan.'
               : `Pengantaran: ${deliveryAddress.label} (${deliveryAddress.recipientName} · ${deliveryAddress.recipientPhone}) — ${deliveryAddress.addressText}, Kec. ${deliveryAddress.kecamatan}.`}
           </p>
-        </section>
+        </Card>
 
         <Note
           tone="info"
